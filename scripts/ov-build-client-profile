@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+NAME="${1:-}"
+BASE="/etc/openvpn/server"
+EASY="$BASE/easy-rsa"
+PKI="$EASY/pki"
+SERVER="$BASE/server.conf"
+TEMPLATE="$BASE/client-template.txt"
+PROFILE="/root/${NAME}.ovpn"
+CERT="$PKI/issued/${NAME}.crt"
+KEY="$PKI/private/${NAME}.key"
+REQ="$PKI/reqs/${NAME}.req"
+INDEX="$PKI/index.txt"
+TMP_PROFILE=""
+TLS_TMP=""
+
+cleanup() {
+  [[ -z "$TMP_PROFILE" ]] || rm -f "$TMP_PROFILE"
+  [[ -z "$TLS_TMP" ]] || rm -f "$TLS_TMP"
+}
+trap cleanup EXIT
+
+if ! [[ "$NAME" =~ ^[A-Za-z0-9_-]{1,64}$ ]]; then
+  echo "Invalid client name: $NAME" >&2
+  exit 2
+fi
+
+valid_profile() {
+  [[ -s "$PROFILE" ]] || return 1
+  [[ "$(stat -c %s "$PROFILE")" -gt 500 ]] || return 1
+  grep -qi '^<ca>$' "$PROFILE" || return 1
+  grep -qi '^</ca>$' "$PROFILE" || return 1
+  grep -qi '^<cert>$' "$PROFILE" || return 1
+  grep -qi '^</cert>$' "$PROFILE" || return 1
+  grep -qi '^<key>$' "$PROFILE" || return 1
+  grep -qi '^</key>$' "$PROFILE" || return 1
+  grep -qi '^remote ' "$PROFILE" || return 1
+}
+
+valid_pki_entry() {
+  [[ -s "$INDEX" ]] || return 1
+  awk -F '\t' -v n="$NAME" '$1=="V" && $NF=="/CN=" n {f=1} END {exit(f?0:1)}' "$INDEX"
+}
+
+resolve_server_file() {
+  local value="$1"
+  if [[ "$value" == /* ]]; then printf '%s\n' "$value"; else printf '%s/%s\n' "$BASE" "$value"; fi
+}
+
+ensure_ccd() {
+  mkdir -p "$BASE/ccd" /etc/openvpn/ccd
+  : >"$BASE/ccd/$NAME"
+  : >"/etc/openvpn/ccd/$NAME"
+  chmod 644 "$BASE/ccd/$NAME" "/etc/openvpn/ccd/$NAME"
+}
+
+build_profile() {
+  [[ -s "$TEMPLATE" ]] || { echo "client-template.txt missing" >&2; return 1; }
+  [[ -s "$PKI/ca.crt" ]] || { echo "CA missing" >&2; return 1; }
+  [[ -s "$CERT" ]] || { echo "certificate missing: $CERT" >&2; return 1; }
+  [[ -s "$KEY" ]] || { echo "private key missing: $KEY" >&2; return 1; }
+
+  TMP_PROFILE="$(mktemp "/root/.${NAME}.ovpn.XXXXXX")"
+  cat "$TEMPLATE" >"$TMP_PROFILE"
+  {
+    echo
+    echo '<ca>'
+    cat "$PKI/ca.crt"
+    echo '</ca>'
+    echo '<cert>'
+    awk '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/' "$CERT"
+    echo '</cert>'
+    echo '<key>'
+    cat "$KEY"
+    echo '</key>'
+  } >>"$TMP_PROFILE"
+
+  if grep -qs '^tls-crypt-v2[[:space:]]' "$SERVER"; then
+    local server_key
+    server_key="$(awk '$1=="tls-crypt-v2"{print $2; exit}' "$SERVER")"
+    server_key="$(resolve_server_file "$server_key")"
+    [[ -s "$server_key" ]]
+    TLS_TMP="$(mktemp "$BASE/tls-crypt-v2-client.XXXXXX")"
+    openvpn --tls-crypt-v2 "$server_key" --genkey tls-crypt-v2-client "$TLS_TMP"
+    {
+      echo '<tls-crypt-v2>'
+      cat "$TLS_TMP"
+      echo '</tls-crypt-v2>'
+    } >>"$TMP_PROFILE"
+    rm -f "$TLS_TMP"
+    TLS_TMP=""
+  elif grep -qs '^tls-crypt[[:space:]]' "$SERVER"; then
+    local tls_key
+    tls_key="$(awk '$1=="tls-crypt"{print $2; exit}' "$SERVER")"
+    tls_key="$(resolve_server_file "$tls_key")"
+    [[ -s "$tls_key" ]]
+    {
+      echo '<tls-crypt>'
+      cat "$tls_key"
+      echo '</tls-crypt>'
+    } >>"$TMP_PROFILE"
+  elif grep -qs '^tls-auth[[:space:]]' "$SERVER"; then
+    local tls_key
+    tls_key="$(awk '$1=="tls-auth"{print $2; exit}' "$SERVER")"
+    tls_key="$(resolve_server_file "$tls_key")"
+    [[ -s "$tls_key" ]]
+    {
+      echo 'key-direction 1'
+      echo '<tls-auth>'
+      cat "$tls_key"
+      echo '</tls-auth>'
+    } >>"$TMP_PROFILE"
+  fi
+
+  chmod 600 "$TMP_PROFILE"
+  mv -f "$TMP_PROFILE" "$PROFILE"
+  TMP_PROFILE=""
+  ensure_ccd
+  valid_profile
+}
+
+if valid_profile; then
+  ensure_ccd
+  exit 0
+fi
+
+if valid_pki_entry && [[ -s "$CERT" ]] && [[ -s "$KEY" ]]; then
+  build_profile
+  echo "Profile rebuilt from existing PKI: $NAME"
+  exit 0
+fi
+
+if valid_pki_entry; then
+  echo "Valid PKI index entry exists but certificate/key is missing for $NAME" >&2
+  exit 12
+fi
+
+rm -f "$CERT" "$KEY" "$REQ"
+cd "$EASY"
+export EASYRSA_CERT_EXPIRE=3650
+./easyrsa --batch build-client-full "$NAME" nopass
+build_profile
+echo "Profile created: $NAME"

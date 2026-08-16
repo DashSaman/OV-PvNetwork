@@ -1,0 +1,54 @@
+# Secrets / runtime
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.ovpn
+*.secret
+*.token
+
+# Databases / state
+*.db
+*.sqlite
+*.sqlite3
+data/
+state/
+backups/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/
+dist/
+
+# Logs / temp
+*.log
+*.pid
+*.sock
+*.tmp
+*.swp
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Downloaded client installers
+*.msi
+*.apk
+*.dmg

@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax
+        run: |
+          set -e
+          for f in install.sh scripts/*.sh scripts/ov-build-client-profile; do
+            [ -f "$f" ] && bash -n "$f"
+          done
+      - name: Python syntax
+        run: |
+          python3 -m py_compile scripts/*.py
+      - name: JSON syntax
+        run: |
+          python3 -m json.tool manifest.json >/dev/null
+      - name: Basic secret guard
+        run: |
+          set -e
+          ! grep -RInE --exclude-dir=.git --exclude='ci.yml' \
+            '(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD=[^$<]|JWT_SECRET_KEY=[^$<])' .
+      - name: Installer references manager
+        run: |
+          grep -q 'scripts/manage.sh' install.sh
+          test -x install.sh || true
