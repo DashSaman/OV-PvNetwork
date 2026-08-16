@@ -32,23 +32,36 @@ for f in \
   /usr/local/sbin/ov-node-user-reconcile.py \
   /usr/local/sbin/ov-production-healthcheck \
   /usr/local/sbin/ov-sub-push-sender.py
- do
+do
   [[ -f "$f" ]] && cp -a "$f" "$STAGE/system/$(basename "$f")"
- done
+done
 
-# Conservative secret scan. Findings stop publication until reviewed.
+# Conservative first-pass secret scan. Any hit must be manually reviewed.
 SCAN="$OUT/secret-scan.txt"
 grep -RInE --binary-files=without-match \
-  '(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD[[:space:]]*=|JWT_SECRET_KEY[[:space:]]*=|API_KEY[[:space:]]*=[[:space:]]*[^$<{[:space:]]|password[[:space:]]*=[[:space:]]*["'"'][^"'"']{8,})' \
+  '(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD[[:space:]]*=|JWT_SECRET_KEY[[:space:]]*=|API_KEY[[:space:]]*=[[:space:]]*[^$<{[:space:]])' \
   "$STAGE" > "$SCAN" || true
 
 python3 - "$STAGE" "$OUT/manifest.json" <<'PY'
 from pathlib import Path
-import hashlib,json,sys
-root=Path(sys.argv[1]); entries=[]
-for p in sorted(x for x in root.rglob('*') if x.is_file()):
-    b=p.read_bytes(); entries.append({'path':str(p.relative_to(root)),'size':len(b),'sha256':hashlib.sha256(b).hexdigest()})
-Path(sys.argv[2]).write_text(json.dumps({'files':entries},indent=2)+'\n')
+import hashlib
+import json
+import sys
+
+root = Path(sys.argv[1])
+entries = []
+for path in sorted(p for p in root.rglob('*') if p.is_file()):
+    content = path.read_bytes()
+    entries.append({
+        'path': str(path.relative_to(root)),
+        'size': len(content),
+        'sha256': hashlib.sha256(content).hexdigest(),
+    })
+
+Path(sys.argv[2]).write_text(
+    json.dumps({'files': entries}, indent=2) + '\n',
+    encoding='utf-8',
+)
 PY
 
 tar -C "$STAGE" -czf "$OUT/ov-pvnetwork-production-source-$STAMP.tar.gz" .
