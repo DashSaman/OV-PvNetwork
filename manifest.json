@@ -1,0 +1,33 @@
+{
+  "project": "OV-PvNetwork",
+  "version": "1.0.0",
+  "channel": "stable",
+  "project_repo": "DashSaman/OV-PvNetwork",
+  "base_panel": {
+    "repo": "primeZdev/ov-panel",
+    "tag": "v1.7.10"
+  },
+  "base_node": {
+    "repo": "primeZdev/ov-node",
+    "tag": "v1.3.6"
+  },
+  "openvpn_installer": {
+    "repo": "angristan/openvpn-install",
+    "commit": "ad22fd9eb0c8569a885f836ef6e37576d8702e9f"
+  },
+  "defaults": {
+    "panel_port": 9000,
+    "panel_path": "dashboard",
+    "subscription_path": "sub",
+    "node_api_port": 9090,
+    "openvpn_port": 1197,
+    "openvpn_protocol": "udp",
+    "admin_live_interval_ms": 1000,
+    "reconcile_interval_minutes": 30
+  },
+  "supported_os": [
+    "Ubuntu 22.04 LTS",
+    "Ubuntu 24.04 LTS",
+    "Debian 12"
+  ]
+}
