@@ -2,7 +2,13 @@ from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-CSS = (ROOT / "frontend/src/index.css").read_text(encoding="utf-8")
+CSS = "\n".join(
+    (ROOT / path).read_text(encoding="utf-8")
+    for path in (
+        "frontend/src/index.css",
+        "frontend/src/ux-hardening.css",
+    )
+)
 DROPDOWN = (ROOT / "frontend/src/components/ActionsDropdown.jsx").read_text(encoding="utf-8")
 AGENTS = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
