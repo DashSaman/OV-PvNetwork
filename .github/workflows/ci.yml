@@ -69,8 +69,8 @@ jobs:
           test -s docs/UX-AUDIT.md
           test -s design-system/pvnetwork/MASTER.md
 
-      - name: Installer references manager
+      - name: Installer bootstrap and lifecycle references
         run: |
-          grep -q 'scripts/manage.sh' install.sh
+          grep -q 'install-local.sh' install.sh
           grep -q 'ovpv update' README.md
           grep -q 'ovpv update' README.fa.md
