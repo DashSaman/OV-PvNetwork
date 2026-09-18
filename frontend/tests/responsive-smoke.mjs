@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 
-const baseUrl = process.env.PV_UI_BASE_URL || 'http://127.0.0.1:4173';
+const baseUrl = (process.env.PV_UI_BASE_URL || 'http://127.0.0.1:4173/panel').replace(/\/$/, '');
 const widths = [360, 375, 390, 430, 768, 1024, 1366, 1440, 1920];
 const routes = ['/', '/users', '/nodes', '/admins', '/operations', '/security', '/fleet', '/monitoring', '/bandwidth'];
 const languages = ['en', 'fa'];
@@ -68,6 +68,10 @@ function demoToken() {
   return `demo.${payload}.signature`;
 }
 
+function routeUrl(route) {
+  return route === '/' ? `${baseUrl}/` : `${baseUrl}${route}`;
+}
+
 const browser = await chromium.launch({ headless: true });
 const failures = [];
 
@@ -96,13 +100,15 @@ for (const language of languages) {
       };
       page.on('console', onConsole);
       try {
-        await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle', timeout: 15000 });
+        await page.goto(routeUrl(route), { waitUntil: 'networkidle', timeout: 15000 });
         await page.waitForTimeout(120);
         const metrics = await page.evaluate(() => ({
           scrollWidth: document.documentElement.scrollWidth,
           innerWidth: window.innerWidth,
           bodyText: document.body.innerText.slice(0, 500),
+          hasRootContent: Boolean(document.querySelector('#root')?.children.length),
         }));
+        if (!metrics.hasRootContent) failures.push(`${language} ${width}px ${route}: React root not rendered`);
         if (metrics.scrollWidth > metrics.innerWidth + 1) {
           failures.push(`${language} ${width}px ${route}: horizontal overflow ${metrics.scrollWidth}>${metrics.innerWidth}`);
         }
@@ -118,19 +124,19 @@ for (const language of languages) {
     }
 
     if (width <= 430) {
-      await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+      await page.goto(routeUrl('/'), { waitUntil: 'networkidle' });
       const more = page.locator('.mobile-more-trigger');
       await more.click();
       for (const destination of ['/admins', '/operations', '/security', '/fleet', '/monitoring', '/bandwidth']) {
-        const count = await page.locator(`#mobile-more-menu a[href="${destination}"]`).count();
+        const count = await page.locator(`#mobile-more-menu a[href$="${destination}"]`).count();
         if (!count) failures.push(`${language} ${width}px mobile menu missing route ${destination}`);
       }
       await page.keyboard.press('Escape');
       if (await page.locator('#mobile-more-menu').count()) failures.push(`${language} ${width}px mobile More menu did not close with Escape`);
 
-      await page.goto(`${baseUrl}/users`, { waitUntil: 'networkidle' });
+      await page.goto(routeUrl('/users'), { waitUntil: 'networkidle' });
       const trigger = page.locator('.actions-dropdown-trigger').first();
-      await trigger.click();
+      await trigger.click({ timeout: 5000 });
       const menu = page.locator('.actions-dropdown-menu');
       const box = await menu.boundingBox();
       if (!box || box.x < 0 || box.y < 0 || box.x + box.width > width + 1) {
@@ -139,7 +145,7 @@ for (const language of languages) {
       await page.keyboard.press('Escape');
       if (await menu.count()) failures.push(`${language} ${width}px user action menu did not close with Escape`);
 
-      await trigger.click();
+      await trigger.click({ timeout: 5000 });
       await page.locator('.actions-dropdown-item').nth(1).click();
       const modal = page.locator('.modal').last();
       const modalBox = await modal.boundingBox();
