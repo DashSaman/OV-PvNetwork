@@ -63,7 +63,7 @@ class UiGovernanceSmokeTests(unittest.TestCase):
             '.bandwidth-actions',
             '.bandwidth-status-grid',
             '.bandwidth-groups-grid',
-            '.fleet-',
+            '.ov-table-actions',
             '.user-stat-card',
         ):
             self.assertIn(selector, PAGE_CSS)
