@@ -1,15 +1,19 @@
 # Updates and rollback
 
-## Before updating
+## Production safety first
 
-Run diagnostics and create an explicit backup when making production changes:
+PVNetwork Production is assumed live and under load. Do not update by replacing the live tree blindly.
+
+Before changing Production:
 
 ```bash
 ovpv doctor
 ovpv backup
 ```
 
-If you use an external PostgreSQL database, keep a database-native backup as well; the application backup does not replace your PostgreSQL backup policy.
+If you use PostgreSQL, keep a database-native backup as well; an application backup does not replace the database backup policy.
+
+Record the current version/service health and have a rollback target before restarting anything.
 
 ## Update to latest stable release
 
@@ -17,15 +21,30 @@ If you use an external PostgreSQL database, keep a database-native backup as wel
 ovpv update
 ```
 
-The manager resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env` and data, applies migrations/builds, restarts only `ov-panel.service`, then verifies the local API. Failed verification triggers source/data restoration from the pre-update application backup.
+Where the lifecycle manager is installed, it resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env`/state, applies required migrations/builds, restarts only `ov-panel.service`, then verifies the local API. Failed health verification must trigger rollback rather than repeated blind mutation.
 
-## Target a specific release
+## Target v1.1.0 explicitly
 
 ```bash
-OVPV_REF=v1.0.1 ovpv update
+OVPV_REF=v1.1.0 ovpv update
 ```
 
-A branch name can also be supplied for testing, but production should normally use signed-off tagged releases.
+A branch name can be used in a disposable/staging environment, but Production should normally consume a reviewed tagged release.
+
+## v1.0.0 → v1.1.0 notes
+
+v1.1.0 is primarily UI/UX, responsive and governance hardening. It does not intentionally change the user identity model or Production routing/firewall behavior and does not require a new database migration for those UI changes.
+
+After upgrading, verify:
+
+- login and Dashboard;
+- Users, Renew and Reset Usage;
+- Nodes and node-health view;
+- Main Admin mobile **More** navigation;
+- Operations, Security, Fleet, Monitoring and Bandwidth pages;
+- Persian RTL and/or English LTR as used by your deployment;
+- local and public panel health.
+
 ## Rollback
 
 Rollback to the most recent application backup:
@@ -34,13 +53,21 @@ Rollback to the most recent application backup:
 ovpv rollback
 ```
 
-Or select a backup directory explicitly:
+Or choose a backup directory:
 
 ```bash
 ovpv rollback /var/backups/ov-pvnetwork/YYYYMMDD-HHMMSS
 ```
 
-Rollback restores the captured application tree/runtime data, rebuilds dependencies/assets, restarts the panel and verifies health.
+Rollback must restore the captured application/runtime state, rebuild required assets/dependencies, restart only the panel service and verify health.
+
+## Never do this as a normal update shortcut
+
+- Do not flush iptables/nftables wholesale.
+- Do not replace the host default route.
+- Do not remove unrelated tunnels, x-ui/Xray, databases or other host services.
+- Do not delete/recreate working nodes merely to make an update easier.
+- Do not rotate healthy user/node certificates or credentials without a task-specific reason.
 
 ## Status and version
 
@@ -52,4 +79,4 @@ ovpv doctor
 
 ## Release rule
 
-Every production-visible change should update `CHANGELOG.md` and ship through a new tagged GitHub Release. Do not point production installations at an arbitrary development branch unless you are deliberately testing it.
+Every Production-visible change updates `VERSION`, `CHANGELOG.md`, release notes and a new tagged GitHub Release. Released tags/assets remain immutable. See [QA-RELEASE-GATE.md](./QA-RELEASE-GATE.md) for blocking release checks.
