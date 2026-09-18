@@ -9,6 +9,8 @@ CSS = "\n".join(
         "frontend/src/ux-hardening.css",
     )
 )
+PAGE_CSS_PATH = ROOT / "frontend/src/page-hardening.css"
+PAGE_CSS = PAGE_CSS_PATH.read_text(encoding="utf-8") if PAGE_CSS_PATH.exists() else ""
 DROPDOWN = (ROOT / "frontend/src/components/ActionsDropdown.jsx").read_text(encoding="utf-8")
 MOBILE_NAV = (ROOT / "frontend/src/components/MobileNav.jsx").read_text(encoding="utf-8")
 AGENTS = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
@@ -48,16 +50,25 @@ class UiGovernanceSmokeTests(unittest.TestCase):
         self.assertIn('aria-label="Open actions menu"', DROPDOWN)
 
     def test_mobile_navigation_exposes_all_main_admin_sections(self):
-        for route in (
-            '/operations',
-            '/security',
-            '/fleet',
-            '/monitoring',
-            '/bandwidth',
-        ):
+        for route in ('/operations', '/security', '/fleet', '/monitoring', '/bandwidth'):
             self.assertIn(route, MOBILE_NAV)
         self.assertIn('mobile-more-menu', MOBILE_NAV)
         self.assertIn('aria-expanded={moreOpen}', MOBILE_NAV)
+
+    def test_major_page_families_have_responsive_contracts(self):
+        for selector in (
+            '.monitor-form',
+            '.monitor-grid',
+            '.bandwidth-form-grid',
+            '.bandwidth-actions',
+            '.bandwidth-status-grid',
+            '.bandwidth-groups-grid',
+            '.fleet-',
+            '.user-stat-card',
+        ):
+            self.assertIn(selector, PAGE_CSS)
+        self.assertIn('@media (max-width: 768px)', PAGE_CSS)
+        self.assertIn('overflow-wrap: anywhere', PAGE_CSS)
 
 
 if __name__ == "__main__":
