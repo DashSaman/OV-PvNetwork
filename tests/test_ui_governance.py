@@ -10,6 +10,7 @@ CSS = "\n".join(
     )
 )
 DROPDOWN = (ROOT / "frontend/src/components/ActionsDropdown.jsx").read_text(encoding="utf-8")
+MOBILE_NAV = (ROOT / "frontend/src/components/MobileNav.jsx").read_text(encoding="utf-8")
 AGENTS = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
 
@@ -45,6 +46,18 @@ class UiGovernanceSmokeTests(unittest.TestCase):
 
     def test_dropdown_trigger_has_accessible_label(self):
         self.assertIn('aria-label="Open actions menu"', DROPDOWN)
+
+    def test_mobile_navigation_exposes_all_main_admin_sections(self):
+        for route in (
+            '/operations',
+            '/security',
+            '/fleet',
+            '/monitoring',
+            '/bandwidth',
+        ):
+            self.assertIn(route, MOBILE_NAV)
+        self.assertIn('mobile-more-menu', MOBILE_NAV)
+        self.assertIn('aria-expanded={moreOpen}', MOBILE_NAV)
 
 
 if __name__ == "__main__":
