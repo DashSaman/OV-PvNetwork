@@ -1,0 +1,198 @@
+/* PVNetwork v1.1 page-family responsive hardening. */
+
+.view,
+.bandwidth-page,
+.monitor-form,
+.bandwidth-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.monitor-form,
+.bandwidth-card {
+  overflow-wrap: anywhere;
+}
+
+.monitor-form input,
+.monitor-form select,
+.monitor-form textarea,
+.bandwidth-page input,
+.bandwidth-page select,
+.bandwidth-page textarea {
+  max-width: 100%;
+}
+
+.monitor-form textarea,
+.bandwidth-page textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.monitor-grid,
+.bandwidth-form-grid,
+.bandwidth-safety-grid,
+.bandwidth-node-grid,
+.bandwidth-status-grid,
+.bandwidth-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.monitor-grid > *,
+.bandwidth-form-grid > *,
+.bandwidth-node-grid > *,
+.bandwidth-status-grid > *,
+.bandwidth-groups-grid > * {
+  min-width: 0;
+}
+
+.bandwidth-state,
+.bandwidth-group-head,
+.bandwidth-picker-title,
+.bandwidth-create-group,
+.bandwidth-actions,
+.ov-action-row,
+.ov-table-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.bandwidth-state > div:nth-child(2) {
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.bandwidth-state span,
+.bandwidth-node-status span,
+.bandwidth-group-card,
+.bandwidth-result,
+.ov-status-box,
+.ov-error-panel,
+.user-stat-card {
+  overflow-wrap: anywhere;
+}
+
+.bandwidth-actions .btn,
+.ov-action-row .btn,
+.ov-table-actions .btn {
+  min-height: 44px;
+}
+
+.bandwidth-create-group input {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.bandwidth-user-picker,
+.bandwidth-node-picker,
+.bandwidth-check-list,
+.bandwidth-result,
+.ov-status-box,
+.ov-error-panel {
+  max-width: 100%;
+}
+
+.bandwidth-check-list {
+  max-height: min(44dvh, 420px);
+  overflow: auto;
+}
+
+.bandwidth-result,
+.monitor-form pre {
+  max-width: 100%;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.user-stat-card {
+  min-width: 0;
+}
+
+.table-container table {
+  min-width: max-content;
+}
+
+.table-container td,
+.table-container th {
+  max-width: min(42vw, 360px);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  .monitor-form,
+  .bandwidth-card {
+    padding-inline: clamp(12px, 4vw, 18px);
+  }
+
+  .monitor-grid,
+  .bandwidth-form-grid,
+  .bandwidth-safety-grid,
+  .bandwidth-node-grid,
+  .bandwidth-status-grid,
+  .bandwidth-groups-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bandwidth-state {
+    align-items: flex-start;
+  }
+
+  .bandwidth-state .btn,
+  .bandwidth-actions .btn,
+  .bandwidth-create-group .btn,
+  .ov-action-row .btn {
+    width: 100%;
+  }
+
+  .bandwidth-actions,
+  .ov-action-row {
+    align-items: stretch;
+  }
+
+  .ov-table-actions {
+    min-width: 180px;
+  }
+
+  .ov-table-actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .user-stat-card {
+    padding: 14px;
+  }
+
+  .table-container {
+    scroll-snap-type: x proximity;
+  }
+}
+
+@media (max-width: 430px) {
+  .bandwidth-card h3,
+  .monitor-form h3 {
+    font-size: clamp(16px, 5vw, 19px);
+  }
+
+  .bandwidth-rate-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .bandwidth-rate-input input {
+    flex: 1 1 150px;
+    min-width: 0;
+  }
+
+  .table-container td,
+  .table-container th {
+    padding-inline: 12px;
+  }
+}
