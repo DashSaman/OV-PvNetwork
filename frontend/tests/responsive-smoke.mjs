@@ -29,6 +29,7 @@ function responseFor(url) {
   if (path.includes('/users/online')) return ok({ total: 0, per_node: {} });
   if (path === '/users/' || path === '/users') return ok([demoUser]);
   if (path.startsWith('/users')) return ok({});
+  if (path === '/admin/' || path === '/admin') return ok([]);
   if (path.startsWith('/admins')) return ok([]);
   if (path.startsWith('/backups')) return ok({ backups: [] });
   if (path === '/fleet/' || path === '/fleet') return ok([]);
@@ -51,11 +52,17 @@ function responseFor(url) {
     memory_threshold: 90,
     disk_threshold: 90,
   });
-  if (path.startsWith('/bandwidth')) return ok({
-    settings: { enabled: false, target_type: 'all', download_mbps: 0 },
+  if (path === '/bandwidth/status') return ok([]);
+  if (path === '/bandwidth/' || path === '/bandwidth') return ok({
+    settings: { enabled: false, target_type: 'all', download_mbps: 1, node_ids: [] },
     nodes: [], users: [demoUser], owners: [], groups: [],
   });
+  if (path.startsWith('/bandwidth')) return ok({});
   if (path === '/anyconnect/settings') return ok({ default_enabled: false });
+  if (path === '/server/settings/' || path === '/server/settings') return ok({
+    subscription_url_prefix: 'https://example.invalid/',
+    subscription_path: 'sub',
+  });
   if (path.includes('/settings') || path.includes('/setting')) return ok({});
   return ok({});
 }
