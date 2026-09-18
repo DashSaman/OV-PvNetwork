@@ -5,6 +5,13 @@ from typing import Literal
 TrafficAction = Literal["preserve", "reset", "add"]
 
 
+def unlimited_reset_expiry(*, total: int, today: date) -> date | None:
+    """Resetting an unlimited account starts a fresh 30-day cycle today."""
+    if int(total or 0) > 0:
+        return None
+    return today + timedelta(days=30)
+
+
 @dataclass(frozen=True)
 class RenewalPlan:
     expiry_date: date
