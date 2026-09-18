@@ -41,6 +41,21 @@ jobs:
           npm ci
           npm run build
 
+      - name: Browser responsive smoke matrix
+        working-directory: frontend
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/pvnetwork-vite.log 2>&1 &
+          VITE_PID=$!
+          trap 'kill "$VITE_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node tests/responsive-smoke.mjs
+
       - name: JSON syntax
         run: |
           python3 -m json.tool manifest.json >/dev/null
