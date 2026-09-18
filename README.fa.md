@@ -104,6 +104,12 @@ ovpv rollback
 
 راهنما: [docs/PRODUCTION-SNAPSHOT.md](./docs/PRODUCTION-SNAPSHOT.md)
 
+## یادداشت عملیاتی و Handoff
+
+ریزکاری‌های Production، باگ‌های حل‌شده‌ی OV-Node، Auto Deploy، ساخت Profile، Sync کاربران، Metrics، Firewall و Checklist نود جدید در این سند نگهداری می‌شود:
+
+[docs/PRODUCTION-HANDOFF.md](./docs/PRODUCTION-HANDOFF.md)
+
 ## امنیت
 
 فایل‌های Secret، دیتابیس، کلیدها، `.ovpn` کاربران، SSH Password و TLS Private Key نباید وارد Git شوند. برای جزئیات [SECURITY.md](./SECURITY.md) را بخوانید.
