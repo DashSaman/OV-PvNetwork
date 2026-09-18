@@ -13,26 +13,53 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Bash syntax
         run: |
           set -e
-          for f in install.sh scripts/*.sh scripts/ov-build-client-profile; do
+          for f in install.sh install-local.sh scripts/*.sh scripts/ov-build-client-profile; do
             [ -f "$f" ] && bash -n "$f"
           done
 
       - name: Python syntax
         run: |
+          python3 -m compileall -q backend tests
           python3 -m py_compile scripts/*.py
+
+      - name: Unit and governance tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Frontend production build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
 
       - name: JSON syntax
         run: |
           python3 -m json.tool manifest.json >/dev/null
+          for f in frontend/src/lang/*.json; do python3 -m json.tool "$f" >/dev/null; done
 
-      - name: Basic secret guard
+      - name: Basic secret and private-material guard
         run: |
           set -e
+          ! find . -type f \( -name '*.ovpn' -o -name '*.p12' -o -name '*.pfx' -o -name '*.key' -o -name '*.pem' -o -name '*.db' -o -name '*.sqlite*' \) -not -path './.git/*' -print -quit | grep -q .
           ! grep -RInE --exclude-dir=.git --exclude='ci.yml' \
             '(^|[^A-Z_])(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD=[^$<]|JWT_SECRET_KEY=[^$<])' .
+
+      - name: Governance files present
+        run: |
+          test -s AGENTS.md
+          test -s docs/QA-RELEASE-GATE.md
+          test -s docs/COMPETITOR-GAP-MATRIX.md
+          test -s docs/UX-AUDIT.md
+          test -s design-system/pvnetwork/MASTER.md
 
       - name: Installer references manager
         run: |
