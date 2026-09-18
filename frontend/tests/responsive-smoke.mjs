@@ -51,7 +51,7 @@ function demoToken() {
 }
 
 const browser = await chromium.launch({ headless: true });
-let failures = [];
+const failures = [];
 
 for (const width of widths) {
   const context = await browser.newContext({ viewport: { width, height: width <= 430 ? 820 : 900 } });
@@ -102,9 +102,9 @@ for (const width of widths) {
     await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
     const more = page.getByRole('button', { name: /more/i });
     await more.click();
-    for (const label of ['Operations', 'Security', 'Fleet', 'Monitoring', 'Bandwidth']) {
-      const count = await page.getByRole('menuitem', { name: new RegExp(label, 'i') }).count();
-      if (!count) failures.push(`${width}px mobile menu missing ${label}`);
+    for (const destination of ['/admins', '/operations', '/security', '/fleet', '/monitoring', '/bandwidth']) {
+      const count = await page.locator(`#mobile-more-menu a[href="${destination}"]`).count();
+      if (!count) failures.push(`${width}px mobile menu missing route ${destination}`);
     }
   }
 
