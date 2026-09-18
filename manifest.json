@@ -1,8 +1,9 @@
 {
-  "project": "OV-PvNetwork",
-  "version": "1.0.0-rc1",
-  "channel": "release-candidate",
+  "project": "PVNetwork Panel",
+  "version": "1.0.0",
+  "channel": "stable",
   "project_repo": "DashSaman/OV-PvNetwork",
+  "release_asset": "pvnetwork-panel-v1.0.0.tar.gz",
   "base_panel": {
     "repo": "primeZdev/ov-panel",
     "tag": "v1.7.10"
@@ -21,14 +22,16 @@
     "subscription_path": "sub",
     "node_api_port": 9090,
     "openvpn_port": 1197,
-    "openvpn_protocol": "udp",
-    "admin_live_interval_ms": 1000,
-    "admin_rate_window_seconds": 3,
-    "reconcile_interval_minutes": 60
+    "openvpn_protocol": "udp"
   },
   "supported_os": [
     "Ubuntu 22.04 LTS",
     "Ubuntu 24.04 LTS",
     "Debian 12"
-  ]
+  ],
+  "privacy": {
+    "production_identifiers_in_public_release": false,
+    "credentials_in_public_release": false,
+    "customer_data_in_public_release": false
+  }
 }
