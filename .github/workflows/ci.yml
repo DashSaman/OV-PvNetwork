@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+env:
+  URLPATH: panel
+  VITE_URLPATH: panel
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -52,6 +56,8 @@ jobs:
 
       - name: Browser responsive smoke matrix
         working-directory: frontend
+        env:
+          PV_UI_BASE_URL: http://127.0.0.1:4173/panel
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
@@ -59,10 +65,10 @@ jobs:
           VITE_PID=$!
           trap 'kill "$VITE_PID" 2>/dev/null || true' EXIT
           for i in $(seq 1 30); do
-            curl -fsS http://127.0.0.1:4173/ >/dev/null && break
+            curl -fsS http://127.0.0.1:4173/panel/ >/dev/null && break
             sleep 1
           done
-          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          curl -fsS http://127.0.0.1:4173/panel/ >/dev/null
           node tests/responsive-smoke.mjs
 
       - name: JSON syntax
