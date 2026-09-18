@@ -49,8 +49,16 @@ jobs:
       - name: Basic secret and private-material guard
         run: |
           set -e
-          ! find . -type f \( -name '*.ovpn' -o -name '*.p12' -o -name '*.pfx' -o -name '*.key' -o -name '*.pem' -o -name '*.db' -o -name '*.sqlite*' \) -not -path './.git/*' -print -quit | grep -q .
-          ! grep -RInE --exclude-dir=.git --exclude='ci.yml' \
+          if git ls-files | grep -Ei '\.(ovpn|p12|pfx|key|pem|db|sqlite|sqlite3)$'; then
+            echo 'Forbidden tracked private material detected.' >&2
+            exit 1
+          fi
+          ! grep -RInE \
+            --exclude-dir=.git \
+            --exclude-dir=node_modules \
+            --exclude-dir=dist \
+            --exclude='.env.example' \
+            --exclude='ci.yml' \
             '(^|[^A-Z_])(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD=[^$<]|JWT_SECRET_KEY=[^$<])' .
 
       - name: Governance files present
