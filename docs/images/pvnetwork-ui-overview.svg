@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#081321"/>
+  <rect x="930" y="24" width="246" height="672" rx="20" fill="#0d1b2d" stroke="#25415f"/>
+  <text x="1053" y="70" fill="#fff" text-anchor="middle" font-size="24" font-family="Arial">PVNETWORK PANEL</text>
+  <g font-family="Arial" font-size="18" fill="#c8d8ea">
+    <text x="980" y="135">1  Dashboard</text><text x="980" y="185">2  Users</text>
+    <text x="980" y="235">3  Nodes</text><text x="980" y="285">4  Resellers / Admins</text>
+    <text x="980" y="335">5  Operations</text><text x="980" y="385">6  Security</text>
+    <text x="980" y="435">7  Fleet</text><text x="980" y="485">8  Monitoring</text>
+    <text x="980" y="535">9  Bandwidth</text>
+  </g>
+  <rect x="28" y="24" width="880" height="110" rx="18" fill="#10213a" stroke="#264a73"/>
+  <text x="58" y="65" fill="#9ec7ff" font-size="18" font-family="Arial">Language · Theme · Refresh · Logout</text>
+  <text x="58" y="103" fill="#fff" font-size="30" font-family="Arial">Current workspace / page title</text>
+  <g font-family="Arial" text-anchor="middle">
+    <rect x="28" y="165" width="270" height="140" rx="18" fill="#123144" stroke="#1f708c"/><text x="163" y="220" fill="#fff" font-size="24">Live summary</text><text x="163" y="258" fill="#84dfff" font-size="18">users · nodes · traffic</text>
+    <rect x="320" y="165" width="270" height="140" rx="18" fill="#16284f" stroke="#5147a8"/><text x="455" y="220" fill="#fff" font-size="24">Health</text><text x="455" y="258" fill="#b7b0ff" font-size="18">CPU · RAM · uptime</text>
+    <rect x="612" y="165" width="296" height="140" rx="18" fill="#233040" stroke="#88512e"/><text x="760" y="220" fill="#fff" font-size="24">Actions</text><text x="760" y="258" fill="#ffb77d" font-size="18">page-specific controls</text>
+  </g>
+  <rect x="28" y="335" width="880" height="330" rx="18" fill="#0d1b2d" stroke="#25415f"/>
+  <text x="58" y="385" fill="#fff" font-size="24" font-family="Arial">Main table / forms / charts</text>
+  <text x="58" y="430" fill="#9fb7d0" font-size="18" font-family="Arial">Search · sort · filters · pagination · per-row actions</text>
+  <line x1="58" y1="465" x2="875" y2="465" stroke="#294564"/>
+  <text x="58" y="515" fill="#dce9f7" font-size="18" font-family="Arial">Every destructive operation requires confirmation and is audited when routed through the API.</text>
+  <text x="58" y="555" fill="#dce9f7" font-size="18" font-family="Arial">Use the numbered sidebar items with the UI Guide for screen-by-screen details.</text>
+</svg>
