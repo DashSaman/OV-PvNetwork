@@ -72,6 +72,12 @@ function routeUrl(route) {
   return route === '/' ? `${baseUrl}/` : `${baseUrl}${route}`;
 }
 
+async function openRoute(page, route, timeout = 10000) {
+  await page.goto(routeUrl(route), { waitUntil: 'domcontentloaded', timeout });
+  await page.locator('#root').waitFor({ state: 'attached', timeout });
+  await page.waitForTimeout(180);
+}
+
 const browser = await chromium.launch({ headless: true });
 const failures = [];
 
@@ -100,8 +106,7 @@ for (const language of languages) {
       };
       page.on('console', onConsole);
       try {
-        await page.goto(routeUrl(route), { waitUntil: 'networkidle', timeout: 15000 });
-        await page.waitForTimeout(120);
+        await openRoute(page, route);
         const metrics = await page.evaluate(() => ({
           scrollWidth: document.documentElement.scrollWidth,
           innerWidth: window.innerWidth,
@@ -124,35 +129,39 @@ for (const language of languages) {
     }
 
     if (width <= 430) {
-      await page.goto(routeUrl('/'), { waitUntil: 'networkidle' });
-      const more = page.locator('.mobile-more-trigger');
-      await more.click();
-      for (const destination of ['/admins', '/operations', '/security', '/fleet', '/monitoring', '/bandwidth']) {
-        const count = await page.locator(`#mobile-more-menu a[href$="${destination}"]`).count();
-        if (!count) failures.push(`${language} ${width}px mobile menu missing route ${destination}`);
-      }
-      await page.keyboard.press('Escape');
-      if (await page.locator('#mobile-more-menu').count()) failures.push(`${language} ${width}px mobile More menu did not close with Escape`);
+      try {
+        await openRoute(page, '/');
+        const more = page.locator('.mobile-more-trigger');
+        await more.click({ timeout: 5000 });
+        for (const destination of ['/admins', '/operations', '/security', '/fleet', '/monitoring', '/bandwidth']) {
+          const count = await page.locator(`#mobile-more-menu a[href$="${destination}"]`).count();
+          if (!count) failures.push(`${language} ${width}px mobile menu missing route ${destination}`);
+        }
+        await page.keyboard.press('Escape');
+        if (await page.locator('#mobile-more-menu').count()) failures.push(`${language} ${width}px mobile More menu did not close with Escape`);
 
-      await page.goto(routeUrl('/users'), { waitUntil: 'networkidle' });
-      const trigger = page.locator('.actions-dropdown-trigger').first();
-      await trigger.click({ timeout: 5000 });
-      const menu = page.locator('.actions-dropdown-menu');
-      const box = await menu.boundingBox();
-      if (!box || box.x < 0 || box.y < 0 || box.x + box.width > width + 1) {
-        failures.push(`${language} ${width}px user action menu escapes viewport`);
-      }
-      await page.keyboard.press('Escape');
-      if (await menu.count()) failures.push(`${language} ${width}px user action menu did not close with Escape`);
+        await openRoute(page, '/users');
+        const trigger = page.locator('.actions-dropdown-trigger').first();
+        await trigger.click({ timeout: 5000 });
+        const menu = page.locator('.actions-dropdown-menu');
+        const box = await menu.boundingBox();
+        if (!box || box.x < 0 || box.y < 0 || box.x + box.width > width + 1) {
+          failures.push(`${language} ${width}px user action menu escapes viewport`);
+        }
+        await page.keyboard.press('Escape');
+        if (await menu.count()) failures.push(`${language} ${width}px user action menu did not close with Escape`);
 
-      await trigger.click({ timeout: 5000 });
-      await page.locator('.actions-dropdown-item').nth(1).click();
-      const modal = page.locator('.modal').last();
-      const modalBox = await modal.boundingBox();
-      if (!modalBox || modalBox.y < 0 || modalBox.height > 820 + 1) {
-        failures.push(`${language} ${width}px Renew modal escapes viewport height`);
+        await trigger.click({ timeout: 5000 });
+        await page.locator('.actions-dropdown-item').nth(1).click();
+        const modal = page.locator('.modal').last();
+        const modalBox = await modal.boundingBox();
+        if (!modalBox || modalBox.y < 0 || modalBox.height > 820 + 1) {
+          failures.push(`${language} ${width}px Renew modal escapes viewport height`);
+        }
+        await page.locator('.close-modal-btn').last().click();
+      } catch (error) {
+        failures.push(`${language} ${width}px mobile interactions: ${error.message}`);
       }
-      await page.locator('.close-modal-btn').last().click();
     }
 
     await context.close();
