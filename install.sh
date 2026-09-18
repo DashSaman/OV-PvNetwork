@@ -1,33 +1,24 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+umask 077
 
-PROJECT="OV-PvNetwork"
 REPO="DashSaman/OV-PvNetwork"
-REF="${OVPV_REF:-main}"
-TMP="$(mktemp -d /tmp/ov-pvnetwork-install.XXXXXX)"
+TAG="${PVNETWORK_VERSION:-v1.0.0}"
+[[ "$TAG" == v* ]] || TAG="v$TAG"
+ASSET="pvnetwork-panel-${TAG}.tar.gz"
+TMP="$(mktemp -d /tmp/pvnetwork-install.XXXXXX)"
+trap 'rm -rf "$TMP"' EXIT
 
-cleanup(){ rm -rf "$TMP"; }
-trap cleanup EXIT
+[[ ${EUID:-$(id -u)} -eq 0 ]] || { echo '[PVNetwork] run as root' >&2; exit 1; }
 
-[[ "${EUID:-$(id -u)}" -eq 0 ]] || { echo "[ERROR] Run as root." >&2; exit 1; }
+curl -fL --retry 5 --connect-timeout 10 \
+  "https://github.com/${REPO}/releases/download/${TAG}/${ASSET}" \
+  -o "$TMP/$ASSET"
+curl -fL --retry 5 --connect-timeout 10 \
+  "https://github.com/${REPO}/releases/download/${TAG}/SHA256SUMS" \
+  -o "$TMP/SHA256SUMS"
 
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -y >/dev/null
-apt-get install -y ca-certificates curl tar gzip >/dev/null
-
-if [[ "$REF" == v* ]]; then
-  URL="https://github.com/${REPO}/archive/refs/tags/${REF}.tar.gz"
-else
-  URL="https://github.com/${REPO}/archive/refs/heads/${REF}.tar.gz"
-fi
-
-echo "============================================================"
-echo " ${PROJECT} Easy Installer"
-echo " Source: ${REPO}@${REF}"
-echo "============================================================"
-
-curl -fL --retry 5 --connect-timeout 10 "$URL" -o "$TMP/source.tar.gz"
-mkdir -p "$TMP/src"
-tar -xzf "$TMP/source.tar.gz" -C "$TMP/src" --strip-components=1
-chmod +x "$TMP/src/scripts/manage.sh"
-exec bash "$TMP/src/scripts/manage.sh" install --source "$TMP/src" "$@"
+(cd "$TMP" && grep " ${ASSET}$" SHA256SUMS | sha256sum -c -)
+mkdir -p "$TMP/source"
+tar -xzf "$TMP/$ASSET" -C "$TMP/source" --strip-components=1
+exec bash "$TMP/source/install-local.sh" "$@"
