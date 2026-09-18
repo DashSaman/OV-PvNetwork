@@ -1,89 +1,143 @@
 <div align="center">
 
-# PVNetwork Panel
+# OV-PvNetwork
 
-**Multi-node OpenVPN control plane with renewal, reseller, monitoring, automation and optional AnyConnect integration**
+**Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-green?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen?style=flat-square)](./VERSION)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
+[![Upstream](https://img.shields.io/badge/upstream-OV--Panel-blue?style=flat-square)](https://github.com/primeZdev/ov-panel)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
 
-## Stable release
+OV-PvNetwork is a production-derived distribution and operations layer built on the open-source OV-Panel / OV-Node ecosystem. It keeps the simple OpenVPN user workflow while adding multi-node operations, renewal, AnyConnect integration, monitoring, security controls, backup/restore, health scoring, traffic controls and safer deployment tooling.
 
-`v1.0.0` is the first frozen public stable baseline. The release source is generated from a sanitized production snapshot and intentionally contains no production credentials, IP addresses, hostnames, databases, customer data, VPN profiles, private keys or certificates.
+> Public screenshots and examples are sanitized. They intentionally hide user rows, credentials, addresses, API keys, traffic values and private production identifiers.
 
-## Quick install
+## Visual tour
 
-Run as `root` on a fresh Ubuntu 22.04/24.04 or Debian 12 server:
+### Dashboard, users and nodes
+
+![Dashboard, users and nodes](./docs/images/ui/01-control-plane.jpg)
+### Administration, operations and security
+
+![Administration, operations and security](./docs/images/ui/02-admin-security.jpg)
+
+### Advanced fleet, monitoring and bandwidth controls
+
+![Advanced fleet, monitoring and bandwidth controls](./docs/images/ui/03-operations.jpg)
+
+Every major page and the most important workflows are documented with individual screenshots in:
+
+- [Complete English UI guide](./docs/UI-GUIDE.md)
+- [راهنمای کامل فارسی رابط کاربری](./docs/UI-GUIDE.fa.md)
+
+## Core capabilities
+
+| Area | Included in v1.0.0 |
+|---|---|
+| Users | Create, edit, activate/deactivate, delete, renewal, usage reset, profile/subscription delivery |
+| Renewal | Expired-user renewal, unlimited renewal, finite preserve/reset/add-traffic modes |
+| AnyConnect | Per-user enable/disable, password generation/change, shared user identity |
+| Multi-node | Node CRUD, health view, user assignment, safe node lifecycle |
+| Fleet | Health score, maintenance, drain/resume, controlled upgrade/retry workflows |
+| Monitoring | Realtime traffic dashboard, node CPU/RAM/uptime, Telegram monitoring configuration |
+| Security | IP allowlist, rate limiting, TOTP 2FA, scoped/expiring API tokens |
+| Operations | Bulk user actions, transfer/rebalance tools, usage history, audit/operational views |
+| Bandwidth | Emergency off, policy preview/canary/activate, groups and per-node status |
+| Backup | Verified manual backup download and guarded restore workflow |
+| Integrations | Mirza integration API, OpenVPN node API, optional AnyConnect/ocserv hooks |
+## Quick installation
+
+Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.0/install.sh)
 ```
 
-The bootstrap downloads the `v1.0.0` release asset, verifies its SHA-256 checksum and runs the local installer. Existing `/opt/ov-panel` installations are not overwritten by the fresh installer.
+The installer uses the tagged `v1.0.0` source instead of following an unpinned development branch.
 
-## Main capabilities
+After installation, use the lifecycle manager:
 
-- Multi-node OpenVPN user and node management.
-- Automatic node deployment over SSH from Node Management.
-- Per-user node assignment and global concurrent-session limits.
-- Traffic quota, unlimited plans, expiry and first-class renewal.
-- Unlimited Reset Usage starts a new 30-day period while preserving the same account identity.
-- Self-healing OpenVPN profile validation/rebuild on download.
-- Optional AnyConnect per user.
-- Live node CPU, RAM, uptime, network traffic and health monitoring.
-- Node drain, maintenance, weight, fleet operations, canary and rollback foundations.
-- Reseller traffic/unlimited-account quotas and credit ledger.
-- Bulk user operations and automatic rebalance workflows.
-- Emergency bandwidth policies with fail-open/rollback behavior.
-- Audit log, API tokens, rate limiting, IP allow-list and TOTP/2FA support.
-- Backup/restore and operational health controls.
-- Usage history and domain-activity reporting.
-- Telegram monitoring hooks and Mirza integration APIs.
-- Branded multilingual subscription page, client downloads, smart node recommendation and Web Push reminders.
+```bash
+ovpv status
+ovpv doctor
+ovpv version
+ovpv backup
+ovpv update
+ovpv rollback
+```
 
-See [docs/FEATURES.md](./docs/FEATURES.md) and [docs/FEATURE-MATRIX.md](./docs/FEATURE-MATRIX.md).
+For a production server that already has OVPanel or other services, do **not** run the fresh installer blindly. Review the update/migration path first.
 
-## Adding VPN nodes
+Documentation:
 
-After the panel is installed:
+- [Installation](./docs/INSTALLATION.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Updates and rollback](./docs/UPDATES.md)
+- [Renewal behavior](./docs/RENEWAL.md)
+- [Feature matrix](./docs/FEATURE-MATRIX.md)
+- [Roadmap](./ROADMAP.md)
+## Architecture
 
-1. Open **Node Management**.
-2. Choose **Add Node**.
-3. Select automatic SSH deployment.
-4. Enter the target server connection details in the panel.
-5. The panel installs and validates the node, OpenVPN integration and management API without requiring a separate public credential file.
+```text
+                         ┌──────────────────────────────┐
+                         │        OV-PvNetwork         │
+                         │       Panel / API / UI      │
+                         └──────────────┬───────────────┘
+                                        │
+                    assignment / health / metrics / profile API
+                                        │
+             ┌──────────────────────────┼──────────────────────────┐
+             │                          │                          │
+      ┌──────▼──────┐            ┌──────▼──────┐            ┌──────▼──────┐
+      │  OV-Node A  │            │  OV-Node B  │     ...    │  OV-Node N  │
+      │  OpenVPN    │            │  OpenVPN    │            │  OpenVPN    │
+      └─────────────┘            └─────────────┘            └─────────────┘
 
-See [docs/NODE-INSTALLATION.md](./docs/NODE-INSTALLATION.md).
+ Optional integrations:
+ AnyConnect / ocserv · Mirza · Telegram · monitoring · bandwidth policies
+```
 
-## Public repository privacy rule
+## Requirements
 
-Never commit real deployment values. Keep these only on the live server or in a private operations store:
+| Component | Minimum | Recommended |
+|---|---:|---:|
+| Panel | 1 vCPU / 1 GB RAM / 10 GB | 2 vCPU / 2 GB RAM / 20 GB SSD |
+| VPN node | 1 vCPU / 512 MB RAM / 5 GB | 1–2 vCPU / 1 GB+ RAM / 10 GB |
 
-- `.env` and generated credentials
-- admin/Mirza/API/JWT secrets
-- SSH credentials and node API keys
-- real infrastructure IP addresses, domains and private routes
-- databases, logs and customer identifiers
-- `.ovpn`, private keys, TLS/VAPID keys and certificates
+Supported installer targets: Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and Debian 12 (best-effort where upstream package differences apply).
+## Production-safe lifecycle
 
-The stable release is scanned before publication. See `SECRET-SCAN-REPORT.md` in the release source archive.
+OV-PvNetwork treats changes as controlled operations rather than blind overwrites:
+
+1. Run preflight checks.
+2. Create a backup before an update.
+3. Apply the target release and migrations.
+4. Build and syntax-check the application.
+5. Restart only the required control-plane service.
+6. Verify local health.
+7. Roll back when verification fails.
+
+Node-side automation is designed to avoid flushing firewall rules or replacing unrelated routes/services. Always review a shared production node before deployment.
 
 ## Release policy
 
-The `v1.0.0` baseline is frozen. New work is released separately:
+- `v1.0.0` is the stable baseline.
+- Patch releases (`1.0.x`) are backwards-compatible fixes.
+- Minor releases (`1.x.0`) add backwards-compatible capabilities.
+- Major releases may contain breaking architecture/protocol changes.
+- Production-visible changes must be documented in `CHANGELOG.md` and shipped through a tagged GitHub Release.
 
-- `1.0.x` — compatible bug/security fixes
-- `1.x.0` — backward-compatible features
-- `2.0.0` — breaking architecture/protocol changes
+## Security
 
-Production services are never used as a development workspace for a future release. Changes are prepared/tested separately, then deployed with backup and health verification.
+Never commit `.env`, databases, API/JWT secrets, SSH credentials, private keys, TLS material, client `.ovpn` profiles or real production screenshots. The public documentation uses sanitized demo values only.
 
-See [docs/RELEASE-POLICY.md](./docs/RELEASE-POLICY.md).
+See [SECURITY.md](./SECURITY.md) for reporting and deployment guidance.
 
 ## Credits
 
-PVNetwork Panel is derived from and interoperates with the MIT-licensed OV-Panel and OV-Node projects by PrimeZ. Upstream attribution remains in [NOTICE.md](./NOTICE.md) and [LICENSE](./LICENSE).
+OV-PvNetwork is derived from and interoperates with the MIT-licensed OV-Panel / OV-Node projects by PrimeZ. Upstream attribution is preserved in [NOTICE.md](./NOTICE.md) and [LICENSE](./LICENSE).

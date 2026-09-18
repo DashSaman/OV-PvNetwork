@@ -1,65 +1,199 @@
 <div dir="rtl" align="right">
 
-# راهنمای مصور رابط کاربری
+# راهنمای تصویری کامل OV-PvNetwork v1.0.0
 
-تمام تصاویر این راهنمای عمومی با اطلاعات ساختگی ساخته شده‌اند و هیچ User، IP، Domain یا Credential واقعی Production داخل آن‌ها نیست.
+این سند صفحات اصلی پنل، دکمه‌های مهم و Workflowهای مدیریتی را توضیح می‌دهد.
 
-![نمای کلی پنل](./images/pvnetwork-ui-overview.svg)
+> تصاویر برای انتشار عمومی Sanitized شده‌اند و داده‌های واقعی کاربران و زیرساخت در آن‌ها نمایش داده نمی‌شود.
 
-## ۱. داشبورد
+## 1) داشبورد
 
-داشبورد خلاصه وضعیت Userها، Nodeها و سلامت سرویس را نمایش می‌دهد. کنترل Language/Theme برای ظاهر، Refresh برای بارگذاری فوری داده و Logout برای خروج است. Cardهای Node در صورت موجود بودن CPU، RAM، Uptime، Network Rate/Traffic و Online Session را نشان می‌دهند.
+![Dashboard](./images/ui/dashboard.jpg)
 
-## ۲. مدیریت کاربران
+داشبورد برای دید سریع از وضعیت کل Fleet است.
 
-![مدیریت کاربران](./images/pvnetwork-users.svg)
+| قسمت | کاربرد |
+|---|---|
+| Total Live Traffic | نرخ لحظه‌ای مجموع Download/Upload |
+| نمودار ۵ دقیقه | روند کوتاه‌مدت ترافیک زنده |
+| Online Users | Sessionهای OpenVPN آنلاین |
+| Active Nodes | تعداد نودهای سالم و در دسترس |
+| Traffic Since Boot | RX+TX تجمعی از زمان Boot نودها |
+| Node Traffic & Health | وضعیت، Interface، Uptime، CPU/RAM و ترافیک هر نود |
+| Theme | تغییر Light/Dark |
+| Language | انتخاب زبان UI |
+| Refresh | Refresh دستی داده‌ها |
 
-این صفحه Search، Sort، Pagination و Cardهای خلاصه کاربران را دارد. منوی عملیات هر User شامل **ویرایش، تمدید، دانلود، AnyConnect، Domain History** برای Role مجاز، **بازنشانی مصرف، فعال/غیرفعال و حذف** در صورت مجاز بودن Policy است. آیکن Copy لینک ثابت Subscription همان User را کپی می‌کند.
+Rate از اختلاف Sampleها محاسبه می‌شود؛ Counter تجمعی مستقیماً به Mbps تبدیل نمی‌شود.
+## 2) مدیریت کاربران
 
-**تمدید** همان User را نگه می‌دارد و UUID، Username، Node Assignment، لینک Subscription و هویت AnyConnect را عوض نمی‌کند. در پلن حجمی می‌توان مصرف را حفظ کرد، Reset کرد یا حجم اضافه کرد. در نامحدود فقط دوره زمانی تمدید می‌شود.
+![Users](./images/ui/users.jpg)
 
-**بازنشانی مصرف** برای پلن حجمی فقط مصرف Shared را صفر می‌کند و تاریخ را تغییر نمی‌دهد. برای پلن نامحدود مصرف صفر می‌شود، از تاریخ Reset یک دوره جدید ۳۰ روزه شروع می‌شود و همان User روی Nodeهای اختصاص‌یافته دوباره فعال می‌شود.
+صفحه Users چرخه کامل اکانت را مدیریت می‌کند.
 
-## ۳. مدیریت نودها و Fleet
+| کنترل | کاربرد |
+|---|---|
+| افزودن کاربر جدید | ساخت کاربر OpenVPN و انتخاب حجم/مدت/نود |
+| AnyConnect پیش‌فرض | تعیین فعال بودن AnyConnect برای کاربران جدید |
+| Search | جست‌وجوی کاربر |
+| Sort | مرتب‌سازی بر اساس زمان، نام، مصرف، انقضا و وضعیت آنلاین |
+| Edit | ویرایش مشخصات کاربر |
+| Renew | تمدید بدون حذف و ساخت دوباره کاربر |
+| Download | دریافت خروجی اتصال از نودهای مجاز |
+| AnyConnect | مدیریت وضعیت و اعتبار AnyConnect همان کاربر |
+| Domain History | مشاهده Domain activity برای Main Admin |
+| Reset Usage | صفر کردن مصرف؛ برای Unlimited دوره ۳۰روزه جدید نیز آغاز می‌شود |
+| Activate / Deactivate | فعال یا غیرفعال کردن همان هویت |
+| Delete | حذف کنترل‌شده کاربر |
+| Copy Link | کپی لینک Subscription |
 
-![مدیریت نودها](./images/pvnetwork-nodes.svg)
+UUID، Username و Assignmentهای کاربر هنگام Renew حفظ می‌شوند.
+### ساخت کاربر
 
-**افزودن نود** Auto Deploy با SSH دارد و Console مرحله‌به‌مرحله Progress و Verify را نمایش می‌دهد. عملیات مدیریتی شامل Health، Drain، Resume، Maintenance، Weight و foundation مربوط به Retry/Canary/Rollback است. Rebalance با توجه به Health/Control State Assignmentها را جابه‌جا می‌کند.
+![Add User](./images/ui/workflow-add-user.jpg)
 
-حذف Node یک عملیات حساس به Assignment است و نباید باعث Flush کامل Firewall یا تغییر کورکورانه Routeهای نامرتبط روی Server مقصد شود.
+در فرم ساخت کاربر می‌توان حجم، مدت، Assignment نود و AnyConnect را تعیین کرد. مقدار حجم صفر به‌عنوان Unlimited در نظر گرفته می‌شود و برای Unlimited مدت پایه ۳۰ روز است.
 
-## ۴. مدیریت Admin / Reseller
+### منوی عملیات کاربر
 
-Main Admin می‌تواند Admin/Reseller، سهمیه حجمی و سهمیه اکانت نامحدود را مدیریت کند. عملیات نماینده به Owner و Quota خودش محدود می‌شود و تغییرات Credit در Ledger ثبت می‌شوند.
+![User Actions](./images/ui/workflow-user-actions.jpg)
 
-## ۵. مرکز عملیات
+منوی سه‌نقطه عملیات اصلی را یکجا در اختیار ادمین قرار می‌دهد و عملیات مخرب از عملیات روزمره جدا شده‌اند.
 
-Operations Center برای Audit/Event و عملیات گروهی استفاده می‌شود. نتیجه Jobها، خلاصه مصرف/اکانت و عملیات Cross-node از این بخش قابل بررسی است. عملیات Bulk باید Confirmation داشته باشد و بعد از اجرا Health/Consistency بررسی شود.
+### تمدید کاربر
 
-## ۶. امنیت پنل
+![Renew User](./images/ui/workflow-renew-user.jpg)
 
-![امنیت و عملیات](./images/pvnetwork-security-ops.svg)
+Renew از همان UUID و Username استفاده می‌کند. برای سرویس حجمی سه رفتار وجود دارد: Preserve، Reset و Add Traffic. کاربر Expired بعد از تمدید دوباره فعال و روی نودهای Assignment‌شده Sync می‌شود.
 
-کنترل‌های امنیتی شامل TOTP/2FA، API Token با Scope، Expiry/Revoke Token، Rate Limit و IP Allow-list است. Secretهای واقعی فقط باید در State خصوصی Deployment بمانند و Credential مشکوک به افشا باید Rotate شود.
+### AnyConnect
 
-## ۷. مدیریت پیشرفته Node / Fleet
+![AnyConnect](./images/ui/workflow-anyconnect.jpg)
 
-Fleet شامل Health Score، Control State، عملیات Staged/Canary و Rollback foundation است. **Drain** Node را از Placement عادی خارج می‌کند تا انتقال کنترل‌شده انجام شود؛ **Maintenance** Node را تا Resume صریح از عملیات عادی خارج نگه می‌دارد.
+این پنجره فعال/غیرفعال کردن AnyConnect، مشاهده وضعیت Account و ساخت یا تغییر Credential همان کاربر را مدیریت می‌کند. تغییرات OpenVPN و AnyConnect از یک هویت کاربری مشترک استفاده می‌کنند.
+## 3) مدیریت نودها
 
-## ۸. Monitoring
+![Nodes](./images/ui/nodes.jpg)
 
-Monitoring شامل Alertهای Resource/Service نودها و Hookهای Telegram است. Metricهای جانبی Fail-safe هستند؛ خراب شدن Parser یا Metric اختیاری نباید Health endpoint اصلی Node را Down کند.
+Node Management وضعیت پایه و Health نودهای OpenVPN را نشان می‌دهد.
 
-## ۹. کنترل Bandwidth
+| کنترل | کاربرد |
+|---|---|
+| Add New Node | افزودن نود جدید |
+| Refresh | دریافت دوباره فهرست نودها |
+| Health Refresh | به‌روزرسانی Health و Routing data |
+| Edit | ویرایش مشخصات نود |
+| Delete | حذف نود با بررسی Assignmentهای وابسته |
 
-Policy می‌تواند روی همه کاربران، یک Owner/Reseller، Group ذخیره‌شده یا Userهای انتخابی اعمال شود. قبل از Apply باید Target Set را Preview کرد. Emergency Policy می‌تواند Duration، Canary، Fail-open و مسیر Rollback داشته باشد.
+### افزودن نود
 
-## صفحه Subscription
+![Add Node](./images/ui/workflow-add-node.jpg)
 
-Subscription Page وضعیت Account، مصرف و باقیمانده، Expiry، Device Limit، Server/Profileهای فعال، Smart Recommendation، دانلود Client، اطلاعات AnyConnect در صورت فعال بودن و Web Push تمدید را نمایش می‌دهد. فایل OpenVPN قبل از تحویل Validate می‌شود و اگر فایل قبلی ناقص/خراب باشد در صورت نیاز Rebuild می‌شود.
+فرم Add Node از حالت Automatic و Manual پشتیبانی می‌کند. در حالت Automatic اطلاعات SSH فقط برای اجرای فرآیند Deploy استفاده می‌شود و نباید داخل مخزن عمومی قرار گیرد. API port، OpenVPN port، protocol و tunnel address قابل تنظیم هستند.
 
-## Backup / Restore
+Auto Deploy نباید Firewall را Flush کند، Default Route را عوض کند یا سرویس‌های نامرتبط سرور را حذف کند.
+## 4) مدیریت ادمین‌ها و نمایندگان
 
-قبل از تغییر پرریسک Production باید Backup ساخته شود. Restore مسیر Recovery است و جای Migration/Test صحیح Release را نمی‌گیرد.
+![Admins](./images/ui/admins.jpg)
+
+این صفحه برای Main Admin است و مدیریت ادمین/Reseller را انجام می‌دهد.
+
+| کنترل | کاربرد |
+|---|---|
+| Add Admin | ایجاد ادمین یا نماینده جدید |
+| Search | جست‌وجوی Username |
+| Edit | ویرایش محدودیت‌ها و مشخصات ادمین |
+| Delete | حذف با انتخاب Transfer Users یا Delete Users |
+
+### افزودن ادمین
+
+![Add Admin](./images/ui/workflow-add-admin.jpg)
+
+در فرم ساخت نماینده می‌توان Permission/Quotaهای پشتیبانی‌شده را تعیین کرد. هنگام حذف نماینده، انتقال کاربران به Owner دیگر مسیر امن‌تری نسبت به حذف کاربران است.
+
+## 5) مرکز عملیات
+
+![Operations](./images/ui/operations.jpg)
+
+Operations Center ابزارهای عملیاتی چندکاربره و چندنودی را کنار هم قرار می‌دهد.
+| ابزار | کاربرد |
+|---|---|
+| Refresh | دریافت دوباره Dashboard عملیاتی |
+| Bulk Activate | فعال‌سازی گروهی UUIDها |
+| Bulk Deactivate | غیرفعال‌سازی گروهی UUIDها |
+| Bulk Reset Usage | صفر کردن گروهی مصرف |
+| Transfer | انتقال Assignment/User workload بین Source و Target |
+| Auto Rebalance | اجرای Rebalance پیشنهادی |
+| Dry-run Rebalance | مشاهده نتیجه احتمالی بدون اعمال تغییر |
+| Usage History | مشاهده تاریخچه مصرف یک UUID |
+| Backup/Restore | ساخت، دانلود و Restore بکاپ تأییدشده |
+
+Restore نیازمند فایل معتبر و تأیید صریح است و Progress عملیات نمایش داده می‌شود.
+
+## 6) امنیت پنل
+
+![Security](./images/ui/security.jpg)
+
+| کنترل | کاربرد |
+|---|---|
+| Rate Limit | محدود کردن نرخ درخواست‌ها |
+| IP Allowlist | محدود کردن دسترسی مدیریتی به CIDRهای مجاز |
+| TOTP 2FA | ساخت، تأیید یا غیرفعال‌کردن احراز هویت دومرحله‌ای |
+| API Token | ساخت Token با نام، Scope و Expiry |
+| Revoke | باطل‌کردن Token صادرشده |
+
+مقادیر امنیتی در Screenshotهای عمومی Blur شده‌اند و نباید در Issue/README منتشر شوند.
+## 7) مدیریت پیشرفته نودها / Fleet
+
+![Fleet](./images/ui/fleet.jpg)
+
+Fleet Management برای عملیات مرحله‌ای روی چند نود طراحی شده است.
+
+| کنترل | کاربرد |
+|---|---|
+| Select Nodes | انتخاب نودهای هدف |
+| Upgrade | شروع Upgrade کنترل‌شده روی انتخاب‌ها |
+| Retry | تکرار Job شکست‌خورده |
+| Maintenance | خارج کردن موقت نود از عملیات عادی |
+| Leave Maintenance | بازگرداندن نود به حالت عادی |
+| Drain | جلوگیری از Session/Assignment جدید و تخلیه کنترل‌شده |
+| Resume | بازگرداندن نود Drain‌شده |
+| Refresh | تازه‌سازی Health/Version/Job state |
+
+Health، Mode، CPU، RAM، API latency، Online Users، Sessions، Weight و Score برای تصمیم عملیاتی نمایش داده می‌شوند.
+
+## 8) تنظیمات مانیتورینگ
+
+![Monitoring](./images/ui/monitoring.jpg)
+
+Monitoring Settings تنظیم Alertها و Telegram monitoring را مدیریت می‌کند. Save تنظیمات را ثبت می‌کند، Test Telegram یک پیام آزمایشی می‌فرستد و Retry/Refresh وضعیت را دوباره می‌خواند.
+## 9) کنترل پهنای‌باند
+
+![Bandwidth](./images/ui/bandwidth.jpg)
+
+Bandwidth Control برای اعمال Policy اضطراری یا مرحله‌ای طراحی شده است.
+
+| کنترل | کاربرد |
+|---|---|
+| Refresh | تازه‌سازی Settings، Groupها و وضعیت نودها |
+| Emergency Off | خاموش‌کردن فوری Policy فعال |
+| Preview | مشاهده Target و اثر Policy بدون اعمال |
+| Canary | اعمال محدود روی یک نود انتخابی |
+| Activate | فعال‌سازی Policy روی Target نهایی |
+| Create Group | ساخت گروه کاربری برای Policy |
+| Save Members | ذخیره اعضای گروه |
+| Delete Group | حذف گروه Policy |
+
+صفحه Node Status نتیجه اعمال Policy روی هر نود و Last Result آخرین عملیات را نمایش می‌دهد.
+
+## Workflow پیشنهادی برای تغییرات حساس
+
+برای عملیات Fleet، Bandwidth، Restore و Update ابتدا Preview/Health/Backup را بررسی کنید، سپس تغییر را روی محدوده کوچک اجرا کنید و بعد از Verification آن را گسترش دهید.
+
+## درباره تصاویر این مستند
+
+تمام Screenshotها صرفاً برای Documentation عمومی ساخته شده‌اند. مقادیر Demo نشان‌دهنده تنظیمات یا ظرفیت واقعی هیچ Deployment مشخصی نیستند.
+
+[بازگشت به README فارسی](../README.fa.md) · [English UI guide](./UI-GUIDE.md)
 
 </div>

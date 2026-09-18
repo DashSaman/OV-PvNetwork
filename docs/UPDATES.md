@@ -1,39 +1,55 @@
 # Updates and rollback
 
-## Update
+## Before updating
+
+Run diagnostics and create an explicit backup when making production changes:
+
+```bash
+ovpv doctor
+ovpv backup
+```
+
+If you use an external PostgreSQL database, keep a database-native backup as well; the application backup does not replace your PostgreSQL backup policy.
+
+## Update to latest stable release
 
 ```bash
 ovpv update
 ```
 
-The manager creates a backup before applying distribution changes, rebuilds the frontend/backend environment and verifies the local API. A failed verification triggers restoration of the pre-update backup.
+The manager resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env` and data, applies migrations/builds, restarts only `ov-panel.service`, then verifies the local API. Failed verification triggers source/data restoration from the pre-update application backup.
 
-## Manual backup
+## Target a specific release
 
 ```bash
-ovpv backup
+OVPV_REF=v1.0.1 ovpv update
 ```
 
-Backups are stored under `/var/backups/ov-pvnetwork/`.
-
+A branch name can also be supplied for testing, but production should normally use signed-off tagged releases.
 ## Rollback
+
+Rollback to the most recent application backup:
 
 ```bash
 ovpv rollback
 ```
 
-or choose a specific directory:
+Or select a backup directory explicitly:
 
 ```bash
 ovpv rollback /var/backups/ov-pvnetwork/YYYYMMDD-HHMMSS
 ```
 
-## Version channels
+Rollback restores the captured application tree/runtime data, rebuilds dependencies/assets, restarts the panel and verifies health.
 
-`OVPV_REF` can point the bootstrap at another branch while testing:
+## Status and version
 
 ```bash
-OVPV_REF=release-v1.0.0 bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/release-v1.0.0/install.sh)
+ovpv status
+ovpv version
+ovpv doctor
 ```
 
-Stable deployments should use a tagged release after the production snapshot has been audited.
+## Release rule
+
+Every production-visible change should update `CHANGELOG.md` and ship through a new tagged GitHub Release. Do not point production installations at an arbitrary development branch unless you are deliberately testing it.

@@ -1,0 +1,3211 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070707">
+<title>{{ name }} | Private Network</title>
+<style>
+:root{
+  --bg:#070707;--bg2:#0d0b08;--card:#11110f;--card2:#181610;--line:rgba(255,193,61,.16);
+  --gold:#ffc33d;--gold2:#ff8a00;--gold3:#fff0ad;--text:#fff9ea;--muted:#a99f8b;
+  --green:#24dc8b;--red:#ff596d;--orange:#ff9f1c;--blue:#65a8ff;--shadow:0 24px 80px rgba(0,0,0,.48);
+}
+html[data-theme="light"]{
+  --bg:#f8f4ea;--bg2:#fffaf0;--card:#ffffff;--card2:#fff7e7;--line:rgba(129,82,0,.14);
+  --gold:#b66d00;--gold2:#e58a00;--gold3:#6f4300;--text:#21170b;--muted:#756b5d;
+  --shadow:0 24px 80px rgba(83,52,0,.14);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  font-family:Tahoma,"Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(255,157,0,.22),transparent 32rem),
+    radial-gradient(circle at 15% 25%,rgba(255,196,61,.08),transparent 22rem),
+    linear-gradient(180deg,var(--bg2),var(--bg));
+  overflow-x:hidden;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.28;
+  background-image:linear-gradient(rgba(255,193,61,.055) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,193,61,.055) 1px,transparent 1px);
+  background-size:34px 34px;mask-image:linear-gradient(to bottom,#000,transparent 75%);
+}
+.page{width:min(100% - 22px,620px);margin:24px auto 56px;position:relative;z-index:1}
+.hero{
+  position:relative;overflow:hidden;padding:24px;border:1px solid var(--line);border-radius:30px;
+  background:linear-gradient(145deg,rgba(255,194,61,.09),transparent 38%),var(--card);
+  box-shadow:var(--shadow);
+}
+.hero:before{
+  content:"";position:absolute;width:330px;height:330px;border-radius:50%;right:-150px;top:-180px;
+  background:radial-gradient(circle,rgba(255,190,45,.28),transparent 67%);filter:blur(5px)
+}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative;z-index:2}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{
+  width:78px;height:78px;border-radius:22px;object-fit:cover;border:1px solid rgba(255,203,87,.35);
+  box-shadow:0 0 0 5px rgba(255,193,61,.045),0 12px 32px rgba(0,0,0,.36)
+}
+.brand-copy{min-width:0}
+.brand-name{font-weight:900;letter-spacing:.03em;font-size:1rem;color:var(--gold3)}
+.brand-sub{font-size:.72rem;color:var(--muted);margin-top:5px}
+.controls{display:flex;gap:7px}
+.icon-btn{
+  width:40px;height:40px;border-radius:13px;border:1px solid var(--line);color:var(--gold3);
+  background:rgba(255,255,255,.025);cursor:pointer;font-size:17px
+}
+.title{text-align:center;margin:23px 0 8px;font-size:1.42rem;font-weight:900;position:relative;z-index:2}
+.status-wrap{text-align:center;position:relative;z-index:2}
+.status{
+  display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:7px 14px;font-size:.78rem;font-weight:800
+}
+.status.on{color:var(--green);background:rgba(36,220,139,.10);border:1px solid rgba(36,220,139,.22)}
+.status.off{color:var(--red);background:rgba(255,89,109,.10);border:1px solid rgba(255,89,109,.22)}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 13px currentColor}
+.usage{
+  margin-top:22px;display:grid;grid-template-columns:148px 1fr;gap:18px;align-items:center;
+  border:1px solid var(--line);border-radius:24px;padding:18px;background:rgba(255,255,255,.018);position:relative;z-index:2
+}
+.ring{
+  width:132px;height:132px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--gold) calc(var(--pct)*1%),rgba(255,255,255,.07) 0);
+  box-shadow:inset 0 0 30px rgba(0,0,0,.18),0 0 35px rgba(255,175,0,.08)
+}
+.ring:before{
+  content:"";width:102px;height:102px;border-radius:50%;background:var(--card);position:absolute
+}
+.ring-content{position:relative;text-align:center;z-index:1}
+.ring-value{font-size:1.33rem;font-weight:900;color:var(--gold3);direction:ltr}
+.ring-label{font-size:.67rem;color:var(--muted);margin-top:4px}
+.user-name{font-size:1.18rem;font-weight:900;direction:ltr;text-align:right;word-break:break-word}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.mini{padding:10px 11px;border-radius:14px;background:var(--card2);border:1px solid var(--line)}
+.mini-label{font-size:.64rem;color:var(--muted)}
+.mini-value{font-size:.84rem;font-weight:900;margin-top:5px;direction:ltr;text-align:right}
+.section{margin-top:16px;border:1px solid var(--line);border-radius:25px;background:var(--card);overflow:hidden;box-shadow:0 14px 45px rgba(0,0,0,.18)}
+.section-head{padding:18px 19px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.section-title{display:flex;align-items:center;gap:9px;font-size:.95rem;font-weight:900}
+.section-title .sicon{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:rgba(255,193,61,.09);color:var(--gold)}
+.section-note{font-size:.66rem;color:var(--muted);text-align:left}
+.node-list{padding:0 13px 14px;display:grid;gap:10px}
+.node{
+  display:block;text-decoration:none;color:inherit;position:relative;overflow:hidden;padding:15px;border-radius:18px;
+  border:1px solid var(--line);background:linear-gradient(140deg,rgba(255,193,61,.055),transparent 42%),var(--card2);
+  transition:.2s transform,.2s border-color,.2s box-shadow
+}
+a.node:hover{transform:translateY(-2px);border-color:rgba(255,193,61,.45);box-shadow:0 12px 30px rgba(0,0,0,.24)}
+.node.offline{opacity:.66;filter:saturate(.65)}
+.node.recommended{border-color:rgba(36,220,139,.32);box-shadow:inset 0 0 35px rgba(36,220,139,.035)}
+.node-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.loc{display:flex;align-items:center;gap:10px;min-width:0}
+.flag{font-size:27px}
+.loc strong{display:block;font-size:.94rem;direction:ltr}
+.rec{color:var(--green);font-size:.63rem;font-weight:800;margin-top:4px}
+.pill{display:flex;align-items:center;gap:5px;border-radius:999px;padding:6px 9px;font-size:.68rem;font-weight:900;white-space:nowrap}
+.pill.low{color:var(--green);background:rgba(36,220,139,.10)}
+.pill.normal{color:var(--orange);background:rgba(255,159,28,.11)}
+.pill.busy{color:var(--red);background:rgba(255,89,109,.10)}
+.pill.offline{color:var(--muted);background:rgba(150,150,150,.09)}
+.bar{height:7px;border-radius:99px;background:rgba(255,255,255,.075);overflow:hidden;margin-top:12px}
+.fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--gold2),var(--gold));box-shadow:0 0 10px rgba(255,190,45,.3)}
+.node.offline .fill{width:0!important}
+.node-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:9px;font-size:.66rem;color:var(--muted)}
+.download{color:var(--gold);font-weight:900}
+.client-grid{padding:0 13px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.client{
+  min-height:126px;display:flex;flex-direction:column;justify-content:space-between;text-decoration:none;color:inherit;
+  border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--card2);transition:.2s
+}
+a.client:hover{transform:translateY(-2px);border-color:rgba(255,193,61,.45)}
+.client-icon{font-size:26px}
+.client-name{font-size:.86rem;font-weight:900;margin-top:8px}
+.client-meta{font-size:.62rem;color:var(--muted);margin-top:4px;line-height:1.6}
+.client-action{margin-top:12px;color:var(--gold);font-size:.68rem;font-weight:900}
+.linux-box{grid-column:1/-1;min-height:auto}
+.command{direction:ltr;text-align:left;display:block;margin-top:9px;padding:9px 10px;border-radius:10px;background:#080808;color:#f6d477;font:11px/1.6 Consolas,monospace;overflow:auto}
+.any-box{padding:0 13px 14px}
+.any-card{border:1px solid var(--line);border-radius:18px;background:var(--card2);padding:14px}
+.any-row{display:grid;grid-template-columns:95px 1fr auto;align-items:center;gap:8px;margin-top:9px}
+.any-row:first-child{margin-top:0}
+.any-label{font-size:.67rem;color:var(--muted)}
+.any-value{direction:ltr;text-align:left;font:12px/1.5 Consolas,monospace;padding:8px;border-radius:9px;background:rgba(0,0,0,.18);overflow:auto}
+.copy{border:1px solid var(--line);background:transparent;color:var(--gold);border-radius:9px;padding:8px;cursor:pointer}
+.guide{padding:0 17px 17px;color:var(--muted);font-size:.72rem;line-height:1.95}
+.guide b{color:var(--gold3)}
+.footer{text-align:center;color:var(--muted);font-size:.62rem;padding:19px 10px}
+[dir="ltr"] .user-name,[dir="ltr"] .mini-value{text-align:left}
+@media(max-width:520px){
+  .page{width:min(100% - 14px,620px);margin-top:8px}
+  .hero{padding:18px;border-radius:23px}.logo{width:64px;height:64px;border-radius:18px}
+  .usage{grid-template-columns:116px 1fr;padding:14px;gap:12px}.ring{width:110px;height:110px}.ring:before{width:84px;height:84px}
+  .ring-value{font-size:1.08rem}.mini-grid{grid-template-columns:1fr}.client-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:390px){
+  .brand-sub{display:none}.client-grid{grid-template-columns:1fr}.linux-box{grid-column:auto}
+  .usage{grid-template-columns:1fr}.ring{margin:auto}.user-name{text-align:center!important}.any-row{grid-template-columns:1fr auto}.any-label{grid-column:1/-1}
+}
+</style>
+
+<style>
+/* PN_SUB_V4_PREMIUM_LAYER */
+:root{
+  --pn-v4-gold:#ffd15a;
+  --pn-v4-gold2:#ff9c1a;
+  --pn-v4-cyan:#55d8ff;
+  --pn-v4-glass:rgba(19,17,12,.76);
+  --pn-v4-stroke:rgba(255,209,90,.20);
+  --pn-v4-stroke-strong:rgba(255,209,90,.42);
+}
+
+body{
+  background:
+    radial-gradient(ellipse 70% 38% at 50% -8%,rgba(255,164,25,.23),transparent 65%),
+    radial-gradient(ellipse 35% 35% at 8% 42%,rgba(255,204,78,.08),transparent 75%),
+    radial-gradient(ellipse 30% 30% at 96% 65%,rgba(85,216,255,.055),transparent 72%),
+    linear-gradient(180deg,#090806 0%,#050505 58%,#080704 100%) !important;
+}
+
+body:before{
+  opacity:.34 !important;
+  background-size:42px 42px !important;
+}
+
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(255,209,90,.10) 0 1px,transparent 2px),
+    radial-gradient(circle at 80% 45%,rgba(255,209,90,.08) 0 1px,transparent 2px),
+    radial-gradient(circle at 45% 75%,rgba(255,209,90,.07) 0 1px,transparent 2px);
+  background-size:115px 115px,160px 160px,190px 190px;
+  opacity:.45;
+  animation:pnStars 22s linear infinite;
+}
+
+@keyframes pnStars{
+  from{transform:translateY(0)}
+  to{transform:translateY(80px)}
+}
+
+.page{
+  width:min(100% - 28px,760px) !important;
+  margin:28px auto 72px !important;
+}
+
+.hero,.section{
+  position:relative;
+  isolation:isolate;
+  background:
+    linear-gradient(145deg,rgba(255,209,90,.075),transparent 35%),
+    linear-gradient(180deg,rgba(19,18,15,.94),rgba(11,11,10,.96)) !important;
+  border:1px solid var(--pn-v4-stroke) !important;
+  box-shadow:
+    0 26px 70px rgba(0,0,0,.45),
+    inset 0 1px rgba(255,255,255,.025) !important;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+.hero{
+  border-radius:34px !important;
+  padding:27px !important;
+}
+
+.hero:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  border-radius:inherit;
+  padding:1px;
+  background:linear-gradient(135deg,rgba(255,220,128,.34),transparent 28%,transparent 68%,rgba(255,157,23,.18));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
+}
+
+.logo{
+  width:88px !important;
+  height:88px !important;
+  border-radius:25px !important;
+  border:1px solid rgba(255,213,104,.45) !important;
+  box-shadow:
+    0 0 0 6px rgba(255,193,61,.045),
+    0 0 34px rgba(255,168,25,.16),
+    0 16px 34px rgba(0,0,0,.46) !important;
+  transition:.28s ease;
+}
+.logo:hover{transform:scale(1.035) rotate(-1deg)}
+
+.brand-name{
+  font-size:1.12rem !important;
+  background:linear-gradient(90deg,#fff5c7,#ffc852,#fff1ae);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent !important;
+  letter-spacing:.055em !important;
+}
+
+.icon-btn{
+  width:44px !important;height:44px !important;
+  border-radius:15px !important;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015)) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.04);
+  transition:.2s ease;
+}
+.icon-btn:hover{
+  transform:translateY(-2px);
+  border-color:var(--pn-v4-stroke-strong) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.24);
+}
+
+.title{
+  font-size:1.65rem !important;
+  margin-top:28px !important;
+  text-shadow:0 5px 28px rgba(255,198,69,.09);
+}
+
+.status{
+  padding:8px 16px !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.035),0 8px 24px rgba(0,0,0,.18);
+}
+
+.usage{
+  grid-template-columns:170px 1fr !important;
+  padding:21px !important;
+  border-radius:27px !important;
+  background:
+    radial-gradient(circle at 17% 50%,rgba(255,197,61,.075),transparent 36%),
+    rgba(255,255,255,.018) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+
+.ring{
+  width:150px !important;
+  height:150px !important;
+  position:relative;
+  background:conic-gradient(
+    from -35deg,
+    #ff9b19 0%,
+    #ffd761 calc(var(--pct)*1%),
+    rgba(255,255,255,.075) 0
+  ) !important;
+  box-shadow:
+    inset 0 0 35px rgba(0,0,0,.22),
+    0 0 42px rgba(255,175,0,.13) !important;
+}
+.ring:before{
+  width:116px !important;height:116px !important;
+  box-shadow:inset 0 0 22px rgba(255,198,70,.035);
+}
+.ring:after{
+  content:"";
+  position:absolute;
+  width:10px;height:10px;border-radius:50%;
+  top:6px;left:50%;
+  transform:translateX(-50%);
+  background:#fff0ad;
+  box-shadow:0 0 15px #ffc13d;
+  opacity:.75;
+}
+.ring-value{
+  font-size:1.32rem !important;
+  max-width:105px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ring-label{
+  font-size:.72rem !important;
+  font-weight:700;
+}
+
+.user-name{
+  font-size:1.34rem !important;
+  color:#fff8e3;
+}
+
+.mini-grid{gap:11px !important}
+.mini{
+  padding:12px 13px !important;
+  border-radius:16px !important;
+  background:
+    linear-gradient(145deg,rgba(255,205,84,.045),transparent 65%),
+    rgba(255,255,255,.018) !important;
+  transition:.2s ease;
+}
+.mini:hover{
+  transform:translateY(-1px);
+  border-color:rgba(255,209,90,.30);
+}
+.mini-label{font-size:.68rem !important}
+.mini-value{font-size:.9rem !important}
+
+.expiry-value{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.gregorian-date{font-weight:900}
+.jalali-date{
+  color:var(--gold);
+  font-size:.72rem;
+  font-weight:800;
+  direction:rtl;
+}
+.jalali-date:before{content:none!important}
+
+.section{
+  margin-top:19px !important;
+  border-radius:28px !important;
+  overflow:hidden;
+  transition:.25s ease;
+}
+.section:hover{
+  border-color:rgba(255,209,90,.27) !important;
+  box-shadow:0 32px 78px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.03) !important;
+}
+
+.section-head{
+  padding:20px 21px !important;
+  border-bottom:1px solid rgba(255,209,90,.075);
+}
+.section-title{
+  font-size:1.03rem !important;
+  letter-spacing:.01em;
+}
+.section-title .sicon{
+  width:37px !important;height:37px !important;
+  border-radius:13px !important;
+  background:linear-gradient(145deg,rgba(255,205,84,.16),rgba(255,153,0,.055)) !important;
+  border:1px solid rgba(255,209,90,.12);
+  box-shadow:inset 0 1px rgba(255,255,255,.04);
+}
+.section-note{font-size:.69rem !important}
+
+.node-list{padding:14px 15px 16px !important;gap:12px !important}
+.node{
+  padding:17px !important;
+  border-radius:20px !important;
+  background:
+    radial-gradient(circle at 95% 0%,rgba(255,207,83,.075),transparent 34%),
+    linear-gradient(140deg,rgba(255,193,61,.052),transparent 48%),
+    rgba(255,255,255,.018) !important;
+}
+a.node:hover{
+  transform:translateY(-3px) scale(1.003) !important;
+  box-shadow:0 18px 36px rgba(0,0,0,.31) !important;
+}
+.node.recommended{
+  border-color:rgba(36,220,139,.40) !important;
+  box-shadow:
+    inset 0 0 42px rgba(36,220,139,.035),
+    0 0 0 1px rgba(36,220,139,.035) !important;
+}
+.flag{
+  font-size:30px !important;
+  filter:drop-shadow(0 5px 8px rgba(0,0,0,.25));
+}
+.loc strong{font-size:1rem !important}
+.pill{padding:7px 10px !important}
+.bar{
+  height:8px !important;
+  background:rgba(255,255,255,.065) !important;
+}
+.fill{
+  background:linear-gradient(90deg,#ff9615,#ffd45d,#fff0a9) !important;
+  box-shadow:0 0 14px rgba(255,190,45,.26) !important;
+}
+.node-bottom{font-size:.69rem !important}
+
+.client-grid{
+  padding:15px !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:12px !important;
+}
+.client{
+  min-height:145px !important;
+  padding:16px !important;
+  border-radius:20px !important;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(255,205,82,.075),transparent 40%),
+    linear-gradient(145deg,rgba(255,197,61,.035),transparent 65%),
+    rgba(255,255,255,.018) !important;
+  box-shadow:inset 0 1px rgba(255,255,255,.018);
+}
+a.client:hover{
+  transform:translateY(-4px) !important;
+  border-color:rgba(255,209,90,.40) !important;
+  box-shadow:0 18px 34px rgba(0,0,0,.28);
+}
+.client-icon{
+  width:42px;height:42px;
+  display:grid;place-items:center;
+  border-radius:13px;
+  font-size:22px !important;
+  background:rgba(255,205,84,.07);
+  border:1px solid rgba(255,209,90,.11);
+}
+.client-name{font-size:.93rem !important}
+.client-meta{font-size:.66rem !important}
+.client-action{
+  display:inline-flex;
+  width:max-content;
+  padding:7px 10px;
+  margin-top:13px !important;
+  border-radius:10px;
+  background:rgba(255,205,84,.065);
+  border:1px solid rgba(255,209,90,.09);
+}
+
+.client-grid > a.client:last-of-type{
+  grid-column:1/-1;
+  min-height:118px !important;
+  display:grid !important;
+  grid-template-columns:1fr auto;
+  align-items:center;
+}
+.client-grid > a.client:last-of-type .client-action{
+  margin-top:0 !important;
+}
+
+.linux-box{
+  grid-column:1/-1 !important;
+  min-height:auto !important;
+  background:
+    linear-gradient(145deg,rgba(85,216,255,.035),transparent 55%),
+    rgba(255,255,255,.015) !important;
+}
+
+.command{
+  padding:11px 12px !important;
+  border:1px solid rgba(255,209,90,.09);
+  box-shadow:inset 0 1px rgba(255,255,255,.015);
+}
+
+.any-box{padding:15px !important}
+.any-card{
+  border-radius:20px !important;
+  padding:16px !important;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(36,220,139,.05),transparent 38%),
+    rgba(255,255,255,.018) !important;
+}
+.any-row{margin-top:11px !important}
+.any-value{padding:10px !important}
+.copy{transition:.2s ease}
+.copy:hover{transform:translateY(-1px);background:rgba(255,205,84,.06)}
+
+.guide{
+  padding:16px 20px 20px !important;
+  font-size:.76rem !important;
+}
+.footer{
+  padding:24px 10px !important;
+  letter-spacing:.10em;
+  opacity:.72;
+}
+
+.pn-reveal{
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity .55s ease,transform .55s ease;
+}
+.pn-reveal.pn-visible{
+  opacity:1;
+  transform:none;
+}
+
+@media(max-width:520px){
+  .page{width:min(100% - 14px,760px) !important}
+  .hero{padding:19px !important;border-radius:25px !important}
+  .logo{width:68px !important;height:68px !important;border-radius:19px !important}
+  .usage{grid-template-columns:122px 1fr !important;padding:15px !important}
+  .ring{width:116px !important;height:116px !important}
+  .ring:before{width:88px !important;height:88px !important}
+  .ring-value{font-size:.98rem !important}
+  .client-grid{grid-template-columns:1fr !important}
+  .client-grid > a.client:last-of-type{
+    grid-column:auto !important;
+    display:flex !important;
+    min-height:140px !important;
+  }
+  .linux-box{grid-column:auto !important}
+}
+
+@media(max-width:390px){
+  .usage{grid-template-columns:1fr !important}
+  .ring{margin:auto}
+  .top{align-items:flex-start}
+}
+</style>
+
+
+<style>
+/* PN_SUB_V5_CINEMATIC */
+:root{
+  --pn5-gold:#ffc83d;
+  --pn5-gold-bright:#ffe28a;
+  --pn5-amber:#ff8a00;
+  --pn5-green:#27e49a;
+  --pn5-danger:#ff5d74;
+  --pn5-font:Tahoma,"Segoe UI",Arial,sans-serif;
+}
+body,.page,.page button,.page a,.page div,.page span{
+  font-family:var(--pn5-font);
+}
+body{
+  position:relative;
+  overflow-x:hidden;
+  background:
+    radial-gradient(ellipse 60% 34% at 50% -2%,rgba(255,154,0,.24),transparent 70%),
+    radial-gradient(ellipse 38% 28% at 4% 30%,rgba(255,204,71,.09),transparent 74%),
+    radial-gradient(ellipse 35% 28% at 98% 65%,rgba(255,119,0,.07),transparent 75%),
+    linear-gradient(180deg,#090704 0%,#050505 54%,#080704 100%) !important;
+}
+.pn5-fx{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
+.pn5-orb{
+  position:absolute;border-radius:999px;filter:blur(70px);opacity:.22;mix-blend-mode:screen;
+}
+.pn5-orb.one{
+  width:420px;height:420px;background:#ff9a18;top:-170px;right:-100px;
+  animation:pn5Orb1 12s ease-in-out infinite alternate;
+}
+.pn5-orb.two{
+  width:360px;height:360px;background:#ffd86a;left:-170px;top:37%;opacity:.10;
+  animation:pn5Orb2 15s ease-in-out infinite alternate;
+}
+.pn5-orb.three{
+  width:300px;height:300px;background:#ff6f00;right:-150px;bottom:7%;opacity:.11;
+  animation:pn5Orb3 13s ease-in-out infinite alternate;
+}
+@keyframes pn5Orb1{to{transform:translate(-100px,90px) scale(1.18)}}
+@keyframes pn5Orb2{to{transform:translate(120px,-80px) scale(.90)}}
+@keyframes pn5Orb3{to{transform:translate(-110px,-100px) scale(1.12)}}
+
+.page{position:relative;z-index:2}
+.hero,.section{
+  position:relative;isolation:isolate;
+  border-color:rgba(255,200,61,.27) !important;
+  background:
+    radial-gradient(circle at 88% 0%,rgba(255,197,57,.105),transparent 32%),
+    linear-gradient(145deg,rgba(255,211,99,.055),transparent 40%),
+    linear-gradient(180deg,rgba(20,18,14,.94),rgba(9,9,8,.96)) !important;
+  box-shadow:
+    0 28px 85px rgba(0,0,0,.52),
+    inset 0 1px rgba(255,255,255,.035),
+    0 0 0 1px rgba(255,178,25,.025) !important;
+  backdrop-filter:blur(18px) saturate(120%);
+  -webkit-backdrop-filter:blur(18px) saturate(120%);
+  overflow:hidden;
+}
+.hero:before,.section:before{
+  content:"";position:absolute;z-index:-1;top:-160%;left:-70%;width:48%;height:420%;
+  transform:rotate(22deg);
+  background:linear-gradient(90deg,transparent,rgba(255,229,154,.02),rgba(255,229,154,.095),rgba(255,229,154,.02),transparent);
+  animation:pn5Sweep 8.5s ease-in-out infinite;
+  pointer-events:none;
+}
+.section:nth-of-type(2n):before{animation-delay:1.8s}
+.section:nth-of-type(3n):before{animation-delay:3.2s}
+@keyframes pn5Sweep{
+  0%,58%{transform:translateX(-10%) rotate(22deg)}
+  82%,100%{transform:translateX(420%) rotate(22deg)}
+}
+.logo{
+  animation:pn5LogoFloat 4s ease-in-out infinite;
+  filter:drop-shadow(0 0 16px rgba(255,185,44,.28));
+  box-shadow:
+    0 0 0 1px rgba(255,213,97,.40),
+    0 0 0 7px rgba(255,183,36,.045),
+    0 0 36px rgba(255,154,0,.19),
+    0 18px 40px rgba(0,0,0,.48) !important;
+}
+@keyframes pn5LogoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+.title,.section-title{text-shadow:0 4px 25px rgba(255,185,42,.08)}
+.title{
+  background:linear-gradient(92deg,#fff9e7 5%,#ffe394 42%,#fff6dc 72%,#ffc948);
+  -webkit-background-clip:text;background-clip:text;color:transparent !important;
+}
+.status.on .dot{
+  box-shadow:0 0 0 0 rgba(39,228,154,.52),0 0 15px rgba(39,228,154,.55);
+  animation:pn5StatusPulse 2s infinite;
+}
+@keyframes pn5StatusPulse{
+  70%{box-shadow:0 0 0 10px rgba(39,228,154,0),0 0 18px rgba(39,228,154,.58)}
+  100%{box-shadow:0 0 0 0 rgba(39,228,154,0),0 0 13px rgba(39,228,154,.45)}
+}
+.usage{
+  border-color:rgba(255,200,61,.22) !important;
+  background:
+    radial-gradient(circle at 18% 50%,rgba(255,186,36,.11),transparent 34%),
+    linear-gradient(135deg,rgba(255,212,96,.035),transparent 55%),
+    rgba(255,255,255,.016) !important;
+}
+.ring{
+  box-shadow:
+    inset 0 0 36px rgba(0,0,0,.32),
+    0 0 0 1px rgba(255,213,96,.07),
+    0 0 42px rgba(255,167,15,.18) !important;
+}
+.ring:after{
+  content:"";position:absolute;inset:-5px;border-radius:50%;
+  border:1px solid rgba(255,221,125,.17);
+  box-shadow:0 0 25px rgba(255,173,24,.09);
+  animation:pn5RingHalo 2.8s ease-in-out infinite alternate;
+}
+@keyframes pn5RingHalo{to{transform:scale(1.035);opacity:.55}}
+
+.expiry-stack{
+  display:flex !important;flex-direction:column;gap:4px;align-items:flex-end;
+}
+[dir="ltr"] .expiry-stack{align-items:flex-start}
+.expiry-line,.gregorian-date,.jalali-date,.days-left{
+  color:var(--text) !important;
+  font-family:var(--pn5-font) !important;
+  font-size:.79rem !important;
+  line-height:1.45;font-weight:800 !important;direction:ltr;white-space:nowrap;
+}
+.jalali-date:before{content:none!important}
+.expiry-mini{position:relative}
+.expiry-mini.is-warning{
+  border-color:rgba(255,159,28,.55) !important;
+  box-shadow:inset 0 0 30px rgba(255,145,0,.045),0 0 22px rgba(255,145,0,.08);
+}
+.expiry-mini.is-expired{border-color:rgba(255,93,116,.55) !important}
+
+.node{transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease !important}
+a.node:hover{
+  transform:translateY(-4px) scale(1.004) !important;
+  border-color:rgba(255,205,75,.44) !important;
+  box-shadow:0 18px 38px rgba(0,0,0,.34),0 0 26px rgba(255,166,15,.055) !important;
+}
+.node.recommended{animation:pn5Recommended 3.2s ease-in-out infinite !important}
+@keyframes pn5Recommended{
+  0%,100%{border-color:rgba(39,228,154,.38);box-shadow:inset 0 0 34px rgba(39,228,154,.025),0 0 0 rgba(39,228,154,0)}
+  50%{border-color:rgba(39,228,154,.62);box-shadow:inset 0 0 38px rgba(39,228,154,.045),0 0 24px rgba(39,228,154,.09)}
+}
+.fill{
+  background:linear-gradient(90deg,#ff8a00,#ffc33d,#fff0a7,#ffc33d,#ff8a00) !important;
+  background-size:240% 100% !important;
+  animation:pn5Bar 3.4s linear infinite;
+}
+@keyframes pn5Bar{to{background-position:240% 0}}
+
+.client{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease !important}
+a.client:hover{
+  transform:translateY(-5px) perspective(600px) rotateX(1.2deg) !important;
+  border-color:rgba(255,203,65,.50) !important;
+  box-shadow:0 20px 40px rgba(0,0,0,.34),0 0 28px rgba(255,174,18,.06) !important;
+}
+.client-icon{transition:transform .25s ease,filter .25s ease}
+a.client:hover .client-icon{
+  transform:translateY(-2px) scale(1.09);
+  filter:drop-shadow(0 0 8px rgba(255,197,61,.28));
+}
+
+.renewal-section{border-color:rgba(255,198,61,.34) !important}
+.renewal-section.urgent{
+  border-color:rgba(255,147,28,.60) !important;
+  box-shadow:
+    0 28px 80px rgba(0,0,0,.48),
+    inset 0 0 38px rgba(255,126,0,.035),
+    0 0 30px rgba(255,126,0,.08) !important;
+}
+.renewal-head{align-items:center}
+.renewal-bell{animation:pn5Bell 3.2s ease-in-out infinite;transform-origin:50% 0}
+@keyframes pn5Bell{
+  0%,78%,100%{transform:rotate(0)}
+  82%{transform:rotate(10deg)}
+  86%{transform:rotate(-9deg)}
+  90%{transform:rotate(6deg)}
+  94%{transform:rotate(-4deg)}
+}
+.renewal-body{
+  padding:16px 18px 19px;display:grid;grid-template-columns:1fr auto;
+  gap:14px 16px;align-items:center;
+}
+.renewal-copy{display:flex;flex-direction:column;gap:7px}
+.renewal-copy strong{color:var(--text);font-size:.86rem}
+.renewal-copy span{color:var(--muted);font-size:.69rem;line-height:1.8}
+.renewal-btn{
+  border:1px solid rgba(255,201,62,.34);
+  background:linear-gradient(135deg,rgba(255,198,57,.16),rgba(255,132,0,.075));
+  color:var(--gold3);min-height:44px;padding:0 14px;border-radius:14px;cursor:pointer;
+  font-size:.72rem;font-weight:900;display:inline-flex;align-items:center;gap:8px;
+  transition:.22s ease;box-shadow:inset 0 1px rgba(255,255,255,.04);
+}
+.renewal-btn:hover{
+  transform:translateY(-2px);border-color:rgba(255,213,98,.60);
+  box-shadow:0 12px 24px rgba(0,0,0,.24),0 0 18px rgba(255,159,0,.07);
+}
+.renewal-btn.enabled{
+  color:#8df4c6;border-color:rgba(39,228,154,.35);background:rgba(39,228,154,.075);
+}
+.renewal-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.renewal-state{
+  grid-column:1/-1;min-height:0;color:var(--muted);font-size:.65rem;line-height:1.7;
+}
+.renewal-state.ok{color:#7de8b5}
+.renewal-state.warn{color:#ffc66c}
+.renewal-state.err{color:#ff8291}
+
+.pn5-modal-backdrop{
+  position:fixed;inset:0;z-index:9999;display:none;place-items:center;padding:18px;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(11px);-webkit-backdrop-filter:blur(11px);
+}
+.pn5-modal-backdrop.show{display:grid}
+.pn5-modal{
+  width:min(100%,420px);position:relative;overflow:hidden;
+  border:1px solid rgba(255,204,73,.42);border-radius:24px;padding:22px;color:var(--text);
+  background:
+    radial-gradient(circle at 100% 0%,rgba(255,177,20,.15),transparent 38%),
+    linear-gradient(160deg,rgba(28,23,15,.98),rgba(10,10,9,.99));
+  box-shadow:0 35px 100px rgba(0,0,0,.70),0 0 45px rgba(255,151,0,.10);
+}
+.pn5-modal-icon{
+  width:58px;height:58px;border-radius:18px;display:grid;place-items:center;
+  margin:0 auto 13px;font-size:27px;border:1px solid rgba(255,204,73,.25);
+  background:rgba(255,190,45,.08);animation:pn5Bell 3.2s ease-in-out infinite;
+}
+.pn5-modal h3{margin:0;text-align:center;font-size:1.05rem}
+.pn5-modal p{
+  color:var(--muted);font-size:.72rem;line-height:1.9;text-align:center;margin:10px 0 18px;
+}
+.pn5-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pn5-modal-actions button{
+  min-height:44px;border-radius:13px;cursor:pointer;font-weight:900;border:1px solid var(--line);
+}
+.pn5-modal-enable{
+  color:#211400;background:linear-gradient(135deg,#ffe083,#ffad19);border-color:transparent !important;
+}
+.pn5-modal-later{color:var(--text);background:rgba(255,255,255,.025)}
+
+.pn5-toast{
+  position:fixed;z-index:10000;right:18px;bottom:18px;width:min(calc(100% - 36px),360px);
+  transform:translateY(30px);opacity:0;pointer-events:none;transition:.3s ease;
+  border:1px solid rgba(255,190,51,.37);border-radius:18px;padding:13px 15px;
+  color:var(--text);background:rgba(18,15,10,.96);
+  box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 24px rgba(255,151,0,.08);
+  font-size:.7rem;line-height:1.8;
+}
+.pn5-toast.show{transform:none;opacity:1}
+[dir="ltr"] .pn5-toast{right:auto;left:18px}
+
+.pn5-reveal{
+  opacity:0;transform:translateY(20px) scale(.992);filter:blur(3px);
+  transition:opacity .58s ease,transform .58s ease,filter .58s ease;
+}
+.pn5-reveal.visible{opacity:1;transform:none;filter:none}
+
+@media(max-width:520px){
+  .renewal-body{grid-template-columns:1fr}
+  .renewal-btn{width:100%;justify-content:center}
+  .expiry-line,.gregorian-date,.jalali-date,.days-left{font-size:.76rem !important}
+}
+@media(prefers-reduced-motion:reduce){
+  .pn5-orb,.hero:before,.section:before,.logo,.status.on .dot,
+  .ring:after,.node.recommended,.fill,.renewal-bell,.pn5-modal-icon{
+    animation:none !important;
+  }
+  .pn5-reveal{opacity:1!important;transform:none!important;filter:none!important}
+}
+</style>
+
+<style>
+/* PN_SUB_V6_1_THEME_FIX */
+
+html[data-theme="light"] body{
+  color:#21170b !important;
+  background:
+    radial-gradient(ellipse 60% 34% at 50% -2%,rgba(255,184,44,.22),transparent 70%),
+    radial-gradient(ellipse 36% 28% at 4% 30%,rgba(235,169,47,.10),transparent 74%),
+    linear-gradient(180deg,#fffaf0 0%,#f8f3e8 54%,#fffdf7 100%) !important;
+}
+
+html[data-theme="light"] body:before{
+  opacity:.18 !important;
+}
+
+html[data-theme="light"] .pn5-fx{
+  opacity:.28 !important;
+}
+
+html[data-theme="light"] .pn5-orb{
+  opacity:.08 !important;
+}
+
+html[data-theme="light"] .hero,
+html[data-theme="light"] .section{
+  color:#21170b !important;
+  border-color:rgba(142,91,0,.17) !important;
+  background:
+    radial-gradient(circle at 88% 0%,rgba(255,183,39,.12),transparent 32%),
+    linear-gradient(145deg,rgba(255,208,89,.10),transparent 40%),
+    rgba(255,255,255,.95) !important;
+  box-shadow:
+    0 24px 60px rgba(83,52,0,.12),
+    inset 0 1px rgba(255,255,255,.85) !important;
+}
+
+html[data-theme="light"] .usage,
+html[data-theme="light"] .mini,
+html[data-theme="light"] .node,
+html[data-theme="light"] .client,
+html[data-theme="light"] .any-card,
+html[data-theme="light"] .linux-box{
+  color:#21170b !important;
+  border-color:rgba(142,91,0,.14) !important;
+  background:
+    linear-gradient(145deg,rgba(255,198,64,.08),transparent 62%),
+    rgba(255,250,240,.90) !important;
+}
+
+html[data-theme="light"] .ring:before{
+  background:#fffdf8 !important;
+}
+
+html[data-theme="light"] .ring-label,
+html[data-theme="light"] .mini-label,
+html[data-theme="light"] .brand-sub,
+html[data-theme="light"] .section-note,
+html[data-theme="light"] .client-meta,
+html[data-theme="light"] .renewal-copy span,
+html[data-theme="light"] .renewal-state,
+html[data-theme="light"] .guide{
+  color:#786a57 !important;
+}
+
+html[data-theme="light"] .brand-name,
+html[data-theme="light"] .ring-value,
+html[data-theme="light"] .client-action,
+html[data-theme="light"] .download{
+  color:#815000 !important;
+}
+
+html[data-theme="light"] .title{
+  background:linear-gradient(92deg,#3b2508 5%,#9b6200 42%,#3b2508 75%,#be7600) !important;
+  -webkit-background-clip:text !important;
+  background-clip:text !important;
+  color:transparent !important;
+}
+
+html[data-theme="light"] .icon-btn{
+  color:#6e4300 !important;
+  border-color:rgba(130,81,0,.17) !important;
+  background:rgba(255,255,255,.72) !important;
+  box-shadow:
+    0 6px 18px rgba(103,62,0,.08),
+    inset 0 1px rgba(255,255,255,.90) !important;
+}
+
+html[data-theme="light"] .command{
+  color:#6f4300 !important;
+  background:#f6eddd !important;
+  border-color:rgba(122,75,0,.15) !important;
+}
+
+html[data-theme="light"] .any-value{
+  color:#31200d !important;
+  background:#fffaf0 !important;
+}
+
+html[data-theme="light"] .copy{
+  color:#7c4d00 !important;
+}
+
+html[data-theme="light"] .bar{
+  background:rgba(105,68,0,.10) !important;
+}
+
+html[data-theme="light"] .footer{
+  color:#756851 !important;
+}
+
+body,
+.hero,
+.section,
+.usage,
+.mini,
+.node,
+.client,
+.any-card,
+.icon-btn{
+  transition:
+    background .28s ease,
+    color .28s ease,
+    border-color .28s ease,
+    box-shadow .28s ease !important;
+}
+</style>
+
+
+<style>
+/* PN_SUB_V6_2_1_MOBILE_PERFORMANCE */
+
+.linux-install-command{
+  display:block;
+  min-width:0;
+  overflow-x:auto;
+  white-space:nowrap;
+  -webkit-overflow-scrolling:touch;
+}
+
+.linux-copy-btn{
+  margin-inline-start:8px;
+  min-height:34px;
+  min-width:72px;
+  padding:0 10px;
+  border-radius:10px;
+  border:1px solid rgba(255,205,76,.20);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,201,64,.09),
+      rgba(255,255,255,.018)
+    );
+  color:var(--gold3);
+  font:800 .68rem/1 Tahoma,"Segoe UI",Arial,sans-serif;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  cursor:pointer;
+  vertical-align:middle;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    color .16s ease,
+    background .16s ease;
+}
+
+.linux-copy-btn:hover{
+  transform:translateY(-1px);
+  border-color:rgba(255,213,96,.42);
+}
+
+.linux-copy-btn:active{
+  transform:scale(.97);
+}
+
+.linux-copy-btn.copied{
+  color:#8ff0c3;
+  border-color:rgba(38,220,139,.35);
+  background:rgba(38,220,139,.075);
+}
+
+.linux-copy-icon{
+  font-size:.90rem;
+  line-height:1;
+}
+
+html[data-theme="light"] .linux-copy-btn{
+  color:#7b4b00 !important;
+  border-color:rgba(138,84,0,.18) !important;
+  background:rgba(255,255,255,.72) !important;
+}
+
+@media (max-width: 768px), (hover:none) and (pointer:coarse){
+
+  html{
+    background:#070707 !important;
+  }
+
+  html[data-theme="light"]{
+    background:#fffaf0 !important;
+  }
+
+  body{
+    min-height:100dvh;
+    background-color:#070707 !important;
+    background-image:
+      radial-gradient(
+        ellipse 80% 28% at 50% 0%,
+        rgba(255,166,19,.10),
+        transparent 72%
+      ),
+      linear-gradient(
+        180deg,
+        #090806 0%,
+        #060606 60%,
+        #080704 100%
+      ) !important;
+    background-attachment:scroll !important;
+  }
+
+  html[data-theme="light"] body{
+    background-color:#fffaf0 !important;
+    background-image:
+      radial-gradient(
+        ellipse 80% 28% at 50% 0%,
+        rgba(255,184,44,.10),
+        transparent 72%
+      ),
+      linear-gradient(
+        180deg,
+        #fffaf0 0%,
+        #f8f3e8 60%,
+        #fffdf8 100%
+      ) !important;
+  }
+
+  /* Kill the expensive full-screen/fixed animated layers on mobile. */
+  body:before,
+  body:after,
+  .pn5-fx,
+  .pn5-orb{
+    display:none !important;
+    animation:none !important;
+    filter:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+
+  /* No metallic sweeping overlay on mobile. */
+  .hero:before,
+  .section:before{
+    display:none !important;
+    animation:none !important;
+  }
+
+  /* Remove live blur/compositing while scrolling. */
+  .hero,
+  .section,
+  .usage,
+  .mini,
+  .node,
+  .client,
+  .any-card,
+  .linux-box{
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    filter:none !important;
+    animation:none !important;
+    will-change:auto !important;
+  }
+
+  .hero,
+  .section{
+    box-shadow:
+      0 10px 24px rgba(0,0,0,.27),
+      inset 0 1px rgba(255,255,255,.02)
+      !important;
+  }
+
+  html[data-theme="light"] .hero,
+  html[data-theme="light"] .section{
+    box-shadow:
+      0 10px 22px rgba(82,51,0,.08),
+      inset 0 1px rgba(255,255,255,.68)
+      !important;
+  }
+
+  /* Critical: paint content immediately instead of reveal-on-scroll. */
+  .pn5-reveal,
+  .pn-reveal,
+  .pn5-reveal.visible,
+  .pn-reveal.pn-visible{
+    opacity:1 !important;
+    transform:none !important;
+    filter:none !important;
+    animation:none !important;
+    transition:none !important;
+  }
+
+  /* Stop continuous GPU churn. */
+  .logo,
+  .status.on .dot,
+  .ring:after,
+  .node.recommended,
+  .fill,
+  .renewal-bell,
+  .pn5-modal-icon{
+    animation:none !important;
+  }
+
+  .logo{
+    transform:none !important;
+    filter:none !important;
+    box-shadow:
+      0 8px 20px rgba(0,0,0,.28),
+      0 0 0 1px rgba(255,209,84,.18)
+      !important;
+  }
+
+  .ring{
+    box-shadow:
+      inset 0 0 20px rgba(0,0,0,.20),
+      0 6px 16px rgba(0,0,0,.18)
+      !important;
+  }
+
+  .ring:after{
+    display:none !important;
+  }
+
+  .node,
+  .client,
+  .mini,
+  .usage,
+  .any-card{
+    box-shadow:none !important;
+  }
+
+  /* No desktop hover transforms on touch devices. */
+  a.node:hover,
+  a.client:hover,
+  .icon-btn:hover,
+  .linux-copy-btn:hover{
+    transform:none !important;
+  }
+
+  .node,
+  .client,
+  .icon-btn,
+  .linux-copy-btn{
+    transition:
+      border-color .14s ease,
+      background-color .14s ease,
+      color .14s ease
+      !important;
+  }
+
+  .pn5-modal-backdrop,
+  .pn6-push-modal{
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    background:rgba(0,0,0,.86) !important;
+  }
+
+  .linux-install-command{
+    font-size:.66rem !important;
+  }
+
+  .linux-copy-btn{
+    min-height:38px;
+    min-width:74px;
+    margin-inline-start:6px;
+  }
+}
+
+@media (max-width: 420px){
+  .linux-copy-btn{
+    min-height:40px;
+    min-width:68px;
+    padding:0 8px;
+  }
+}
+</style>
+
+
+<style>
+/* PN_SUB_V6_3_CARD_FIX */
+.client-grid > a.client:last-of-type{
+  grid-column:auto !important;
+  min-height:145px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-end !important;
+  justify-content:flex-start !important;
+}
+
+.client-grid > a.client:last-of-type .client-action{
+  margin-top:13px !important;
+}
+
+.linux-box,
+.client-grid > .linux-box,
+.client-grid > a.client.linux-box{
+  grid-column:1 / -1 !important;
+  min-height:auto !important;
+  display:block !important;
+}
+
+.client{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-end !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+}
+
+.client-icon{
+  width:46px !important;
+  height:46px !important;
+  display:grid !important;
+  place-items:center !important;
+  font-size:14px !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+  letter-spacing:.02em !important;
+  text-transform:none !important;
+  overflow:hidden !important;
+}
+
+.client-icon .os-badge-text{
+  display:block;
+  font-size:13px;
+  font-weight:800;
+  line-height:1;
+}
+
+.client-icon.icon-android .os-badge-text{font-size:18px}
+.client-icon.icon-linux .os-badge-text{font-size:20px}
+.client-icon.icon-ios .os-badge-text{font-size:12px}
+.client-icon.icon-mac .os-badge-text{font-size:11px}
+.client-icon.icon-arm .os-badge-text{font-size:11px}
+
+@media (max-width: 768px){
+  .client-grid{
+    grid-template-columns:1fr !important;
+    gap:14px !important;
+  }
+
+  .client,
+  .client-grid > a.client:last-of-type{
+    min-height:170px !important;
+    padding:18px !important;
+    border-radius:20px !important;
+  }
+
+  .client-name{
+    font-size:1.02rem !important;
+  }
+
+  .client-meta{
+    font-size:.78rem !important;
+    line-height:1.7 !important;
+  }
+
+  .client-icon{
+    width:48px !important;
+    height:48px !important;
+  }
+
+  .linux-box{
+    min-height:auto !important;
+  }
+
+  .section-head{
+    gap:10px !important;
+    align-items:flex-start !important;
+  }
+
+  .section-title{
+    flex-wrap:wrap !important;
+    line-height:1.45 !important;
+  }
+
+  .renewal-body{
+    grid-template-columns:1fr !important;
+  }
+}
+</style>
+
+
+<style>
+/* PN_SUB_V6_4_FINAL_LAYOUT */
+
+.client-grid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:12px !important;
+  padding:15px !important;
+  align-items:stretch !important;
+  direction:rtl !important;
+}
+
+.client-grid > a.client,
+.client-grid > a.client:last-of-type{
+  grid-column:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:158px !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+
+  gap:8px !important;
+  padding:17px !important;
+
+  text-align:right !important;
+  direction:rtl !important;
+}
+
+.client-grid > a.client.pn-app-last{
+  grid-column:1 / -1 !important;
+  min-height:138px !important;
+}
+
+.client-grid > a.client .client-icon{
+  order:0 !important;
+  flex:0 0 auto !important;
+
+  width:46px !important;
+  height:46px !important;
+
+  display:grid !important;
+  place-items:center !important;
+
+  margin:0 0 3px 0 !important;
+  padding:0 !important;
+
+  overflow:hidden !important;
+
+  border-radius:13px !important;
+}
+
+.client-grid > a.client .client-name{
+  order:1 !important;
+  width:100% !important;
+
+  margin:0 !important;
+
+  text-align:right !important;
+  direction:ltr !important;
+
+  font-size:.98rem !important;
+  line-height:1.35 !important;
+}
+
+.client-grid > a.client .client-meta{
+  order:2 !important;
+  width:100% !important;
+
+  margin:0 !important;
+
+  text-align:right !important;
+  direction:ltr !important;
+
+  line-height:1.7 !important;
+}
+
+.client-grid > a.client .client-action{
+  order:3 !important;
+
+  margin-top:auto !important;
+  margin-inline-start:0 !important;
+  margin-inline-end:0 !important;
+
+  align-self:flex-start !important;
+}
+
+.client-grid > .linux-box,
+.client-grid > a.linux-box,
+.linux-box{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  min-height:auto !important;
+  display:block !important;
+  text-align:right !important;
+  direction:rtl !important;
+}
+
+.client-icon svg{
+  width:25px !important;
+  height:25px !important;
+  display:block !important;
+
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.client-icon.pn-icon-android svg{
+  width:27px !important;
+  height:27px !important;
+}
+
+.client-icon.pn-icon-ios svg{
+  width:28px !important;
+  height:28px !important;
+}
+
+.client-icon.pn-icon-arm svg{
+  width:27px !important;
+  height:27px !important;
+}
+
+.section-head{
+  direction:rtl !important;
+}
+
+.section-title{
+  direction:rtl !important;
+  text-align:right !important;
+}
+
+.renewal-section{
+  direction:rtl !important;
+}
+
+.renewal-copy{
+  text-align:right !important;
+  direction:rtl !important;
+}
+
+.renewal-device-note{
+  display:block;
+  margin-top:5px;
+
+  color:var(--muted);
+  font-size:.64rem;
+  line-height:1.8;
+}
+
+.pn-notify-test{
+  display:none;
+
+  min-height:36px;
+  padding:0 11px;
+
+  border-radius:11px;
+  border:1px solid rgba(255,204,73,.20);
+
+  color:var(--gold3);
+  background:rgba(255,196,55,.055);
+
+  cursor:pointer;
+
+  font:800 .66rem/1 Tahoma,"Segoe UI",Arial,sans-serif;
+
+  transition:
+    transform .16s ease,
+    border-color .16s ease;
+}
+
+.pn-notify-test.show{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.pn-notify-test:active{
+  transform:scale(.97);
+}
+
+@media (max-width:768px){
+
+  .client-grid{
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:14px !important;
+    padding:14px !important;
+  }
+
+  .client-grid > a.client,
+  .client-grid > a.client:last-of-type,
+  .client-grid > a.client.pn-app-last{
+    grid-column:1 !important;
+
+    min-height:168px !important;
+
+    align-items:flex-start !important;
+
+    text-align:right !important;
+    direction:rtl !important;
+  }
+
+  .client-grid > a.client .client-name,
+  .client-grid > a.client .client-meta{
+    text-align:right !important;
+  }
+
+  .client-grid > a.client .client-action{
+    align-self:flex-start !important;
+  }
+
+  .linux-box{
+    grid-column:1 !important;
+  }
+
+  .section-head{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:flex-start !important;
+
+    gap:8px !important;
+
+    text-align:right !important;
+  }
+
+  .section-title{
+    width:100% !important;
+
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+
+    gap:9px !important;
+
+    flex-wrap:nowrap !important;
+
+    text-align:right !important;
+  }
+
+  .section-title > span:not(.sicon){
+    min-width:0 !important;
+  }
+
+  .section-note{
+    width:100% !important;
+
+    margin:0 !important;
+
+    text-align:right !important;
+    direction:rtl !important;
+
+    line-height:1.8 !important;
+  }
+
+  .renewal-body{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+
+    gap:10px !important;
+  }
+
+  .renewal-btn,
+  .pn-notify-test{
+    width:100% !important;
+  }
+}
+
+html[data-theme="light"] .pn-notify-test{
+  color:#7a4a00 !important;
+  border-color:rgba(130,80,0,.18) !important;
+  background:rgba(255,255,255,.70) !important;
+}
+</style>
+
+
+<style>
+/* PN_SUB_V6_4_1_COPY_LAYOUT */
+
+.linux-command-shell{
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:stretch;
+  margin-top:10px;
+}
+
+.linux-command-shell > .command{
+  margin:0 !important;
+  min-width:0 !important;
+}
+
+.linux-command-shell > .linux-copy-btn{
+  margin:0 !important;
+  min-width:78px !important;
+  align-self:stretch !important;
+}
+
+@media(max-width:420px){
+  .linux-command-shell{
+    grid-template-columns:minmax(0,1fr) auto !important;
+    gap:7px !important;
+  }
+
+  .linux-command-shell > .linux-copy-btn{
+    min-width:72px !important;
+    width:auto !important;
+  }
+}
+</style>
+
+
+<link rel="icon" type="image/webp" href="/sub-clients/private-network.webp">
+<link rel="shortcut icon" type="image/webp" href="/sub-clients/private-network.webp">
+<link rel="apple-touch-icon" href="/sub-clients/private-network.webp">
+
+</head>
+<body>
+<div class="page">
+  <section class="hero">
+    <div class="top">
+      <div class="brand">
+        <img class="logo" src="/sub-clients/private-network.webp" alt="Private Network">
+        <div class="brand-copy">
+          <div class="brand-name">PRIVATE NETWORK</div>
+          <div class="brand-sub" data-i18n="brandSub">اشتراک امن و اختصاصی شما</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="icon-btn" id="langBtn" title="Language">FA</button>
+        <button class="icon-btn" id="themeBtn" title="Theme">☾</button>
+      </div>
+    </div>
+
+    <h1 class="title" data-i18n="title">اطلاعات اشتراک شما</h1>
+    <div class="status-wrap">
+      <span class="status {% if is_active %}on{% else %}off{% endif %}">
+        <span class="dot"></span>
+        <span data-i18n="{% if is_active %}active{% else %}inactive{% endif %}">{% if is_active %}فعال{% else %}غیرفعال{% endif %}</span>
+      </span>
+    </div>
+
+    <div class="usage">
+      <div class="ring" id="usageRing" style="--pct:0">
+        <div class="ring-content">
+          <div class="ring-value" id="usagePct">0%</div>
+          <div class="ring-label" id="ringLabel">{% if not total or total <= 0 %}باقی‌مانده{% else %}مصرف‌شده{% endif %}</div>
+        </div>
+      </div>
+      <div>
+        <div class="user-name">{{ name }}</div>
+        <div class="mini-grid">
+          <div class="mini"><div class="mini-label" data-i18n="usedTraffic">ترافیک مصرفی</div><div class="mini-value" id="usedValue">—</div></div>
+          <div class="mini"><div class="mini-label" data-i18n="remainingTraffic">باقی‌مانده</div><div class="mini-value" id="remainValue">—</div></div>
+          <div class="mini expiry-mini" id="expiryMini">
+  <div class="mini-label" data-i18n="expiry">تاریخ انقضا</div>
+  <div class="mini-value expiry-stack">
+    <span class="expiry-line gregorian-date">{{ expiry_date }}</span>
+    <span class="expiry-line jalali-date" id="jalaliExpiry" data-date="{{ expiry_date }}">...</span>
+    <span class="expiry-line days-left" id="daysLeft" data-date="{{ expiry_date }}">...</span>
+  </div>
+</div>
+          <div class="mini"><div class="mini-label" data-i18n="devices">اتصال هم‌زمان</div><div class="mini-value">{% if device_limit == 0 %}∞{% else %}{{ device_limit }}{% endif %}</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PN_RENEWAL_V5 -->
+  <section class="section renewal-section" id="renewalReminder" data-expiry="{{ expiry_date }}">
+    <div class="section-head renewal-head">
+      <div class="section-title">
+        <span class="sicon renewal-bell">🔔</span>
+        <span id="renewalTitle">یادآوری تمدید اشتراک</span>
+      </div>
+      <div class="section-note" id="renewalBadge">اختیاری</div>
+    </div>
+    <div class="renewal-body">
+      <div class="renewal-copy">
+        <strong id="renewalDaysText">در حال محاسبه زمان باقی‌مانده...</strong>
+        <span id="renewalDesc">با اجازه شما، در ۵ روز پایانی روزی دو اعلان با فاصله ۱۰ ساعت دریافت می‌کنی. برای تمدید سرویس به فروشنده خود مراجعه کنید.</span>
+      </div>
+      <button type="button" class="renewal-btn" id="enableRenewalNotification">
+        <span class="renewal-btn-icon">🔔</span>
+        <span id="renewalButtonText">فعال‌سازی یادآوری</span>
+      </button>
+      <div class="renewal-state" id="renewalState" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-title"><span class="sicon">◈</span><span data-i18n="servers">سرورها و کانفیگ‌ها</span></div>
+      <div class="section-note" data-i18n="serverNote">بهترین سرور به‌صورت خودکار مشخص شده</div>
+    </div>
+    <div class="node-list">
+      {% if node_health %}
+      {% for node_name, item in node_health.items() %}
+        {% set link = ovpn_download_links.get(node_name) %}
+        {% if link %}
+        <a class="node {% if item.recommended %}recommended{% endif %}" href="{{ link }}">
+        {% else %}
+        <div class="node offline">
+        {% endif %}
+          <div class="node-top">
+            <div class="loc">
+              <span class="flag">{{ item.flag }}</span>
+              <div>
+                <strong>{{ node_name }}</strong>
+                {% if item.recommended %}<div class="rec" data-i18n="recommended">★ پیشنهاد هوشمند</div>{% endif %}
+              </div>
+            </div>
+            <span class="pill {{ item.state }}">
+              <span class="dot"></span>
+              <span class="node-state" data-state="{{ item.state }}">{{ item.state_fa }}</span>
+              {% if item.online %}<b>{{ item.load }}%</b>{% endif %}
+            </span>
+          </div>
+          <div class="bar"><div class="fill" style="width:{{ item.load }}%"></div></div>
+          <div class="node-bottom">
+            <span>{% if item.online %}<span data-i18n="liveLoad">بار لحظه‌ای شبکه</span> · {{ item.mbps }} Mbps{% else %}<span data-i18n="offlineHint">موقتاً خارج از دسترس</span>{% endif %}</span>
+            {% if link %}<span class="download" data-i18n="downloadConfig">دانلود کانفیگ ↓</span>{% endif %}
+          </div>
+        {% if link %}</a>{% else %}</div>{% endif %}
+      {% endfor %}
+      {% else %}
+      <div class="guide" data-i18n="noServers">در حال حاضر سرور فعالی برای این اشتراک وجود ندارد.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-title"><span class="sicon">⬇</span><span data-i18n="clients">دانلود نرم‌افزار اتصال</span></div>
+      <div class="section-note" data-i18n="localFiles">فایل‌های نصب مستقیم از Private Network؛ iOS از App Store رسمی</div>
+    </div>
+    <div class="client-grid">
+      <a class="client" href="/sub-clients/OpenVPN-Windows-x64.msi">
+        <div><div class="client-icon">⊞</div><div class="client-name">Windows x64</div><div class="client-meta">OpenVPN Community 2.7.6<br>Windows 10 / 11</div></div>
+        <div class="client-action" data-i18n="downloadInstall">دانلود و نصب ↓</div>
+      </a>
+      <a class="client" href="/sub-clients/OpenVPN-Android.apk">
+        <div><div class="client-icon">🤖</div><div class="client-name">Android</div><div class="client-meta">OpenVPN for Android<br>APK</div></div>
+        <div class="client-action" data-i18n="downloadInstall">دانلود و نصب ↓</div>
+      </a>
+      <a class="client"
+         href="https://apps.apple.com/us/app/openvpn-connect/id590379981"
+         target="_blank"
+         rel="noopener noreferrer">
+        <div>
+          <div class="client-icon"></div>
+          <div class="client-name">iPhone / iPad</div>
+          <div class="client-meta">
+            OpenVPN Connect<br>
+            Official App Store
+          </div>
+        </div>
+        <div class="client-action">
+          App Store ↗
+        </div>
+      </a>
+      <a class="client" href="/sub-clients/Tunnelblick-macOS.dmg">
+        <div><div class="client-icon"></div><div class="client-name">macOS</div><div class="client-meta">Tunnelblick Stable<br>Intel + Apple Silicon</div></div>
+        <div class="client-action" data-i18n="downloadInstall">دانلود و نصب ↓</div>
+      </a>
+      <a class="client" href="/sub-clients/OpenVPN-Windows-ARM64.msi">
+        <div><div class="client-icon">⊞</div><div class="client-name">Windows ARM64</div><div class="client-meta">OpenVPN Community 2.7.6<br>ARM devices</div></div>
+        <div class="client-action" data-i18n="downloadInstall">دانلود و نصب ↓</div>
+      </a>
+      <div class="client linux-box">
+        <div><div class="client-icon">🐧</div><div class="client-name">Linux</div><div class="client-meta" data-i18n="linuxText">در Ubuntu / Debian از مخزن سیستم نصب کنید.</div>
+        <code class="command"><span class="linux-install-command" id="linuxInstallCommand">sudo apt update && sudo apt install -y openvpn</span><button type="button" class="linux-copy-btn" id="linuxCopyBtn" aria-label="کپی دستور نصب OpenVPN"><span class="linux-copy-icon">⧉</span><span id="linuxCopyText">کپی</span></button></code></div>
+      </div>
+    </div>
+  </section>
+
+  {% if anyconnect %}
+  <section class="section">
+    <div class="section-head">
+      <div class="section-title"><span class="sicon">⌁</span><span data-i18n="anyconnect">اتصال AnyConnect</span></div>
+      <div class="section-note" style="color:var(--green)" data-i18n="ready">آماده اتصال</div>
+    </div>
+    <div class="any-box">
+      <div class="any-card">
+        <div class="any-row"><span class="any-label" data-i18n="server">سرور</span><code class="any-value" id="acServer">{{ anyconnect.server }}</code><button class="copy" data-copy="acServer" data-i18n="copy">کپی</button></div>
+        <div class="any-row"><span class="any-label" data-i18n="username">نام کاربری</span><code class="any-value" id="acUser">{{ anyconnect.username }}</code><button class="copy" data-copy="acUser" data-i18n="copy">کپی</button></div>
+        <div class="any-row"><span class="any-label" data-i18n="password">رمز عبور</span><code class="any-value" id="acPass">{{ anyconnect.password }}</code><button class="copy" data-copy="acPass" data-i18n="copy">کپی</button></div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-title"><span class="sicon">?</span><span data-i18n="guideTitle">راهنمای سریع اتصال</span></div>
+    </div>
+    <div class="guide" data-i18n-html="guide">
+      <b>۱.</b> نرم‌افزار مناسب دستگاهت را نصب کن.<br>
+      <b>۲.</b> از بخش سرورها یک کانفیگ را دانلود کن.<br>
+      <b>۳.</b> فایل <b>.ovpn</b> را داخل برنامه Import کن و Connect را بزن.<br>
+      <b>نکته:</b> سروری که علامت «پیشنهاد هوشمند» دارد در لحظه خلوت‌تر است.
+    </div>
+  </section>
+
+  <div class="footer">PRIVATE NETWORK · Secure OpenVPN Access</div>
+</div>
+
+<script>
+const TOTAL={{ total or 0 }};
+const USED={{ used or 0 }};
+const GB=1024*1024*1024;
+function traffic(){
+  const unlimited=!TOTAL || TOTAL<=0;
+  const pct=unlimited?0:Math.max(0,Math.min(100,(USED/TOTAL)*100));
+  document.getElementById("usageRing").style.setProperty("--pct",pct.toFixed(1));
+  document.getElementById("usagePct").textContent=unlimited?"∞":(USED/GB).toFixed(2)+" GB";
+  document.getElementById("usedValue").textContent=(USED/GB).toFixed(2)+" GB";
+  document.getElementById("remainValue").textContent=unlimited?"∞":Math.max(0,(TOTAL-USED)/GB).toFixed(2)+" GB";
+}
+const I18N={
+ fa:{brandSub:"اشتراک امن و اختصاصی شما",title:"اطلاعات اشتراک شما",active:"فعال",inactive:"غیرفعال",used:"مصرف شده",usedTraffic:"ترافیک مصرفی",remainingTraffic:"باقی‌مانده",expiry:"تاریخ انقضا",devices:"اتصال هم‌زمان",servers:"سرورها و کانفیگ‌ها",serverNote:"بهترین سرور به‌صورت خودکار مشخص شده",recommended:"★ پیشنهاد هوشمند",liveLoad:"بار لحظه‌ای شبکه",offlineHint:"موقتاً خارج از دسترس",downloadConfig:"دانلود کانفیگ ↓",noServers:"در حال حاضر سرور فعالی برای این اشتراک وجود ندارد.",clients:"دانلود نرم‌افزار اتصال",localFiles:"فایل‌های نصب مستقیم از Private Network؛ iOS از App Store رسمی",downloadInstall:"دانلود و نصب ↓",linuxText:"در Ubuntu / Debian از مخزن سیستم نصب کنید.",anyconnect:"اتصال AnyConnect",ready:"آماده اتصال",server:"سرور",username:"نام کاربری",password:"رمز عبور",copy:"کپی",guideTitle:"راهنمای سریع اتصال",low:"خلوت",normal:"نیمه‌خلوت",busy:"شلوغ",offline:"آفلاین",guide:'<b>۱.</b> نرم‌افزار مناسب دستگاهت را نصب کن.<br><b>۲.</b> از بخش سرورها یک کانفیگ را دانلود کن.<br><b>۳.</b> فایل <b>.ovpn</b> را داخل برنامه Import کن و Connect را بزن.<br><b>نکته:</b> سروری که علامت «پیشنهاد هوشمند» دارد در لحظه خلوت‌تر است.'},
+ en:{brandSub:"Your secure private subscription",title:"Your Subscription",active:"Active",inactive:"Inactive",used:"Used",usedTraffic:"Traffic used",remainingTraffic:"Remaining",expiry:"Expiry date",devices:"Concurrent devices",servers:"Servers & Configs",serverNote:"Best server is selected automatically",recommended:"★ Smart recommendation",liveLoad:"Live network load",offlineHint:"Temporarily unavailable",downloadConfig:"Download config ↓",noServers:"No active server is currently available for this subscription.",clients:"Connection Apps",localFiles:"Installers are served by Private Network; iOS uses the official App Store",downloadInstall:"Download & install ↓",linuxText:"Install from your system repository on Ubuntu / Debian.",anyconnect:"AnyConnect",ready:"Ready",server:"Server",username:"Username",password:"Password",copy:"Copy",guideTitle:"Quick connection guide",low:"Low",normal:"Moderate",busy:"Busy",offline:"Offline",guide:'<b>1.</b> Install the app for your device.<br><b>2.</b> Download a configuration from Servers.<br><b>3.</b> Import the <b>.ovpn</b> file and connect.<br><b>Tip:</b> The Smart recommendation is currently the least-loaded server.'}
+};
+function setLang(lang){
+ const d=I18N[lang]||I18N.fa;
+ document.documentElement.lang=lang;
+ document.documentElement.dir=lang==="fa"?"rtl":"ltr";
+ document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.dataset.i18n;if(d[k])el.textContent=d[k]});
+ document.querySelectorAll("[data-i18n-html]").forEach(el=>{const k=el.dataset.i18nHtml;if(d[k])el.innerHTML=d[k]});
+ document.querySelectorAll(".node-state").forEach(el=>{const k=el.dataset.state;el.textContent=d[k]||k});
+ document.getElementById("langBtn").textContent=lang==="fa"?"EN":"FA";
+ localStorage.setItem("pn_lang",lang);
+}
+document.getElementById("langBtn").onclick=()=>setLang((localStorage.getItem("pn_lang")||"fa")==="fa"?"en":"fa");
+document.getElementById("themeBtn").onclick=()=>{
+ const next=document.documentElement.dataset.theme==="dark"?"light":"dark";
+ document.documentElement.dataset.theme=next;localStorage.setItem("pn_theme",next);
+ document.getElementById("themeBtn").textContent=next==="dark"?"☾":"☀";
+};
+document.querySelectorAll("[data-copy]").forEach(btn=>btn.onclick=async()=>{
+ const el=document.getElementById(btn.dataset.copy);try{await navigator.clipboard.writeText(el.textContent.trim());btn.textContent="✓";setTimeout(()=>setLang(localStorage.getItem("pn_lang")||"fa"),900)}catch(e){}
+});
+const theme=localStorage.getItem("pn_theme")||"dark";document.documentElement.dataset.theme=theme;document.getElementById("themeBtn").textContent=theme==="dark"?"☾":"☀";
+traffic();setLang(localStorage.getItem("pn_lang")||"fa");
+</script>
+
+
+
+
+<script>
+/* PN_SUB_V5_RUNTIME */
+(function(){
+  "use strict";
+
+  const GB = 1024 * 1024 * 1024;
+  const TOTAL = Number({{ (total or 0)|int }});
+  const USED = Number({{ (used or 0)|int }});
+  const UNLIMITED = !TOTAL || TOTAL <= 0;
+  const EXPIRY_ISO = "{{ expiry_date }}";
+  const REMINDER_PATH_KEY = location.pathname.replace(/[^a-zA-Z0-9_-]/g,"_");
+
+  function $id(id){ return document.getElementById(id); }
+
+  function parseISODate(iso){
+    const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(!m) return null;
+    return {y:Number(m[1]),m:Number(m[2]),d:Number(m[3])};
+  }
+
+  function daysUntil(iso){
+    const p = parseISODate(iso);
+    if(!p) return null;
+    const now = new Date();
+    const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const expiryUTC = Date.UTC(p.y, p.m - 1, p.d);
+    return Math.round((expiryUTC - todayUTC) / 86400000);
+  }
+
+  function latinPersianDate(iso){
+    const p = parseISODate(iso);
+    if(!p) return "";
+    try{
+      const d = new Date(p.y, p.m - 1, p.d, 12, 0, 0);
+      const fmt = new Intl.DateTimeFormat(
+        "fa-IR-u-ca-persian-nu-latn",
+        {year:"numeric",month:"2-digit",day:"2-digit"}
+      );
+      const parts = {};
+      fmt.formatToParts(d).forEach(x => {
+        if(x.type !== "literal") parts[x.type] = x.value;
+      });
+      if(parts.year && parts.month && parts.day){
+        return `${parts.year}/${parts.month}/${parts.day}`;
+      }
+      return fmt.format(d).replace(/[^\d]+/g,"/");
+    }catch(e){
+      return "";
+    }
+  }
+
+  function dayText(days, lang){
+    const en = lang === "en";
+    if(days === null) return en ? "Expiry date unavailable" : "تاریخ انقضا نامعتبر است";
+    if(days < 0) return en ? "Subscription expired" : "اشتراک منقضی شده";
+    if(days === 0) return en ? "Last day of subscription" : "امروز آخرین روز اشتراک";
+    return en ? `${days} day${days === 1 ? "" : "s"} remaining` : `${days} روز تا پایان`;
+  }
+
+  function currentLang(){
+    return document.documentElement.dir === "ltr" ? "en" : "fa";
+  }
+
+  const pct = UNLIMITED ? 100 : Math.max(0, Math.min(100, TOTAL > 0 ? (USED / TOTAL) * 100 : 0));
+  const usageRing = $id("usageRing");
+  const usagePct = $id("usagePct");
+  const usedValue = $id("usedValue");
+  const remainValue = $id("remainValue");
+  const ringLabel = $id("ringLabel") || document.querySelector(".ring-label");
+
+  if(usageRing) usageRing.style.setProperty("--pct", String(pct));
+  if(usagePct) usagePct.textContent = UNLIMITED ? "∞" : `${(USED / GB).toFixed(2)} GB`;
+  if(usedValue) usedValue.textContent = `${(USED / GB).toFixed(2)} GB`;
+  if(remainValue) remainValue.textContent = UNLIMITED ? "∞" : `${Math.max(0,(TOTAL-USED)/GB).toFixed(2)} GB`;
+  if(ringLabel) ringLabel.textContent = UNLIMITED ? "باقی‌مانده" : "مصرف‌شده";
+
+  const days = daysUntil(EXPIRY_ISO);
+  const jalali = latinPersianDate(EXPIRY_ISO);
+
+  const jalaliEl = $id("jalaliExpiry");
+  const daysEl = $id("daysLeft");
+  const expiryMini = $id("expiryMini");
+
+  if(jalaliEl) jalaliEl.textContent = jalali || "-";
+  if(daysEl) daysEl.textContent = dayText(days, currentLang());
+  if(expiryMini){
+    expiryMini.classList.toggle("is-warning", days !== null && days >= 0 && days <= 5);
+    expiryMini.classList.toggle("is-expired", days !== null && days < 0);
+  }
+
+  if(!document.querySelector(".pn5-fx")){
+    const fx = document.createElement("div");
+    fx.className = "pn5-fx";
+    fx.setAttribute("aria-hidden","true");
+    fx.innerHTML = '<i class="pn5-orb one"></i><i class="pn5-orb two"></i><i class="pn5-orb three"></i>';
+    document.body.prepend(fx);
+  }
+
+  const reveal = Array.from(document.querySelectorAll(".hero,.section"));
+  reveal.forEach(el => el.classList.add("pn5-reveal"));
+  if("IntersectionObserver" in window){
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if(e.isIntersecting){
+          e.target.classList.add("visible");
+          io.unobserve(e.target);
+        }
+      });
+    },{threshold:.05});
+    reveal.forEach(el => io.observe(el));
+  }else{
+    reveal.forEach(el => el.classList.add("visible"));
+  }
+
+  const renewal = $id("renewalReminder");
+  const renewalDaysText = $id("renewalDaysText");
+  const renewalDesc = $id("renewalDesc");
+  const renewalBadge = $id("renewalBadge");
+  const renewalBtn = $id("enableRenewalNotification");
+  const renewalBtnText = $id("renewalButtonText");
+  const renewalState = $id("renewalState");
+
+  const enabledKey = `pn-renew-enabled:${REMINDER_PATH_KEY}`;
+  const lastNotifyKey = `pn-renew-last:${REMINDER_PATH_KEY}`;
+  const modalDismissKey = `pn-renew-modal-dismiss:${REMINDER_PATH_KEY}`;
+
+  function todayKey(){
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  function browserNotificationAvailable(){
+    return window.isSecureContext && ("Notification" in window);
+  }
+
+  function reminderEnabled(){
+    return localStorage.getItem(enabledKey) === "1";
+  }
+
+  function setState(message, cls){
+    if(!renewalState) return;
+    renewalState.textContent = message || "";
+    renewalState.className = `renewal-state ${cls || ""}`.trim();
+  }
+
+  function updateRenewalUI(){
+    const lang = currentLang();
+    const en = lang === "en";
+
+    if(daysEl) daysEl.textContent = dayText(days, lang);
+    if(renewalDaysText) renewalDaysText.textContent = dayText(days, lang);
+    if(renewal) renewal.classList.toggle("urgent", days !== null && days >= 0 && days <= 5);
+
+    if(renewalBadge){
+      if(days === null) renewalBadge.textContent = en ? "Optional" : "اختیاری";
+      else if(days < 0) renewalBadge.textContent = en ? "Expired" : "منقضی";
+      else if(days <= 5) renewalBadge.textContent = en ? "Renew now" : "زمان تمدید";
+      else renewalBadge.textContent = en ? "Optional" : "اختیاری";
+    }
+
+    if(!browserNotificationAvailable()){
+      if(renewalBtn){renewalBtn.disabled = true;renewalBtn.classList.remove("enabled")}
+      if(renewalBtnText) renewalBtnText.textContent = en ? "Not supported" : "اعلان مرورگر پشتیبانی نمی‌شود";
+      setState(en ? "Browser notifications are unavailable in this browser." : "این مرورگر امکان اعلان وب را در اختیار صفحه قرار نمی‌دهد.","warn");
+      return;
+    }
+
+    if(Notification.permission === "denied"){
+      if(renewalBtn){renewalBtn.disabled = true;renewalBtn.classList.remove("enabled")}
+      if(renewalBtnText) renewalBtnText.textContent = en ? "Notifications blocked" : "اعلان‌ها مسدود شده";
+      setState(en ? "Allow notifications for this site from your browser settings." : "برای فعال‌سازی، اجازه اعلان این سایت را از تنظیمات مرورگر باز کنید.","err");
+      return;
+    }
+
+    if(Notification.permission === "granted" && reminderEnabled()){
+      if(renewalBtn){renewalBtn.disabled = false;renewalBtn.classList.add("enabled")}
+      if(renewalBtnText) renewalBtnText.textContent = en ? "Reminder enabled" : "یادآوری فعال است";
+      setState(en ? "You will be reminded when you open this subscription page during the final 5 days." : "در ۵ روز پایانی، هنگام باز شدن این صفحه روزی یک‌بار یادآوری دریافت می‌کنید.","ok");
+    }else{
+      if(renewalBtn){renewalBtn.disabled = false;renewalBtn.classList.remove("enabled")}
+      if(renewalBtnText) renewalBtnText.textContent = en ? "Enable reminder" : "فعال‌سازی یادآوری";
+      setState(en ? "Permission is requested only after you press the button." : "اجازه اعلان فقط با انتخاب خودت درخواست می‌شود.","");
+    }
+
+    if(renewalDesc){
+      renewalDesc.textContent = en
+        ? "With your permission, a browser notification is shown when this page is opened during the final 5 days."
+        : "با اجازه شما، در ۵ روز پایانی روزی دو اعلان با فاصله ۱۰ ساعت دریافت می‌کنی. برای تمدید سرویس به فروشنده خود مراجعه کنید.";
+    }
+  }
+
+  function showToast(message){
+    let toast = document.querySelector(".pn5-toast");
+    if(!toast){
+      toast = document.createElement("div");
+      toast.className = "pn5-toast";
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    requestAnimationFrame(() => toast.classList.add("show"));
+    clearTimeout(window.__pn5ToastTimer);
+    window.__pn5ToastTimer = setTimeout(() => toast.classList.remove("show"),3600);
+  }
+
+  async function requestReminderPermission(){
+    if(!browserNotificationAvailable()) return false;
+
+    if(Notification.permission === "granted"){
+      localStorage.setItem(enabledKey,"1");
+      updateRenewalUI();
+      maybeNotify();
+      return true;
+    }
+
+    try{
+      const permission = await Notification.requestPermission();
+      if(permission === "granted"){
+        localStorage.setItem(enabledKey,"1");
+        updateRenewalUI();
+        showToast(currentLang()==="en" ? "Renewal reminder enabled." : "یادآوری تمدید فعال شد.");
+        maybeNotify();
+        return true;
+      }
+      updateRenewalUI();
+    }catch(e){
+      setState(currentLang()==="en" ? "Could not request notification permission." : "درخواست دسترسی اعلان انجام نشد.","err");
+    }
+    return false;
+  }
+
+  if(renewalBtn){
+    renewalBtn.addEventListener("click", async () => {
+      if(Notification.permission === "granted" && reminderEnabled()){
+        localStorage.removeItem(enabledKey);
+        showToast(currentLang()==="en" ? "Renewal reminder disabled." : "یادآوری تمدید غیرفعال شد.");
+        updateRenewalUI();
+        return;
+      }
+      await requestReminderPermission();
+    });
+  }
+
+  function notificationBody(){
+    if(days === 0) return "امروز آخرین روز اشتراک شماست. برای جلوگیری از قطع سرویس، اکانت جدید تهیه کنید.";
+    if(days === 1) return "فقط 1 روز تا پایان اشتراک شما باقی مانده. برای خرید اکانت جدید اقدام کنید.";
+    return `فقط ${days} روز تا پایان اشتراک شما باقی مانده. برای خرید اکانت جدید اقدام کنید.`;
+  }
+
+  function maybeNotify(){
+    if(days === null || days < 0 || days > 5) return;
+    if(!browserNotificationAvailable()) return;
+    if(Notification.permission !== "granted" || !reminderEnabled()) return;
+
+    const today = todayKey();
+    if(localStorage.getItem(lastNotifyKey) === today) return;
+
+    try{
+      const n = new Notification("Private Network · یادآوری تمدید",{
+        body:notificationBody(),
+        icon:"/sub-clients/private-network.webp",
+        tag:`pn-renewal-${REMINDER_PATH_KEY}`,
+        renotify:false
+      });
+      n.onclick = function(){
+        window.focus();
+        try{n.close()}catch(e){}
+      };
+      localStorage.setItem(lastNotifyKey,today);
+    }catch(e){}
+  }
+
+  function maybeShowPermissionModal(){
+    if(days === null || days < 0 || days > 5) return;
+    if(!browserNotificationAvailable()) return;
+    if(Notification.permission !== "default") return;
+    if(reminderEnabled()) return;
+    if(localStorage.getItem(modalDismissKey) === todayKey()) return;
+
+    const overlay = document.createElement("div");
+    overlay.className = "pn5-modal-backdrop";
+    overlay.innerHTML = `
+      <div class="pn5-modal" role="dialog" aria-modal="true" aria-labelledby="pn5ModalTitle">
+        <div class="pn5-modal-icon">🔔</div>
+        <h3 id="pn5ModalTitle">یادآوری تمدید را فعال می‌کنی؟</h3>
+        <p>${dayText(days,"fa")} باقی مانده. اگر اجازه اعلان بدهی، در ۵ روز پایانی هنگام باز شدن صفحه اشتراک بهت یادآوری می‌کنیم اکانت جدید تهیه کنی.</p>
+        <div class="pn5-modal-actions">
+          <button type="button" class="pn5-modal-enable">فعال‌سازی اعلان</button>
+          <button type="button" class="pn5-modal-later">فعلاً نه</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add("show"));
+
+    overlay.querySelector(".pn5-modal-enable").addEventListener("click", async () => {
+      await requestReminderPermission();
+      overlay.classList.remove("show");
+      setTimeout(() => overlay.remove(),250);
+    });
+
+    overlay.querySelector(".pn5-modal-later").addEventListener("click",() => {
+      localStorage.setItem(modalDismissKey,todayKey());
+      overlay.classList.remove("show");
+      setTimeout(() => overlay.remove(),250);
+    });
+  }
+
+  new MutationObserver(updateRenewalUI).observe(
+    document.documentElement,
+    {attributes:true,attributeFilter:["dir","lang"]}
+  );
+
+  updateRenewalUI();
+  /* V6.1 local notify disabled */
+  /* V6.1 background push owns permission */
+})();
+</script>
+
+<script>
+/* PN_SUB_V6_1_BACKGROUND_PUSH */
+(function(){
+  "use strict";
+
+  const parts = location.pathname.split("/").filter(Boolean);
+  const subPath = parts[0] || "sub";
+  const uuid = parts[1] || "";
+
+  if(!uuid) return;
+
+  const root = "/" + encodeURIComponent(subPath) + "/push";
+  const enabledKey = "pn61-push-enabled:" + uuid;
+
+  function id(name){
+    return document.getElementById(name);
+  }
+
+  function setState(message, cls){
+    const el = id("renewalState");
+    if(!el) return;
+    el.textContent = message || "";
+    el.className = "renewal-state " + (cls || "");
+  }
+
+  function setButton(enabled){
+    const btn = id("enableRenewalNotification");
+    const txt = id("renewalButtonText");
+
+    if(btn) btn.classList.toggle("enabled", !!enabled);
+
+    if(txt){
+      txt.textContent = enabled
+        ? "یادآوری پس‌زمینه فعال است"
+        : "فعال‌سازی یادآوری";
+    }
+  }
+
+  function isIOS(){
+    return /iPad|iPhone|iPod/i.test(navigator.userAgent || "");
+  }
+
+  function standalone(){
+    return (
+      window.matchMedia &&
+      window.matchMedia("(display-mode: standalone)").matches
+    ) || navigator.standalone === true;
+  }
+
+  function supported(){
+    return (
+      window.isSecureContext &&
+      "serviceWorker" in navigator &&
+      "PushManager" in window &&
+      "Notification" in window
+    );
+  }
+
+  function toBytes(value){
+    const padding = "=".repeat((4-value.length%4)%4);
+    const data = atob(
+      (value + padding)
+        .replace(/-/g, "+")
+        .replace(/_/g, "/")
+    );
+
+    const result = new Uint8Array(data.length);
+
+    for(let i=0;i<data.length;i++){
+      result[i] = data.charCodeAt(i);
+    }
+
+    return result;
+  }
+
+  async function getPublicKey(){
+    const response = await fetch(
+      root + "/public-key",
+      {
+        cache:"no-store",
+        credentials:"same-origin"
+      }
+    );
+
+    if(!response.ok) throw new Error("PUBLIC_KEY");
+
+    return (await response.json()).public_key;
+  }
+
+  async function registerSW(){
+    return navigator.serviceWorker.register(
+      root + "/sw.js",
+      {
+        scope:"/",
+        updateViaCache:"none"
+      }
+    );
+  }
+
+  async function saveSubscription(subscription){
+    const data = subscription.toJSON();
+
+    const response = await fetch(
+      root + "/subscribe/" + encodeURIComponent(uuid),
+      {
+        method:"POST",
+        credentials:"same-origin",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          endpoint:data.endpoint,
+          keys:data.keys,
+          timezone:
+            Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+          language:navigator.language || "fa",
+          user_agent:navigator.userAgent || ""
+        })
+      }
+    );
+
+    if(!response.ok) throw new Error("SAVE");
+  }
+
+  async function enablePush(askPermission){
+    if(!supported()) throw new Error("UNSUPPORTED");
+
+    if(isIOS() && !standalone()){
+      throw new Error("IOS_HOME_SCREEN");
+    }
+
+    if(Notification.permission !== "granted"){
+      if(!askPermission) return null;
+
+      const permission = await Notification.requestPermission();
+
+      if(permission !== "granted"){
+        throw new Error("DENIED");
+      }
+    }
+
+    const registration = await registerSW();
+
+    let subscription =
+      await registration.pushManager.getSubscription();
+
+    if(!subscription){
+      subscription =
+        await registration.pushManager.subscribe({
+          userVisibleOnly:true,
+          applicationServerKey:toBytes(await getPublicKey())
+        });
+    }
+
+    await saveSubscription(subscription);
+
+    localStorage.setItem(enabledKey, "1");
+
+    setButton(true);
+
+    setState(
+      "فعال شد؛ در ۵ روز پایانی یا وقتی حجم سرویس حجمی به ۱ گیگابایت یا کمتر برسد، روزی دو نوتیف دریافت می‌کنی. برای تمدید یا خرید سرویس به فروشنده خود مراجعه کنید.",
+      "ok"
+    );
+
+    return subscription;
+  }
+
+  async function disablePush(){
+    if(!supported()) return;
+
+    const registration = await registerSW();
+    const subscription =
+      await registration.pushManager.getSubscription();
+
+    if(subscription){
+      try{
+        await fetch(
+          root + "/subscribe/" + encodeURIComponent(uuid),
+          {
+            method:"DELETE",
+            credentials:"same-origin",
+            headers:{
+              "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+              endpoint:subscription.endpoint
+            })
+          }
+        );
+      }catch(_){}
+
+      try{
+        await subscription.unsubscribe();
+      }catch(_){}
+    }
+
+    localStorage.removeItem(enabledKey);
+    setButton(false);
+    setState("یادآوری پس‌زمینه غیرفعال شد.", "");
+  }
+
+  let button = id("enableRenewalNotification");
+
+  if(button){
+    const replacement = button.cloneNode(true);
+    button.replaceWith(replacement);
+    button = replacement;
+  }
+
+  if(button){
+    button.addEventListener("click", async function(){
+      button.disabled = true;
+
+      try{
+        const active =
+          localStorage.getItem(enabledKey) === "1" &&
+          Notification.permission === "granted";
+
+        if(active){
+          await disablePush();
+        }else{
+          await enablePush(true);
+        }
+
+      }catch(error){
+        const code =
+          error && error.message
+            ? error.message
+            : "";
+
+        if(code === "IOS_HOME_SCREEN"){
+          setState(
+            "در iPhone/iPad ابتدا Add to Home Screen کن؛ بعد صفحه را از همان آیکن باز کن و یادآوری را فعال کن.",
+            "warn"
+          );
+
+        }else if(code === "DENIED"){
+          setState("اجازه اعلان داده نشد.", "warn");
+
+        }else if(code === "UNSUPPORTED"){
+          setState(
+            "این مرورگر Web Push پس‌زمینه را پشتیبانی نمی‌کند.",
+            "warn"
+          );
+
+        }else{
+          setState(
+            "فعال‌سازی Push انجام نشد؛ دوباره تلاش کن.",
+            "err"
+          );
+        }
+
+      }finally{
+        button.disabled = false;
+      }
+    });
+  }
+
+  async function refresh(){
+    if(!supported()){
+      if(button) button.disabled = true;
+
+      setState(
+        "این مرورگر Web Push پس‌زمینه را پشتیبانی نمی‌کند.",
+        "warn"
+      );
+
+      return;
+    }
+
+    if(isIOS() && !standalone()){
+      setButton(false);
+
+      setState(
+        "در iPhone/iPad برای Push پس‌زمینه اول Add to Home Screen لازم است.",
+        "warn"
+      );
+
+      return;
+    }
+
+    if(Notification.permission === "denied"){
+      if(button) button.disabled = true;
+
+      setState(
+        "Notification این سایت Block شده؛ از تنظیمات مرورگر برای این سایت Allow کن.",
+        "err"
+      );
+
+      return;
+    }
+
+    if(
+      localStorage.getItem(enabledKey) === "1" &&
+      Notification.permission === "granted"
+    ){
+      try{
+        await enablePush(false);
+      }catch(_){}
+    }else{
+      setButton(false);
+
+      setState(
+        "با فعال‌سازی، در ۵ روز آخر روزی دو اعلان دریافت می‌کنی. برای تمدید سرویس به فروشنده خود مراجعه کنید.",
+        ""
+      );
+    }
+  }
+
+  refresh();
+})();
+</script>
+
+<script>
+/* PN_SUB_V6_1_THEME_RUNTIME */
+(function(){
+  const oldBtn = document.getElementById("themeBtn");
+  if(!oldBtn) return;
+
+  const btn = oldBtn.cloneNode(true);
+  oldBtn.replaceWith(btn);
+
+  function apply(theme){
+    const value = theme === "light" ? "light" : "dark";
+
+    document.documentElement.setAttribute(
+      "data-theme",
+      value
+    );
+
+    localStorage.setItem(
+      "pn_theme",
+      value
+    );
+
+    btn.textContent =
+      value === "dark"
+        ? "☾"
+        : "☀";
+
+    const meta =
+      document.querySelector('meta[name="theme-color"]');
+
+    if(meta){
+      meta.setAttribute(
+        "content",
+        value === "dark"
+          ? "#070707"
+          : "#fffaf0"
+      );
+    }
+  }
+
+  apply(
+    localStorage.getItem("pn_theme") || "dark"
+  );
+
+  btn.addEventListener("click", function(){
+    const current =
+      document.documentElement.getAttribute("data-theme")
+      || "dark";
+
+    apply(
+      current === "dark"
+        ? "light"
+        : "dark"
+    );
+  });
+})();
+</script>
+
+
+<script>
+/* PN_SUB_V6_2_1_COPY_RUNTIME */
+(function(){
+  "use strict";
+
+  const button = document.getElementById("linuxCopyBtn");
+  const command = document.getElementById("linuxInstallCommand");
+  const label = document.getElementById("linuxCopyText");
+
+  if(!button || !command) return;
+
+  const originalLabel = label ? label.textContent : "کپی";
+
+  function getCommand(){
+    return (command.textContent || "")
+      .replace(/\s+/g," ")
+      .trim();
+  }
+
+  async function copy(value){
+    if(
+      navigator.clipboard &&
+      window.isSecureContext
+    ){
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const area = document.createElement("textarea");
+    area.value = value;
+    area.setAttribute("readonly","");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    area.style.pointerEvents = "none";
+
+    document.body.appendChild(area);
+    area.select();
+
+    const ok = document.execCommand("copy");
+    area.remove();
+
+    if(!ok){
+      throw new Error("COPY_FAILED");
+    }
+  }
+
+  button.addEventListener("click", async function(){
+    try{
+      await copy(getCommand());
+
+      button.classList.add("copied");
+
+      if(label){
+        label.textContent = "کپی شد ✓";
+      }
+
+      if(
+        navigator.vibrate &&
+        window.matchMedia("(pointer:coarse)").matches
+      ){
+        navigator.vibrate(20);
+      }
+
+      clearTimeout(window.__pnLinuxCopyTimer);
+
+      window.__pnLinuxCopyTimer = setTimeout(function(){
+        button.classList.remove("copied");
+
+        if(label){
+          label.textContent = originalLabel;
+        }
+      },1700);
+
+    }catch(_){
+      if(label){
+        label.textContent = "ناموفق";
+      }
+
+      setTimeout(function(){
+        if(label){
+          label.textContent = originalLabel;
+        }
+      },1700);
+    }
+  });
+})();
+</script>
+
+
+<script>
+/* PN_SUB_V6_3_ICON_RUNTIME */
+(function(){
+  "use strict";
+
+  function setIcon(card, label, cls){
+    const icon = card.querySelector('.client-icon');
+    if(!icon) return;
+
+    icon.classList.remove(
+      'icon-windows',
+      'icon-android',
+      'icon-ios',
+      'icon-mac',
+      'icon-arm',
+      'icon-linux'
+    );
+
+    icon.classList.add(cls);
+    icon.innerHTML = '<span class="os-badge-text">' + label + '</span>';
+  }
+
+  document.querySelectorAll('a.client').forEach(function(card){
+    const nameEl = card.querySelector('.client-name');
+    if(!nameEl) return;
+
+    const name = (nameEl.textContent || '').trim().toLowerCase();
+
+    if(name.includes('iphone') || name.includes('ipad')){
+      setIcon(card, 'iOS', 'icon-ios');
+      return;
+    }
+
+    if(name.includes('macos')){
+      setIcon(card, 'mac', 'icon-mac');
+      return;
+    }
+
+    if(name.includes('windows arm64')){
+      setIcon(card, 'ARM', 'icon-arm');
+      return;
+    }
+
+    if(name.includes('windows')){
+      setIcon(card, 'Win', 'icon-windows');
+      return;
+    }
+
+    if(name.includes('android')){
+      setIcon(card, '🤖', 'icon-android');
+      return;
+    }
+
+    if(name.includes('linux')){
+      setIcon(card, '🐧', 'icon-linux');
+      return;
+    }
+  });
+})();
+</script>
+
+
+<script>
+/* PN_SUB_V6_4_ICON_LAYOUT_RUNTIME */
+(function(){
+  "use strict";
+
+  const SVG = {
+    windows: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="7.3" height="7.3"></rect>
+        <rect x="13.7" y="3" width="7.3" height="7.3"></rect>
+        <rect x="3" y="13.7" width="7.3" height="7.3"></rect>
+        <rect x="13.7" y="13.7" width="7.3" height="7.3"></rect>
+      </svg>`,
+
+    android: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 8.5h10a2 2 0 0 1 2 2v6.5H5v-6.5a2 2 0 0 1 2-2Z"></path>
+        <path d="M8 8.5 6.7 6.2M16 8.5l1.3-2.3"></path>
+        <path d="M8.2 17v2.2M15.8 17v2.2"></path>
+        <path d="M5 11H3.7v4.4H5M19 11h1.3v4.4H19"></path>
+        <circle cx="9" cy="11.5" r=".55" fill="currentColor" stroke="none"></circle>
+        <circle cx="15" cy="11.5" r=".55" fill="currentColor" stroke="none"></circle>
+      </svg>`,
+
+    ios: `
+      <svg viewBox="0 0 28 24" aria-hidden="true">
+        <rect x="2.5" y="4" width="8.5" height="16" rx="1.8"></rect>
+        <path d="M5.4 6h2.7"></path>
+        <circle cx="6.75" cy="17.8" r=".45" fill="currentColor" stroke="none"></circle>
+        <rect x="14" y="2.5" width="11.5" height="19" rx="1.8"></rect>
+        <circle cx="19.75" cy="19" r=".45" fill="currentColor" stroke="none"></circle>
+      </svg>`,
+
+    mac: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="5" y="4" width="14" height="10.5" rx="1.3"></rect>
+        <path d="M3 18h18"></path>
+        <path d="M8 18.1h8"></path>
+      </svg>`,
+
+    arm: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+        <path d="M9 2.8V6M12 2.8V6M15 2.8V6"></path>
+        <path d="M9 18v3.2M12 18v3.2M15 18v3.2"></path>
+        <path d="M2.8 9H6M2.8 12H6M2.8 15H6"></path>
+        <path d="M18 9h3.2M18 12h3.2M18 15h3.2"></path>
+        <path d="M9.2 13.8 12 9.5l2.8 4.3"></path>
+        <path d="M10.3 12.2h3.4"></path>
+      </svg>`
+  };
+
+
+  function setIcon(card, type){
+    const icon = card.querySelector(".client-icon");
+
+    if(!icon || !SVG[type]){
+      return;
+    }
+
+    icon.classList.remove(
+      "pn-icon-windows",
+      "pn-icon-android",
+      "pn-icon-ios",
+      "pn-icon-mac",
+      "pn-icon-arm"
+    );
+
+    icon.classList.add(
+      "pn-icon-" + type
+    );
+
+    icon.innerHTML = SVG[type];
+  }
+
+
+  const appCards =
+    Array.from(
+      document.querySelectorAll(
+        ".client-grid > a.client"
+      )
+    ).filter(function(card){
+      return !card.classList.contains(
+        "linux-box"
+      );
+    });
+
+
+  appCards.forEach(function(card){
+
+    const nameEl =
+      card.querySelector(
+        ".client-name"
+      );
+
+    if(!nameEl){
+      return;
+    }
+
+    const name =
+      (nameEl.textContent || "")
+        .trim()
+        .toLowerCase();
+
+
+    card.classList.remove(
+      "pn-app-last"
+    );
+
+
+    if(
+      name.includes("iphone") ||
+      name.includes("ipad")
+    ){
+      setIcon(card, "ios");
+      return;
+    }
+
+    if(name.includes("macos")){
+      setIcon(card, "mac");
+      return;
+    }
+
+    if(
+      name.includes("windows arm64")
+    ){
+      setIcon(card, "arm");
+      return;
+    }
+
+    if(name.includes("windows")){
+      setIcon(card, "windows");
+      return;
+    }
+
+    if(name.includes("android")){
+      setIcon(card, "android");
+      return;
+    }
+  });
+
+
+  if(appCards.length % 2 === 1){
+    appCards[
+      appCards.length - 1
+    ].classList.add(
+      "pn-app-last"
+    );
+  }
+
+
+  const reminderButton =
+    document.getElementById(
+      "enableRenewalNotification"
+    );
+
+  const reminderState =
+    document.getElementById(
+      "renewalState"
+    );
+
+  if(
+    reminderButton &&
+    !document.getElementById(
+      "pnNotifyTest"
+    )
+  ){
+    const testButton =
+      document.createElement(
+        "button"
+      );
+
+    testButton.type = "button";
+    testButton.id = "pnNotifyTest";
+    testButton.className =
+      "pn-notify-test";
+
+    testButton.textContent =
+      "تست اعلان روی همین دستگاه";
+
+    reminderButton.insertAdjacentElement(
+      "afterend",
+      testButton
+    );
+
+
+    function refreshTestButton(){
+      const canTest =
+        "Notification" in window &&
+        Notification.permission ===
+          "granted" &&
+        "serviceWorker" in navigator;
+
+      testButton.classList.toggle(
+        "show",
+        canTest
+      );
+    }
+
+
+    testButton.addEventListener(
+      "click",
+      async function(){
+
+        try{
+
+          const registration =
+            await navigator
+              .serviceWorker
+              .ready;
+
+          await registration
+            .showNotification(
+              "Private Network · تست اعلان",
+              {
+                body:
+                  "اعلان روی همین دستگاه درست کار می‌کند.",
+                icon:
+                  "/sub-clients/private-network.webp",
+                badge:
+                  "/sub-clients/private-network.webp",
+                tag:
+                  "pn-device-test-"
+                  + Date.now()
+              }
+            );
+
+          if(reminderState){
+            reminderState.textContent =
+              "تست اعلان ارسال شد. یادآوری اصلی فقط در ۵ روز پایانی طبق زمان‌بندی سرور ارسال می‌شود.";
+
+            reminderState.className =
+              "renewal-state ok";
+          }
+
+        }catch(_){
+
+          if(reminderState){
+            reminderState.textContent =
+              "تست اعلان روی این دستگاه نمایش داده نشد؛ مجوز Notification یا تنظیمات اعلان دستگاه را بررسی کن.";
+
+            reminderState.className =
+              "renewal-state err";
+          }
+        }
+      }
+    );
+
+
+    reminderButton.addEventListener(
+      "click",
+      function(){
+        setTimeout(
+          refreshTestButton,
+          900
+        );
+      }
+    );
+
+
+    refreshTestButton();
+  }
+
+
+  const renewalCopy =
+    document.querySelector(
+      ".renewal-copy"
+    );
+
+  if(
+    renewalCopy &&
+    !renewalCopy.querySelector(
+      ".renewal-device-note"
+    )
+  ){
+    const note =
+      document.createElement(
+        "small"
+      );
+
+    note.className =
+      "renewal-device-note";
+
+    note.textContent =
+      "یادآوری برای هر گوشی یا مرورگر جداگانه فعال می‌شود.";
+
+    renewalCopy.appendChild(
+      note
+    );
+  }
+
+})();
+</script>
+
+
+<script>
+/* PN_SUB_V6_4_1_COPY_RUNTIME */
+(function(){
+  "use strict";
+
+  const button =
+    document.getElementById(
+      "linuxCopyBtn"
+    );
+
+  const commandText =
+    document.getElementById(
+      "linuxInstallCommand"
+    );
+
+  if(!button || !commandText){
+    return;
+  }
+
+  const commandBox =
+    commandText.closest(
+      ".command"
+    );
+
+  if(!commandBox){
+    return;
+  }
+
+  let shell =
+    commandBox.closest(
+      ".linux-command-shell"
+    );
+
+  if(!shell){
+    shell =
+      document.createElement(
+        "div"
+      );
+
+    shell.className =
+      "linux-command-shell";
+
+    commandBox.parentNode.insertBefore(
+      shell,
+      commandBox
+    );
+
+    shell.appendChild(
+      commandBox
+    );
+  }
+
+  if(
+    button.parentElement !== shell
+  ){
+    shell.appendChild(
+      button
+    );
+  }
+})();
+</script>
+
+
+<script>
+/* PN_SUB_V6_4_3_REAL_PUSH_TEST */
+(function(){
+  const parts=location.pathname.split('/').filter(Boolean), subPath=parts[0]||'sub', uuid=parts[1]||'';
+  if(!uuid)return;
+  const root='/'+encodeURIComponent(subPath)+'/push';
+  const id=x=>document.getElementById(x);
+  const state=(m,c)=>{const e=id('renewalState');if(e){e.textContent=m||'';e.className='renewal-state '+(c||'')}};
+  const ios=()=>/iPad|iPhone|iPod/i.test(navigator.userAgent||'');
+  const standalone=()=>((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true);
+  const supported=()=>window.isSecureContext&&'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window;
+  function keyBytes(v){const p='='.repeat((4-v.length%4)%4),r=atob((v+p).replace(/-/g,'+').replace(/_/g,'/')),o=new Uint8Array(r.length);for(let i=0;i<r.length;i++)o[i]=r.charCodeAt(i);return o}
+  async function ensureSub(){
+    if(!supported())throw Error('UNSUPPORTED'); if(ios()&&!standalone())throw Error('IOS_HOME_SCREEN');
+    if(Notification.permission!=='granted'){const p=await Notification.requestPermission();if(p!=='granted')throw Error('PERMISSION')}
+    let reg=await navigator.serviceWorker.register(root+'/sw.js',{scope:'/',updateViaCache:'none'}); try{await reg.update()}catch(_){} reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){const k=await (await fetch(root+'/public-key',{cache:'no-store'})).json();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(k.public_key)})}
+    const j=sub.toJSON();
+    const save=await fetch(root+'/subscribe/'+encodeURIComponent(uuid),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:j.endpoint,keys:j.keys,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',language:navigator.language||'fa',user_agent:navigator.userAgent||''})});
+    if(!save.ok)throw Error('SAVE'); return sub;
+  }
+  async function sendTest(){const sub=await ensureSub();const r=await fetch(root+'/test/'+encodeURIComponent(uuid),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.detail||'SERVER_PUSH_TEST');return j}
+  function install(){
+    let old=id('pnNotifyTest'); const main=id('enableRenewalNotification'); if(!old&&main){old=document.createElement('button');old.type='button';old.id='pnNotifyTest';old.className='pn-notify-test show';main.insertAdjacentElement('afterend',old)} if(!old)return;
+    const b=old.cloneNode(true);old.replaceWith(b);b.className='pn-notify-test show';b.textContent='تست نوتیفیکیشن واقعی';
+    b.onclick=async()=>{const original=b.textContent;b.disabled=true;b.textContent='در حال ارسال...';try{const j=await sendTest();b.textContent='ارسال شد ✓';state('Push واقعی از سرور ارسال شد'+(j.provider_status?' · HTTP '+j.provider_status:'')+'.','ok')}catch(e){b.textContent='ناموفق';const c=e&&e.message?e.message:'';state(c==='IOS_HOME_SCREEN'?'در iPhone/iPad ابتدا Add to Home Screen کن.':c==='PERMISSION'?'اجازه Notification داده نشد.':c==='UNSUPPORTED'?'این مرورگر Web Push را پشتیبانی نمی‌کند.':'تست Push ناموفق بود: '+c,'err')}finally{setTimeout(()=>{b.disabled=false;b.textContent=original},1800)}};
+  }
+  setTimeout(install,0);
+})();
+</script>
+
+
+<script>
+/* PN_SUB_V6_4_4_REAL_PUSH_TEST */
+(function(){
+  const parts=location.pathname.split('/').filter(Boolean), subPath=parts[0]||'sub', uuid=parts[1]||'';
+  if(!uuid)return;
+  const root='/'+encodeURIComponent(subPath)+'/push';
+  const id=x=>document.getElementById(x);
+  const state=(m,c)=>{const e=id('renewalState');if(e){e.textContent=m||'';e.className='renewal-state '+(c||'')}};
+  const ios=()=>/iPad|iPhone|iPod/i.test(navigator.userAgent||'');
+  const standalone=()=>((window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true);
+  const supported=()=>window.isSecureContext&&'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window;
+  function keyBytes(v){const p='='.repeat((4-v.length%4)%4),r=atob((v+p).replace(/-/g,'+').replace(/_/g,'/')),o=new Uint8Array(r.length);for(let i=0;i<r.length;i++)o[i]=r.charCodeAt(i);return o}
+  async function ensureSub(){
+    if(!supported())throw Error('UNSUPPORTED'); if(ios()&&!standalone())throw Error('IOS_HOME_SCREEN');
+    if(Notification.permission!=='granted'){const p=await Notification.requestPermission();if(p!=='granted')throw Error('PERMISSION')}
+    let reg=await navigator.serviceWorker.register(root+'/sw.js',{scope:'/',updateViaCache:'none'}); try{await reg.update()}catch(_){} reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){const k=await (await fetch(root+'/public-key',{cache:'no-store'})).json();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(k.public_key)})}
+    const j=sub.toJSON();
+    const save=await fetch(root+'/subscribe/'+encodeURIComponent(uuid),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:j.endpoint,keys:j.keys,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',language:navigator.language||'fa',user_agent:navigator.userAgent||''})});
+    if(!save.ok)throw Error('SAVE'); return sub;
+  }
+  async function sendTest(){const sub=await ensureSub();const r=await fetch(root+'/test/'+encodeURIComponent(uuid),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.detail||'SERVER_PUSH_TEST');return j}
+  function install(){
+    let old=id('pnNotifyTest'); const main=id('enableRenewalNotification'); if(!old&&main){old=document.createElement('button');old.type='button';old.id='pnNotifyTest';old.className='pn-notify-test show';main.insertAdjacentElement('afterend',old)} if(!old)return;
+    const b=old.cloneNode(true);old.replaceWith(b);b.className='pn-notify-test show';b.textContent='ارسال یک اعلان تست';
+    b.onclick=async()=>{const original=b.textContent;b.disabled=true;b.textContent='در حال بررسی...';try{const j=await sendTest();b.textContent='فعال است ✓';state('اعلان سرویس روی این دستگاه فعال است'+(j.provider_status?' · HTTP '+j.provider_status:'')+'. برای جلوگیری از تشخیص اسپم، تست مجدد تا ۱ ساعت محدود است.','ok')}catch(e){b.textContent='ناموفق';const c=e&&e.message?e.message:'';state(c==='IOS_HOME_SCREEN'?'در iPhone/iPad ابتدا Add to Home Screen کن.':c==='PERMISSION'?'اجازه Notification داده نشد.':c==='UNSUPPORTED'?'این مرورگر Web Push را پشتیبانی نمی‌کند.':'تست Push ناموفق بود: '+c,'err')}finally{setTimeout(()=>{b.disabled=false;b.textContent=original},1800)}};
+  }
+  setTimeout(install,0);
+})();
+</script>
+
+
+
+
+
+<script id="pv-turkey-flag-patch">
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".pv-turkey-flag").forEach(e => e.remove());
+
+    const nodes = Array.from(document.querySelectorAll("body *"));
+
+    const nameEl = nodes.find(el =>
+        (el.textContent || "").trim() === "Turkey2"
+    );
+
+    if (!nameEl) return;
+
+    let card = nameEl.parentElement;
+
+    while (card && card !== document.body) {
+        const txt = (card.textContent || "");
+        if (
+            txt.includes("Turkey2") &&
+            txt.includes("دانلود کانفیگ")
+        ) break;
+
+        card = card.parentElement;
+    }
+
+    if (!card || card === document.body) return;
+
+    const globe = Array.from(card.querySelectorAll("*")).find(el => {
+        const t = (el.textContent || "").trim();
+        return t === "🌐";
+    });
+
+    const flag = document.createElement("span");
+    flag.className = "pv-turkey-flag";
+
+    flag.innerHTML = `
+    <svg width="34" height="23"
+         viewBox="0 0 900 600"
+         xmlns="http://www.w3.org/2000/svg"
+         style="
+            display:block;
+            border-radius:4px;
+            box-shadow:0 0 8px rgba(0,0,0,.35);
+         ">
+        <rect width="900" height="600" fill="#E30A17"/>
+        <circle cx="380" cy="300" r="150" fill="#fff"/>
+        <circle cx="430" cy="300" r="120" fill="#E30A17"/>
+        <polygon
+            fill="#fff"
+            points="
+            570,300
+            628,319
+            592,270
+            592,330
+            628,281
+            "/>
+    </svg>`;
+
+    if (globe) {
+        globe.replaceWith(flag);
+    } else {
+        nameEl.parentElement.appendChild(flag);
+    }
+});
+</script>
+
+</body>
+</html>
+

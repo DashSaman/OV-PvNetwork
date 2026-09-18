@@ -1,61 +1,177 @@
-# Illustrated UI Guide
+# OV-PvNetwork v1.0.0 — Visual UI Guide
 
-All screenshots/diagrams in this public guide use synthetic data. No production user, hostname, IP address or credential is shown.
+This guide documents the main pages, controls and operator workflows in the v1.0.0 panel.
 
-![Panel overview](./images/pvnetwork-ui-overview.svg)
+> Every screenshot is sanitized for public documentation. Real user and infrastructure data is not shown.
 
 ## 1. Dashboard
 
-The dashboard summarizes current users/nodes and service health. Use language/theme controls for presentation, Refresh for an immediate data reload and Logout to end the admin session. Node cards expose health, CPU/RAM, uptime, live network rate/traffic and online-session information when available.
+![Dashboard](./images/ui/dashboard.jpg)
 
+The dashboard gives a fleet-wide realtime view.
+
+| Area | Purpose |
+|---|---|
+| Total Live Traffic | Combined realtime download/upload rate |
+| 5-minute chart | Short-term live traffic trend |
+| Online Users | Current OpenVPN sessions |
+| Active Nodes | Nodes currently healthy/reachable |
+| Traffic Since Boot | Cumulative RX+TX counters |
+| Node Traffic & Health | Per-node interface, uptime, CPU/RAM and traffic |
+| Theme | Light/Dark mode |
+| Language | UI language selection |
+| Refresh | Manual refresh |
+
+Traffic rate is calculated from counter deltas between samples rather than treating cumulative counters as Mbps.
 ## 2. User Management
 
-![Users](./images/pvnetwork-users.svg)
+![Users](./images/ui/users.jpg)
 
-The user screen provides search, sorting, pagination, account summary cards and row-level actions. The actions menu includes **Edit**, **Renew**, **Download**, **AnyConnect**, **Domain History** (authorized admin roles), **Reset Usage**, **Activate/Deactivate** and **Delete** where policy permits it. The copy icon copies the stable subscription link.
+User Management covers the full account lifecycle.
 
-**Renew** extends the same account instead of delete/recreate. It preserves UUID, username, node assignments, subscription identity and existing AnyConnect identity. Finite plans can preserve usage, reset usage or add quota. Unlimited renewal only changes the time period.
+| Control | Purpose |
+|---|---|
+| Add New User | Create an account and choose quota/duration/node assignment |
+| AnyConnect default | Enable AnyConnect by default for new users |
+| Search / Sort | Find and order accounts by status, usage, expiry or name |
+| Edit | Change user properties |
+| Renew | Extend an existing/expired account without recreation |
+| Download | Get the supported connection output from assigned nodes |
+| AnyConnect | Manage AnyConnect state and credentials for the same user |
+| Domain History | Main-admin view of recorded domain activity |
+| Reset Usage | Reset usage; unlimited accounts also start a fresh 30-day period |
+| Activate / Deactivate | Toggle the existing identity |
+| Delete | Controlled account deletion |
+| Copy Link | Copy the subscription link |
 
-**Reset Usage** on a finite plan resets shared traffic usage without changing expiry. On an unlimited plan it resets usage and starts a new 30-day period from the reset date, then re-enables the same identity on assigned nodes.
+Renewal preserves UUID, username and node assignments.
+### Create user
 
-## 3. Node Management and Fleet
+![Add User](./images/ui/workflow-add-user.jpg)
 
-![Nodes and fleet](./images/pvnetwork-nodes.svg)
+The create dialog supports quota, duration, node assignment and optional AnyConnect. A zero traffic quota represents an unlimited plan; the unlimited baseline period is 30 days.
 
-**Add Node** supports automatic SSH deployment. The deployment console shows staged progress and final verification. Operational actions include health review, Drain, Resume, Maintenance, Weight, retry/update/canary/rollback foundations and assignment-aware node operations. Rebalance workflows use node control/health state when moving assignments.
+### User actions menu
 
-Node deletion must be treated as an assignment-sensitive operation. Never use node management as a reason to flush the full target firewall or blindly replace unrelated routes.
+![User Actions](./images/ui/workflow-user-actions.jpg)
+
+The actions menu groups common lifecycle controls and keeps destructive actions visually separate.
+
+### Renew user
+
+![Renew User](./images/ui/workflow-renew-user.jpg)
+
+Renewal reuses the same UUID and username. Finite plans support preserve, reset and add-traffic modes; expired users are reactivated and synchronized to their assigned nodes.
+
+### AnyConnect
+
+![AnyConnect](./images/ui/workflow-anyconnect.jpg)
+
+The AnyConnect dialog manages account state and credential generation/change while keeping the same panel user identity.
+## 3. Node Management
+
+![Nodes](./images/ui/nodes.jpg)
+
+Node Management provides base CRUD and health visibility for OpenVPN nodes.
+
+| Control | Purpose |
+|---|---|
+| Add New Node | Register or deploy a node |
+| Refresh | Reload node inventory |
+| Health Refresh | Refresh health and routing information |
+| Edit | Change node settings |
+| Delete | Controlled removal with assignment checks |
+
+### Add node
+
+![Add Node](./images/ui/workflow-add-node.jpg)
+
+The dialog supports automatic and manual modes. API port, OpenVPN port, protocol and tunnel address are configurable. Automatic deployment must preserve unrelated services, routes and firewall rules on shared hosts.
 
 ## 4. Admin / Reseller Management
 
-Main-admin roles can create and manage reseller/admin accounts, traffic credit and unlimited-account entitlement. Reseller user actions are constrained by ownership and quota policy. Credit-changing actions are recorded in the reseller ledger.
+![Admins](./images/ui/admins.jpg)
+Main admins can create, edit and remove reseller/admin accounts. Search and quota/permission controls are available; removal can transfer owned users instead of deleting them.
+
+### Add admin
+
+![Add Admin](./images/ui/workflow-add-admin.jpg)
+
+Use the reseller/admin dialog to define the supported permissions and quotas. Transferring users before removing an owner is the safer lifecycle path.
 
 ## 5. Operations Center
 
-The Operations Center exposes audit/event information and bulk operational workflows. Use it to inspect mutations, job outcomes, account/traffic summaries and cross-node actions. Bulk actions require confirmation and should be followed by a health/consistency check.
+![Operations](./images/ui/operations.jpg)
 
+| Tool | Purpose |
+|---|---|
+| Refresh | Reload operational dashboard |
+| Bulk Activate / Deactivate | Change many UUIDs in one operation |
+| Bulk Reset Usage | Reset usage for multiple accounts |
+| Transfer | Move workload/assignment from source to target |
+| Auto Rebalance | Apply the calculated rebalance |
+| Rebalance dry run | Preview the rebalance without applying it |
+| Usage History | Load usage history for one UUID |
+| Backup / Restore | Create, download and guardedly restore verified backups |
+
+Restore is confirmation-gated and exposes progress/status while it runs.
 ## 6. Panel Security
 
-![Security and operations](./images/pvnetwork-security-ops.svg)
+![Security](./images/ui/security.jpg)
 
-Security controls include TOTP/2FA, scoped API tokens, token expiry/revocation, request rate limiting and IP allow-list configuration. Rotate any credential that may have been exposed and keep secrets only in private deployment state.
+| Control | Purpose |
+|---|---|
+| Rate Limit | Limit request rate |
+| IP Allowlist | Restrict management access to approved CIDRs |
+| TOTP 2FA | Create, confirm or disable two-factor authentication |
+| API Token | Create named, scoped and expiring API access |
+| Revoke | Revoke an issued token |
 
-## 7. Advanced Node / Fleet Controls
+Security values are deliberately obscured in public screenshots.
 
-Fleet controls cover node health score, control state, staged/canary operations and rollback foundations. **Drain** prevents normal placement while allowing controlled transition; **Maintenance** excludes a node until explicitly resumed.
+## 7. Advanced Node / Fleet Management
 
-## 8. Monitoring
+![Fleet](./images/ui/fleet.jpg)
 
-Monitoring settings cover node/service resource alerts and Telegram notification hooks. Metrics enrichment is designed to fail safely: a parser/optional metric failure must not make the core node health endpoint unavailable.
+| Control | Purpose |
+|---|---|
+| Select Nodes | Choose fleet targets |
+| Upgrade | Start a controlled upgrade job |
+| Retry | Retry a failed job |
+| Maintenance | Temporarily remove a node from normal operation |
+| Leave Maintenance | Return the node to normal mode |
+| Drain | Stop new workload/session placement and drain gracefully |
+| Resume | Return a drained node to service |
+| Refresh | Refresh health/version/job state |
+Fleet rows expose health, mode, CPU, RAM, API latency, online users, sessions, weight and score for operational decisions.
+
+## 8. Monitoring Settings
+
+![Monitoring](./images/ui/monitoring.jpg)
+
+Monitoring Settings manages alerting and Telegram monitoring. Save persists settings, Test Telegram sends a verification message, and Retry/Refresh reloads current state.
 
 ## 9. Bandwidth Control
 
-Bandwidth controls target all users, an owner/reseller, a saved group or selected users. Preview the target set before applying a policy. Emergency policies can use duration/canary/fail-open behavior and should be reversible.
+![Bandwidth](./images/ui/bandwidth.jpg)
 
-## Subscription page
+| Control | Purpose |
+|---|---|
+| Refresh | Reload settings, groups and node state |
+| Emergency Off | Immediately disable the active bandwidth policy |
+| Preview | Show targets/effect without applying changes |
+| Canary | Apply a policy to one selected node first |
+| Activate | Apply the policy to the final target set |
+| Create Group | Create a user group for policy targeting |
+| Save Members | Persist group membership |
+| Delete Group | Remove a policy group |
 
-The public subscription page shows account status, used/remaining traffic, expiry, concurrent-device limit, available server profiles, smart node recommendation, client downloads, AnyConnect details when enabled and renewal Web Push controls. Downloaded OpenVPN profiles are validated and may be rebuilt on demand if the stored profile is missing or invalid.
+Node Status shows application state per node; Last Result shows the most recent operation outcome.
 
-## Backup / Restore
+## Safe workflow for sensitive operations
 
-Create a backup before risky production changes. Restore is a recovery mechanism, not a substitute for tested migrations and release verification.
+For fleet changes, bandwidth policies, restore and updates, check health/preview/backup first, apply to a small scope, verify the result, then expand.
+
+All public screenshots use demo/sanitized data and do not represent the capacity or configuration of any specific deployment.
+
+[Back to README](../README.md) · [راهنمای فارسی](./UI-GUIDE.fa.md)
