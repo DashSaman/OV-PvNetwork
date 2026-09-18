@@ -1,122 +1,86 @@
 <div dir="rtl" align="right">
 
-# OV-PvNetwork
+# PVNetwork Panel
 
-**کنترل‌پلین چندنودی و Production-Oriented برای OpenVPN با قابلیت یکپارچه‌سازی اختیاری AnyConnect**
+**کنترل‌پلین چندنودی OpenVPN با تمدید، نمایندگی، مانیتورینگ، اتوماسیون و یکپارچه‌سازی اختیاری AnyConnect**
 
-[English](./README.md) · **فارسی**
+**[English](./README.md) · فارسی**
 
----
+## نسخه پایدار
 
-OV-PvNetwork یک توزیع توسعه‌یافته و عملیاتی بر پایه‌ی اکوسیستم متن‌باز OV-Panel / OV-Node است. هدف پروژه این است که مدیریت ساده‌ی کاربران OpenVPN را به یک سیستم چندنودی واقعی با نصب آسان، مانیتورینگ، همگام‌سازی کاربران، تحویل مطمئن کانفیگ، آپدیت و Rollback تبدیل کند.
+`v1.0.0` اولین Baseline پایدار و Freeze‌شده عمومی پروژه است. سورس این Release از Snapshot سانیتایزشده Production ساخته شده و عمداً هیچ رمز، کلید، IP یا دامنه عملیاتی، دیتابیس، اطلاعات مشتری، فایل VPN، Private Key یا Certificate واقعی داخل آن قرار نمی‌گیرد.
 
-> نسخه‌ی فعلی مخزن `1.0.0-rc1` است. پایه‌ها به‌صورت ثابت Pin شده‌اند و از `latest` کورکورانه استفاده نمی‌شود. نسخه‌ی Stable نهایی بعد از Export و پاک‌سازی Snapshot واقعی Production منتشر می‌شود تا چیزی از روی حافظه یا حدس بازسازی نشود.
+## نصب سریع
 
-## نصب با یک دستور
-
-روی سرور تازه و با کاربر `root`:
+روی سرور تازه Ubuntu 22.04/24.04 یا Debian 12 با کاربر `root`:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/main/install.sh)
 ```
 
-بعد از نصب:
-
-```bash
-ovpv status
-ovpv doctor
-ovpv update
-ovpv backup
-ovpv rollback
-```
+Bootstrap فایل سورس Release `v1.0.0` را دانلود می‌کند، SHA-256 آن را بررسی می‌کند و Installer محلی را اجرا می‌کند. نصب Fresh اگر `/opt/ov-panel` از قبل وجود داشته باشد آن را overwrite نمی‌کند.
 
 ## امکانات اصلی
 
-- مدیریت چند نود OpenVPN از یک پنل مرکزی
-- Desired-state برای تخصیص کاربران به نودها
-- Reconciler کم‌مصرف برای ساخت/ترمیم کانفیگ کاربران روی نودها
-- پایه‌ی نصب خودکار نود و Pin کردن نسخه‌های OV-Node و OpenVPN installer
-- ساخت و ترمیم خودکار فایل‌های `.ovpn`
-- اعتبارسنجی `<ca>`، `<cert>` و `<key>` قبل از تحویل کانفیگ
-- اعمال `remote`، پروتکل و پورت از تنظیمات دیتابیس هنگام دانلود
-- خواندن واقعی کارت شبکه: Interface، RX/TX، Uptime و Traffic
-- داشبورد لحظه‌ای ادمین با یک Endpoint تجمیعی، جلوگیری از درخواست همزمان و توقف Poll در تب مخفی
-- مدل نرخ ترافیک Server-side / per-node برای جلوگیری از Spike ناشی از Cache و زمان‌بندی مرورگر
-- صفحه Subscription اختصاصی Private Network و انتخاب هوشمند نود
-- کنترل امن‌تر چرخه‌ی عمر نود و حذف Assignment-aware
-- Health check، Backup و Rollback
-- Branding اختصاصی، Favicon و لینک‌های پروژه
-- پایه‌ی چندزبانه
-- Integration hooks برای AnyConnect / Session Control، Bandwidth Control، Monitoring، Domain Activity و Fleet Operations
+- مدیریت کاربران و چند نود OpenVPN از یک پنل.
+- Auto Deploy نود با SSH از داخل Node Management.
+- تخصیص کاربر به نودهای انتخابی و محدودیت اتصال همزمان Global.
+- حجم، سرویس نامحدود، تاریخ انقضا و تمدید مستقیم بدون حذف اکانت.
+- Reset Usage اکانت نامحدود = صفر شدن مصرف + شروع دوره جدید ۳۰ روزه با همان هویت اکانت.
+- اعتبارسنجی و Rebuild خودکار Profileهای OpenVPN هنگام دانلود در صورت نیاز.
+- AnyConnect اختیاری به‌صورت per-user.
+- نمایش CPU، RAM، Uptime، Traffic و Health نودها.
+- Drain، Maintenance، Weight، Fleet، Canary و Rollback foundation برای نودها.
+- سهمیه حجمی و نامحدود نمایندگان و Ledger مصرف سهمیه.
+- عملیات گروهی کاربران و Rebalance خودکار.
+- کنترل اضطراری Bandwidth با Fail-open و Rollback.
+- Audit Log، API Token، Rate Limit، IP Allow-list و TOTP/2FA.
+- Backup/Restore و کنترل‌های عملیاتی سلامت سرویس.
+- Usage History و Domain Activity.
+- Hookهای مانیتورینگ تلگرام و API یکپارچه‌سازی Mirza.
+- صفحه اشتراک برندشده چندزبانه، دانلود کلاینت، پیشنهاد هوشمند نود و Web Push تمدید.
 
-ماتریس کامل وضعیت قابلیت‌ها: [docs/FEATURES.md](./docs/FEATURES.md)
+جزئیات: [docs/FEATURES.md](./docs/FEATURES.md) و [docs/FEATURE-MATRIX.md](./docs/FEATURE-MATRIX.md)
 
-## سخت‌افزار پیشنهادی
+## افزودن نود VPN
 
-### سرور پنل
+بعد از نصب پنل:
 
-| سطح | CPU | RAM | Disk | کاربرد |
-|---|---:|---:|---:|---|
-| حداقل | 1 vCPU | 1 GB | 10 GB | تست / نصب کوچک |
-| پیشنهادی | 2 vCPU | 2 GB | 20 GB SSD | Production معمولی |
-| پرترافیک | 4 vCPU | 4 GB+ | 40 GB+ SSD | نود/کاربر/مانیتورینگ زیاد |
+1. وارد **مدیریت نودها** شوید.
+2. **افزودن نود** را بزنید.
+3. Auto Deploy با SSH را انتخاب کنید.
+4. مشخصات اتصال سرور مقصد را فقط داخل پنل وارد کنید.
+5. پنل نصب Node، OpenVPN integration و API مدیریت را انجام داده و نتیجه را Verify می‌کند.
 
-### هر نود VPN
+راهنما: [docs/NODE-INSTALLATION.fa.md](./docs/NODE-INSTALLATION.fa.md)
 
-| سطح | CPU | RAM | Disk |
-|---|---:|---:|---:|
-| حداقل | 1 vCPU | 512 MB | 5 GB |
-| پیشنهادی | 1–2 vCPU | 1 GB+ | 10 GB+ |
+## قانون حریم خصوصی Repository عمومی
 
-توان عبوری واقعی بیشتر از Disk به کیفیت شبکه، قدرت Crypto CPU، MTU/Route و تعداد Session همزمان وابسته است.
+موارد زیر هرگز نباید Commit شوند و فقط روی Production یا فضای خصوصی Ops بمانند:
 
-## سیستم‌عامل
+- `.env` و Credentialهای تولیدشده
+- Admin/Mirza/API/JWT Secret
+- SSH credential و Node API Key
+- IP، Domain و Route واقعی زیرساخت
+- دیتابیس، Log و اطلاعات مشتری
+- فایل `.ovpn`، Private Key، TLS/VAPID Key و Certificate
 
-- Ubuntu 22.04 LTS
-- Ubuntu 24.04 LTS
-- Debian 12 به‌صورت best-effort در مواردی که پکیج‌های upstream تفاوت دارند
+قبل از انتشار Stable Release، سورس عمومی جداگانه Scan می‌شود. گزارش اسکن داخل Archive نسخه با نام `SECRET-SCAN-REPORT.md` قرار دارد.
 
-## معماری
+## سیاست Release
 
-```text
-                  ┌────────────────────────────┐
-                  │       OV-PvNetwork        │
-                  │      Panel / API / UI     │
-                  └─────────────┬──────────────┘
-                                │
-                   Assignment / Metrics / API
-                                │
-          ┌─────────────────────┼─────────────────────┐
-          │                     │                     │
-    ┌─────▼─────┐         ┌─────▼─────┐        ┌─────▼─────┐
-    │ OV-Node A │         │ OV-Node B │  ...   │ OV-Node N │
-    │ OpenVPN   │         │ OpenVPN   │        │ OpenVPN   │
-    └───────────┘         └───────────┘        └───────────┘
-```
+Baseline `v1.0.0` بعد از انتشار Freeze می‌شود و تغییرات بعدی در Release جدید می‌آیند:
 
-## آپدیت و Rollback
+- `1.0.x` = Bugfix/Security fix سازگار
+- `1.x.0` = قابلیت جدید بدون Breaking Change
+- `2.0.0` = تغییر معماری یا Protocol با Breaking Change
 
-آپدیت پروژه باید Transactional باشد: ابتدا Preflight و Backup، سپس دریافت نسخه، اعمال تغییرات و Migration، Build/Compile، Health check و در صورت شکست Rollback. جزئیات در [docs/UPDATES.md](./docs/UPDATES.md).
+Production محل توسعه نسخه بعدی نیست؛ تغییرات ابتدا جداگانه آماده و تست می‌شوند و بعد با Backup و Health Check Deploy می‌شوند.
 
-## Snapshot واقعی Production
+جزئیات: [docs/RELEASE-POLICY.md](./docs/RELEASE-POLICY.md)
 
-چون این پروژه طی چندین مرحله روی Production توسعه پیدا کرده، مخزن یک Exporter امن دارد که سورس واقعی سرور را بدون `.env`، Database، API Key، Private Key، Certificate، پروفایل کاربران و Logها خروجی می‌گیرد. این Snapshot مبنای Stable 1:1 خواهد بود.
+## Credits
 
-راهنما: [docs/PRODUCTION-SNAPSHOT.md](./docs/PRODUCTION-SNAPSHOT.md)
-
-## امنیت
-
-فایل‌های Secret، دیتابیس، کلیدها، `.ovpn` کاربران، SSH Password و TLS Private Key نباید وارد Git شوند. برای جزئیات [SECURITY.md](./SECURITY.md) را بخوانید.
-
-## لینک‌ها
-
-- GitHub: `https://github.com/DashSaman/OV-PvNetwork`
-- ربات تلگرام: `https://t.me/pvnetwork_bot`
-- Upstream OV-Panel: `https://github.com/primeZdev/ov-panel`
-- Upstream OV-Node: `https://github.com/primeZdev/ov-node`
-
-## اعتبار و مجوز
-
-OV-PvNetwork بر پایه‌ی پروژه‌های MIT-licensed مربوط به PrimeZ ساخته شده است. Attribution اصلی در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
+PVNetwork Panel از پروژه‌های MIT-licensed یعنی OV-Panel و OV-Node از PrimeZ مشتق شده و با آن‌ها سازگار است. Attribution اصلی در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
 
 </div>
