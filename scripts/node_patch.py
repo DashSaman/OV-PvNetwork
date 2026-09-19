@@ -398,6 +398,138 @@ async def router_openvpn_profile(cn: str, api_key: str = Depends(check_api_key))
 '''
 
 
+ROUTER_OPENVPN_MODULE = r'''from fastapi import APIRouter, Depends
+from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
+import json
+import os
+import subprocess
+
+from core.auth.auth import check_api_key
+from core.schema.all_schemas import ResponseModel
+
+router = APIRouter(prefix="/router-openvpn", tags=["router_openvpn"])
+HELPER = "/usr/local/sbin/pvnetwork-router-openvpn"
+
+
+class RouterOpenVpnConfigRequest(BaseModel):
+    enabled: bool = True
+    port: int = Field(default=1195, ge=1, le=65535)
+    protocol: str = "tcp"
+    subnet: str = "10.9.0.0/24"
+
+
+class RouterOpenVpnCredentialRequest(BaseModel):
+    cn: str
+    username: str
+    verifier: str
+    enabled: bool = True
+
+
+def _call(*args: str, timeout: int = 30) -> dict:
+    if not os.path.isfile(HELPER):
+        return {
+            "ok": False,
+            "capable": False,
+            "upgrade_required": True,
+            "error": "router capability missing",
+        }
+    try:
+        result = subprocess.run(
+            [HELPER, *args],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {"ok": False, "error": str(exc)[:300]}
+    text = (result.stdout or "").strip()
+    if result.returncode != 0:
+        return {
+            "ok": False,
+            "error": (result.stderr or text or "router helper failed")[-500:],
+        }
+    try:
+        data = json.loads(text) if text.startswith("{") else {"ok": True, "path": text}
+    except json.JSONDecodeError:
+        return {"ok": False, "error": "invalid router helper response"}
+    data.setdefault("ok", True)
+    return data
+
+
+@router.get("/status")
+async def status(api_key: str = Depends(check_api_key)):
+    data = _call("status")
+    return ResponseModel(success=bool(data.get("ok")), msg="Router OpenVPN status", data=data)
+
+
+@router.post("/preflight")
+async def preflight(request: RouterOpenVpnConfigRequest, api_key: str = Depends(check_api_key)):
+    data = _call(
+        "preflight", "--port", str(request.port), "--protocol", request.protocol,
+        "--subnet", request.subnet,
+    )
+    return ResponseModel(success=bool(data.get("ok")), msg="Router OpenVPN preflight", data=data)
+
+
+@router.put("/config")
+async def config(request: RouterOpenVpnConfigRequest, api_key: str = Depends(check_api_key)):
+    args = ["enable" if request.enabled else "disable"]
+    if request.enabled:
+        args += [
+            "--port", str(request.port), "--protocol", request.protocol,
+            "--subnet", request.subnet,
+        ]
+    data = _call(*args, timeout=60)
+    return ResponseModel(success=bool(data.get("ok")), msg="Router OpenVPN configuration", data=data)
+
+
+@router.put("/credential")
+async def credential(request: RouterOpenVpnCredentialRequest, api_key: str = Depends(check_api_key)):
+    if request.enabled:
+        data = _call(
+            "credential-set", "--cn", request.cn, "--username", request.username,
+            "--verifier", request.verifier, "--enabled", "1",
+        )
+    else:
+        data = _call("credential-revoke", "--cn", request.cn)
+    return ResponseModel(success=bool(data.get("ok")), msg="Router OpenVPN credential", data=data)
+
+
+@router.get("/profile/{cn}")
+async def profile(cn: str, api_key: str = Depends(check_api_key)):
+    data = _call("profile", "--cn", cn)
+    path = str(data.get("path") or "")
+    if data.get("ok") and path and os.path.isfile(path):
+        return FileResponse(
+            path=path,
+            filename=f"{cn}.router.ovpn",
+            media_type="application/x-openvpn-profile",
+        )
+    return ResponseModel(success=False, msg="Router OpenVPN profile unavailable", data=data)
+'''
+
+
+def install_router_openvpn_module(root: Path) -> None:
+    router_file = root / "core/routers/router.py"
+    module_file = root / "core/routers/router_openvpn.py"
+    if not router_file.exists():
+        raise SystemExit("ROUTER_NOT_FOUND")
+    module_file.write_text(ROUTER_OPENVPN_MODULE, encoding="utf-8")
+    source = router_file.read_text(encoding="utf-8", errors="replace")
+    if "/router-openvpn/status" in source or "PVNETWORK_ROUTER_OPENVPN_INCLUDE_V1" in source:
+        return
+    source = source.rstrip() + '''
+
+# PVNETWORK_ROUTER_OPENVPN_INCLUDE_V1
+from core.routers.router_openvpn import router as router_openvpn_router
+router.include_router(router_openvpn_router)
+'''
+    router_file.write_text(source, encoding="utf-8")
+
+
 def ensure_line(path: Path, line: str) -> None:
     if not path.exists():
         return
@@ -409,14 +541,22 @@ def ensure_line(path: Path, line: str) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("root", nargs="?", default="/opt/ov-node")
+    ap.add_argument("--router-only", action="store_true")
     args = ap.parse_args()
     root = Path(args.root)
     user_file = root / "core/service/user_managment.py"
     router_file = root / "core/routers/router.py"
-    if not user_file.exists() or not router_file.exists():
+    if not router_file.exists():
+        raise SystemExit("OV-Node source layout not found")
+    if args.router_only:
+        install_router_openvpn_module(root)
+        print("PVNetwork router OpenVPN capability patch applied")
+        return 0
+    if not user_file.exists():
         raise SystemExit("OV-Node source layout not found")
     user_file.write_text(USER_MANAGEMENT, encoding="utf-8")
     router_file.write_text(ROUTER, encoding="utf-8")
+    install_router_openvpn_module(root)
 
     print("PVNetwork node compatibility patch applied")
     return 0

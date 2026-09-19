@@ -172,6 +172,131 @@ class NodeRequests:
             logger.error(f"Error when getting users usage on node {self.address}: {e}")
             return False
 
+    def _router_openvpn_request(
+        self,
+        method: str,
+        path: str,
+        *,
+        payload: dict | None = None,
+        timeout=(2, 8),
+    ) -> dict:
+        api = f"http://{self.address}/sync/router-openvpn/{path.lstrip('/')}"
+        try:
+            response = requests.request(
+                method,
+                api,
+                headers=self.headers,
+                json=payload,
+                timeout=timeout,
+            )
+        except requests.RequestException as exc:
+            logger.error(
+                f"Router OpenVPN request failed on node {self.address}: {exc}"
+            )
+            return {
+                "ok": False,
+                "capable": True,
+                "upgrade_required": False,
+                "status_code": 0,
+                "msg": "Node router capability is unreachable",
+                "data": None,
+            }
+
+        if response.status_code == 404:
+            return {
+                "ok": False,
+                "capable": False,
+                "upgrade_required": True,
+                "status_code": 404,
+                "msg": "Router OpenVPN capability is not installed",
+                "data": None,
+            }
+
+        try:
+            body = response.json()
+        except ValueError:
+            body = {}
+        data = body.get("data") if isinstance(body, dict) else None
+        success = bool(response.ok and isinstance(body, dict) and body.get("success"))
+        capable = not bool(isinstance(data, dict) and data.get("capable") is False)
+        return {
+            "ok": success,
+            "capable": capable,
+            "upgrade_required": bool(
+                isinstance(data, dict) and data.get("upgrade_required")
+            ),
+            "status_code": int(response.status_code),
+            "msg": str(body.get("msg") or body.get("detail") or "") if isinstance(body, dict) else "",
+            "data": data,
+        }
+
+    def router_openvpn_status(self) -> dict:
+        return self._router_openvpn_request("GET", "status")
+
+    def router_openvpn_preflight(
+        self, port: int, protocol: str, subnet: str
+    ) -> dict:
+        return self._router_openvpn_request(
+            "POST",
+            "preflight",
+            payload={
+                "enabled": True,
+                "port": int(port),
+                "protocol": str(protocol),
+                "subnet": str(subnet),
+            },
+        )
+
+    def router_openvpn_config(
+        self, *, enabled: bool, port: int, protocol: str, subnet: str
+    ) -> dict:
+        return self._router_openvpn_request(
+            "PUT",
+            "config",
+            payload={
+                "enabled": bool(enabled),
+                "port": int(port),
+                "protocol": str(protocol),
+                "subnet": str(subnet),
+            },
+            timeout=(3, 65),
+        )
+
+    def router_openvpn_set_credential(
+        self, *, cn: str, username: str, verifier: str, enabled: bool
+    ) -> dict:
+        return self._router_openvpn_request(
+            "PUT",
+            "credential",
+            payload={
+                "cn": str(cn),
+                "username": str(username),
+                "verifier": str(verifier),
+                "enabled": bool(enabled),
+            },
+        )
+
+    def router_openvpn_profile(self, cn: str) -> Response | None:
+        api = f"http://{self.address}/sync/router-openvpn/profile/{cn}"
+        try:
+            response = requests.request(
+                "GET", api, headers=self.headers, timeout=(2, 8)
+            )
+        except requests.RequestException as exc:
+            logger.error(
+                f"Router OpenVPN profile download failed on node {self.address}: {exc}"
+            )
+            return None
+        if response.status_code != 200:
+            return None
+        return Response(
+            content=response.content,
+            media_type="application/x-openvpn-profile",
+            headers={
+                "Content-Disposition": f"attachment; filename={cn}.router.ovpn"
+            },
+        )
+
     # ========================================================
     # PVNETWORK_EMERGENCY_BANDWIDTH_CONTROL_V1
     # ========================================================

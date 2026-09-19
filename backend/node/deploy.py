@@ -164,6 +164,42 @@ def _domain_payload(path: str) -> str:
         ) from exc
 
 
+def _router_capability_asset(relative_path: str) -> str:
+    source = Path(__file__).resolve().parents[2] / relative_path
+    try:
+        return base64.b64encode(source.read_bytes()).decode("ascii")
+    except OSError as exc:
+        raise RuntimeError(
+            f"Router OpenVPN deployment asset is unavailable: {relative_path}"
+        ) from exc
+
+
+def router_capability_install_script(node_root: str = "/opt/ov-node") -> str:
+    """Return an idempotent Node-only capability installer; never starts a listener."""
+    if node_root not in {"/opt/ov-node", '"$NEW"'}:
+        raise ValueError("Unsupported node root expression")
+    helper = _router_capability_asset("scripts/pvnetwork-router-openvpn")
+    verifier = _router_capability_asset("scripts/pvnetwork-router-auth")
+    patcher = _router_capability_asset("scripts/node_patch.py")
+    router_py = f"{node_root}/core/routers/router.py"
+    module_py = f"{node_root}/core/routers/router_openvpn.py"
+    return f'''# PVNETWORK_ROUTER_CAPABILITY_V1
+install -d -m 0755 /usr/local/sbin /usr/local/libexec
+install -d -m 0700 /etc/pvnetwork/router-openvpn
+echo '{helper}' | base64 -d >/usr/local/sbin/pvnetwork-router-openvpn.new
+echo '{verifier}' | base64 -d >/usr/local/libexec/pvnetwork-router-auth.new
+echo '{patcher}' | base64 -d >/tmp/pvnetwork-node-router-patch.py
+chmod 0755 /usr/local/sbin/pvnetwork-router-openvpn.new /usr/local/libexec/pvnetwork-router-auth.new
+python3 -m py_compile /tmp/pvnetwork-node-router-patch.py
+python3 /tmp/pvnetwork-node-router-patch.py {node_root} --router-only
+python3 -m py_compile {router_py} {module_py}
+mv -f /usr/local/sbin/pvnetwork-router-openvpn.new /usr/local/sbin/pvnetwork-router-openvpn
+mv -f /usr/local/libexec/pvnetwork-router-auth.new /usr/local/libexec/pvnetwork-router-auth
+rm -f /tmp/pvnetwork-node-router-patch.py
+# Capability files are inert until an explicit Router/OpenVPN enable API call.
+'''
+
+
 def _stage_script(api_port: int, ovpn_port: int, protocol: str,
                   api_key: str, panel_ip: str) -> str:
     proto_choice = "1" if protocol == "udp" else "2"
@@ -176,6 +212,7 @@ def _stage_script(api_port: int, ovpn_port: int, protocol: str,
     domain_unit = _domain_payload(
         "/etc/systemd/system/ov-domain-collector.service"
     )
+    router_capability = router_capability_install_script('"$NEW"')
     return f'''#!/usr/bin/env bash
 set -Eeuo pipefail
 export DEBIAN_FRONTEND=noninteractive
@@ -340,6 +377,10 @@ python3 /tmp/patch-ov-user-wrapper.py "$NEW"
 rm -f /tmp/patch-ov-user-wrapper.py
 python3 -m py_compile "$NEW/core/service/user_managment.py"
 stage 61 profile_builder "Profile builder verified"
+
+stage 62 router_capability "Installing disabled Router/OpenVPN capability"
+{router_capability}
+stage 63 router_capability "Router/OpenVPN capability installed (listener remains disabled)"
 
 stage 65 dependencies "Installing OV Node dependencies"
 cd "$NEW"; /root/.local/bin/uv sync
