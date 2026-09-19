@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 import unittest
@@ -7,6 +8,8 @@ from pathlib import Path
 
 class RouterOpenVpnHandshakeContractTests(unittest.TestCase):
     def test_real_dual_auth_harness(self):
+        if os.geteuid() != 0 or shutil.which("openvpn") is None or shutil.which("ip") is None:
+            self.skipTest("system OpenVPN integration prerequisites unavailable")
         harness = Path(__file__).resolve().parents[1] / "tests" / "router_openvpn_real_handshake.sh"
         self.assertTrue(harness.is_file())
         text = harness.read_text(encoding="utf-8")
