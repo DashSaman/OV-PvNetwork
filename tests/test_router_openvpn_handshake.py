@@ -1,4 +1,6 @@
+import os
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -19,6 +21,7 @@ class RouterOpenVpnHandshakeContractTests(unittest.TestCase):
             text=True,
             timeout=120,
             check=False,
+            env={**os.environ, "PYTHON": sys.executable},
         )
         self.assertEqual(result.returncode, 0, result.stdout[-12000:])
         self.assertIn("REAL_DUAL_AUTH_HANDSHAKE=PASS", result.stdout)
