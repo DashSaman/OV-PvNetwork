@@ -40,6 +40,50 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
 
         self.assertEqual([], violations, "\n".join(violations[:200]))
 
+
+    def test_sqlite_upgrade_reuses_single_existing_database(self):
+        import tempfile
+        from backend.db.engine import _resolve_default_sqlite_path
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            data_dir = Path(temp_dir)
+            existing = data_dir / "previous-install.db"
+            existing.write_bytes(b"sqlite-placeholder")
+            self.assertEqual(existing, _resolve_default_sqlite_path(data_dir))
+
+    def test_node_request_defaults_tunnel_to_node_address(self):
+        from backend.node.requests import NodeRequests
+
+        request = NodeRequests("192.0.2.10", 9090, "demo-key")
+        self.assertEqual("192.0.2.10", request.tunnel_address)
+
+    def test_runtime_config_paths_are_pvnetwork_owned(self):
+        root = Path(__file__).resolve().parents[1]
+        anyconnect = (root / "backend/routers/anyconnect.py").read_text()
+        push = (root / "backend/routers/push.py").read_text()
+        self.assertIn("/etc/pvnetwork-panel/", anyconnect)
+        self.assertIn("/etc/pvnetwork-panel/", push)
+
+    def test_release_metadata_versions_are_consistent(self):
+        import json
+        import tomllib
+
+        root = Path(__file__).resolve().parents[1]
+        version = (root / "VERSION").read_text().strip()
+        manifest = json.loads((root / "manifest.json").read_text())
+        with (root / "pyproject.toml").open("rb") as handle:
+            project = tomllib.load(handle)["project"]
+        backend_version = {}
+        exec((root / "backend/version.py").read_text(), backend_version)
+        frontend = json.loads((root / "frontend/package.json").read_text())
+        frontend_lock = json.loads((root / "frontend/package-lock.json").read_text())
+        self.assertEqual(version, manifest["version"])
+        self.assertEqual(version, project["version"])
+        self.assertEqual(version, backend_version["__version__"])
+        self.assertEqual(version, frontend["version"])
+        self.assertEqual(version, frontend_lock["version"])
+        self.assertEqual("pvnetwork-panel-frontend", frontend["name"])
+
     def test_pvnetwork_owned_runtime_contract_is_declared(self):
         root = Path(__file__).resolve().parents[1]
         install = (root / "install-local.sh").read_text()

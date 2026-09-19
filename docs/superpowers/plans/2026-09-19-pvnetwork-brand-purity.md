@@ -27,18 +27,18 @@
 ---
 
 ### Task 1: Permanent brand guard
-- [ ] Add a failing test that scans tracked paths/content for forbidden former-brand forms.
-- [ ] Run it and record RED against the current tree.
-- [ ] Add PVN-025/v1.0.4 and the zero-legacy-name rule to AGENTS.md without spelling the forbidden token.
+- [x] Add a failing test that scans tracked paths/content for forbidden former-brand forms.
+- [x] Run it and record RED against the current tree.
+- [x] Add PVN-025/v1.0.4 and the zero-legacy-name rule to AGENTS.md without spelling the forbidden token.
 
 ### Task 2: Source/runtime rename
-- [ ] Rename runtime/service/config/package/UI/storage/backup identifiers to PVNetwork equivalents.
-- [ ] Switch installer release source to DashSaman/OV-PvNetwork.
-- [ ] Preserve MIT copyright attribution while removing the former product brand.
-- [ ] Run focused guard GREEN, full unit/governance suite, compile, lint, build, audit, JSON/shell checks.
+- [x] Rename runtime/service/config/package/UI/storage/backup identifiers to PVNetwork equivalents.
+- [x] Switch installer release source to DashSaman/OV-PvNetwork.
+- [x] Preserve MIT copyright attribution while removing the former product brand.
+- [x] Run focused guard GREEN, full unit/governance suite, compile, lint, build, audit, JSON/shell checks.
 
 ### Task 3: Release and Production migration
-- [ ] Update VERSION/changelog/release notes/bilingual README summary for v1.0.4.
+- [x] Update VERSION/changelog/release notes/bilingual README summary for v1.0.4.
 - [ ] CI green on release branch, then verified Production app + PostgreSQL backup.
 - [ ] Prepare `/opt/pvnetwork-panel` and `pvnetwork-panel.service`, start canary on a temporary local port, verify API/UI.
 - [ ] Atomically switch nginx upstream to the new service, verify public/local health and Mirza, then retire the legacy service/path only after success.

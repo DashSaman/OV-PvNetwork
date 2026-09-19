@@ -118,7 +118,7 @@ async def get_dashboard_live(
                 "tunnel_address": (
                     str(node.tunnel_address)
                     if node.tunnel_address
-                    else "ovpanel.com"
+                    else str(node.address)
                 ),
                 "protocol": str(node.protocol),
                 "ovpn_port": int(node.ovpn_port),

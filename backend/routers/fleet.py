@@ -11,8 +11,8 @@ from backend.node.health import build_nodes_health
 from backend.node.requests import NodeRequests
 from backend.schema.output import ResponseModel
 router=APIRouter(prefix='/fleet',tags=['Fleet'])
-JOBDIR=Path('/opt/ov-panel/data/fleet-jobs'); JOBDIR.mkdir(parents=True,exist_ok=True); JOBDIR.chmod(0o700)
-KNOWN_HOSTS=Path('/opt/ov-panel/data/fleet_known_hosts')
+JOBDIR=Path('/opt/pvnetwork-panel/data/fleet-jobs'); JOBDIR.mkdir(parents=True,exist_ok=True); JOBDIR.chmod(0o700)
+KNOWN_HOSTS=Path('/opt/pvnetwork-panel/data/fleet_known_hosts')
 KNOWN_HOSTS.parent.mkdir(parents=True,exist_ok=True)
 KNOWN_HOSTS.touch(mode=0o600,exist_ok=True)
 KNOWN_HOSTS.chmod(0o600)

@@ -4,11 +4,19 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.3-orange?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.4-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.4 نسبت به v1.0.3
+
+**PVN-025 — مالکیت کامل برند و Runtime توسط PVNetwork.** تمام شناسه‌های برنامه، سرویس، Package، Storage و Backup در سورس Track‌شده با نام PVNetwork یکدست شده‌اند. یک تست Blocking تمام فایل‌ها و مسیرهای Track‌شده را اسکن می‌کند تا شناسه محصول پنل قدیمی دوباره وارد سورس نشود. Runtime استاندارد روی `/opt/pvnetwork-panel` و `pvnetwork-panel.service` قرار گرفته و برای SQLite موجود و Language Preference مرورگر Compatibility امن در نظر گرفته شده است.
+
+نسخه API، Python package، Frontend package و Release همگی روی **1.0.4** هماهنگ شده‌اند و Installer/Update فقط Releaseهای نگهداری‌شده در `DashSaman/OV-PvNetwork` را می‌گیرد. مهاجرت Production با Backup، Canary موازی و سوییچ Atomic Proxy انجام می‌شود.
+
+آخرین Release: **v1.0.4** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.4)
 
 ## تغییرات v1.0.3 نسبت به v1.0.2
 
@@ -20,9 +28,9 @@
 
 تغییر Assignment با Guard امن انجام می‌شود: نود حذف‌شده از Assignment به‌جای حذف Certificate فقط Deactivate می‌شود، پروفایل غیرفعال قدیمی در صورت امکان دوباره استفاده می‌شود و نود جدیدِ غیرقابل‌دسترس قبل از Mutation رد می‌شود. Sync وضعیت و ویرایش فقط روی نودهای Assigned انجام می‌شود. تست Browser واقعی برای فارسی RTL و انگلیسی LTR روی موبایل، تبلت و دسکتاپ اجرا می‌شود.
 
-آخرین Release: **v1.0.3** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.3)
+Release قبلی: **v1.0.3** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.3)
 
-PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
+PVNetwork Panel کنترل‌پلین مستقل PVNetwork برای مدیریت عملیاتی چندنودی است و امکانات لازم برای استفاده واقعی را ارائه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
 
 > **قانون ثابت پروژه:** Production همیشه زیر بار و در حال استفاده فرض می‌شود. هر تغییر Production باید با ترتیب «Backup/Check → تغییر محدود → کمترین Restart لازم → Health Verification → آمادگی Rollback» انجام شود. مخزن عمومی نیز نباید اطلاعات واقعی کاربران یا زیرساخت و Secretها را داشته باشد.
 
@@ -90,7 +98,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.3/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.4/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.
@@ -106,7 +114,7 @@ ovpv update
 ovpv rollback
 ```
 
-اگر روی سرور شما از قبل OVPanel یا سرویس‌های دیگری فعال است، Fresh Installer را مستقیم اجرا نکنید؛ ابتدا Health، Backup و مسیر Update/Migration را بررسی کنید.
+اگر روی سرور شما از قبل نسخه قدیمی پنل یا سرویس‌های دیگری فعال است، Fresh Installer را مستقیم اجرا نکنید؛ ابتدا Health، Backup و مسیر Update/Migration را بررسی کنید.
 
 مستندات:
 
@@ -183,6 +191,6 @@ Node Automation نباید برای راحتی نصب، Firewall را Flush کن
 
 ## اعتبار پروژه
 
-OV-PvNetwork از OV-Panel / OV-Node با مجوز MIT مشتق شده است. Attribution پروژه Upstream در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
+OV-PvNetwork از PVNetwork Panel / OV-Node با مجوز MIT مشتق شده است. Attribution پروژه Upstream در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
 
 </div>

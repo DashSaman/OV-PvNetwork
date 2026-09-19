@@ -58,7 +58,7 @@ for (const item of [
   await context.addInitScript(({ token, lang }) => {
     localStorage.setItem('authToken', token);
     localStorage.setItem('userRole', 'main_admin');
-    localStorage.setItem('ovpanel_language', lang);
+    localStorage.setItem('pvnetwork_language', lang);
   }, { token: demoToken(), lang: item.lang });
   const page = await context.newPage();
   await page.route('**/api/**', async route => {

@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 umask 077
 
-ROOT="${1:-/opt/ov-panel}"
+ROOT="${1:-/opt/pvnetwork-panel}"
 [[ -d "$ROOT" ]] || { echo "panel source not found: $ROOT" >&2; exit 1; }
 STAMP="$(date -u +%Y%m%d-%H%M%S)"
 OUT="/root/ov-pvnetwork-production-export-$STAMP"
@@ -24,7 +24,7 @@ rsync -a \
   "$ROOT/" "$STAGE/panel/"
 
 for f in \
-  /etc/systemd/system/ov-panel.service \
+  /etc/systemd/system/pvnetwork-panel.service \
   /etc/systemd/system/ov-node-user-reconcile.service \
   /etc/systemd/system/ov-node-user-reconcile.timer \
   /etc/systemd/system/ov-production-healthcheck.service \

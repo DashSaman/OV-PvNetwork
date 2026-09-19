@@ -3,15 +3,15 @@ set -Eeuo pipefail
 umask 077
 
 REPO="DashSaman/OV-PvNetwork"
-APP="/opt/ov-panel"
+APP="/opt/pvnetwork-panel"
 STATE="/etc/ov-pvnetwork"
 BACKUPS="/var/backups/ov-pvnetwork"
 MANAGER="/usr/local/sbin/ovpv"
 COMMAND="${1:-help}"
 [[ $# -gt 0 ]] && shift || true
 
-say(){ printf '[OV-PvNetwork] %s\n' "$*"; }
-fail(){ printf '[OV-PvNetwork] ERROR: %s\n' "$*" >&2; exit 1; }
+say(){ printf '[PVNetwork] %s\n' "$*"; }
+fail(){ printf '[PVNetwork] ERROR: %s\n' "$*" >&2; exit 1; }
 need_root(){ [[ "${EUID:-$(id -u)}" -eq 0 ]] || fail 'run as root'; }
 need_install(){ [[ -d "$APP" && -f "$APP/main.py" ]] || fail 'panel is not installed'; }
 
@@ -24,7 +24,7 @@ current_version(){
 }
 
 verify(){
-  systemctl is-active --quiet ov-panel.service || return 1
+  systemctl is-active --quiet pvnetwork-panel.service || return 1
   local port="$(panel_port)"
   for _ in $(seq 1 30); do
     curl -fsS --connect-timeout 1 --max-time 2 "http://127.0.0.1:${port}/openapi.json" >/dev/null && return 0
@@ -72,7 +72,7 @@ make_backup(){
     --exclude='frontend/dist/' \
     --exclude='backups/' \
     "$APP/" "$dir/panel/"
-  cp -a /etc/systemd/system/ov-panel.service "$dir/" 2>/dev/null || true
+  cp -a /etc/systemd/system/pvnetwork-panel.service "$dir/" 2>/dev/null || true
   printf '%s\n' "$dir" > "$STATE/last-backup"
   say "backup created: $dir" >&2
   printf '%s\n' "$dir"
@@ -115,7 +115,7 @@ update_install(){
   fetch_source "$ref" "$tmp"
   sync_source "$tmp/src"
   build_panel
-  systemctl restart ov-panel.service
+  systemctl restart pvnetwork-panel.service
   if ! verify; then
     say 'verification failed; restoring pre-update backup'
     restore_backup "$backup"
@@ -126,16 +126,16 @@ update_install(){
 restore_backup(){
   local dir="$1"
   [[ -d "$dir/panel" ]] || fail "invalid backup: $dir"
-  systemctl stop ov-panel.service || true
+  systemctl stop pvnetwork-panel.service || true
   rsync -a --delete \
     --exclude='.venv/' \
     --exclude='frontend/node_modules/' \
     --exclude='frontend/dist/' \
     "$dir/panel/" "$APP/"
-  [[ -f "$dir/ov-panel.service" ]] && cp -a "$dir/ov-panel.service" /etc/systemd/system/ov-panel.service
+  [[ -f "$dir/pvnetwork-panel.service" ]] && cp -a "$dir/pvnetwork-panel.service" /etc/systemd/system/pvnetwork-panel.service
   systemctl daemon-reload
   build_panel
-  systemctl start ov-panel.service
+  systemctl start pvnetwork-panel.service
   verify || fail 'restored panel is unhealthy'
   install -m 0755 "$APP/scripts/manage.sh" "$MANAGER" 2>/dev/null || true
   mkdir -p "$STATE"
@@ -143,8 +143,8 @@ restore_backup(){
 }
 
 status_cmd(){
-  echo "OV-PvNetwork version: $(current_version)"
-  echo "Panel: $(systemctl is-active ov-panel.service 2>/dev/null || true)"
+  echo "PVNetwork version: $(current_version)"
+  echo "Panel: $(systemctl is-active pvnetwork-panel.service 2>/dev/null || true)"
   if [[ -f "$APP/.env" ]]; then
     awk -F= '$1=="PORT"||$1=="URLPATH"||$1=="SUBSCRIPTION_PATH"{print $1"="$2}' "$APP/.env"
   fi
@@ -158,7 +158,7 @@ doctor_cmd(){
   echo '-- disk --'
   df -h / /opt 2>/dev/null | uniq
   echo '-- service --'
-  systemctl --no-pager --full status ov-panel.service 2>/dev/null | sed -n '1,12p' || true
+  systemctl --no-pager --full status pvnetwork-panel.service 2>/dev/null | sed -n '1,12p' || true
 }
 
 case "$COMMAND" in

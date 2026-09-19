@@ -85,7 +85,7 @@ async def get_subscription(
                 "maintenance": bool(getattr(node, "maintenance", False)),
                 "tunnel_address": str(
                     getattr(node, "tunnel_address", None)
-                    or "ovpanel.com"
+                    or str(node.address)
                 ),
                 "protocol": str(
                     getattr(node, "protocol", None)

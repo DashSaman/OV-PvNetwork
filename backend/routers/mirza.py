@@ -185,7 +185,7 @@ async def mirza_health(
 ):
     return {
         "success": True,
-        "service": "ov-panel-mirza-integration",
+        "service": "pvnetwork-panel-mirza-integration",
         "nodes": len(crud.get_all_nodes(db)),
     }
 

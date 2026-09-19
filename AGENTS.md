@@ -27,14 +27,14 @@
 15. **GitHub-only completion is forbidden for Production-visible work.** When the human owner has authorized deployment, the exact tested release must also be applied to the authorized live Production host before the task can become `[x]`.
 16. Before every Production-visible deployment, perform read-only preflight/health checks and create a verified rollback point: application/runtime backup plus a database-native backup when a database is involved. Record the rollback path before mutation.
 17. Deploy only the files/build required by the tested commit. Preserve runtime `.env`, database state, certificates, node credentials, routing, firewall and unrelated host state. Never replace the live tree wholesale for convenience.
-18. Backend changes may restart only `ov-panel.service` when required. Frontend-only changes should use an atomic asset/index switch and should not restart the backend unless technically necessary. Never restart VPN nodes, tunnels or unrelated services for a panel UI/backend release.
+18. Backend changes may restart only `pvnetwork-panel.service` when required. Frontend-only changes should use an atomic asset/index switch and should not restart the backend unless technically necessary. Never restart VPN nodes, tunnels or unrelated services for a panel UI/backend release.
 19. After deployment, verify local and public health, the changed endpoint/workflow, database readability, service restart count/state, post-deploy 5xx/traceback errors and critical integrations. If a required check fails, rollback immediately to the recorded pre-deploy state before further experimentation.
 20. Production evidence must be written back into the active task ledger: deployed version/commit, backup verification, health result, rollback readiness and any restart/outage observed. A task remains `[~]` until this evidence exists.
 21. **PVNetwork brand purity is permanent:** the tracked tree must contain zero references to the former upstream panel identifier in dashed, underscored, spaced or concatenated forms. Runtime paths, service/unit names, package names, UI/storage keys, backup formats/commands and new documentation must use PVNetwork-owned naming. CI must block regressions.
 
 ## Production deployment contract — owner-authorized live server
 
-For this project, the live panel checkout is expected at `/opt/ov-panel` on the authorized Production server/session provided by the human owner. Treat it as runtime state, not as a development checkout. Development and release preparation stay in an isolated Git worktree; only the verified artifact/required files move to `/opt/ov-panel`.
+For this project, the live panel checkout is expected at `/opt/pvnetwork-panel` on the authorized Production server/session provided by the human owner. Treat it as runtime state, not as a development checkout. Development and release preparation stay in an isolated Git worktree; only the verified artifact/required files move to `/opt/pvnetwork-panel`.
 
 Required order for every approved Production-visible release:
 
@@ -86,9 +86,11 @@ Before implementation, record the task and target release here **and commit/push
   - GitHub Release `v1.0.3` published with verified artifact SHA256 `82fd4b95f2941ca8aebe323355393ce617f199b470f41930e40244a16ccb12b4`.
 
 - `v1.0.4` — IN PROGRESS — `PVN-025` PVNetwork brand-purity + runtime naming migration.
-  - TDD RED: permanent tracked-tree brand guard fails against legacy source/runtime identifiers.
-  - Scope: source/runtime paths, service names, package names, UI/storage keys, backup/restore identifiers, installer/update source, docs and attribution wording.
-  - Production rule: parallel PVNetwork runtime canary + verified backup/rollback before traffic switch; no VPN/node/tunnel/firewall changes.
+  - TDD RED recorded: permanent tracked-tree brand guard found legacy source/runtime identifiers before implementation.
+  - Source GREEN: zero forbidden tracked-tree identifiers; metadata consistency guard; SQLite upgrade reuse; node tunnel fallback; PVNetwork-owned runtime-path tests.
+  - Local gate: 42/42 unit/governance tests PASS; Python compile, shell/JSON syntax, uv lock, ESLint, production npm audit=0 and Vite production build PASS.
+  - Canonical runtime contract: `/opt/pvnetwork-panel`, `pvnetwork-panel.service`, PVNetwork-owned backup/push/monitoring/fleet/config identifiers.
+  - Next: browser matrix + GitHub CI → verified Production app/PostgreSQL backup → parallel canary → atomic nginx switch → health/integration verification → release/tag/assets → mark `PVN-025` `[x]`.
 
 ## Current release baseline
 
@@ -1034,7 +1036,7 @@ This section intentionally mirrors the complete permanent task registry so an ag
 - PVN-904 Import from generic OpenVPN CSV
 - PVN-905 Migration dry-run report
 - PVN-906 Migration rollback snapshot
-- PVN-907 Legacy OVPanel migration assistant
+- PVN-907 Legacy upstream-panel migration assistant
 - PVN-908 Subscription compatibility checker
 - PVN-909 Client compatibility matrix
 - PVN-910 Karing compatibility test

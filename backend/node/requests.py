@@ -13,14 +13,14 @@ class NodeRequests:
         address: str,
         port: int,
         api_key: str,
-        tunnel_address: str = "ovpanel.com",
+        tunnel_address: str | None = None,
         protocol: str = "tcp",
         ovpn_port: int = 1194,
         set_new_setting: bool = False,
     ):
         self.address = f"{address}:{port}"
         self.headers = {"key": api_key, "api-key": api_key}
-        self.tunnel_address = tunnel_address
+        self.tunnel_address = tunnel_address or address
         self.protocol = protocol
         self.ovpn_port = ovpn_port
         self.set_new_setting = set_new_setting

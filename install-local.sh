@@ -2,12 +2,12 @@
 set -Eeuo pipefail
 umask 077
 
-APP="/opt/ov-panel"
+APP="/opt/pvnetwork-panel"
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 fail(){ printf '[PVNetwork] ERROR: %s\n' "$*" >&2; exit 1; }
 [[ ${EUID:-$(id -u)} -eq 0 ]] || fail "run as root"
-[[ ! -e "$APP" || -z "$(ls -A "$APP" 2>/dev/null || true)" ]] || fail "/opt/ov-panel already exists; this installer is for a fresh server"
+[[ ! -e "$APP" || -z "$(ls -A "$APP" 2>/dev/null || true)" ]] || fail "/opt/pvnetwork-panel already exists; this installer is for a fresh server"
 
 . /etc/os-release
 case "${ID:-}:${VERSION_ID:-}" in
@@ -75,7 +75,7 @@ chmod 600 "$APP/.env"
 uv sync
 (cd frontend && npm ci && npm run build)
 .venv/bin/alembic -c backend/alembic.ini upgrade head
-cat > /etc/systemd/system/ov-panel.service <<'UNIT'
+cat > /etc/systemd/system/pvnetwork-panel.service <<'UNIT'
 [Unit]
 Description=PVNetwork Panel
 After=network-online.target
@@ -83,7 +83,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/ov-panel
+WorkingDirectory=/opt/pvnetwork-panel
 Environment=PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/root/.local/bin/uv run main.py
 Restart=always
@@ -103,7 +103,7 @@ if [[ -x "$APP/scripts/healthcheck.sh" ]]; then
   install -m 0755 "$APP/scripts/healthcheck.sh" /usr/local/sbin/ov-pvnetwork-healthcheck
   cat > /etc/systemd/system/ov-pvnetwork-healthcheck.service <<'HEALTHUNIT'
 [Unit]
-Description=OV-PvNetwork control-plane health check
+Description=PVNetwork control-plane health check
 After=network-online.target
 
 [Service]
@@ -112,7 +112,7 @@ ExecStart=/usr/local/sbin/ov-pvnetwork-healthcheck
 HEALTHUNIT
   cat > /etc/systemd/system/ov-pvnetwork-healthcheck.timer <<'HEALTHTIMER'
 [Unit]
-Description=OV-PvNetwork periodic health check
+Description=PVNetwork periodic health check
 
 [Timer]
 OnBootSec=2min
@@ -126,7 +126,7 @@ HEALTHTIMER
 fi
 
 systemctl daemon-reload
-systemctl enable --now ov-panel.service
+systemctl enable --now pvnetwork-panel.service
 [[ -f /etc/systemd/system/ov-pvnetwork-healthcheck.timer ]] && systemctl enable --now ov-pvnetwork-healthcheck.timer
 
 for _ in $(seq 1 30); do

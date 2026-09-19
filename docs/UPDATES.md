@@ -21,7 +21,7 @@ Record the current version/service health and have a rollback target before rest
 ovpv update
 ```
 
-Where the lifecycle manager is installed, it resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env`/state, applies required migrations/builds, restarts only `ov-panel.service`, then verifies the local API. Failed health verification must trigger rollback rather than repeated blind mutation.
+Where the lifecycle manager is installed, it resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env`/state, applies required migrations/builds, restarts only `pvnetwork-panel.service`, then verifies the local API. Failed health verification must trigger rollback rather than repeated blind mutation.
 
 ## Target a specific patch explicitly
 
