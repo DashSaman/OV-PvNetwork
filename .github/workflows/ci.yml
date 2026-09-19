@@ -10,6 +10,9 @@ permissions:
 env:
   URLPATH: panel
   VITE_URLPATH: panel
+  ADMIN_USERNAME: ci-admin
+  ADMIN_PASSWORD_HASH: ci-not-a-production-hash
+  JWT_SECRET_KEY: ci-jwt-secret-key-not-production-32chars
 
 jobs:
   validate:
