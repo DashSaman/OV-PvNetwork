@@ -129,6 +129,11 @@ Before implementation, record the task and target release here **and commit/push
   - Contract: one process-wide short-lived presence snapshot, a lightweight role-scoped `/users/presence` endpoint, and 1-second User Management presence refresh; no writes to `active_sessions` and no device-limit/enforcement changes.
   - TDD RED reproduced both defects: repeated presence calls repolled nodes and User Management lacked a lightweight presence endpoint. GREEN adds snapshot reuse plus a lightweight presence poll while the full user list refreshes separately at a slower cadence.
   - `PVN-028` security-hardening WIP is preserved separately and deferred to v1.0.8 so this hotfix remains the only Production-visible task in v1.0.7.
+  - Verification: exact behavior commit `3b2145e5df9254f0416db88200f176cb007859f1` passed GitHub CI run `35430485225`, including unit/governance, production build, runtime audit, full browser matrix and private-material guards.
+  - Production rollback point: `/root/pvnetwork-deploy-backups/v1.0.7-pvn031-20260919-075424`; app archive and native PostgreSQL dump passed integrity verification before mutation.
+  - Production deployment: exact tested stage passed API/UI/DB/shared-snapshot canary gates on 19002. Nginx was switched atomically to canary while only `pvnetwork-panel.service` restarted on canonical 19001, then traffic returned to 19001 and canary was retired.
+  - Production consistency proof: eight consecutive authenticated checks on canonical 19001 reported identical `presence`, Users-row and Dashboard unique-user totals with matching shared `sample_time` on every iteration (9/9/9 at verification time).
+  - Post-cutover: relevant runtime source/dist hashes match the tested stage, local/public health 200, `REAL_ERRORS=0`, `HTTP_5XX=0`, sampled Mirza requests remain 2xx and canonical service `NRestarts=0`.
 
 ## Current release baseline
 

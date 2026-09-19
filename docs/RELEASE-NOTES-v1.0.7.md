@@ -2,6 +2,8 @@
 
 **Patch task:** `PVN-031`
 
+![v1.0.7 synchronized online users dashboard](./images/v1.0.7/en/desktop/online-truth-dashboard.png)
+
 Dashboard and User Management already shared the v1.0.6 online-user merge algorithm, but independent polling could still land on adjacent live snapshots. v1.0.7 adds one short-lived process-wide snapshot and a lightweight role-scoped User Management presence endpoint.
 
 ## Safety

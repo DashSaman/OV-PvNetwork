@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const baseUrl = (process.env.PV_UI_BASE_URL || 'http://127.0.0.1:4212/panel').replace(/\/$/, '');
-const root = path.resolve('..', 'docs', 'images', 'v1.0.6');
+const root = path.resolve('..', 'docs', 'images', 'v1.0.7');
 const users = [
   { id: 1, uuid: 'demo-a', name: 'demo-alpha', owner: 'owner', total: 0, used: 0, expiry_date: '2030-01-01', is_active: true, is_online: true, online_count: 1, device_limit: 1, node_ids: [1] },
   { id: 2, uuid: 'demo-b', name: 'demo-beta', owner: 'owner', total: 0, used: 0, expiry_date: '2030-01-01', is_active: true, is_online: true, online_count: 1, device_limit: 1, node_ids: [2] },
@@ -25,6 +25,7 @@ async function mock(page) {
     let payload = ok({});
     if (p === '/nodes/' || p === '/nodes') payload = ok(nodes);
     else if (p === '/users/' || p === '/users') payload = ok(users);
+    else if (p === '/users/presence') payload = ok({ counts_by_uuid: { 'demo-a': 1, 'demo-b': 1, 'demo-c': 1 }, online_users: 3, sample_time: 1234567890 });
     else if (p === '/server/info') payload = ok({ cpu: 10, memory_total: 100, memory_used: 20, memory_percent: 20, disk_total: 100, disk_used: 20, disk_percent: 20, uptime: 7200 });
     else if (p === '/server/dashboard-live') payload = ok({
       presence: { online_users: 3, central_online_users: 2, direct_fallback_users: 1 },

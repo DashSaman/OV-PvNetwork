@@ -14,7 +14,9 @@
 
 ## What changed in v1.0.7 vs v1.0.6
 
-**PVN-031 — synchronize the final online-user display race.** Dashboard and User Management now read from one short-lived process-wide presence snapshot. User Management refreshes only the lightweight role-scoped presence map every second instead of waiting up to 10 seconds for a full user-list refresh, while the complete user list refreshes separately at a slower cadence.
+**PVN-031 — synchronize the final online-user display race.**
+
+![v1.0.7 synchronized online users dashboard](./docs/images/v1.0.7/en/desktop/online-truth-dashboard.png) Dashboard and User Management now read from one short-lived process-wide presence snapshot. User Management refreshes only the lightweight role-scoped presence map every second instead of waiting up to 10 seconds for a full user-list refresh, while the complete user list refreshes separately at a slower cadence.
 
 This hotfix is display-only: it does not write `active_sessions`, does not alter device-limit enforcement, and does not change OpenVPN profiles or node state. It specifically closes the case where two pages used the same merge logic but still displayed different numbers because their requests landed on adjacent live samples.
 

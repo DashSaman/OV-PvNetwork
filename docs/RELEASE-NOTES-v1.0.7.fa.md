@@ -2,6 +2,8 @@
 
 **Patch task:** `PVN-031`
 
+![نمای همگام کاربران آنلاین v1.0.7](./images/v1.0.7/fa/desktop/online-truth-dashboard.png)
+
 Dashboard و User Management از قبل منطق مشترک v1.0.6 را داشتند، اما Poll مستقل می‌توانست روی دو Snapshot مجاور بیفتد. v1.0.7 یک Snapshot کوتاه‌عمر سراسری و endpoint سبک و Scope‌شده برای Presence صفحه کاربران اضافه می‌کند.
 
 ## ایمنی
