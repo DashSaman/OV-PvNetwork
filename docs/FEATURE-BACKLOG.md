@@ -1,4 +1,26 @@
-# PVNetwork Numbered Feature Backlog
+# PVNetwork Permanent Feature Backlog
+
+## PVN-001..099 — release governance, baseline and critical compatibility
+
+- PVN-001 Stable public v1.0.0 baseline
+- PVN-002 Expired-user renewal without delete/recreate
+- PVN-003 Unlimited Reset Usage starts a new 30-day period
+- PVN-004 Finite renewal preserve/reset/add-traffic modes
+- PVN-005 Mirza renewal endpoint
+- PVN-006 Renewal regression tests
+- PVN-007 Sanitized public source release
+- PVN-008 Illustrated Persian documentation baseline
+- PVN-009 Illustrated English documentation baseline
+- PVN-010 Release artifact + SHA256
+- PVN-011 Telegram Node DOWN/UP transition alerts
+- PVN-012 Live-Production safety contract
+- PVN-013 Strict sequential patch-release policy
+- PVN-014 Interruption-safe Agent checkpoint/resume contract
+- PVN-015 One Production-visible PVN task per future patch release
+- PVN-016 Per-release sanitized bilingual illustrated docs/screenshots
+- PVN-017 Per-release public-data/secret/forbidden-file scan
+- PVN-018 Per-release artifact + SHA256 publish/verification
+- PVN-019 Active Roadmap/release-policy consistency with sequential 1.0.x model
 
 `AGENTS.md` defines the execution contract. This file is the readable numbered capability registry. IDs are permanent; do not renumber or reuse them. Completion requires the Definition of Done in `AGENTS.md` and the release gate in `docs/QA-RELEASE-GATE.md`.
 
@@ -868,7 +890,7 @@
 - PVN-937 RTL browser compatibility
 - PVN-938 Accessibility browser compatibility
 - PVN-939 Upgrade migration from v1.0
-- PVN-940 Upgrade migration from v1.1
+- PVN-940 Upgrade migration from legacy/future minor-version schemes
 - PVN-941 DB schema compatibility validator
 - PVN-942 API compatibility validator
 - PVN-943 Subscription backward-compatibility validator

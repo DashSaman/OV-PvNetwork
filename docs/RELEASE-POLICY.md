@@ -26,4 +26,4 @@ Before deploying an update to a live instance, create a backup and verify databa
 
 ## v1.0.0 freeze
 
-The `v1.0.0` tag is immutable. New capabilities are developed for a later version and must not be silently added to the existing tag or release asset.
+The `v1.0.0` tag and every published patch tag are immutable. Each new Production-visible `PVN-xxx` task advances exactly one patch version (`v1.0.1`, `v1.0.2`, `v1.0.3`, ...), unless the human owner explicitly changes the versioning rule. New behavior must never be silently added to an existing tag or release asset.

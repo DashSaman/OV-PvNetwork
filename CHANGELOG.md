@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.0.2 — 2026-09-19
+
+Subscription-page mobile usability patch.
+
+### Subscription UX
+- Raised mobile notification, Linux-copy and AnyConnect-copy controls to the 44px touch floor.
+- Kept long usernames, hostnames and credentials bounded within the viewport.
+- Added automated FA/EN responsive checks at 360, 375, 390, 430, 768, 1024 and 1440 px.
+- Added sanitized Persian/English desktop/mobile Subscription screenshots.
+
+### Governance
+- Aligned active roadmap/install/update/QA documentation with strict sequential `1.0.x` releases.
+- Added explicit interruption-safe Agent checkpoint rules and one Production-visible PVN task per future patch.
+
+### Compatibility
+- No database migration.
+- No routing, firewall, tunnel, node or user-lifecycle behavior change.
+
 ## 1.0.1 — 2026-09-19
 
 Compatibility-preserving UI/UX, responsive and project-governance hardening release.

@@ -71,6 +71,14 @@ Renew از همان UUID و Username استفاده می‌کند. برای سر
 ![AnyConnect](./images/ui/workflow-anyconnect.jpg)
 
 این پنجره فعال/غیرفعال کردن AnyConnect، مشاهده وضعیت Account و ساخت یا تغییر Credential همان کاربر را مدیریت می‌کند. تغییرات OpenVPN و AnyConnect از یک هویت کاربری مشترک استفاده می‌کنند.
+## صفحه Subscription — نسخه v1.0.2
+
+![Subscription دسکتاپ](./images/v1.0.2/fa/desktop/subscription.png)
+
+![Subscription موبایل](./images/v1.0.2/fa/mobile/subscription.png)
+
+صفحه عمومی Subscription وضعیت و مصرف، تاریخ انقضا، تعداد اتصال هم‌زمان، سرور پیشنهادی، دانلود کلاینت‌ها، دستور Linux، اطلاعات AnyConnect و اعلان تمدید را نشان می‌دهد. روی موبایل دکمه‌های Copy/Test/Renew حداقل فضای Touch مناسب دارند، Username و Host طولانی داخل کارت می‌شکنند و خود صفحه نباید Horizontal Scroll داشته باشد. دکمه‌های زبان و Theme نیز در دسترس باقی می‌مانند.
+
 ## 3) مدیریت نودها
 
 ![Nodes](./images/ui/nodes.jpg)

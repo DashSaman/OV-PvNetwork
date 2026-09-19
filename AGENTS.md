@@ -44,6 +44,22 @@ Core UI must remain usable at **360, 375, 390, 430, 768, 1024, 1366, 1440 and 19
 - `PVN-800..899` — install, update, backup, rollback, CI/CD, HA, DR
 - `PVN-900..999` — migrations, ecosystem compatibility, approved experiments
 
+## Sequential patch-release policy
+
+`v1.0.0` is the immutable baseline. From now on, **each completed Production-visible `PVN-xxx` task gets exactly one new patch release** in strict order: `v1.0.1` → `v1.0.2` → `v1.0.3` → ... . Do not combine multiple new Production-visible tasks into one future release, do not skip a patch number, and do not jump to a minor/major version unless the human owner explicitly changes this rule. Documentation/governance-only corrections may ride with the active task only when they do not change Production behavior.
+
+Before implementation, record the task and target release here **and commit/push that checkpoint before risky or long-running work whenever possible**. If a chat/session is interrupted, reconnect to the persistent maintenance session, read this file, resume the first `[~]` task from its latest checkpoint/evidence, then continue with the first `[ ]` queued task; never repeat `[x]` work. Mark `[x]` only after tests, sanitization, Production-safe deployment (when applicable), health verification, GitHub merge/tag/release and release-asset verification all pass.
+
+### Active release ledger
+
+- `v1.0.0` — RELEASED — sanitized public baseline.
+- `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.
+- `v1.0.2` — IN PROGRESS — `PVN-111` Responsive Subscription page.
+  - Checkpoint: TDD RED reproduced undersized mobile notification/Linux/AnyConnect copy controls at 360/375/390/430 px.
+  - Checkpoint: minimal touch-target/layout fix GREEN; `SUBSCRIPTION_RESPONSIVE_SMOKE=PASS widths=7`.
+  - Checkpoint: sanitized FA/EN desktop/mobile Subscription screenshots generated.
+  - Next: bilingual v1.0.2 docs/release notes → full release gates → verified backup → narrow Production template deploy → health check → GitHub merge/tag/release/artifact verify → mark PVN-111 `[x]`.
+
 ## Current release baseline
 
 - PVN-001 [x] Stable public `v1.0.0` release.
@@ -57,44 +73,52 @@ Core UI must remain usable at **360, 375, 390, 430, 768, 1024, 1366, 1440 and 19
 - PVN-009 [x] Illustrated English documentation baseline.
 - PVN-010 [x] Release artifact + SHA256.
 - PVN-011 [x] Telegram node DOWN/UP transition alerts with UI toggle and anti-spam state tracking. Released in v1.0.1.
+- PVN-012 [x] Persist the non-negotiable live-Production safety contract in `AGENTS.md`.
+- PVN-013 [x] Persist strict sequential patch releases from `v1.0.0` onward.
+- PVN-014 [x] Persist interruption-safe Agent checkpoint/resume rules; no repeating `[x]` work.
+- PVN-015 [x] Enforce one Production-visible `PVN-xxx` task per future patch release.
+- PVN-016 [x] Require relevant sanitized illustrated Persian + English docs/screenshots for every visible release.
+- PVN-017 [x] Require public-data/secret/forbidden-file scans before every public release.
+- PVN-018 [x] Require release artifact + SHA256 upload and post-publish verification.
+- PVN-019 [x] Align active Roadmap/release policy with the sequential `1.0.x` release model.
 
-## v1.1.0 blocking UX/quality tasks
+## UI/UX task ledger
 
-- PVN-100 [ ] Mobile navigation redesign.
-- PVN-101 [ ] Responsive Users page.
-- PVN-102 [ ] Responsive Nodes page.
-- PVN-103 [ ] Responsive Admins page.
-- PVN-104 [ ] Responsive Operations page.
-- PVN-105 [ ] Responsive Security page.
-- PVN-106 [ ] Responsive Fleet page.
-- PVN-107 [ ] Responsive Monitoring page.
-- PVN-108 [ ] Responsive Bandwidth page.
-- PVN-109 [ ] Responsive Dashboard.
-- PVN-110 [ ] Responsive Login page.
-- PVN-111 [ ] Responsive Subscription page.
-- PVN-112 [ ] Mobile-friendly action menus.
-- PVN-113 [ ] 44×44 touch target audit.
-- PVN-114 [ ] No page-level horizontal overflow.
-- PVN-115 [ ] Persian RTL full audit.
-- PVN-116 [ ] English LTR full audit.
+- PVN-100 [x] Mobile navigation redesign. Release: v1.0.1.
+- PVN-101 [x] Responsive Users page. Release: v1.0.1.
+- PVN-102 [x] Responsive Nodes page. Release: v1.0.1.
+- PVN-103 [x] Responsive Admins page. Release: v1.0.1.
+- PVN-104 [x] Responsive Operations page. Release: v1.0.1.
+- PVN-105 [x] Responsive Security page. Release: v1.0.1.
+- PVN-106 [x] Responsive Fleet page. Release: v1.0.1.
+- PVN-107 [x] Responsive Monitoring page. Release: v1.0.1.
+- PVN-108 [x] Responsive Bandwidth page. Release: v1.0.1.
+- PVN-109 [x] Responsive Dashboard. Release: v1.0.1.
+- PVN-110 [x] Responsive Login page. Release: v1.0.1.
+- PVN-111 [~] Responsive Subscription page. Target: v1.0.2.
+- PVN-112 [x] Mobile-friendly action menus. Release: v1.0.1.
+- PVN-113 [x] 44×44 touch target audit. Release: v1.0.1.
+- PVN-114 [x] No page-level horizontal overflow. Release: v1.0.1.
+- PVN-115 [x] Persian RTL full audit. Release: v1.0.1.
+- PVN-116 [x] English LTR full audit. Release: v1.0.1.
 - PVN-117 [ ] Keyboard-only navigation audit.
-- PVN-118 [ ] Visible focus states.
+- PVN-118 [x] Visible focus states. Release: v1.0.1.
 - PVN-119 [ ] Accessible icon-only controls.
 - PVN-120 [ ] WCAG contrast audit.
-- PVN-121 [ ] Reduced-motion support.
-- PVN-122 [ ] Modal viewport containment and internal scrolling.
+- PVN-121 [x] Reduced-motion support. Release: v1.0.1.
+- PVN-122 [x] Modal viewport containment and internal scrolling. Release: v1.0.1.
 - PVN-123 [ ] Mobile table/card strategy for management screens.
-- PVN-124 [ ] Responsive pagination/search/sort controls.
+- PVN-124 [x] Responsive pagination/search/sort controls. Release: v1.0.1.
 - PVN-125 [ ] Loading, empty, error and retry states.
 - PVN-126 [ ] Duplicate-submit prevention and mutation feedback.
-- PVN-127 [ ] Responsive Renew modal.
-- PVN-128 [ ] Responsive AnyConnect modal.
-- PVN-129 [ ] Responsive Add/Edit User flows.
-- PVN-130 [ ] Responsive Add/Edit Node flows.
-- PVN-131 [ ] Responsive Add/Edit Admin flows.
+- PVN-127 [x] Responsive Renew modal. Release: v1.0.1.
+- PVN-128 [x] Responsive AnyConnect modal. Release: v1.0.1.
+- PVN-129 [x] Responsive Add/Edit User flows. Release: v1.0.1.
+- PVN-130 [x] Responsive Add/Edit Node flows. Release: v1.0.1.
+- PVN-131 [x] Responsive Add/Edit Admin flows. Release: v1.0.1.
 - PVN-132 [ ] Responsive Backup/Restore panel.
 - PVN-133 [ ] Responsive Domain History/Download dialogs.
-- PVN-134 [ ] Playwright responsive smoke baseline.
+- PVN-134 [x] Playwright responsive smoke baseline. Release: v1.0.1.
 - PVN-135 [ ] Accessibility smoke baseline.
 - PVN-136 [ ] Desktop/mobile visual-regression baseline.
 - PVN-137 [ ] Frontend bundle-size budget.
@@ -122,7 +146,7 @@ No applicable gap may exist only in prose: it must receive a stable `PVN-xxx` ID
 
 ```text
 PVN-127 [x] Responsive Renew modal
-Release: v1.1.0
+Release: v1.0.N
 Commit: <sha>
 Tests: <exact commands/results>
 Docs: <paths>
@@ -131,7 +155,7 @@ Production: HEALTH=PASS or N/A
 
 ## Release rule
 
-`v1.0.0` is frozen. Compatible feature work targets `v1.1.0`; compatible fixes may use `1.0.x`; breaking protocol/data/interface changes require a major-version decision. `v1.1.0` cannot be published while its release-gate blockers remain open.
+Follow the **Sequential patch-release policy** above. Released tags/assets are immutable; every new production-visible batch advances exactly one patch version.
 
 ## Complete mirrored task registry
 
@@ -1003,7 +1027,7 @@ This section intentionally mirrors the complete permanent task registry so an ag
 - PVN-937 RTL browser compatibility
 - PVN-938 Accessibility browser compatibility
 - PVN-939 Upgrade migration from v1.0
-- PVN-940 Upgrade migration from v1.1
+- PVN-940 Upgrade migration from legacy/future minor-version schemes
 - PVN-941 DB schema compatibility validator
 - PVN-942 API compatibility validator
 - PVN-943 Subscription backward-compatibility validator
