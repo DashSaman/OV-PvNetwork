@@ -35,12 +35,14 @@
 ### v1.0.8
 - Production security hardening: hashed main-admin credentials, pinned SSH host keys, dependency/static audits, response/login hardening and reversible host filtering (`PVN-028`).
 
+### v1.0.9
+- Opt-in Router/MikroTik OpenVPN compatibility on an isolated listener/profile with certificate + password dual authentication and no change to normal certificate-only users (`PVN-029`).
+
 ## Sequential patch queue
 
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
-- **v1.0.9 — IN PROGRESS:** `PVN-029`, opt-in Router/MikroTik compatibility on a separate listener/profile. Normal certificate-only OpenVPN remains the default and never requires username/password.
-- **v1.0.10 queued:** next open numbered task from `AGENTS.md` after v1.0.9 release verification.
+- **v1.0.10 queued:** `PVN-030`, backward-compatible migration of remaining legacy internal protocol/token aliases to PVNetwork-owned names without cutting off existing Nodes or integrations.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 
