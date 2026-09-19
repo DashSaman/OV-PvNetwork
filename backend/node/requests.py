@@ -156,10 +156,10 @@ class NodeRequests:
             logger.error(f"Error deleting user on node {self.address}: {e}")
             return False
 
-    def get_users_usage(self) ->dict | bool:
+    def get_users_usage(self, timeout=(2, 8)) -> dict | bool:
         api = f"http://{self.address}/sync/usage"
         try:
-            response = requests.get(api, headers=self.headers, timeout=(2, 8)).json()
+            response = requests.get(api, headers=self.headers, timeout=timeout).json()
             if response.get("success"):
                 logger.info(f"get users usage on node {self.address}: {response.get('msg')}")
                 return response.get("data")

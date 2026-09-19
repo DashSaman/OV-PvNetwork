@@ -3,11 +3,16 @@ os.environ.setdefault("ADMIN_USERNAME", "ci-admin")
 os.environ.setdefault("ADMIN_PASSWORD", "ci-password-not-production")
 os.environ.setdefault("JWT_SECRET_KEY", "ci-jwt-secret-not-production-32chars")
 
+import asyncio
+import time
 import unittest
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
 
+from backend.operations import live_presence
 from backend.operations.live_presence import (
     client_username,
+    get_display_live_presence,
     merge_presence_snapshot,
 )
 
@@ -79,6 +84,47 @@ class OnlineUserTruthTests(unittest.TestCase):
         self.assertNotIn("db.add(ActiveSession", live_presence)
         self.assertNotIn("db.merge(ActiveSession", live_presence)
         self.assertIn("def get_users_usage(self, timeout=", requests_source)
+
+
+class OnlineUserTruthAsyncTests(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        live_presence._direct_cache.clear()
+
+    async def test_node_poll_failure_keeps_central_truth(self):
+        with patch.object(
+            live_presence,
+            "_db_snapshot",
+            return_value=([("uuid-a", "alice")], {"uuid-a": 1}, [{"id": 4}]),
+        ), patch.object(
+            live_presence,
+            "_collect_direct_clients",
+            AsyncMock(side_effect=RuntimeError("node timeout")),
+        ):
+            result = await get_display_live_presence()
+        self.assertEqual(result["counts_by_uuid"], {"uuid-a": 1})
+        self.assertEqual(result["online_users"], 1)
+        self.assertEqual(result["failed_node_ids"], [4])
+
+    async def test_recent_stale_node_snapshot_is_used_on_transient_failure(self):
+        spec = {
+            "id": 4,
+            "name": "USA",
+            "address": "192.0.2.4",
+            "port": 9090,
+            "key": "demo",
+            "tunnel_address": "192.0.2.4",
+            "protocol": "udp",
+            "ovpn_port": 1194,
+        }
+        live_presence._direct_cache[4] = {
+            "at": time.monotonic() - (live_presence.DIRECT_CACHE_TTL_SECONDS + 0.5),
+            "name": "USA",
+            "clients": {"alice-USA"},
+        }
+        with patch.object(live_presence, "_read_node_clients", return_value=None):
+            clients, failed = await live_presence._collect_direct_clients([spec])
+        self.assertEqual(failed, [4])
+        self.assertEqual(clients[4], ("USA", {"alice-USA"}))
 
 
 if __name__ == "__main__":

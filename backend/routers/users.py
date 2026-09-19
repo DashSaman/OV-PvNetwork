@@ -22,6 +22,7 @@ from backend.db.models import (
 )
 from backend.routers.anyconnect import provision_new_user_if_enabled
 from backend.operations.user_renewal import build_renewal_plan, unlimited_reset_expiry
+from backend.operations.live_presence import get_display_live_presence
 from backend.node.assignment import (
     change_user_status_on_assigned_nodes,
     create_user_on_assigned_nodes,
@@ -113,6 +114,7 @@ def _change_reseller_entitlements(
 def _users_with_live_state(
     db: Session,
     users,
+    online_counts: dict[str, int] | None = None,
 ):
     """
     Attach live VPN connection state using ONE grouped DB query.
@@ -121,28 +123,28 @@ def _users_with_live_state(
     with hundreds or thousands of users.
     """
 
-    cutoff = int(time.time()) - _USER_ONLINE_TTL
-
-    rows = (
-        db.query(
-            ActiveSession.user_uuid,
-            func.count(
-                ActiveSession.session_id
-            ).label("online_count"),
+    if online_counts is None:
+        cutoff = int(time.time()) - _USER_ONLINE_TTL
+        rows = (
+            db.query(
+                ActiveSession.user_uuid,
+                func.count(
+                    ActiveSession.session_id
+                ).label("online_count"),
+            )
+            .filter(ActiveSession.last_seen >= cutoff)
+            .group_by(ActiveSession.user_uuid)
+            .all()
         )
-        .filter(
-            ActiveSession.last_seen >= cutoff
-        )
-        .group_by(
-            ActiveSession.user_uuid
-        )
-        .all()
-    )
-
-    counts = {
-        str(user_uuid): int(count)
-        for user_uuid, count in rows
-    }
+        counts = {
+            str(user_uuid): int(count)
+            for user_uuid, count in rows
+        }
+    else:
+        counts = {
+            str(user_uuid): max(0, int(count))
+            for user_uuid, count in online_counts.items()
+        }
 
     user_uuids = [str(item.uuid) for item in users if item.uuid]
     assignment_rows = []
@@ -217,27 +219,26 @@ def _users_with_live_state(
 async def get_all_users(
     db: Session = Depends(get_db), user: dict = Depends(get_current_user)
 ):
+    if user["type"] not in {"main_admin", "admin"}:
+        return ResponseModel(success=False, msg="Unauthorized access")
+
+    # Display-only presence combines fresh central sessions with a direct-node
+    # fallback. It never writes ActiveSession, so enforcement semantics remain
+    # unchanged even when an older node is missing session hooks.
+    presence = await get_display_live_presence()
+    online_counts = presence.get("counts_by_uuid", {})
+
     if user["type"] == "main_admin":
         all_users = crud.get_all_users(db)
-        users_list = _users_with_live_state(db, all_users)
-        return ResponseModel(
-            success=True,
-            msg="Users retrieved successfully",
-            data=users_list,
-        )
-
-    elif user["type"] == "admin":
+        users_list = _users_with_live_state(db, all_users, online_counts)
+    else:
         admin_users = crud.get_users_by_admin(db, admin_username=user["username"])
-        users_list = _users_with_live_state(db, admin_users)
-        return ResponseModel(
-            success=True,
-            msg="Users retrieved successfully",
-            data=users_list,
-        )
+        users_list = _users_with_live_state(db, admin_users, online_counts)
 
     return ResponseModel(
-        success=False,
-        msg="Unauthorized access",
+        success=True,
+        msg="Users retrieved successfully",
+        data=users_list,
     )
 
 
