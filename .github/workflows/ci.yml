@@ -55,7 +55,7 @@ jobs:
       - name: Bash syntax
         run: |
           set -e
-          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening scripts/pvnetwork-firewall-boot; do
+          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening scripts/pvnetwork-firewall-boot scripts/pvnetwork-router-openvpn; do
             [ -f "$f" ] && bash -n "$f"
           done
 
@@ -66,6 +66,18 @@ jobs:
 
       - name: Unit and governance tests
         run: python3 -m unittest discover -s tests -v
+
+      - name: Router OpenVPN safety contracts
+        run: |
+          python3 -m unittest \
+            tests.test_router_openvpn_schema \
+            tests.test_router_openvpn_credentials \
+            tests.test_router_openvpn_node_contract \
+            tests.test_router_openvpn_node_helper \
+            tests.test_router_openvpn_handshake \
+            tests.test_router_openvpn_api \
+            tests.test_router_openvpn_user_lifecycle \
+            tests.test_router_openvpn_presence -v
 
       - name: Frontend production build
         working-directory: frontend
@@ -102,6 +114,7 @@ jobs:
           node tests/responsive-smoke.mjs
           node tests/inline-quick-edit-smoke.mjs
           node tests/user-create-node-selector-smoke.mjs
+          node tests/router-openvpn-smoke.mjs
           PV_PYTHON=python3 node tests/subscription-responsive-smoke.mjs
 
       - name: JSON syntax
