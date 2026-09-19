@@ -109,6 +109,9 @@ jobs:
             --exclude='ci.yml' \
             '(^|[^A-Z_])(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD=[^$<]|JWT_SECRET_KEY=[^$<])' .
 
+      - name: PVNetwork ownership namespace guard
+        run: python3 -m unittest tests.test_pvnetwork_ownership.PvNetworkOwnershipTests.test_current_tracked_source_has_no_legacy_product_tokens -v
+
       - name: Governance files present
         run: |
           test -s AGENTS.md
@@ -120,5 +123,5 @@ jobs:
       - name: Installer bootstrap and lifecycle references
         run: |
           grep -q 'install-local.sh' install.sh
-          grep -q 'ovpv update' README.md
-          grep -q 'ovpv update' README.fa.md
+          grep -q 'pvnetwork update' README.md
+          grep -q 'pvnetwork update' README.fa.md
