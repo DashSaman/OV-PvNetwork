@@ -1,0 +1,492 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+COMMAND="${1:-}"
+[[ -n "$COMMAND" ]] || { echo 'COMMAND_REQUIRED' >&2; exit 2; }
+shift || true
+
+OPENVPN_BASE="${PVNETWORK_ROUTER_OPENVPN_BASE:-/etc/openvpn/server}"
+STATE_DIR="${PVNETWORK_ROUTER_STATE_DIR:-/etc/pvnetwork/router-openvpn}"
+HOME_DIR="${PVNETWORK_ROUTER_HOME:-/root}"
+TEST_MODE="${PVNETWORK_ROUTER_TEST_MODE:-0}"
+AUTH_SCRIPT="${PVNETWORK_ROUTER_AUTH_SCRIPT:-/usr/local/libexec/pvnetwork-router-auth}"
+MAIN_CONF="$OPENVPN_BASE/server.conf"
+ROUTER_CONF="$OPENVPN_BASE/pvnetwork-router.conf"
+TA_KEY="$OPENVPN_BASE/pvnetwork-router-ta.key"
+CREDENTIAL_FILE="$STATE_DIR/credentials.tsv"
+SETTINGS_FILE="$STATE_DIR/settings.env"
+FIREWALL_SNAPSHOT="$STATE_DIR/iptables.before"
+SERVICE="openvpn-server@pvnetwork-router.service"
+STATUS_FILE="/var/log/openvpn-router-status.log"
+MGMT_SOCKET="/run/openvpn-server/pvnetwork-router.sock"
+
+PORT=1195
+PROTOCOL=tcp
+SUBNET="10.9.0.0/24"
+CN=""
+USERNAME=""
+VERIFIER=""
+ENABLED=1
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --port) PORT="${2:-}"; shift 2 ;;
+    --protocol) PROTOCOL="${2:-}"; shift 2 ;;
+    --subnet) SUBNET="${2:-}"; shift 2 ;;
+    --cn) CN="${2:-}"; shift 2 ;;
+    --username) USERNAME="${2:-}"; shift 2 ;;
+    --verifier) VERIFIER="${2:-}"; shift 2 ;;
+    --enabled) ENABLED="${2:-}"; shift 2 ;;
+    *) echo "UNKNOWN_ARGUMENT=$1" >&2; exit 2 ;;
+  esac
+done
+
+json_escape() {
+  python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$1"
+}
+
+safe_cn() { [[ "$1" =~ ^[A-Za-z0-9_-]{1,64}$ ]]; }
+safe_username() { [[ "$1" =~ ^[A-Za-z0-9_-]{1,27}$ ]]; }
+
+validate_settings() {
+  [[ "$PORT" =~ ^[0-9]+$ ]] && (( PORT >= 1 && PORT <= 65535 )) || { echo 'INVALID_PORT' >&2; return 20; }
+  [[ "$PROTOCOL" == tcp || "$PROTOCOL" == udp ]] || { echo 'INVALID_PROTOCOL' >&2; return 21; }
+  python3 - "$SUBNET" <<'PY'
+import ipaddress, sys
+try:
+    network = ipaddress.ip_network(sys.argv[1], strict=True)
+except ValueError:
+    raise SystemExit(1)
+if network.version != 4 or network.prefixlen > 30:
+    raise SystemExit(1)
+PY
+}
+port_in_use() {
+  local flag='-ltn'
+  [[ "$PROTOCOL" == udp ]] && flag='-lun'
+  ss -H "$flag" 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)$PORT$"
+}
+
+main_server_network() {
+  [[ -r "$MAIN_CONF" ]] || return 0
+  awk '$1=="server" && NF>=3 {print $2" "$3; exit}' "$MAIN_CONF"
+}
+
+subnet_overlaps() {
+  local main
+  main="$(main_server_network || true)"
+  python3 - "$SUBNET" "$main" <<'PY'
+import ipaddress, subprocess, sys
+requested = ipaddress.ip_network(sys.argv[1], strict=True)
+main = sys.argv[2].strip()
+if main:
+    try:
+        addr, mask = main.split()[:2]
+        normal = ipaddress.ip_network(f"{addr}/{mask}", strict=False)
+        if requested.overlaps(normal):
+            print("SUBNET_OVERLAPS_NORMAL_LISTENER", file=sys.stderr)
+            raise SystemExit(1)
+    except ValueError:
+        pass
+try:
+    routes = subprocess.check_output(
+        ["ip", "-4", "route", "show"], text=True, stderr=subprocess.DEVNULL
+    )
+except Exception:
+    routes = ""
+for raw in routes.splitlines():
+    first = raw.split(maxsplit=1)[0] if raw.strip() else ""
+    if first == "default" or "/" not in first:
+        continue
+    try:
+        route = ipaddress.ip_network(first, strict=False)
+    except ValueError:
+        continue
+    if requested == route:
+        print("SUBNET_ALREADY_ROUTED", file=sys.stderr)
+        raise SystemExit(1)
+    if requested.overlaps(route):
+        print("SUBNET_OVERLAPS_ROUTE", file=sys.stderr)
+        raise SystemExit(1)
+PY
+}
+
+preflight() {
+  validate_settings || return $?
+  [[ -r "$MAIN_CONF" ]] || { echo 'NORMAL_SERVER_CONF_MISSING' >&2; return 22; }
+  if port_in_use; then
+    echo "PORT_IN_USE=$PORT" >&2
+    return 23
+  fi
+  subnet_overlaps || return 24
+  printf '{"ok":true,"port":%s,"protocol":%s,"subnet":%s}\n' \
+    "$PORT" "$(json_escape "$PROTOCOL")" "$(json_escape "$SUBNET")"
+}
+resolve_main_directive() {
+  local key="$1" default="$2" value=""
+  if [[ -r "$MAIN_CONF" ]]; then
+    value="$(awk -v k="$key" '$1==k {print $2; exit}' "$MAIN_CONF")"
+  fi
+  [[ -n "$value" ]] || value="$default"
+  if [[ "$value" == /* ]]; then
+    printf '%s\n' "$value"
+  else
+    printf '%s/%s\n' "$OPENVPN_BASE" "$value"
+  fi
+}
+
+subnet_server_args() {
+  python3 - "$SUBNET" <<'PY'
+import ipaddress, sys
+n=ipaddress.ip_network(sys.argv[1], strict=True)
+print(n.network_address, n.netmask)
+PY
+}
+
+main_hash() {
+  sha256sum "$MAIN_CONF" | awk '{print $1}'
+}
+
+settings_match() {
+  [[ -r "$SETTINGS_FILE" ]] || return 1
+  # shellcheck disable=SC1090
+  source "$SETTINGS_FILE"
+  [[ "${ROUTER_PORT:-}" == "$PORT" ]] \
+    && [[ "${ROUTER_PROTOCOL:-}" == "$PROTOCOL" ]] \
+    && [[ "${ROUTER_SUBNET:-}" == "$SUBNET" ]]
+}
+
+secondary_active() {
+  if [[ "$TEST_MODE" == 1 ]]; then
+    [[ -r "$ROUTER_CONF" ]]
+  else
+    systemctl is-active --quiet "$SERVICE"
+  fi
+}
+
+ensure_ta_key() {
+  [[ -s "$TA_KEY" ]] && return 0
+  if [[ "$TEST_MODE" == 1 ]]; then
+    printf '%s\n' '-----BEGIN OpenVPN Static key V1-----' 'TEST-ONLY' '-----END OpenVPN Static key V1-----' >"$TA_KEY"
+  else
+    openvpn --genkey secret "$TA_KEY"
+  fi
+  chmod 600 "$TA_KEY"
+}
+
+write_secondary_config() {
+  local ca cert key network mask tmp
+  ca="$(resolve_main_directive ca easy-rsa/pki/ca.crt)"
+  cert="$(resolve_main_directive cert server.crt)"
+  key="$(resolve_main_directive key server.key)"
+  read -r network mask < <(subnet_server_args)
+  [[ -s "$ca" && -s "$cert" && -s "$key" ]] || {
+    echo 'NORMAL_PKI_MISSING' >&2
+    return 30
+  }
+  tmp="${ROUTER_CONF}.tmp.$$"
+  cat >"$tmp" <<EOF
+port $PORT
+proto ${PROTOCOL}-server
+mode server
+dev tun-router
+topology subnet
+server $network $mask
+ca $ca
+cert $cert
+key $key
+dh none
+auth SHA256
+data-ciphers AES-256-CBC
+data-ciphers-fallback AES-256-CBC
+cipher AES-256-CBC
+tls-auth $TA_KEY 0
+auth-user-pass-verify $AUTH_SCRIPT via-file
+verify-client-cert require
+script-security 2
+client-connect /usr/local/libexec/ov-session-connect
+client-disconnect /usr/local/libexec/ov-session-disconnect
+status $STATUS_FILE 10
+status-version 2
+management $MGMT_SOCKET unix
+keepalive 10 120
+persist-key
+persist-tun
+verb 3
+EOF
+  chmod 600 "$tmp"
+  mv -f "$tmp" "$ROUTER_CONF"
+}
+snapshot_secondary() {
+  local backup="$STATE_DIR/rollback-enable"
+  rm -rf "$backup"
+  mkdir -p "$backup"
+  chmod 700 "$backup"
+  for item in "$ROUTER_CONF" "$TA_KEY" "$SETTINGS_FILE"; do
+    local name
+    name="$(basename "$item")"
+    if [[ -e "$item" ]]; then
+      cp -a "$item" "$backup/$name"
+    else
+      : >"$backup/$name.absent"
+    fi
+  done
+  if [[ "$TEST_MODE" != 1 ]]; then
+    iptables-save >"$FIREWALL_SNAPSHOT"
+    chmod 600 "$FIREWALL_SNAPSHOT"
+  fi
+}
+
+restore_secondary() {
+  local backup="$STATE_DIR/rollback-enable"
+  if [[ "$TEST_MODE" != 1 ]]; then
+    systemctl stop "$SERVICE" >/dev/null 2>&1 || true
+    if [[ -s "$FIREWALL_SNAPSHOT" ]]; then
+      iptables-restore <"$FIREWALL_SNAPSHOT" || true
+      command -v netfilter-persistent >/dev/null 2>&1 && netfilter-persistent save >/dev/null 2>&1 || true
+    fi
+  fi
+  for item in "$ROUTER_CONF" "$TA_KEY" "$SETTINGS_FILE"; do
+    local name
+    name="$(basename "$item")"
+    if [[ -e "$backup/$name" ]]; then
+      cp -a "$backup/$name" "$item"
+    elif [[ -e "$backup/$name.absent" ]]; then
+      rm -f "$item"
+    fi
+  done
+}
+
+firewall_apply() {
+  [[ "$TEST_MODE" == 1 ]] && return 0
+  iptables -C INPUT -p "$PROTOCOL" --dport "$PORT" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT 2>/dev/null \
+    || iptables -I INPUT 1 -p "$PROTOCOL" --dport "$PORT" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT
+  iptables -C FORWARD -s "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT 2>/dev/null \
+    || iptables -I FORWARD 1 -s "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT
+  iptables -C FORWARD -d "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT 2>/dev/null \
+    || iptables -I FORWARD 1 -d "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT
+  iptables -t nat -C POSTROUTING -s "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j MASQUERADE 2>/dev/null \
+    || iptables -t nat -I POSTROUTING 1 -s "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j MASQUERADE
+  command -v netfilter-persistent >/dev/null 2>&1 && netfilter-persistent save >/dev/null 2>&1 || true
+}
+
+firewall_remove() {
+  [[ "$TEST_MODE" == 1 ]] && return 0
+  while iptables -C INPUT -p "$PROTOCOL" --dport "$PORT" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT 2>/dev/null; do
+    iptables -D INPUT -p "$PROTOCOL" --dport "$PORT" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT
+  done
+  while iptables -C FORWARD -s "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT 2>/dev/null; do
+    iptables -D FORWARD -s "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT
+  done
+  while iptables -C FORWARD -d "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT 2>/dev/null; do
+    iptables -D FORWARD -d "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j ACCEPT
+  done
+  while iptables -t nat -C POSTROUTING -s "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j MASQUERADE 2>/dev/null; do
+    iptables -t nat -D POSTROUTING -s "$SUBNET" -m comment --comment PVNETWORK_ROUTER_OPENVPN -j MASQUERADE
+  done
+  command -v netfilter-persistent >/dev/null 2>&1 && netfilter-persistent save >/dev/null 2>&1 || true
+}
+enable_listener() {
+  validate_settings
+  if settings_match && secondary_active; then
+    printf '{"ok":true,"enabled":true,"healthy":true,"idempotent":true}\n'
+    return 0
+  fi
+  preflight >/dev/null
+  local before after rc=0
+  before="$(main_hash)"
+  mkdir -p "$OPENVPN_BASE" "$STATE_DIR" "$HOME_DIR"
+  chmod 700 "$STATE_DIR"
+  touch "$CREDENTIAL_FILE"
+  chmod 600 "$CREDENTIAL_FILE"
+  snapshot_secondary
+
+  ensure_ta_key || rc=$?
+  if [[ $rc -eq 0 ]]; then write_secondary_config || rc=$?; fi
+  if [[ $rc -eq 0 ]]; then
+    cat >"$SETTINGS_FILE" <<EOF
+ROUTER_PORT=$PORT
+ROUTER_PROTOCOL=$PROTOCOL
+ROUTER_SUBNET=$SUBNET
+EOF
+    chmod 600 "$SETTINGS_FILE"
+  fi
+  if [[ $rc -eq 0 ]]; then firewall_apply || rc=$?; fi
+  if [[ $rc -eq 0 && "$TEST_MODE" != 1 ]]; then
+    systemctl daemon-reload || rc=$?
+    if [[ $rc -eq 0 ]]; then systemctl start "$SERVICE" || rc=$?; fi
+    if [[ $rc -eq 0 ]]; then systemctl is-active --quiet "$SERVICE" || rc=$?; fi
+  fi
+  after="$(main_hash)"
+  if [[ "$before" != "$after" ]]; then
+    echo 'NORMAL_SERVER_CONF_CHANGED' >&2
+    rc=90
+  fi
+  if [[ $rc -ne 0 ]]; then
+    restore_secondary
+    return "$rc"
+  fi
+  printf '{"ok":true,"enabled":true,"healthy":true,"port":%s,"protocol":%s,"subnet":%s}\n' \
+    "$PORT" "$(json_escape "$PROTOCOL")" "$(json_escape "$SUBNET")"
+}
+
+disable_listener() {
+  if [[ -r "$SETTINGS_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$SETTINGS_FILE"
+    PORT="${ROUTER_PORT:-$PORT}"
+    PROTOCOL="${ROUTER_PROTOCOL:-$PROTOCOL}"
+    SUBNET="${ROUTER_SUBNET:-$SUBNET}"
+  fi
+  local before after
+  [[ -r "$MAIN_CONF" ]] || { echo 'NORMAL_SERVER_CONF_MISSING' >&2; return 22; }
+  before="$(main_hash)"
+  if [[ "$TEST_MODE" != 1 ]]; then
+    systemctl stop "$SERVICE" >/dev/null 2>&1 || true
+  fi
+  firewall_remove
+  after="$(main_hash)"
+  [[ "$before" == "$after" ]] || { echo 'NORMAL_SERVER_CONF_CHANGED' >&2; return 90; }
+  printf '{"ok":true,"enabled":false,"healthy":false}\n'
+}
+
+status_listener() {
+  local enabled=false healthy=false online=0 port="$PORT" protocol="$PROTOCOL" subnet="$SUBNET"
+  if [[ -r "$SETTINGS_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$SETTINGS_FILE"
+    port="${ROUTER_PORT:-$port}"
+    protocol="${ROUTER_PROTOCOL:-$protocol}"
+    subnet="${ROUTER_SUBNET:-$subnet}"
+  fi
+  if secondary_active; then enabled=true; healthy=true; fi
+  if [[ -r "$STATUS_FILE" ]]; then
+    online="$(awk -F, '$1=="CLIENT_LIST" && $2!="Common Name" {count++} END {print count+0}' "$STATUS_FILE")"
+  fi
+  printf '{"ok":true,"capable":true,"version":"1","enabled":%s,"healthy":%s,"online_clients":%s,"port":%s,"protocol":%s,"subnet":%s}\n' \
+    "$enabled" "$healthy" "$online" "$port" "$(json_escape "$protocol")" "$(json_escape "$subnet")"
+}
+credential_set() {
+  safe_cn "$CN" || { echo 'INVALID_CN' >&2; return 40; }
+  safe_username "$USERNAME" || { echo 'INVALID_USERNAME' >&2; return 41; }
+  [[ "$ENABLED" == 0 || "$ENABLED" == 1 ]] || { echo 'INVALID_ENABLED' >&2; return 42; }
+  [[ "$VERIFIER" =~ ^scrypt\$32768\$8\$1\$ ]] || { echo 'INVALID_VERIFIER' >&2; return 43; }
+  mkdir -p "$STATE_DIR"
+  chmod 700 "$STATE_DIR"
+  touch "$CREDENTIAL_FILE"
+  chmod 600 "$CREDENTIAL_FILE"
+  python3 - "$CREDENTIAL_FILE" "$USERNAME" "$CN" "$ENABLED" "$VERIFIER" <<'PY'
+import os, sys, tempfile
+from pathlib import Path
+path=Path(sys.argv[1])
+username, cn, enabled, verifier=sys.argv[2:]
+rows=[]
+try:
+    rows=path.read_text(encoding='utf-8').splitlines()
+except OSError:
+    pass
+new=[]
+for row in rows:
+    parts=row.split('\t')
+    if len(parts)==4 and (parts[0]==username or parts[1]==cn):
+        continue
+    if row.strip():
+        new.append(row)
+new.append('\t'.join((username, cn, enabled, verifier)))
+tmp=path.with_name(path.name+'.tmp')
+tmp.write_text('\n'.join(new)+'\n', encoding='utf-8')
+os.chmod(tmp, 0o600)
+os.replace(tmp, path)
+PY
+  printf '{"ok":true,"username":%s,"cn":%s,"enabled":%s}\n' \
+    "$(json_escape "$USERNAME")" "$(json_escape "$CN")" "$([[ "$ENABLED" == 1 ]] && echo true || echo false)"
+}
+
+credential_revoke() {
+  safe_cn "$CN" || { echo 'INVALID_CN' >&2; return 40; }
+  [[ -e "$CREDENTIAL_FILE" ]] || { printf '{"ok":true,"revoked":false}\n'; return 0; }
+  python3 - "$CREDENTIAL_FILE" "$CN" <<'PY'
+import os, sys
+from pathlib import Path
+path=Path(sys.argv[1]); cn=sys.argv[2]
+rows=path.read_text(encoding='utf-8').splitlines() if path.exists() else []
+new=[]
+for row in rows:
+    parts=row.split('\t')
+    if len(parts)==4 and parts[1]==cn:
+        continue
+    if row.strip(): new.append(row)
+tmp=path.with_name(path.name+'.tmp')
+tmp.write_text(('\n'.join(new)+'\n') if new else '', encoding='utf-8')
+os.chmod(tmp, 0o600); os.replace(tmp,path)
+PY
+  if [[ "$TEST_MODE" != 1 && -S "$MGMT_SOCKET" ]] && command -v socat >/dev/null 2>&1; then
+    printf 'kill %s\nquit\n' "$CN" | socat - "UNIX-CONNECT:$MGMT_SOCKET" >/dev/null 2>&1 || true
+  fi
+  printf '{"ok":true,"revoked":true}\n'
+}
+profile_build() {
+  safe_cn "$CN" || { echo 'INVALID_CN' >&2; return 40; }
+  [[ -r "$SETTINGS_FILE" ]] || { echo 'ROUTER_LISTENER_NOT_CONFIGURED' >&2; return 50; }
+  # shellcheck disable=SC1090
+  source "$SETTINGS_FILE"
+  PORT="${ROUTER_PORT:-$PORT}"
+  PROTOCOL="${ROUTER_PROTOCOL:-$PROTOCOL}"
+  local normal="$HOME_DIR/$CN.ovpn" output="$HOME_DIR/$CN.router.ovpn"
+  [[ -s "$normal" ]] || { echo 'NORMAL_PROFILE_MISSING' >&2; return 51; }
+  [[ -s "$TA_KEY" ]] || { echo 'ROUTER_TLS_AUTH_MISSING' >&2; return 52; }
+  python3 - "$normal" "$output" "$PORT" "$PROTOCOL" "$TA_KEY" <<'PY'
+from pathlib import Path
+import os, sys
+normal=Path(sys.argv[1]); output=Path(sys.argv[2])
+port=sys.argv[3]; protocol=sys.argv[4]; ta=Path(sys.argv[5])
+lines=normal.read_text(encoding='utf-8', errors='strict').splitlines()
+remote_host=None
+for line in lines:
+    parts=line.strip().split()
+    if len(parts)>=2 and parts[0]=='remote':
+        remote_host=parts[1]
+        break
+if not remote_host:
+    raise SystemExit('NORMAL_PROFILE_REMOTE_MISSING')
+skip_blocks={'<tls-auth>':'</tls-auth>','<tls-crypt>':'</tls-crypt>','<tls-crypt-v2>':'</tls-crypt-v2>'}
+remove_directives={'remote','proto','auth','cipher','data-ciphers','data-ciphers-fallback','auth-user-pass','key-direction','tls-auth','tls-crypt','tls-crypt-v2'}
+kept=[]; end_tag=None
+for line in lines:
+    stripped=line.strip()
+    if end_tag:
+        if stripped==end_tag: end_tag=None
+        continue
+    if stripped in skip_blocks:
+        end_tag=skip_blocks[stripped]
+        continue
+    token=stripped.split(maxsplit=1)[0] if stripped else ''
+    if token in remove_directives:
+        continue
+    kept.append(line)
+prefix=[
+    f'proto {"tcp-client" if protocol=="tcp" else "udp"}',
+    f'remote {remote_host} {port}',
+    'auth SHA256',
+    'cipher AES-256-CBC',
+    'data-ciphers AES-256-CBC',
+    'auth-user-pass',
+    'key-direction 1',
+]
+content='\n'.join(prefix+kept).rstrip()+'\n<tls-auth>\n'+ta.read_text(encoding='utf-8').rstrip()+'\n</tls-auth>\n'
+tmp=output.with_name(output.name+'.tmp')
+tmp.write_text(content, encoding='utf-8'); os.chmod(tmp,0o600); os.replace(tmp,output)
+PY
+  printf '%s\n' "$output"
+}
+
+case "$COMMAND" in
+  preflight) preflight ;;
+  enable) enable_listener ;;
+  disable) disable_listener ;;
+  status) status_listener ;;
+  credential-set) credential_set ;;
+  credential-revoke) credential_revoke ;;
+  profile) profile_build ;;
+  *) echo "UNKNOWN_COMMAND=$COMMAND" >&2; exit 2 ;;
+esac
