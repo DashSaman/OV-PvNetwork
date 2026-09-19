@@ -474,3 +474,88 @@ class BandwidthSettings(Base):
             name="ck_bandwidth_target_type",
         ),
     )
+
+
+class NodeRouterOpenVpnConfig(Base):
+    """Additive per-node metadata for the opt-in router listener."""
+
+    __tablename__ = "node_router_openvpn"
+
+    node_id: Mapped[int] = mapped_column(
+        ForeignKey("nodes.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    enabled: Mapped[bool] = mapped_column(
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+    port: Mapped[int] = mapped_column(
+        default=1195,
+        server_default="1195",
+        nullable=False,
+    )
+    protocol: Mapped[str] = mapped_column(
+        String(8),
+        default="tcp",
+        server_default="tcp",
+        nullable=False,
+    )
+    subnet: Mapped[str] = mapped_column(
+        String(64),
+        default="10.9.0.0/24",
+        server_default="10.9.0.0/24",
+        nullable=False,
+    )
+    capability_version: Mapped[str] = mapped_column(String(64), nullable=True)
+    last_verified_at: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    last_error: Mapped[str] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint(
+            "port >= 1 AND port <= 65535",
+            name="ck_node_router_openvpn_port_range",
+        ),
+        CheckConstraint(
+            "protocol IN ('tcp', 'udp')",
+            name="ck_node_router_openvpn_protocol",
+        ),
+    )
+
+
+class RouterOpenVpnCredential(Base):
+    """Per-user/per-node router credential metadata; no plaintext secret."""
+
+    __tablename__ = "router_openvpn_credentials"
+
+    user_uuid: Mapped[str] = mapped_column(
+        ForeignKey("users.uuid", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    node_id: Mapped[int] = mapped_column(
+        ForeignKey("nodes.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    router_username: Mapped[str] = mapped_column(String(27), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(512), nullable=False)
+    enabled: Mapped[bool] = mapped_column(
+        default=False,
+        server_default="false",
+        nullable=False,
+    )
+    created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    password_changed_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    last_authenticated_at: Mapped[int] = mapped_column(BigInteger, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "node_id",
+            "router_username",
+            name="uq_router_openvpn_node_username",
+        ),
+        Index(
+            "ix_router_openvpn_credentials_enabled",
+            "enabled",
+        ),
+    )
