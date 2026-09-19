@@ -424,62 +424,38 @@ def _normalize_auto_node_name(raw_name: str, address: str) -> str:
 
 
 def _sync_existing_assignments_to_node(db, node) -> dict:
-    """
-    A newly installed node automatically inherits all users that
-    are already assigned to at least one node.
+    """Provision only legacy all-node users on a newly installed node.
 
-    DB assignment is committed first. Remote provisioning is
-    fail-open: any failed client is retried by the reconciler.
+    Users with any explicit ``user_nodes`` rows own an authoritative node set
+    and must never be widened just because a new node is registered. Legacy
+    users without assignment rows retain the historical all-available-node
+    fallback, so they are provisioned on the new node without creating rows.
     """
     from backend.db.models import User, UserNode
     from backend.node.requests import NodeRequests
 
-    rows = (
-        db.query(UserNode.user_uuid)
-        .filter(UserNode.node_id != node.id)
-        .distinct()
-        .all()
-    )
-
-    user_uuids = [row[0] for row in rows]
-
-    assigned_added = 0
-
-    for user_uuid in user_uuids:
-        exists = (
-            db.query(UserNode)
-            .filter_by(
-                user_uuid=user_uuid,
-                node_id=node.id,
-            )
-            .first()
+    explicitly_assigned = {
+        str(row[0])
+        for row in db.query(UserNode.user_uuid).distinct().all()
+    }
+    users = [
+        user
+        for user in (
+            db.query(User)
+            .filter(User.is_active.is_(True))
+            .order_by(User.id)
+            .all()
         )
+        if str(user.uuid) not in explicitly_assigned
+    ]
 
-        if not exists:
-            db.add(
-                UserNode(
-                    user_uuid=user_uuid,
-                    node_id=node.id,
-                )
-            )
-            assigned_added += 1
-
-    db.commit()
-
-    if not user_uuids:
+    if not users:
         return {
             "assigned": 0,
             "attempted": 0,
             "created": 0,
             "failed": 0,
         }
-
-    users = (
-        db.query(User)
-        .filter(User.uuid.in_(user_uuids))
-        .order_by(User.id)
-        .all()
-    )
 
     request = NodeRequests(
         address=node.address,
@@ -493,7 +469,7 @@ def _sync_existing_assignments_to_node(db, node) -> dict:
 
     if not request.check_node():
         return {
-            "assigned": assigned_added,
+            "assigned": 0,
             "attempted": 0,
             "created": 0,
             "failed": len(users),
@@ -502,10 +478,8 @@ def _sync_existing_assignments_to_node(db, node) -> dict:
 
     created_count = 0
     failed_count = 0
-
     for user in users:
         client_name = f"{user.name}-{node.name}"
-
         try:
             if request.create_user(client_name):
                 created_count += 1
@@ -515,7 +489,7 @@ def _sync_existing_assignments_to_node(db, node) -> dict:
             failed_count += 1
 
     return {
-        "assigned": assigned_added,
+        "assigned": 0,
         "attempted": len(users),
         "created": created_count,
         "failed": failed_count,
@@ -609,57 +583,10 @@ def _run_deploy_job(job, request_data: dict) -> None:
             }
 
 
-        # PVNETWORK_AUTO_ASSIGN_ALL_USERS_V3
+        # Explicit user-node assignments are authoritative. A new node must
+        # never widen those sets. Queue reconciliation only to repair legacy
+        # all-node users or previously pending profiles.
         try:
-            from backend.db.models import Node, UserNode
-
-            new_node = (
-                db.query(Node)
-                .filter(Node.address == result.address)
-                .first()
-            )
-
-            added_assignments = 0
-
-            if new_node is not None:
-                wanted_uuids = [
-                    row[0]
-                    for row in (
-                        db.query(UserNode.user_uuid)
-                        .filter(UserNode.node_id != new_node.id)
-                        .distinct()
-                        .all()
-                    )
-                ]
-
-                for user_uuid in wanted_uuids:
-                    exists = (
-                        db.query(UserNode)
-                        .filter(
-                            UserNode.user_uuid == user_uuid,
-                            UserNode.node_id == new_node.id,
-                        )
-                        .first()
-                    )
-
-                    if not exists:
-                        db.add(
-                            UserNode(
-                                user_uuid=user_uuid,
-                                node_id=new_node.id,
-                            )
-                        )
-                        added_assignments += 1
-
-                db.commit()
-
-            update_job(
-                job,
-                99,
-                "user_sync",
-                f"Assigned {added_assignments} existing users to new node",
-            )
-
             import subprocess
 
             subprocess.Popen(
@@ -672,15 +599,18 @@ def _run_deploy_job(job, request_data: dict) -> None:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-
-        except Exception as sync_error:
-            db.rollback()
-
             update_job(
                 job,
                 99,
                 "user_sync",
-                f"Node registered; user reconciliation queued with warning: {sync_error}",
+                "Queued reconciliation without widening explicit assignments",
+            )
+        except Exception as sync_error:
+            update_job(
+                job,
+                99,
+                "user_sync",
+                f"Node registered; reconciliation warning: {sync_error}",
             )
 
         finish_job(job, {
