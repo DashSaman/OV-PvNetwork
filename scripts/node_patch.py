@@ -289,6 +289,35 @@ def _online_users() -> int:
     return 0
 
 
+def _router_online_common_names() -> list[str]:
+    path = "/var/log/openvpn-router-status.log"
+    names: set[str] = set()
+    if not os.path.isfile(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as stream:
+            for raw in stream:
+                if not raw.startswith("CLIENT_LIST,"):
+                    continue
+                parts = raw.rstrip("\r\n").split(",")
+                if len(parts) < 2 or parts[1] in {"", "Common Name", "UNDEF"}:
+                    continue
+                names.add(parts[1])
+    except OSError:
+        return []
+    return sorted(names)
+
+
+def _router_openvpn_snapshot() -> dict:
+    data = _router_openvpn_call("status")
+    if not isinstance(data, dict):
+        data = {"ok": False, "capable": False}
+    result = dict(data)
+    result["online_common_names"] = _router_online_common_names()
+    result["online_clients"] = len(result["online_common_names"])
+    return result
+
+
 @router.get("/status", response_model=ResponseModel)
 async def get_status(request: SetSettingsModel, api_key: str = Depends(check_api_key)):
     if request.set_new_setting:
@@ -310,6 +339,7 @@ async def get_status(request: SetSettingsModel, api_key: str = Depends(check_api
         "traffic_bytes": rx_bytes + tx_bytes,
         "online_users": _online_users(),
     }
+    status["router_openvpn"] = _router_openvpn_snapshot()
     return ResponseModel(success=True, msg="Node status retrieved successfully", data=status)
 
 
@@ -355,7 +385,7 @@ async def download_ovpn(client_name: str, api_key: str = Depends(check_api_key))
 
 @router.get("/router-openvpn/status")
 async def router_openvpn_status(api_key: str = Depends(check_api_key)):
-    data = _router_openvpn_call("status")
+    data = _router_openvpn_snapshot()
     return ResponseModel(success=bool(data.get("ok")), msg="Router OpenVPN status", data=data)
 
 
@@ -410,6 +440,7 @@ from core.schema.all_schemas import ResponseModel
 
 router = APIRouter(prefix="/router-openvpn", tags=["router_openvpn"])
 HELPER = "/usr/local/sbin/pvnetwork-router-openvpn"
+ROUTER_STATUS_FILE = "/var/log/openvpn-router-status.log"
 
 
 class RouterOpenVpnConfigRequest(BaseModel):
@@ -459,9 +490,30 @@ def _call(*args: str, timeout: int = 30) -> dict:
     return data
 
 
+def _online_common_names() -> list[str]:
+    names: set[str] = set()
+    if not os.path.isfile(ROUTER_STATUS_FILE):
+        return []
+    try:
+        with open(ROUTER_STATUS_FILE, "r", encoding="utf-8", errors="ignore") as stream:
+            for raw in stream:
+                if not raw.startswith("CLIENT_LIST,"):
+                    continue
+                parts = raw.rstrip("\r\n").split(",")
+                if len(parts) < 2 or parts[1] in {"", "Common Name", "UNDEF"}:
+                    continue
+                names.add(parts[1])
+    except OSError:
+        return []
+    return sorted(names)
+
+
 @router.get("/status")
 async def status(api_key: str = Depends(check_api_key)):
     data = _call("status")
+    common_names = _online_common_names()
+    data["online_common_names"] = common_names
+    data["online_clients"] = len(common_names)
     return ResponseModel(success=bool(data.get("ok")), msg="Router OpenVPN status", data=data)
 
 

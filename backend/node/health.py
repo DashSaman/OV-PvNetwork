@@ -399,6 +399,26 @@ async def _probe_node(
         )
     )
 
+    raw_router = info.get("router_openvpn")
+    if isinstance(raw_router, dict):
+        router_openvpn = {
+            "capable": bool(raw_router.get("capable")),
+            "enabled": bool(raw_router.get("enabled")),
+            "healthy": bool(raw_router.get("healthy")),
+            "online_clients": _as_int(raw_router.get("online_clients")),
+            "port": _as_int(raw_router.get("port"), 1195),
+            "protocol": str(raw_router.get("protocol") or "tcp"),
+        }
+    else:
+        router_openvpn = {
+            "capable": False,
+            "enabled": False,
+            "healthy": False,
+            "online_clients": 0,
+            "port": 1195,
+            "protocol": "tcp",
+        }
+
 
     reasons = []
 
@@ -512,6 +532,9 @@ async def _probe_node(
 
         "reported_online_sessions":
             reported_sessions,
+
+        "router_openvpn":
+            router_openvpn,
 
         "selection_score":
             score,
