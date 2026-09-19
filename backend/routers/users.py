@@ -24,10 +24,14 @@ from backend.routers.anyconnect import provision_new_user_if_enabled
 from backend.operations.user_renewal import build_renewal_plan, unlimited_reset_expiry
 from backend.node.assignment import (
     change_user_status_on_assigned_nodes,
+    create_user_on_assigned_nodes,
     replace_user_node_assignments,
+    set_user_nodes,
+    validate_node_ids,
 )
 from backend.db import crud
 from backend.auth.auth import get_current_user
+from backend.logger import logger
 from backend.node.task import delete_user_on_all_nodes
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -306,6 +310,11 @@ async def create_user(
             data=None,
         )
 
+    try:
+        selected_node_ids = validate_node_ids(db, request.node_ids)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
     # PVNETWORK_DURATION_POLICY_V8
     # PVNETWORK_RESELLER_DURATION_MAX6_V8_1
     total = _finite_total(request.total)
@@ -342,10 +351,22 @@ async def create_user(
                 created.uuid,
                 request.anyconnect_enabled,
             )
+            set_user_nodes(
+                db, created.uuid, selected_node_ids, commit=False
+            )
             db.commit()
+            db.refresh(created)
         except Exception:
             db.rollback()
             raise
+
+        try:
+            await create_user_on_assigned_nodes(created.uuid, created.name, db)
+        except Exception:
+            logger.exception(
+                f"User '{created.name}' saved with desired node assignments; "
+                "remote provisioning will be retried by reconciliation"
+            )
         return ResponseModel(success=True, msg="User created successfully", data=created.name)
 
     if user["type"] == "main_admin":
@@ -371,11 +392,22 @@ async def create_user(
             created.uuid,
             request.anyconnect_enabled,
         )
+        set_user_nodes(
+            db, created.uuid, selected_node_ids, commit=False
+        )
         db.commit()
         db.refresh(created)
     except Exception:
         db.rollback()
         raise
+
+    try:
+        await create_user_on_assigned_nodes(created.uuid, created.name, db)
+    except Exception:
+        logger.exception(
+            f"User '{created.name}' saved with desired node assignments; "
+            "remote provisioning will be retried by reconciliation"
+        )
 
     return ResponseModel(
         success=True, msg="User created successfully", data=created.name

@@ -78,6 +78,7 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
         frontend = json.loads((root / "frontend/package.json").read_text())
         frontend_lock = json.loads((root / "frontend/package-lock.json").read_text())
         self.assertEqual(version, manifest["version"])
+        self.assertEqual(f"pvnetwork-panel-v{version}.tar.gz", manifest["release_asset"])
         self.assertEqual(version, project["version"])
         self.assertEqual(version, backend_version["__version__"])
         self.assertEqual(version, frontend["version"])

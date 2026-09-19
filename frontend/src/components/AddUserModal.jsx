@@ -7,7 +7,8 @@ const AddUserModal = ({
   onClose,
   onUserAdded,
   userRole,
-  anyConnectDefaultEnabled = false
+  anyConnectDefaultEnabled = false,
+  nodes = []
 }) => {
   // PVNETWORK_DURATION_UI_V8
   // PVNETWORK_RESELLER_DURATION_MAX6_V8_1
@@ -24,6 +25,7 @@ const AddUserModal = ({
   const [anyConnectEnabled, setAnyConnectEnabled] = useState(
     Boolean(anyConnectDefaultEnabled)
   );
+  const [selectedNodeIds, setSelectedNodeIds] = useState([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
@@ -31,6 +33,28 @@ const AddUserModal = ({
   useEffect(() => {
     setAnyConnectEnabled(Boolean(anyConnectDefaultEnabled));
   }, [anyConnectDefaultEnabled]);
+
+  useEffect(() => {
+    setSelectedNodeIds(
+      (nodes || [])
+        .filter(node => node.status && !node.drain && !node.maintenance)
+        .map(node => Number(node.id))
+    );
+  }, [nodes]);
+
+  const sortedNodes = [...(nodes || [])].sort((a, b) =>
+    String(a.name || '').localeCompare(String(b.name || ''))
+  );
+
+  const toggleNode = node => {
+    if (!node.status || node.drain || node.maintenance) return;
+    const nodeId = Number(node.id);
+    setSelectedNodeIds(current =>
+      current.includes(nodeId)
+        ? current.filter(item => item !== nodeId)
+        : [...current, nodeId].sort((a, b) => a - b)
+    );
+  };
 
   const numericTraffic = Number(totalTraffic || 0);
   const isUnlimited = Number.isFinite(numericTraffic) && numericTraffic <= 0;
@@ -108,6 +132,11 @@ const AddUserModal = ({
       return;
     }
 
+    if (selectedNodeIds.length === 0) {
+      setError(t('createUserNodeRequired', 'حداقل یک نود در دسترس را انتخاب کنید.'));
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await apiClient.post('/users/', {
@@ -117,7 +146,8 @@ const AddUserModal = ({
         duration_days: payloadDays,
         total,
         device_limit: parsedDeviceLimit,
-        anyconnect_enabled: anyConnectEnabled
+        anyconnect_enabled: anyConnectEnabled,
+        node_ids: selectedNodeIds
       });
       if (response.data.success) {
         alert(t('userCreated', 'کاربر با موفقیت ساخته شد.'));
@@ -184,6 +214,40 @@ const AddUserModal = ({
             {isResellerUnlimited ? 'اکانت نامحدود نماینده فقط تک‌کاربره است.' : '۰ = بدون محدودیت اتصال، ۱ = تک‌کاربره'}
           </small>
         </div>
+
+        <fieldset className="create-user-nodes">
+          <legend>{t('createUserNodes', 'نودهای مقصد')}</legend>
+          <small className="create-user-nodes-help">
+            {t('createUserNodesHelp', 'همه نودهای در دسترس به‌صورت پیش‌فرض انتخاب شده‌اند.')}
+          </small>
+          <div className="create-user-node-list">
+            {sortedNodes.length === 0 ? (
+              <p className="empty-message">{t('noNodesAvailable', 'هیچ نودی موجود نیست.')}</p>
+            ) : sortedNodes.map(node => {
+              const nodeId = Number(node.id);
+              const unavailable = !node.status || node.drain || node.maintenance;
+              const checked = selectedNodeIds.includes(nodeId);
+              return (
+                <label
+                  key={nodeId}
+                  className={`create-user-node ${checked ? 'selected' : ''} ${unavailable ? 'unavailable' : ''}`}
+                >
+                  <input
+                    className="create-user-node-checkbox"
+                    type="checkbox"
+                    checked={checked}
+                    disabled={unavailable}
+                    onChange={() => toggleNode(node)}
+                  />
+                  <span>{node.name}</span>
+                  {unavailable && (
+                    <small>{t('createUserNodeUnavailable', 'غیردردسترس')}</small>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <div className="input-group">
           <label style={{

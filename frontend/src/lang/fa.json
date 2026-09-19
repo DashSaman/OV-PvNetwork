@@ -448,5 +448,9 @@
   "disabled": "خاموش",
   "anyConnectDefaultNewUsers": "AnyConnect پیش‌فرض کاربران جدید",
   "anyConnectManage": "مدیریت AnyConnect",
-  "anyConnectEnabledGenerated": "AnyConnect برای {{name}} فعال شد. رمز ساخته‌شده در صفحه اشتراک و بخش مدیریت AnyConnect قابل مشاهده است."
+  "anyConnectEnabledGenerated": "AnyConnect برای {{name}} فعال شد. رمز ساخته‌شده در صفحه اشتراک و بخش مدیریت AnyConnect قابل مشاهده است.",
+  "createUserNodes": "نودهای مقصد",
+  "createUserNodesHelp": "همه نودهای در دسترس به‌صورت پیش‌فرض انتخاب شده‌اند؛ نودهای غیرضروری را بردارید.",
+  "createUserNodeUnavailable": "غیردردسترس",
+  "createUserNodeRequired": "حداقل یک نود در دسترس را انتخاب کنید."
 }

@@ -4181,3 +4181,60 @@ html[data-ov-theme="light"]
   overflow-x: visible !important;
 }
 
+
+/* PVNETWORK_CREATE_USER_NODE_SELECTOR_V1 */
+.create-user-nodes {
+  border: 1px solid var(--border-color, rgba(148, 163, 184, 0.24));
+  border-radius: 12px;
+  padding: 12px;
+  margin: 0 0 16px;
+  min-inline-size: 0;
+}
+
+.create-user-nodes legend {
+  padding-inline: 6px;
+  font-weight: 700;
+}
+
+.create-user-nodes-help {
+  display: block;
+  margin-block: 0 10px;
+  opacity: 0.78;
+}
+
+.create-user-node-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.create-user-node {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, rgba(148, 163, 184, 0.24));
+  border-radius: 10px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.create-user-node.selected {
+  border-color: currentColor;
+}
+
+.create-user-node.unavailable {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.create-user-node small {
+  margin-inline-start: auto;
+}
+
+@media (max-width: 430px) {
+  .create-user-node-list {
+    grid-template-columns: 1fr;
+  }
+}

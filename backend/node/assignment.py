@@ -25,7 +25,11 @@ def validate_node_ids(
     if node_ids is None:
         active_nodes = (
             db.query(Node)
-            .filter(Node.status.is_(True), Node.drain.is_(False))
+            .filter(
+                Node.status.is_(True),
+                Node.drain.is_(False),
+                Node.maintenance.is_(False),
+            )
             .order_by(Node.id)
             .all()
         )
@@ -88,20 +92,25 @@ def validate_node_ids(
     draining_ids = [
         node.id
         for node in nodes
-        if getattr(
-            node,
-            "drain",
-            False,
-        )
+        if getattr(node, "drain", False)
     ]
 
     if draining_ids:
         raise ValueError(
             "Draining node IDs cannot be assigned: "
-            + ", ".join(
-                str(item)
-                for item in draining_ids
-            )
+            + ", ".join(str(item) for item in draining_ids)
+        )
+
+    maintenance_ids = [
+        node.id
+        for node in nodes
+        if getattr(node, "maintenance", False)
+    ]
+
+    if maintenance_ids:
+        raise ValueError(
+            "Maintenance node IDs cannot be assigned: "
+            + ", ".join(str(item) for item in maintenance_ids)
         )
 
     return cleaned
@@ -111,6 +120,7 @@ def set_user_nodes(
     db: Session,
     user_uuid: str,
     node_ids: list[int],
+    commit: bool = True,
 ) -> None:
     db.query(UserNode).filter(
         UserNode.user_uuid == user_uuid
@@ -124,7 +134,10 @@ def set_user_nodes(
             )
         )
 
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
 
 
 def clear_user_nodes(

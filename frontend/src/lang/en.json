@@ -448,5 +448,9 @@
   "disabled": "Disabled",
   "anyConnectDefaultNewUsers": "AnyConnect default for new users",
   "anyConnectManage": "Manage AnyConnect",
-  "anyConnectEnabledGenerated": "AnyConnect was enabled for {{name}}. The generated password is available in the subscription page and AnyConnect management."
+  "anyConnectEnabledGenerated": "AnyConnect was enabled for {{name}}. The generated password is available in the subscription page and AnyConnect management.",
+  "createUserNodes": "Target nodes",
+  "createUserNodesHelp": "All available nodes are selected by default. Uncheck any node you do not want.",
+  "createUserNodeUnavailable": "Unavailable",
+  "createUserNodeRequired": "Select at least one available node."
 }
