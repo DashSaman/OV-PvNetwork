@@ -495,7 +495,7 @@ async def get_dashboard_live(
 
 
 # PATCH1_MONITORING_WEB
-import time, urllib.parse, urllib.request
+import time, requests
 from pydantic import BaseModel, Field
 from fastapi import HTTPException
 from backend.db.models import MonitoringSettings
@@ -512,9 +512,12 @@ def _mr(db):
 def _mo(r): return {'enabled':r.enabled,'telegram_configured':bool(r.telegram_token_encrypted and r.telegram_chat_id),'telegram_chat_id':r.telegram_chat_id or '',
  'cpu_limit':r.cpu_limit,'ram_limit':r.ram_limit,'disk_limit':r.disk_limit,'node_status_alerts':getattr(r,'node_status_alerts',True),'ssl_host':r.ssl_host or '','ssl_port':r.ssl_port,'ssl_warning_days':r.ssl_warning_days}
 def _tg(token,chat,text):
-    data=urllib.parse.urlencode({'chat_id':chat,'text':text}).encode()
-    with urllib.request.urlopen(urllib.request.Request(f'https://api.telegram.org/bot{token}/sendMessage',data=data,method='POST'),timeout=15) as x:
-        if x.status!=200: raise RuntimeError('Telegram HTTP error')
+    response=requests.post(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data={'chat_id':chat,'text':text},
+        timeout=15,
+    )
+    response.raise_for_status()
 @router.get('/monitoring',response_model=ResponseModel)
 async def monitoring_get(db:Session=Depends(get_db),user:dict=Depends(get_current_user)):
     if user['type']!='main_admin': raise HTTPException(403,'Main administrator required')

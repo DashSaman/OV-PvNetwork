@@ -39,10 +39,23 @@ jobs:
           subprocess.check_call([sys.executable, '-m', 'pip', 'install', *deps])
           PYDEPS
 
+      - name: Backend dependency and static security audit
+        run: |
+          python -m pip install --disable-pip-version-check pip-audit bandit
+          python - <<'PYSEC'
+          import tomllib
+          with open('pyproject.toml', 'rb') as handle:
+              deps = tomllib.load(handle)['project']['dependencies']
+          with open('/tmp/pvnetwork-audit-requirements.txt', 'w') as handle:
+              handle.write('\n'.join(deps) + '\n')
+          PYSEC
+          pip-audit -r /tmp/pvnetwork-audit-requirements.txt
+          bandit -q -r backend -ll -x backend/alembic/versions
+
       - name: Bash syntax
         run: |
           set -e
-          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test; do
+          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening scripts/pvnetwork-firewall-boot; do
             [ -f "$f" ] && bash -n "$f"
           done
 

@@ -1,0 +1,14 @@
+[Unit]
+Description=PVNetwork host firewall hardening
+Wants=network-online.target
+After=network-online.target pvnetwork-panel.service nginx.service ssh.service openvpn-server@server.service
+ConditionPathExists=/etc/pvnetwork-panel/firewall.env
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pvnetwork-firewall-boot
+RemainAfterExit=yes
+TimeoutStartSec=240
+
+[Install]
+WantedBy=multi-user.target

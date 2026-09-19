@@ -19,7 +19,11 @@ from backend.routers.anyconnect import (
 from backend.version import __version__
 from backend.operations.history import record_usage_history
 from backend.audit import AuditMiddleware
-from backend.security_middleware import SecurityMiddleware, ApiScopeMiddleware
+from backend.security_middleware import (
+    ApiScopeMiddleware,
+    SecurityHeadersMiddleware,
+    SecurityMiddleware,
+)
 
 
 api = FastAPI(
@@ -27,6 +31,8 @@ api = FastAPI(
     description="API for managing PVNetwork Panel",
     version=__version__,
     docs_url="/doc" if config.DOC else None,
+    redoc_url="/redoc" if config.DOC else None,
+    openapi_url="/openapi.json" if config.DOC else None,
 )
 
 frontend_build_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
@@ -40,6 +46,7 @@ api.mount(
 api.add_middleware(ApiScopeMiddleware)
 api.add_middleware(SecurityMiddleware)
 api.add_middleware(AuditMiddleware)
+api.add_middleware(SecurityHeadersMiddleware)
 
 cors_origins = [
     item.strip()
@@ -84,6 +91,11 @@ api.include_router(
     prefix="/api",
     router=anyconnect_integration_router,
 )
+
+
+@api.get("/healthz", include_in_schema=False)
+async def healthz():
+    return {"status": "ok", "version": __version__}
 
 
 @api.get(f"/{config.URLPATH}/{{path:path}}")

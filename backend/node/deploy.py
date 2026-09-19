@@ -14,6 +14,8 @@ from typing import Callable
 
 import paramiko
 
+from backend.security_ssh import configure_ssh_client, sha256_fingerprint
+
 
 DEPLOY_TIMEOUT = int(os.getenv("PVNETWORK_NODE_DEPLOY_TIMEOUT", "900"))
 JOB_TTL = int(os.getenv("PVNETWORK_NODE_DEPLOY_JOB_TTL", "86400"))
@@ -444,6 +446,7 @@ echo DEPLOY_OK
 
 def deploy_node(*, host: str, ssh_port: int, username: str, password: str,
                 api_port: int, ovpn_port: int, protocol: str, panel_ip: str,
+                expected_fingerprint: str | None = None,
                 reporter: Callable[[int, str, str, str], None] | None = None) -> DeployResult:
     host = _valid_host(host)
     panel_ip = str(ipaddress.ip_address(panel_ip.strip()))
@@ -458,8 +461,10 @@ def deploy_node(*, host: str, ssh_port: int, username: str, password: str,
     report = reporter or (lambda *_: None)
     api_key = secrets.token_urlsafe(30)
     client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    configure_ssh_client(
+        client,
+        expected_fingerprint=expected_fingerprint,
+    )
     output: list[str] = []
     report(2, "ssh", "Connecting to target server", "info")
     try:
@@ -469,10 +474,10 @@ def deploy_node(*, host: str, ssh_port: int, username: str, password: str,
         transport = client.get_transport()
         if transport is None:
             raise RuntimeError("SSH transport unavailable")
-        fingerprint = transport.get_remote_server_key().get_fingerprint().hex(":")
+        fingerprint = sha256_fingerprint(transport.get_remote_server_key())
         report(4, "ssh", f"SSH connected; host fingerprint {fingerprint}", "ok")
         channel = transport.open_session(timeout=20)
-        channel.exec_command("bash -s")
+        channel.exec_command("bash -s")  # nosec B601
         channel.sendall(_stage_script(api_port, ovpn_port, protocol, api_key, panel_ip).encode())
         channel.shutdown_write()
         deadline = time.monotonic() + DEPLOY_TIMEOUT

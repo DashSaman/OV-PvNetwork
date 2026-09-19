@@ -1,0 +1,120 @@
+import pathlib
+import unittest
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+
+def text(path: str) -> str:
+    return (ROOT / path).read_text(encoding="utf-8")
+
+
+class SecurityHardeningContractTests(unittest.TestCase):
+    def test_production_disables_openapi_and_redoc(self):
+        app = text("backend/app.py")
+        self.assertIn('openapi_url="/openapi.json" if config.DOC else None', app)
+        self.assertIn('redoc_url="/redoc" if config.DOC else None', app)
+        self.assertIn('@api.get("/healthz"', app)
+
+    def test_main_admin_uses_hash_not_plaintext_comparison(self):
+        auth = text("backend/auth/auth.py")
+        env = text(".env.example")
+        installer = text("install-local.sh")
+        self.assertNotIn("password == main_admin_password", auth)
+        self.assertIn("ADMIN_PASSWORD_HASH", auth)
+        self.assertIn("ADMIN_PASSWORD_HASH=", env)
+        self.assertNotIn("\nADMIN_" "PASSWORD=", env)
+        self.assertIn("ADMIN_PASSWORD_HASH", installer)
+        self.assertNotIn("ADMIN_PASSWORD=${ADMIN_PASS}", installer)
+
+    def test_login_has_dedicated_throttle_and_security_headers(self):
+        security = text("backend/security_middleware.py")
+        app = text("backend/app.py")
+        self.assertIn("LOGIN_RATE_LIMIT_PER_MINUTE", security)
+        self.assertIn("/api/login", security)
+        self.assertIn("SecurityHeadersMiddleware", security)
+        self.assertIn("Strict-Transport-Security", security)
+        self.assertIn("Content-Security-Policy", security)
+        self.assertIn("SecurityHeadersMiddleware", app)
+        css = text("frontend/src/index.css")
+        self.assertNotIn("fonts.googleapis.com", css)
+        self.assertNotIn("fonts.gstatic.com", css)
+
+    def test_ssh_does_not_auto_trust_first_seen_keys(self):
+        deploy = text("backend/node/deploy.py")
+        fleet = text("backend/routers/fleet.py")
+        node = text("backend/routers/node.py")
+        self.assertNotIn("AutoAddPolicy", deploy)
+        self.assertNotIn("AutoAddPolicy", fleet)
+        self.assertIn("expected_fingerprint", deploy)
+        self.assertIn("ssh_fingerprint", node)
+        self.assertIn("ssh_fingerprint", fleet)
+
+    def test_dependency_and_static_security_scans_are_release_gates(self):
+        workflow = text(".github/workflows/ci.yml")
+        pyproject = text("pyproject.toml").lower()
+        self.assertIn("pip-audit", workflow)
+        self.assertIn("bandit", workflow)
+        self.assertNotIn("python-jose", pyproject)
+        self.assertIn("pyjwt>=2.13", pyproject)
+        self.assertIn("python-dotenv>=1.2.2", pyproject)
+
+    def test_anyconnect_secret_key_requires_private_permissions(self):
+        source = text("backend/routers/anyconnect.py")
+        self.assertIn("metadata.st_mode & 0o077", source)
+        self.assertIn("must not be group/world accessible", source)
+
+    def test_health_checks_do_not_depend_on_public_openapi(self):
+        panel_paths = [
+            "install-local.sh",
+            "scripts/manage.sh",
+            "scripts/verify.sh",
+            "scripts/pvnetwork-panel-restore-job",
+        ]
+        for path in panel_paths:
+            body = text(path)
+            self.assertIn("/healthz", body, path)
+            self.assertNotIn("/openapi.json", body, path)
+
+        healthcheck = text("scripts/healthcheck.sh")
+        self.assertIn("/healthz", healthcheck)
+        self.assertIn("/sync/status", healthcheck)
+        self.assertIn("API_KEY", healthcheck)
+        self.assertIn("set_new_setting", healthcheck)
+        self.assertNotIn("/openapi.json", healthcheck)
+
+    def test_firewall_confirm_and_rollback_cli_consume_backup_path(self):
+        import subprocess
+
+        script = str(ROOT / "scripts/pvnetwork-firewall-hardening")
+        for mode in ("--confirm", "--rollback"):
+            result = subprocess.run(
+                ["bash", script, mode, "/tmp/pvnetwork-nonexistent-backup"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 2, result.stdout)
+            self.assertNotIn("Unknown argument", result.stdout)
+
+    def test_firewall_hardening_is_inventory_first_and_reversible(self):
+        body = text("scripts/pvnetwork-firewall-hardening")
+        self.assertIn("--inventory", body)
+        self.assertIn("--apply", body)
+        self.assertIn("rollback", body.lower())
+        self.assertIn("--rollback-after", body)
+        self.assertIn("--confirm", body)
+        self.assertIn("systemd-run", body)
+        self.assertIn("established,related", body.lower())
+        self.assertIn("PVNETWORK_INPUT -p tcp -j DROP", body)
+        self.assertIn("PVNETWORK_INPUT -p udp -j DROP", body)
+        self.assertIn("PVNETWORK_INPUT -j RETURN", body)
+        boot = text("scripts/pvnetwork-firewall-boot")
+        unit = text("ops/systemd/pvnetwork-firewall-hardening.service")
+        self.assertIn("PVNETWORK_FIREWALL_PUBLIC_HEALTH_URL", boot)
+        self.assertIn("--confirm", boot)
+        self.assertIn("ConditionPathExists=/etc/pvnetwork-panel/firewall.env", unit)
+
+
+if __name__ == "__main__":
+    unittest.main()

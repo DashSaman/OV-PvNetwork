@@ -11,6 +11,6 @@ if [[ -d frontend && -f frontend/package.json ]]; then
 fi
 if systemctl is-active --quiet pvnetwork-panel.service; then
   port="$(awk -F= '$1=="PORT"{print $2}' .env | tail -1 | tr -d ' \r')"; port="${port:-19000}"
-  curl -fsS --connect-timeout 2 --max-time 5 "http://127.0.0.1:${port}/openapi.json" >/dev/null
+  curl -fsS --connect-timeout 2 --max-time 5 "http://127.0.0.1:${port}/healthz" >/dev/null
 fi
 echo VERIFY=PASS

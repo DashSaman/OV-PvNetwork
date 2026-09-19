@@ -4,8 +4,7 @@ import os
 import socket
 import ssl
 import time
-import urllib.parse
-import urllib.request
+import requests
 from pathlib import Path
 
 from backend.db.engine import SessionLocal
@@ -21,13 +20,12 @@ STATE = Path('/var/lib/pvnetwork-panel/monitor-state.json')
 
 
 def send(token, chat_id, message):
-    data = urllib.parse.urlencode({'chat_id': chat_id, 'text': message}).encode()
-    request = urllib.request.Request(
-        f'https://api.telegram.org/bot{token}/sendMessage',
-        data=data,
-        method='POST',
+    response = requests.post(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data={"chat_id": chat_id, "text": message},
+        timeout=15,
     )
-    urllib.request.urlopen(request, timeout=15).read()
+    response.raise_for_status()
 
 
 # Public helper shared by the scheduled user notifier.

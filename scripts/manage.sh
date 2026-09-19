@@ -27,7 +27,7 @@ verify(){
   systemctl is-active --quiet pvnetwork-panel.service || return 1
   local port="$(panel_port)"
   for _ in $(seq 1 30); do
-    curl -fsS --connect-timeout 1 --max-time 2 "http://127.0.0.1:${port}/openapi.json" >/dev/null && return 0
+    curl -fsS --connect-timeout 1 --max-time 2 "http://127.0.0.1:${port}/healthz" >/dev/null && return 0
     sleep 1
   done
   return 1
@@ -84,7 +84,11 @@ build_panel(){
   command -v uv >/dev/null 2>&1 || fail 'uv is not installed'
   command -v node >/dev/null 2>&1 || fail 'node is not installed'
   uv sync
-  (cd frontend && npm ci && npm run build)
+  .venv/bin/python scripts/migrate_admin_password_hash.py --env "$APP/.env"
+  local panel_path
+  panel_path="$(awk -F= '$1=="URLPATH"{print $2}' "$APP/.env" 2>/dev/null | tail -1 | tr -d ' \r')"
+  [[ -n "$panel_path" ]] || fail 'URLPATH is missing from .env'
+  (cd frontend && npm ci && URLPATH="$panel_path" VITE_URLPATH="$panel_path" npm run build)
   .venv/bin/python -m compileall -q backend
   [[ -f backend/alembic.ini ]] && .venv/bin/alembic -c backend/alembic.ini upgrade head
 }
@@ -154,7 +158,7 @@ doctor_cmd(){
   status_cmd
   echo '-- API --'
   local port="$(panel_port)"
-  curl -sS -o /dev/null -w 'HTTP=%{http_code} TIME=%{time_total}s\n' "http://127.0.0.1:${port}/openapi.json" || true
+  curl -sS -o /dev/null -w 'HTTP=%{http_code} TIME=%{time_total}s\n' "http://127.0.0.1:${port}/healthz" || true
   echo '-- disk --'
   df -h / /opt 2>/dev/null | uniq
   echo '-- service --'

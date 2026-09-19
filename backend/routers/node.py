@@ -359,6 +359,7 @@ class AutoNodeDeployRequest(BaseModel):
     ssh_port: int = Field(default=22, ge=1, le=65535)
     ssh_username: str = Field(default="root", min_length=1, max_length=64)
     ssh_password: str = Field(min_length=1, max_length=512)
+    ssh_fingerprint: Optional[str] = Field(default=None, max_length=160)
     panel_ip: str
     protocol: str = "udp"
     ovpn_port: int = Field(default=1194, ge=1, le=65535)
@@ -524,6 +525,7 @@ def _run_deploy_job(job, request_data: dict) -> None:
             ssh_port=request_data["ssh_port"],
             username=request_data["ssh_username"],
             password=request_data["ssh_password"],
+            expected_fingerprint=request_data.get("ssh_fingerprint"),
             api_port=request_data["node_port"],
             ovpn_port=request_data["ovpn_port"],
             protocol=request_data["protocol"],

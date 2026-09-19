@@ -160,6 +160,11 @@ def _validate_password(password: str) -> str:
 
 def _fernet() -> Fernet:
     try:
+        metadata = _CREDENTIAL_KEY_PATH.stat()
+        if metadata.st_mode & 0o077:
+            raise OSError(
+                "AnyConnect credential key must not be group/world accessible"
+            )
         key = _CREDENTIAL_KEY_PATH.read_bytes().strip()
         return Fernet(key)
     except (OSError, ValueError) as exception:

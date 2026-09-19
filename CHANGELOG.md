@@ -1,3 +1,13 @@
+## v1.0.8 — PVN-028 Production security hardening
+
+- main-admin password hash migration with rollback-safe deployment
+- Production health endpoint and docs/schema gating
+- dedicated login throttling and security headers
+- explicit SSH host-key fingerprint pinning; no first-seen auto-trust
+- dependency/static security CI gates with zero known Python advisories
+- reversible inventory-preserving firewall helper with timed rollback
+- existing certificate-only OpenVPN listener/profile behavior unchanged
+
 ## 1.0.7 — 2026-09-19
 
 PVN-031 online-presence synchronization hotfix.

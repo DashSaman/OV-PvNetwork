@@ -10,6 +10,7 @@ export default function FleetManagement() {
   const [selected, setSelected] = useState([]);
   const [sshUsername, setSshUsername] = useState('root');
   const [sshPassword, setSshPassword] = useState('');
+  const [sshFingerprints, setSshFingerprints] = useState('');
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
@@ -78,6 +79,21 @@ export default function FleetManagement() {
       setError(requestError.response?.data?.detail || requestError.response?.data?.msg || tr('loadFailed'));
     }
   };
+  const parsedFingerprints = useMemo(() => {
+    const result = {};
+    for (const rawLine of sshFingerprints.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line) continue;
+      const splitAt = line.indexOf('=');
+      if (splitAt <= 0) continue;
+      const nodeId = Number(line.slice(0, splitAt).trim());
+      const fingerprint = line.slice(splitAt + 1).trim();
+      if (Number.isInteger(nodeId) && nodeId > 0 && fingerprint) {
+        result[nodeId] = fingerprint;
+      }
+    }
+    return result;
+  }, [sshFingerprints]);
   const startUpgrade = async () => {
     if (!selected.length || !sshPassword) {
       window.alert(tr('selectNodes'));
@@ -91,7 +107,8 @@ export default function FleetManagement() {
         ssh_username: sshUsername,
         ssh_password: sshPassword,
         ssh_port: 22,
-        canary_node_id: selected[0]
+        canary_node_id: selected[0],
+        ssh_fingerprints: parsedFingerprints
       }, {
         timeout: 15000
       });
@@ -154,6 +171,17 @@ export default function FleetManagement() {
           <label>
             {tr('sshPassword')}
             <input type="password" value={sshPassword} onChange={event => setSshPassword(event.target.value)} autoComplete="current-password" />
+          </label>
+
+          <label>
+            SSH host fingerprints (optional if already pinned)
+            <textarea
+              value={sshFingerprints}
+              onChange={event => setSshFingerprints(event.target.value)}
+              placeholder={'12=SHA256:...\n13=SHA256:...'}
+              rows={3}
+              dir="ltr"
+            />
           </label>
         </div>
 

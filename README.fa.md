@@ -4,11 +4,19 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.7-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.8-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.8 نسبت به v1.0.7
+
+**PVN-028 — سخت‌سازی امنیت Production بدون تغییر مدل اصلی OpenVPN.** رمز ادمین اصلی به hash یک‌طرفه مهاجرت می‌کند، انتشار docs/schema عمومی تابع DOC است، rate-limit لاگین و security headerها سخت‌تر شده‌اند، SSH بدون تأیید fingerprint کلید host ناشناخته را قبول نمی‌کند، audit dependency/static وارد CI شده و اعمال firewall فقط با inventory و rollback تایمردار انجام می‌شود. پروفایل certificate-only و بدون username/password برای کاربران عادی همان حالت پیش‌فرض باقی می‌ماند.
+
+![Pin کردن کلید SSH در v1.0.8](./docs/images/v1.0.8/fa/desktop/ssh-host-key-pinning.png)
+
+خط انتشار فعلی: **v1.0.8** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.8.fa.md).
 
 ## تغییرات v1.0.7 نسبت به v1.0.6
 
