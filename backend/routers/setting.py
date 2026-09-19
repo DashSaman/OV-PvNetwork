@@ -173,14 +173,20 @@ async def get_dashboard_live(
             **info,
         }
 
-    results = await asyncio.gather(
-        *[
-            asyncio.to_thread(
-                read_node,
-                spec,
-            )
-            for spec in node_specs
-        ]
+    from backend.operations.live_presence import get_display_live_presence
+
+    # Presence uses a separate short-lived DB snapshot and direct usage polls.
+    # Run it alongside node status polling so the dashboard does not add the
+    # two network latencies serially.
+    presence_task = asyncio.create_task(get_display_live_presence())
+    results, presence = await asyncio.gather(
+        asyncio.gather(
+            *[
+                asyncio.to_thread(read_node, spec)
+                for spec in node_specs
+            ]
+        ),
+        presence_task,
     )
 
     # PVNETWORK_DASHBOARD_SERVER_RATE_PROCESS_V2
@@ -465,6 +471,7 @@ async def get_dashboard_live(
 
     payload = {
         "nodes": results,
+        "presence": presence,
 
         # Exact sample time used by the browser
         # to calculate counter deltas correctly.

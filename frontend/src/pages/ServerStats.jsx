@@ -250,6 +250,7 @@ const ServerStats = () => {
   const [nodes, setNodes] = useState([]);
   const [dashboardError, setDashboardError] = useState('');
   const [nodeMetrics, setNodeMetrics] = useState({});
+  const [presence, setPresence] = useState({ online_users: null });
   const [history, setHistory] = useState([]);
   const [themeMode, setThemeMode] = useState(() => {
     if (typeof window === 'undefined') {
@@ -336,6 +337,9 @@ const ServerStats = () => {
 
         const rows =
           payload.nodes || [];
+        if (active && payload.presence) {
+          setPresence(payload.presence);
+        }
 
         /*
          * PVNETWORK_RATE_SAMPLE_TIME_V1
@@ -513,7 +517,7 @@ const ServerStats = () => {
     let traffic = 0;
     let activeNodes = 0;
     let sampledNodes = 0;
-    let online = 0;
+    let nodeOnline = 0;
     let onlineSessions = 0;
     nodes.forEach(node => {
       const metric = nodeMetrics[node.id];
@@ -521,7 +525,7 @@ const ServerStats = () => {
         return;
       }
       activeNodes += 1;
-      online += Number(metric.online_count || 0);
+      nodeOnline += Number(metric.online_count || 0);
       onlineSessions += Number(metric.online_sessions || 0);
       traffic += Number(metric.traffic_bytes || 0);
       if (metric.ready) {
@@ -537,10 +541,14 @@ const ServerStats = () => {
       traffic,
       activeNodes,
       sampledNodes,
-      online,
+      online: presence.online_users !== null
+        && presence.online_users !== undefined
+        && Number.isFinite(Number(presence.online_users))
+        ? Number(presence.online_users)
+        : nodeOnline,
       onlineSessions
     };
-  }, [nodes, nodeMetrics]);
+  }, [nodes, nodeMetrics, presence]);
   const liveReady = totals.sampledNodes > 0;
   return <div id="dashboard-view" className="view ovdash" data-theme={themeMode}>
       {dashboardError && <div className="monitor-form">

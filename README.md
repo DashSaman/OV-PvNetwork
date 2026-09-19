@@ -4,13 +4,25 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.5-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.6-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.6 vs v1.0.5
+
+**PVN-027 — one online-user truth across Dashboard and Users.**
+
+![v1.0.6 shared online truth dashboard](./docs/images/v1.0.6/en/desktop/online-truth-dashboard.png)
+
+![v1.0.6 shared online truth users mobile](./docs/images/v1.0.6/en/mobile/online-truth-users.png) The panel now merges fresh central session heartbeats with a display-only direct-node fallback, deduplicates current PVNetwork users across nodes, and ignores orphan/stale node profiles in the global Online Users total. This fixes the case where a node could report live OpenVPN clients while its session hooks were missing from the central `active_sessions` view.
+
+The fallback never writes enforcement sessions or changes device-limit behavior. Raw node/session metrics remain on node cards, while the global user count and User Management online flags are derived from the same shared user-presence snapshot. Transient node polling failures retain valid central state and a short cached direct snapshot.
+
+Latest release: **v1.0.6** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.6).
 
 ## What changed in v1.0.5 vs v1.0.4
 
@@ -22,7 +34,7 @@
 
 Backward-compatible API calls that omit `node_ids` still resolve to all currently available nodes. Explicit assignments are authoritative: the periodic reconciler can repair missing profiles on selected nodes but cannot silently widen a user's node set. The selector is covered in English/Persian at phone, tablet and desktop widths.
 
-Latest release: **v1.0.5** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.5).
+Previous release: **v1.0.5** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.5).
 
 ## What changed in v1.0.4 vs v1.0.3
 

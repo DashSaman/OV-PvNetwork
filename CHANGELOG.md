@@ -1,3 +1,21 @@
+## 1.0.6 — 2026-09-19
+
+PVN-027 consistent online-user truth release.
+
+### Online presence
+- Added a shared display-only presence layer that merges fresh central sessions with direct node usage snapshots.
+- Deduplicates current PVNetwork users across nodes and maps direct client names using the exact node-name suffix.
+- Ignores unknown/orphan node clients in the global user total while preserving raw per-node metrics.
+- Added short direct-node caching, bounded stale grace and fail-open central-state preservation for transient node polling failures.
+
+### Enforcement safety
+- Does not create/update `active_sessions`; device-limit and session acquire/heartbeat/release semantics are unchanged.
+- No database migration and no node/tunnel/firewall/certificate changes.
+
+### QA
+- Added focused central/direct merge, dedup, hyphenated-name, unknown-client and failure-mode tests.
+- Added Dashboard-vs-Users browser regression with intentionally divergent raw node totals in EN/FA mobile and desktop viewports.
+
 ## 1.0.5 — 2026-09-19
 
 PVN-026 user-creation node-selection release.

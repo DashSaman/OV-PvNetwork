@@ -4,11 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.5-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.6-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.6 نسبت به v1.0.5
+
+**PVN-027 — یک مرجع واحد برای کاربران آنلاین در Dashboard و Users.**
+
+![Dashboard با شمارش یکسان کاربران آنلاین v1.0.6](./docs/images/v1.0.6/fa/desktop/online-truth-dashboard.png)
+
+![Users موبایل با شمارش یکسان کاربران آنلاین v1.0.6](./docs/images/v1.0.6/fa/mobile/online-truth-users.png) پنل اکنون Session heartbeatهای تازه مرکزی را با fallback مستقیم و صرفاً نمایشی Node ترکیب می‌کند، Userهای فعلی PVNetwork را بین Nodeها Deduplicate می‌کند و Profileهای قدیمی/یتیم Node را در عدد کلی کاربران آنلاین حساب نمی‌کند. این دقیقاً اختلافی را برطرف می‌کند که یک Node کاربر زنده OpenVPN داشت اما session hook آن در `active_sessions` مرکزی دیده نمی‌شد.
+
+Fallback هیچ Session اجرایی در دیتابیس نمی‌سازد و Device Limit را تغییر نمی‌دهد. Raw count هر Node روی Node Card باقی می‌ماند، اما عدد کلی Dashboard و وضعیت Online در User Management از یک snapshot مشترک User Presence می‌آیند. Timeout موقت Node نیز session مرکزی معتبر را پاک نمی‌کند و برای مدت کوتاه از snapshot cache‌شده استفاده می‌شود.
+
+آخرین Release: **v1.0.6** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.6)
 
 ## تغییرات v1.0.5 نسبت به v1.0.4
 
@@ -20,7 +32,7 @@
 
 برای سازگاری، APIهایی که `node_ids` نمی‌فرستند همچنان همه Nodeهای Available را انتخاب می‌کنند. Assignment صریح مرجع نهایی است: Reconciler می‌تواند Profile گم‌شده را روی Node انتخاب‌شده ترمیم کند اما اجازه ندارد User را خودکار روی Node جدیدی گسترش دهد. این جریان در فارسی/انگلیسی و اندازه‌های موبایل، تبلت و دسکتاپ تست شده است.
 
-آخرین Release: **v1.0.5** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.5)
+Release قبلی: **v1.0.5** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.5)
 
 ## تغییرات v1.0.4 نسبت به v1.0.3
 
