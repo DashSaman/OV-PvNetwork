@@ -4,25 +4,21 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.3-orange?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.4-orange?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
-## تغییرات v1.0.3 نسبت به v1.0.2
+## تغییرات v1.0.4 نسبت به v1.0.3
 
-**PVN-205 — ویرایش سریع داخل ردیف کاربر.** از منوی عملیات Users می‌توان Quick Edit را باز کرد و بدون رفتن به Modal کامل، حجم، تاریخ انقضا در حالت‌های مجاز، تعداد اتصال هم‌زمان، وضعیت فعال/غیرفعال، Node Assignment و Reset Usage را بررسی و اعمال کرد. Username عمداً Read-only است تا زمانی که Rename امن چندنودی در `PVN-022` پیاده‌سازی شود.
+**PVN-025 — مالکیت کامل Namespace با نام PVNetwork.** سورس فعلی، Installer و Runtime defaults، مسیرهای سرویس و Config، نام Backupها، شناسه‌های Frontend و Package metadata همگی به Namespace استاندارد PVNetwork منتقل شده‌اند. CI نیز اسکن اجباری دارد تا نام‌های قدیمی دوباره وارد Source نشوند.
 
-![Quick Edit دسکتاپ v1.0.3](./docs/images/v1.0.3/fa/desktop/users-inline-quick-edit.png)
+نام‌های استاندارد Runtime شامل `/opt/pvnetwork-panel`، سرویس `pvnetwork-panel.service`، مسیر `/etc/pvnetwork`، بکاپ `/var/backups/pvnetwork-panel`، ابزار `pvnetwork` و کلید Frontend با نام `pvnetwork_language` است. در این Patch منطق کاربر، Node، Certificate و Routing عمداً تغییر نمی‌کند.
 
-![Quick Edit موبایل v1.0.3](./docs/images/v1.0.3/fa/mobile/users-inline-quick-edit.png)
+Release هدف: **v1.0.4** — [Release Notes نسخه 1.0.4](./docs/RELEASE-NOTES-v1.0.4.fa.md)
 
-تغییر Assignment با Guard امن انجام می‌شود: نود حذف‌شده از Assignment به‌جای حذف Certificate فقط Deactivate می‌شود، پروفایل غیرفعال قدیمی در صورت امکان دوباره استفاده می‌شود و نود جدیدِ غیرقابل‌دسترس قبل از Mutation رد می‌شود. Sync وضعیت و ویرایش فقط روی نودهای Assigned انجام می‌شود. تست Browser واقعی برای فارسی RTL و انگلیسی LTR روی موبایل، تبلت و دسکتاپ اجرا می‌شود.
-
-آخرین Release: **v1.0.3** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.3)
-
-PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
+PVNetwork Panel به‌عنوان کنترل‌پلین مستقل PVNetwork برای OpenVPN چندنودی و AnyConnect اختیاری نگه‌داری می‌شود. Attribution نرم‌افزارهای ثالث طبق مجوز در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
 
 > **قانون ثابت پروژه:** Production همیشه زیر بار و در حال استفاده فرض می‌شود. هر تغییر Production باید با ترتیب «Backup/Check → تغییر محدود → کمترین Restart لازم → Health Verification → آمادگی Rollback» انجام شود. مخزن عمومی نیز نباید اطلاعات واقعی کاربران یا زیرساخت و Secretها را داشته باشد.
 
@@ -90,7 +86,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.3/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.4/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.
@@ -98,15 +94,15 @@ Installer از Tag ثابت Release استفاده می‌کند و نباید �
 بعد از نصب، در Deploymentهایی که Lifecycle Manager فعال است:
 
 ```bash
-ovpv status
-ovpv doctor
-ovpv version
-ovpv backup
-ovpv update
-ovpv rollback
+pvnetwork status
+pvnetwork doctor
+pvnetwork version
+pvnetwork backup
+pvnetwork update
+pvnetwork rollback
 ```
 
-اگر روی سرور شما از قبل OVPanel یا سرویس‌های دیگری فعال است، Fresh Installer را مستقیم اجرا نکنید؛ ابتدا Health، Backup و مسیر Update/Migration را بررسی کنید.
+اگر روی سرور شما از قبل Runtime قدیمی پنل یا سرویس‌های دیگری فعال است، Fresh Installer را مستقیم اجرا نکنید؛ ابتدا Health، Backup و مسیر Update/Migration را بررسی کنید.
 
 مستندات:
 
@@ -183,6 +179,6 @@ Node Automation نباید برای راحتی نصب، Firewall را Flush کن
 
 ## اعتبار پروژه
 
-OV-PvNetwork از OV-Panel / OV-Node با مجوز MIT مشتق شده است. Attribution پروژه Upstream در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
+PVNetwork Panel شامل بخش‌هایی مشتق‌شده از نرم‌افزارهای ثالث با مجوز MIT است. Attribution لازم در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
 
 </div>

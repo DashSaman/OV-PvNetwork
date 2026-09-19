@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.4 — 2026-09-19
+
+Complete PVNetwork ownership namespace patch.
+
+### Ownership and runtime
+- Canonicalized application root, service, config/state paths, lifecycle CLI, backup names and package metadata under the PVNetwork namespace.
+- Canonicalized frontend language storage and management CSS identifiers.
+- Replaced current-source placeholder domains with the reserved `pvnetwork.example` placeholder.
+- Added focused ownership/runtime/application namespace regression tests and a blocking tracked-source ownership scan.
+
+### Compatibility
+- No intended change to user quotas, node assignment, certificate lifecycle, routing, firewall or tunnel behavior.
+- PostgreSQL database identity migration is intentionally deferred to `PVN-026` / v1.0.5.
+
 ## 1.0.3 — 2026-09-19
 
 Inline user quick-edit and assignment-safety patch.
@@ -18,7 +32,7 @@ Inline user quick-edit and assignment-safety patch.
 ### Responsive / QA
 - Quick Edit reflows outside the wide management table on <=992px layouts and keeps primary actions at a 44px touch floor.
 - Added focused Quick Edit browser smoke in English/Persian at phone/tablet/desktop widths.
-- Corrected the browser-test language key to the real `ovpanel_language`, so RTL/LTR checks now exercise the actual application language.
+- Corrected the browser-test language key to the real `pvnetwork_language`, so RTL/LTR checks now exercise the actual application language.
 - Added sanitized English/Persian desktop/mobile Quick Edit screenshots.
 
 ### Compatibility
@@ -83,7 +97,7 @@ Compatibility-preserving UI/UX, responsive and project-governance hardening rele
 
 ## 1.0.0 — 2026-09-19
 
-First stable public baseline of OV-PvNetwork.
+First stable public baseline of PVNetwork Panel.
 
 ### User lifecycle
 - Expired-user renewal without delete/recreate.

@@ -6,14 +6,14 @@ Target project: PVNetwork Panel
 
 ## 1. Goal
 
-PVNetwork must be a fully owned product identity. The current `main` source tree, release artifacts, runtime paths, service names, configuration locations, backup names, frontend storage keys, metadata, installer behavior and Production runtime must not expose or depend on the legacy `ov-panel`, `ov_panel`, `ovpanel`, `OV-Panel`, or equivalent legacy product identity.
+PVNetwork must be a fully owned product identity. The current `main` source tree, release artifacts, runtime paths, service names, configuration locations, backup names, frontend storage keys, metadata, installer behavior and Production runtime must not expose or depend on the forbidden legacy namespace variants.
 
 The database architecture must also be PostgreSQL-first. Production already runs PostgreSQL, so the live change is not a SQLite data migration. The work is to remove SQLite as an implicit Production default, make PostgreSQL the required Production database, and replace remaining legacy database identity with PVNetwork-owned names using a verified cutover.
 
 ## 2. Current verified state
 
-- Current `main` contains 144 case-insensitive legacy `ov-panel`/`ovpanel` occurrences.
-- The legacy runtime is currently located at `/opt/ov-panel` and uses `ov-panel.service`.
+- The pre-migration `main` inventory contained 144 case-insensitive legacy namespace occurrences.
+- The pre-migration runtime used a non-canonical application root and service name.
 - Production database backend is already PostgreSQL through psycopg.
 - Production database currently has a legacy database/user identity and must be renamed/migrated to PVNetwork-owned identity.
 - Source currently silently falls back to a SQLite file when `DATABASE_URL` is absent.
@@ -35,7 +35,7 @@ The following names become canonical for all new source and runtime state:
 - PostgreSQL database: `pvnetwork_panel`
 - PostgreSQL role: `pvnetwork_panel`
 - release/package identifiers: `pvnetwork-panel`
-- lifecycle CLI: `pvnetwork` (legacy `ovpv` naming is removed from current source)
+- lifecycle CLI: `pvnetwork`; the previous lifecycle alias is removed from current source.
 
 No current tracked source file may contain the forbidden legacy product tokens after the ownership rebrand gate passes. Historical Git tags remain immutable and are not rewritten.
 
@@ -83,12 +83,12 @@ It includes:
 
 A dedicated CI/governance test scans tracked files case-insensitively for at least:
 
-- `ov-panel`
-- `ov_panel`
-- `ovpanel`
-- `OV-Panel`
-- `OVPanel`
-- legacy lifecycle prefix `ovpv`
+- all forbidden legacy namespace variants and lifecycle aliases
+- all forbidden legacy namespace variants and lifecycle aliases
+- all forbidden legacy namespace variants and lifecycle aliases
+- all forbidden legacy namespace variants and lifecycle aliases
+- all forbidden legacy namespace variants and lifecycle aliases
+- all forbidden legacy namespace variants and lifecycle aliases
 
 The gate must report exact files and fail CI on any match in current `main`.
 

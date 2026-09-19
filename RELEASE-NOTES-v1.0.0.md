@@ -28,7 +28,7 @@ The release archive is sanitized before publication. Production `.env` files, cr
 - Ubuntu 22.04 LTS
 - Ubuntu 24.04 LTS
 - Debian 12
-- Upstream OV-Panel base: v1.7.10
+- Initial third-party base compatibility: v1.7.10
 - Upstream OV-Node base: v1.3.6
 
 ## Installation

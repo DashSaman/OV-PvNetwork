@@ -861,7 +861,7 @@
 - PVN-904 Import from generic OpenVPN CSV
 - PVN-905 Migration dry-run report
 - PVN-906 Migration rollback snapshot
-- PVN-907 Legacy OVPanel migration assistant
+- PVN-907 Legacy external-panel migration assistant
 - PVN-908 Subscription compatibility checker
 - PVN-909 Client compatibility matrix
 - PVN-910 Karing compatibility test

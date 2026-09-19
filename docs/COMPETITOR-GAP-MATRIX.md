@@ -215,7 +215,7 @@ Purpose: prevent useful capabilities discovered in competitor research from disa
 | Import from Remnawave | migration requirement | Gap | PVN-903 |
 | Generic OpenVPN CSV import | migration requirement | Gap | PVN-904 |
 | Migration dry-run + rollback snapshot | safe migration | Gap | PVN-905 / PVN-906 |
-| Legacy OVPanel migration | project lineage | Gap | PVN-907 |
+| Legacy external-panel migration | project lineage | Gap | PVN-907 |
 | Subscription compatibility checker | ecosystem | Gap | PVN-908 |
 | Client compatibility matrix | ecosystem | Gap | PVN-909 |
 | Karing / v2rayNG / V2Box / Mihomo tests | user ecosystem | Gap | PVN-910..913 |

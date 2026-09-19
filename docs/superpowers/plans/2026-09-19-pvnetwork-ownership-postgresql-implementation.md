@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Current tracked source must contain zero case-insensitive `ov-panel`, `ov_panel`, `ovpanel`, `OV-Panel`, `OVPanel`, or `ovpv` after PVN-025.
+- Current tracked source must contain zero forbidden legacy namespace variants after PVN-025.
 - Canonical root `/opt/pvnetwork-panel`; service `pvnetwork-panel.service`; config `/etc/pvnetwork`; CLI `pvnetwork`; frontend key `pvnetwork_language`.
 - Production-visible work requires verified backup, rollback path, local/public health, changed-workflow verification, and AGENTS evidence before `[x]`.
 - Do not change firewall, routing, tunnels, node certificates, customer credentials, or unrelated services.

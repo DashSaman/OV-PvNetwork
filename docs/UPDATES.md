@@ -7,8 +7,8 @@ PVNetwork Production is assumed live and under load. Do not update by replacing 
 Before changing Production:
 
 ```bash
-ovpv doctor
-ovpv backup
+pvnetwork doctor
+pvnetwork backup
 ```
 
 If you use PostgreSQL, keep a database-native backup as well; an application backup does not replace the database backup policy.
@@ -18,15 +18,15 @@ Record the current version/service health and have a rollback target before rest
 ## Update to latest stable release
 
 ```bash
-ovpv update
+pvnetwork update
 ```
 
-Where the lifecycle manager is installed, it resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env`/state, applies required migrations/builds, restarts only `ov-panel.service`, then verifies the local API. Failed health verification must trigger rollback rather than repeated blind mutation.
+Where the lifecycle manager is installed, it resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env`/state, applies required migrations/builds, restarts only `pvnetwork-panel.service`, then verifies the local API. Failed health verification must trigger rollback rather than repeated blind mutation.
 
 ## Target a specific patch explicitly
 
 ```bash
-OVPV_REF=v1.0.2 ovpv update
+PVNETWORK_REF=v1.0.2 pvnetwork update
 ```
 
 A branch name can be used in a disposable/staging environment, but Production should normally consume a reviewed tagged release.
@@ -50,13 +50,13 @@ After upgrading, verify:
 Rollback to the most recent application backup:
 
 ```bash
-ovpv rollback
+pvnetwork rollback
 ```
 
 Or choose a backup directory:
 
 ```bash
-ovpv rollback /var/backups/ov-pvnetwork/YYYYMMDD-HHMMSS
+pvnetwork rollback /var/backups/pvnetwork-panel/YYYYMMDD-HHMMSS
 ```
 
 Rollback must restore the captured application/runtime state, rebuild required assets/dependencies, restart only the panel service and verify health.
@@ -72,9 +72,9 @@ Rollback must restore the captured application/runtime state, rebuild required a
 ## Status and version
 
 ```bash
-ovpv status
-ovpv version
-ovpv doctor
+pvnetwork status
+pvnetwork version
+pvnetwork doctor
 ```
 
 ## Release rule

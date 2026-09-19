@@ -24,4 +24,4 @@ The release gate includes 37 Python/unit/governance tests, ESLint, Python compil
 
 ## Upgrade and rollback
 
-No database migration is required. Back up first. Deployment changes the panel/backend/frontend files only; do not alter firewall/default routes/tunnels or unrelated services. Restart only `ov-panel` if needed, then verify internal/public HTTP, OpenAPI and recent error logs. Roll back to the verified v1.0.2 backup/release if health checks fail.
+No database migration is required. Back up first. Deployment changes the panel/backend/frontend files only; do not alter firewall/default routes/tunnels or unrelated services. Restart only `pvnetwork-panel` if needed, then verify internal/public HTTP, OpenAPI and recent error logs. Roll back to the verified v1.0.2 backup/release if health checks fail.

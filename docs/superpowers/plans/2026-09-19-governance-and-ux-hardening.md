@@ -119,7 +119,7 @@
 - [ ] **Step 1:** Run all focused tests, renewal regression, Python compile and frontend production build.
 - [ ] **Step 2:** Run responsive/accessibility release gates and public-data/secret scans.
 - [ ] **Step 3:** Verify Production read-only health before any deployment.
-- [ ] **Step 4:** If deploying UI to Production, take backup, deploy only required files/build, restart only `ov-panel`, and verify local/public health; rollback on failure.
+- [ ] **Step 4:** If deploying UI to Production, take backup, deploy only required files/build, restart only `pvnetwork-panel`, and verify local/public health; rollback on failure.
 - [ ] **Step 5:** Capture final sanitized screenshots from the verified release build.
 - [ ] **Step 6:** Update task evidence and version/changelog/release notes.
 - [ ] **Step 7:** Merge/push the verified branch, tag `v1.1.0`, create GitHub Release and attach sanitized source artifact + SHA256.
