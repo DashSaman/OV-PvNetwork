@@ -109,7 +109,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-021 [x] Parallelize independent research/tests/docs when safe; never run concurrent Production mutations or restarts.
 - PVN-022 [ ] Safe multi-node username rename with profile migration, rollback and no silent certificate breakage.
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
-- PVN-024 [~] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
+- PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
 
 ## UI/UX task ledger
 
