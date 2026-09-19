@@ -33,7 +33,11 @@ from backend.node.assignment import (
 from backend.db import crud
 from backend.auth.auth import get_current_user
 from backend.logger import logger
-from backend.node.task import delete_user_on_all_nodes
+from backend.node.task import (
+    delete_user_on_all_nodes,
+    revoke_router_credentials_snapshot,
+    snapshot_router_credentials_for_user,
+)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -645,6 +649,9 @@ async def delete_user(
             detail="Resellers cannot delete unlimited users",
         )
 
+    router_cleanup_snapshot = snapshot_router_credentials_for_user(
+        target.uuid, target.name, db
+    )
     node_cleanup = await delete_user_on_all_nodes(target.name, db)
 
     try:
@@ -664,6 +671,9 @@ async def delete_user(
         db.rollback()
         raise
 
+    router_cleanup = await revoke_router_credentials_snapshot(
+        router_cleanup_snapshot
+    )
     failed_nodes = node_cleanup.get("failed", [])
     msg = "User deleted successfully"
     if failed_nodes:
@@ -674,5 +684,6 @@ async def delete_user(
         data={
             "username_released": True,
             "node_cleanup": node_cleanup,
+            "router_credential_cleanup": router_cleanup,
         },
     )

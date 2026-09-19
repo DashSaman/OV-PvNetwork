@@ -87,27 +87,35 @@ def verify_router_password(password: str, encoded: str) -> bool:
         return False
 
 
-def rotate_router_credential(
+def prepare_router_credential(*, user_uuid: str, node_id: int) -> dict:
+    """Generate a one-time plaintext plus verifier without touching the DB."""
+    plaintext = secrets.token_urlsafe(24)
+    return {
+        "router_username": generate_router_username(user_uuid, node_id),
+        "password": plaintext,
+        "password_hash": hash_router_password(plaintext),
+    }
+
+
+def persist_router_credential(
     db: Session,
     *,
     user_uuid: str,
     node_id: int,
-) -> dict:
-    """Rotate a credential and return the new plaintext exactly to this caller."""
-    router_username = generate_router_username(user_uuid, node_id)
-    plaintext = secrets.token_urlsafe(24)
-    verifier = hash_router_password(plaintext)
+    router_username: str,
+    password_hash: str,
+    enabled: bool = True,
+) -> RouterOpenVpnCredential:
     now = int(time.time())
-
     key = (str(user_uuid), int(node_id))
     row = db.get(RouterOpenVpnCredential, key)
     if row is None:
         row = RouterOpenVpnCredential(
             user_uuid=str(user_uuid),
             node_id=int(node_id),
-            router_username=router_username,
-            password_hash=verifier,
-            enabled=True,
+            router_username=str(router_username),
+            password_hash=str(password_hash),
+            enabled=bool(enabled),
             created_at=now,
             updated_at=now,
             password_changed_at=now,
@@ -115,17 +123,33 @@ def rotate_router_credential(
         )
         db.add(row)
     else:
-        row.router_username = router_username
-        row.password_hash = verifier
-        row.enabled = True
+        row.router_username = str(router_username)
+        row.password_hash = str(password_hash)
+        row.enabled = bool(enabled)
         row.updated_at = now
         row.password_changed_at = now
-
     db.flush()
-    result = {
-        "router_username": router_username,
-        "password": plaintext,
+    return row
+
+
+def rotate_router_credential(
+    db: Session,
+    *,
+    user_uuid: str,
+    node_id: int,
+) -> dict:
+    """Compatibility helper for callers that can persist before remote sync."""
+    prepared = prepare_router_credential(user_uuid=user_uuid, node_id=node_id)
+    persist_router_credential(
+        db,
+        user_uuid=user_uuid,
+        node_id=node_id,
+        router_username=prepared["router_username"],
+        password_hash=prepared["password_hash"],
+        enabled=True,
+    )
+    return {
+        "router_username": prepared["router_username"],
+        "password": prepared["password"],
         "enabled": True,
     }
-    del plaintext
-    return result

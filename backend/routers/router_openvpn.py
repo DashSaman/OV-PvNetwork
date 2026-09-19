@@ -10,8 +10,18 @@ from sqlalchemy.orm import Session
 
 from backend.auth.auth import get_current_user
 from backend.db.engine import get_db
-from backend.db.models import Node, NodeRouterOpenVpnConfig, RouterOpenVpnCredential
+from backend.db.models import (
+    Node,
+    NodeRouterOpenVpnConfig,
+    RouterOpenVpnCredential,
+    User,
+    UserNode,
+)
 from backend.node.requests import NodeRequests
+from backend.router_openvpn.credentials import (
+    persist_router_credential,
+    prepare_router_credential,
+)
 
 router = APIRouter(prefix="/router-openvpn", tags=["Router OpenVPN"])
 
@@ -328,3 +338,209 @@ async def configure_node_router_openvpn(
             "capability_version": row.capability_version,
         },
     }
+
+
+class RouterCredentialStatusInput(BaseModel):
+    enabled: bool
+
+
+def _visible_user(db: Session, user_uuid: str, actor: dict) -> User:
+    user = db.query(User).filter(User.uuid == str(user_uuid)).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if actor.get("type") == "admin" and user.owner != actor.get("username"):
+        raise HTTPException(status_code=404, detail="User not found")
+    if actor.get("type") not in {"admin", "main_admin"}:
+        raise HTTPException(status_code=403, detail="Administrator access required")
+    return user
+
+
+def _explicit_assigned_node(db: Session, user: User, node_id: int) -> Node:
+    node = _node(db, node_id)
+    assignment = db.get(UserNode, (str(user.uuid), int(node_id)))
+    if assignment is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Router compatibility requires an explicit user-to-node assignment",
+        )
+    return node
+
+
+def _router_cn(user: User, node: Node) -> str:
+    return f"{user.name}-{node.name}"
+
+
+def _healthy_user_node(
+    db: Session,
+    user_uuid: str,
+    node_id: int,
+    actor: dict,
+) -> tuple[User, Node, NodeRequests]:
+    user = _visible_user(db, user_uuid, actor)
+    if not bool(user.is_active):
+        raise HTTPException(status_code=409, detail="User is inactive")
+    node = _explicit_assigned_node(db, user, node_id)
+    config = db.get(NodeRouterOpenVpnConfig, int(node_id))
+    if config is None or not bool(config.enabled):
+        raise HTTPException(
+            status_code=409,
+            detail="Router/OpenVPN listener is not enabled on this node",
+        )
+    client = _client(node)
+    status = client.router_openvpn_status()
+    data = status.get("data") if isinstance(status.get("data"), dict) else {}
+    if (
+        not status.get("ok")
+        or status.get("upgrade_required")
+        or not data.get("enabled")
+        or not data.get("healthy")
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Router/OpenVPN listener is not healthy on this node",
+        )
+    return user, node, client
+
+
+@router.get("/users/{uuid}/nodes/{node_id}")
+async def get_user_router_openvpn_status(
+    uuid: str,
+    node_id: int,
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    user = _visible_user(db, uuid, actor)
+    node = _explicit_assigned_node(db, user, node_id)
+    config = db.get(NodeRouterOpenVpnConfig, int(node_id))
+    row = db.get(RouterOpenVpnCredential, (str(user.uuid), int(node_id)))
+    return {
+        "success": True,
+        "data": {
+            "user_uuid": str(user.uuid),
+            "node_id": int(node.id),
+            "node_name": str(node.name),
+            "common_name": _router_cn(user, node),
+            "configured": row is not None,
+            "enabled": bool(row.enabled) if row else False,
+            "username": str(row.router_username) if row else None,
+            "password_available": False,
+            "password_changed_at": row.password_changed_at if row else None,
+            "last_authenticated_at": row.last_authenticated_at if row else None,
+            "listener_enabled": bool(config.enabled) if config else False,
+        },
+    }
+
+
+@router.post("/users/{uuid}/nodes/{node_id}/credential")
+async def rotate_user_router_openvpn_credential(
+    uuid: str,
+    node_id: int,
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    user, node, client = _healthy_user_node(db, uuid, node_id, actor)
+    prepared = prepare_router_credential(
+        user_uuid=str(user.uuid),
+        node_id=int(node.id),
+    )
+    cn = _router_cn(user, node)
+    pushed = client.router_openvpn_set_credential(
+        cn=cn,
+        username=prepared["router_username"],
+        verifier=prepared["password_hash"],
+        enabled=True,
+    )
+    if not pushed.get("ok"):
+        raise HTTPException(
+            status_code=502,
+            detail="Node failed to accept Router/OpenVPN credential",
+        )
+    try:
+        persist_router_credential(
+            db,
+            user_uuid=str(user.uuid),
+            node_id=int(node.id),
+            router_username=prepared["router_username"],
+            password_hash=prepared["password_hash"],
+            enabled=True,
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        client.router_openvpn_set_credential(
+            cn=cn,
+            username=prepared["router_username"],
+            verifier=prepared["password_hash"],
+            enabled=False,
+        )
+        raise
+    return {
+        "success": True,
+        "data": {
+            "user_uuid": str(user.uuid),
+            "node_id": int(node.id),
+            "node_name": str(node.name),
+            "common_name": cn,
+            "username": prepared["router_username"],
+            "password": prepared["password"],
+            "enabled": True,
+            "password_available": True,
+        },
+    }
+
+
+@router.put("/users/{uuid}/nodes/{node_id}/credential/status")
+async def set_user_router_openvpn_credential_status(
+    uuid: str,
+    node_id: int,
+    request: RouterCredentialStatusInput,
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    user = _visible_user(db, uuid, actor)
+    node = _explicit_assigned_node(db, user, node_id)
+    row = db.get(RouterOpenVpnCredential, (str(user.uuid), int(node.id)))
+    if row is None:
+        raise HTTPException(status_code=404, detail="Router/OpenVPN credential not found")
+    if request.enabled:
+        _healthy_user_node(db, uuid, node_id, actor)
+    pushed = _client(node).router_openvpn_set_credential(
+        cn=_router_cn(user, node),
+        username=str(row.router_username),
+        verifier=str(row.password_hash),
+        enabled=bool(request.enabled),
+    )
+    if not pushed.get("ok"):
+        raise HTTPException(status_code=502, detail="Node failed to update Router/OpenVPN credential")
+    row.enabled = bool(request.enabled)
+    row.updated_at = int(time.time())
+    db.commit()
+    return {
+        "success": True,
+        "data": {
+            "user_uuid": str(user.uuid),
+            "node_id": int(node.id),
+            "enabled": bool(row.enabled),
+            "username": str(row.router_username),
+            "password_available": False,
+        },
+    }
+
+
+@router.get("/users/{uuid}/nodes/{node_id}/profile")
+async def download_user_router_openvpn_profile(
+    uuid: str,
+    node_id: int,
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    user, node, client = _healthy_user_node(db, uuid, node_id, actor)
+    row = db.get(RouterOpenVpnCredential, (str(user.uuid), int(node.id)))
+    if row is None or not bool(row.enabled):
+        raise HTTPException(status_code=409, detail="Router/OpenVPN credential is not enabled")
+    response = client.router_openvpn_profile(_router_cn(user, node))
+    if response is None:
+        raise HTTPException(status_code=502, detail="Router/OpenVPN profile is unavailable")
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
