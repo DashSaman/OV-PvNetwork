@@ -1,3 +1,9 @@
+## 1.0.5 — 2026-09-19
+
+### In progress
+- PVN-026: user creation node selector with all available nodes selected by default and explicit per-user assignment persistence.
+- Reconciler hardening so explicit node selections are never widened automatically.
+
 # Changelog
 
 ## 1.0.4 — 2026-09-19

@@ -94,6 +94,12 @@ Before implementation, record the task and target release here **and commit/push
   - Main release commit `56a90462b40500096344fdf105c2c426ba0ac4cb`; GitHub CI run `35417072048` PASS including browser matrix, private-material guard and lifecycle checks.
   - GitHub Release `v1.0.4` published with verified artifact SHA256 `523ba892f33584eaec787a9e4001abe699ba3b2f6c2569a271a900b1e9fa9956`; downloaded asset checksum and tag target re-verified.
 
+- `v1.0.5` — IN PROGRESS — `PVN-026` user-creation node selector.
+  - UX contract: Add User exposes all currently available nodes, selected by default; unavailable/draining/maintenance nodes are visible but not selectable.
+  - Backend contract: explicit `node_ids` are validated before any user/quota mutation; only desired nodes are persisted and provisioned. Requests that omit `node_ids` keep backward-compatible all-available behavior.
+  - Reconciliation contract: explicit assignments remain authoritative; the periodic reconciler may repair missing profiles but must never widen an explicitly selected node set. Legacy users without assignment rows retain all-available fallback behavior.
+  - Next: TDD RED → backend/frontend/reconciler implementation → responsive browser gate → CI → verified Production backup/canary/cutover → release/tag/assets → mark `PVN-026` `[x]`.
+
 ## Current release baseline
 
 - PVN-001 [x] Stable public `v1.0.0` release.
@@ -121,7 +127,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 - PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
 - PVN-025 [x] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Release: v1.0.4.
-- PVN-026 [ ] User creation node selector with all available nodes selected by default; create only on selected nodes. Target: v1.0.5 after PVN-025.
+- PVN-026 [~] User creation node selector with all available nodes selected by default; create only on selected nodes. Target: v1.0.5.
 
 ## UI/UX task ledger
 
