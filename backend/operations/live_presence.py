@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import time
 from typing import Iterable
 
@@ -14,10 +15,14 @@ from backend.node.requests import NodeRequests
 CENTRAL_SESSION_TTL_SECONDS = 90
 DIRECT_CACHE_TTL_SECONDS = 4.0
 DIRECT_STALE_GRACE_SECONDS = 30.0
+PRESENCE_SNAPSHOT_TTL_SECONDS = 3.0
 
 _direct_cache: dict[int, dict] = {}
 _cache_lock: asyncio.Lock | None = None
 _cache_lock_loop = None
+_presence_cache: dict[str, object] = {}
+_presence_lock: asyncio.Lock | None = None
+_presence_lock_loop = None
 
 
 def _get_cache_lock() -> asyncio.Lock:
@@ -27,6 +32,15 @@ def _get_cache_lock() -> asyncio.Lock:
         _cache_lock = asyncio.Lock()
         _cache_lock_loop = loop
     return _cache_lock
+
+
+def _get_presence_lock() -> asyncio.Lock:
+    global _presence_lock, _presence_lock_loop
+    loop = asyncio.get_running_loop()
+    if _presence_lock is None or _presence_lock_loop is not loop:
+        _presence_lock = asyncio.Lock()
+        _presence_lock_loop = loop
+    return _presence_lock
 
 
 def client_username(client_name: str, node_name: str) -> str | None:
@@ -209,23 +223,38 @@ async def _collect_direct_clients(node_specs: list[dict]) -> tuple[dict, list[in
 
 
 async def get_display_live_presence() -> dict:
-    """Return display-only online state without mutating enforcement sessions."""
-    users, central_counts, node_specs = _db_snapshot()
-    try:
-        node_clients, failed_node_ids = await _collect_direct_clients(node_specs)
-    except Exception as exc:
-        logger.warning("Display live-presence node fallback failed: %s", type(exc).__name__)
-        node_clients, failed_node_ids = {}, [int(spec["id"]) for spec in node_specs]
+    """Return one shared display snapshot without mutating enforcement sessions."""
+    now = time.monotonic()
+    cached = _presence_cache.get("data")
+    cached_at = float(_presence_cache.get("at") or 0.0)
+    if isinstance(cached, dict) and now - cached_at < PRESENCE_SNAPSHOT_TTL_SECONDS:
+        return copy.deepcopy(cached)
 
-    result = merge_presence_snapshot(
-        users=users,
-        central_counts=central_counts,
-        node_clients=node_clients,
-    )
-    result.update(
-        {
-            "failed_node_ids": sorted(failed_node_ids),
-            "sample_time": int(time.time()),
-        }
-    )
-    return result
+    async with _get_presence_lock():
+        now = time.monotonic()
+        cached = _presence_cache.get("data")
+        cached_at = float(_presence_cache.get("at") or 0.0)
+        if isinstance(cached, dict) and now - cached_at < PRESENCE_SNAPSHOT_TTL_SECONDS:
+            return copy.deepcopy(cached)
+
+        users, central_counts, node_specs = _db_snapshot()
+        try:
+            node_clients, failed_node_ids = await _collect_direct_clients(node_specs)
+        except Exception as exc:
+            logger.warning("Display live-presence node fallback failed: %s", type(exc).__name__)
+            node_clients, failed_node_ids = {}, [int(spec["id"]) for spec in node_specs]
+
+        result = merge_presence_snapshot(
+            users=users,
+            central_counts=central_counts,
+            node_clients=node_clients,
+        )
+        result.update(
+            {
+                "failed_node_ids": sorted(failed_node_ids),
+                "sample_time": int(time.time()),
+            }
+        )
+        _presence_cache["at"] = time.monotonic()
+        _presence_cache["data"] = copy.deepcopy(result)
+        return copy.deepcopy(result)

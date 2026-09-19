@@ -91,6 +91,8 @@ class OnlineUserTruthTests(unittest.TestCase):
 class OnlineUserTruthAsyncTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         live_presence._direct_cache.clear()
+        if hasattr(live_presence, "_presence_cache"):
+            live_presence._presence_cache.clear()
 
     async def test_node_poll_failure_keeps_central_truth(self):
         with patch.object(
@@ -127,6 +129,26 @@ class OnlineUserTruthAsyncTests(unittest.IsolatedAsyncioTestCase):
             clients, failed = await live_presence._collect_direct_clients([spec])
         self.assertEqual(failed, [4])
         self.assertEqual(clients[4], ("USA", {"alice-USA"}))
+
+    async def test_shared_snapshot_cache_prevents_endpoint_race(self):
+        db_snapshot = ([('uuid-a', 'alice')], {}, [{'id': 4}])
+        direct = {4: ('USA', {'alice-USA'})}
+        with patch.object(live_presence, '_db_snapshot', return_value=db_snapshot), patch.object(
+            live_presence, '_collect_direct_clients', AsyncMock(return_value=(direct, []))
+        ) as collect:
+            first = await get_display_live_presence()
+            second = await get_display_live_presence()
+        self.assertEqual(first['sample_time'], second['sample_time'])
+        self.assertEqual(first['counts_by_uuid'], second['counts_by_uuid'])
+        self.assertEqual(collect.await_count, 1)
+
+    def test_users_page_polls_lightweight_presence_endpoint(self):
+        users_router = (ROOT / 'backend/routers/users.py').read_text()
+        user_page = (ROOT / 'frontend/src/pages/UserManagement.jsx').read_text()
+        self.assertIn('@router.get("/presence"', users_router)
+        self.assertIn("apiClient.get('/users/presence')", user_page)
+        self.assertIn('setInterval(fetchPresence, 1000)', user_page)
+        self.assertNotIn('setInterval(fetchUsers, 10000)', user_page)
 
 
 if __name__ == "__main__":
