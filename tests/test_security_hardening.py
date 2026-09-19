@@ -35,6 +35,9 @@ class SecurityHardeningContractTests(unittest.TestCase):
         self.assertIn("Strict-Transport-Security", security)
         self.assertIn("Content-Security-Policy", security)
         self.assertIn("SecurityHeadersMiddleware", app)
+        css = text("frontend/src/index.css")
+        self.assertNotIn("fonts.googleapis.com", css)
+        self.assertNotIn("fonts.gstatic.com", css)
 
     def test_ssh_does_not_auto_trust_first_seen_keys(self):
         deploy = text("backend/node/deploy.py")
