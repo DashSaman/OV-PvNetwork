@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { FiMoreVertical } from 'react-icons/fi';
 
@@ -9,17 +9,17 @@ const ActionsDropdown = ({ actions = [] }) => {
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
 
-  const locate = () => {
+  const locate = useCallback(() => {
     if (!triggerRef.current) return;
 
     const r = triggerRef.current.getBoundingClientRect();
-    const width = 210;
+    const width = Math.min(210, window.innerWidth - 16);
     const height = Math.min(
       Math.max(actions.length * 44 + 12, 60),
-      340
+      Math.max(120, window.innerHeight - 16)
     );
 
-    let left = Math.max(
+    const left = Math.max(
       8,
       Math.min(
         r.right - width,
@@ -37,7 +37,7 @@ const ActionsDropdown = ({ actions = [] }) => {
     }
 
     setPos({ top, left });
-  };
+  }, [actions.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -55,44 +55,31 @@ const ActionsDropdown = ({ actions = [] }) => {
       setOpen(false);
     };
 
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+
     const reposition = () => locate();
 
-    document.addEventListener(
-      'mousedown',
-      outside,
-      true
-    );
+    document.addEventListener('mousedown', outside, true);
+    document.addEventListener('keydown', onKeyDown, true);
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
 
-    window.addEventListener(
-      'resize',
-      reposition
-    );
-
-    window.addEventListener(
-      'scroll',
-      reposition,
-      true
-    );
+    const firstItem = menuRef.current?.querySelector('[role="menuitem"]');
+    firstItem?.focus();
 
     return () => {
-      document.removeEventListener(
-        'mousedown',
-        outside,
-        true
-      );
-
-      window.removeEventListener(
-        'resize',
-        reposition
-      );
-
-      window.removeEventListener(
-        'scroll',
-        reposition,
-        true
-      );
+      document.removeEventListener('mousedown', outside, true);
+      document.removeEventListener('keydown', onKeyDown, true);
+      window.removeEventListener('resize', reposition);
+      window.removeEventListener('scroll', reposition, true);
     };
-  }, [open, actions.length]);
+  }, [open, locate]);
 
   return (
     <>
@@ -101,16 +88,18 @@ const ActionsDropdown = ({ actions = [] }) => {
           ref={triggerRef}
           type="button"
           className="actions-dropdown-trigger"
+          aria-label="Open actions menu"
+          aria-haspopup="menu"
+          aria-expanded={open}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
 
             if (!open) locate();
-
             setOpen(v => !v);
           }}
         >
-          <FiMoreVertical size={20} />
+          <FiMoreVertical size={20} aria-hidden="true" focusable="false" />
         </button>
       </div>
 
@@ -119,12 +108,14 @@ const ActionsDropdown = ({ actions = [] }) => {
           <div
             ref={menuRef}
             className="actions-dropdown-menu"
+            role="menu"
+            aria-label="Available actions"
             style={{
               position: 'fixed',
               top: pos.top,
               left: pos.left,
               right: 'auto',
-              minWidth: 210,
+              minWidth: Math.min(210, Math.max(0, window.innerWidth - 16)),
               zIndex: 999999,
             }}
           >
@@ -132,13 +123,11 @@ const ActionsDropdown = ({ actions = [] }) => {
               <button
                 key={index}
                 type="button"
-                className={`actions-dropdown-item ${
-                  action.className || ''
-                }`}
+                role="menuitem"
+                className={`actions-dropdown-item ${action.className || ''}`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-
                   setOpen(false);
                   action.onClick();
                 }}

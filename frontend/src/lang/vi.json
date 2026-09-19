@@ -427,5 +427,7 @@
       "group": "Nhóm tốc độ",
       "users": "Người dùng đã chọn"
     }
-  }
+  },
+  "feature.nodeStatusAlerts": "Node online/offline alerts",
+  "feature.nodeStatusAlertsHelp": "Send Node DOWN/UP Telegram alerts only when node status changes."
 }

@@ -31,6 +31,8 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
 
   useEffect(() => {
     if (user?.uuid) loadStatus();
+    // Reload only when the selected user changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uuid]);
 
   const rotatePassword = async () => {
@@ -83,7 +85,7 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
     setIsSaving(true);
     setError('');
     try {
-      const enabled = !Boolean(status?.enabled);
+      const enabled = !status?.enabled;
       const response = await apiClient.put(
         `/anyconnect/users/${user.uuid}/status`,
         { enabled }

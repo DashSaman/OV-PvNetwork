@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +21,6 @@ const EditNodeModal = ({
     status: true,
     set_new_setting: true
   });
-  const [originalAddress, setOriginalAddress] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
@@ -38,8 +36,7 @@ const EditNodeModal = ({
         status: node.status === 'active' || node.status === true,
         set_new_setting: true
       });
-      setOriginalAddress(node.address);
-    }
+          }
   }, [node]);
   const handleChange = event => {
     const {

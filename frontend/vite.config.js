@@ -1,7 +1,9 @@
+/* global process */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import dotenv from 'dotenv'
 import path from 'path'
+const __dirname = import.meta.dirname;
 
 // Load .env from the project root
 dotenv.config({ path: path.resolve(__dirname, '../.env') })

@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { NavLink } from 'react-router-dom';
 import { FiGrid, FiUsers, FiServer, FiSettings, FiShield, FiActivity, FiSliders } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';

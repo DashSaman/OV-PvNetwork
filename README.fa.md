@@ -1,18 +1,18 @@
 <div dir="rtl" align="right">
 
-# OV-PvNetwork
+# PVNetwork Panel
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.1-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
-OV-PvNetwork بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
+PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
 
-> تمام تصاویر نسخه عمومی **Sanitized** هستند؛ نام کاربران، آدرس‌ها، کلیدها، رمزها، UUIDها، مقادیر ترافیک و شناسه‌های واقعی Production عمداً مخفی یا با داده نمونه جایگزین شده‌اند.
+> **قانون ثابت پروژه:** Production همیشه زیر بار و در حال استفاده فرض می‌شود. هر تغییر Production باید با ترتیب «Backup/Check → تغییر محدود → کمترین Restart لازم → Health Verification → آمادگی Rollback» انجام شود. مخزن عمومی نیز نباید اطلاعات واقعی کاربران یا زیرساخت و Secretها را داشته باشد.
 
 ## نمای تصویری پنل
 
@@ -23,16 +23,26 @@ OV-PvNetwork بر پایه OV-Panel / OV-Node ساخته شده و امکانا�
 ### مدیریت ادمین، مرکز عملیات و امنیت
 
 ![مدیریت ادمین، مرکز عملیات و امنیت](./docs/images/ui/02-admin-security.jpg)
+
 ### مدیریت پیشرفته نود، مانیتورینگ و کنترل پهنای‌باند
 
 ![مدیریت پیشرفته، مانیتورینگ و پهنای‌باند](./docs/images/ui/03-operations.jpg)
 
-برای مشاهده تک‌تک صفحات، دکمه‌ها و Workflowهای اصلی:
+
+### نمونه واقعی نسخه 1.1 در دسکتاپ و موبایل
+
+![PVNetwork v1.0.1 دسکتاپ](./docs/images/v1.0.1/fa/desktop/users.png)
+
+![PVNetwork v1.0.1 موبایل](./docs/images/v1.0.1/fa/mobile/users-renew.png)
+
+مستندات تصویری کامل:
 
 - [راهنمای کامل تصویری فارسی](./docs/UI-GUIDE.fa.md)
+- [راهنمای Responsive و Accessibility نسخه 1.1](./docs/RESPONSIVE-GUIDE.fa.md)
 - [Complete English UI guide](./docs/UI-GUIDE.md)
+- [English responsive & accessibility guide](./docs/RESPONSIVE-GUIDE.md)
 
-## امکانات نسخه 1.0.0
+## امکانات اصلی
 
 | بخش | امکانات اصلی |
 |---|---|
@@ -41,23 +51,33 @@ OV-PvNetwork بر پایه OV-Panel / OV-Node ساخته شده و امکانا�
 | AnyConnect | فعال/غیرفعال برای هر کاربر، ساخت یا تغییر رمز، هویت مشترک کاربر |
 | نودها | افزودن و ویرایش نود، Health، Assignment، حذف کنترل‌شده |
 | Fleet | Health Score، Maintenance، Drain/Resume، Upgrade و Retry کنترل‌شده |
-| مانیتورینگ | ترافیک زنده، CPU/RAM/Uptime، تنظیمات هشدار تلگرام |
+| مانیتورینگ | ترافیک زنده، CPU/RAM/Uptime، هشدار تلگرام و پیام صریح قطع/وصل نود (Node DOWN/UP) |
 | امنیت | IP Allowlist، Rate Limit، TOTP 2FA، API Token با Scope و Expiry |
 | عملیات | عملیات گروهی کاربران، انتقال/Rebalance، تاریخچه مصرف و Audit/Operations |
 | پهنای‌باند | Emergency Off، Preview/Canary/Activate Policy، گروه‌ها و وضعیت نودها |
 | بکاپ | ساخت و دانلود بکاپ تأییدشده و Restore با تأیید صریح |
 | Integration | API میرزا، API نود OpenVPN و Hookهای اختیاری AnyConnect/ocserv |
+| UX نسخه 1.1 | منوی کامل موبایل Main Admin، Modalهای Viewport-safe، Touch/Focus/Reduced-motion و تست Browser برای RTL/LTR |
+
+## رفتار Responsive نسخه 1.1
+
+در موبایل Dashboard، Users و Nodes مستقیم در Bottom Navigation هستند و بخش‌های Admins، Operations، Security، Fleet، Monitoring و Bandwidth از منوی **More** در دسترس‌اند. بنابراین هیچ بخش اصلی Main Admin فقط به Sidebar دسکتاپ وابسته نیست.
+
+CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430`, `768`, `1024`, `1366`, `1440`, `1920` در English LTR و Persian RTL بررسی می‌کند. Touch targetها، Modalها، جدول‌ها، Text wrapping و Horizontal Overflow نیز در Release Gate ثبت شده‌اند.
+
+برای جزئیات: [UX Audit](./docs/UX-AUDIT.md) و [QA Release Gate](./docs/QA-RELEASE-GATE.md).
+
 ## نصب سریع
 
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.0/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.1/install.sh)
 ```
 
-Installer به Tag ثابت `v1.0.0` متصل است و از Branch توسعه‌ای `latest` به‌صورت کورکورانه استفاده نمی‌کند.
+Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.
 
-بعد از نصب:
+بعد از نصب، در Deploymentهایی که Lifecycle Manager فعال است:
 
 ```bash
 ovpv status
@@ -68,7 +88,7 @@ ovpv update
 ovpv rollback
 ```
 
-اگر روی سرور شما از قبل OVPanel یا سرویس‌های دیگری فعال است، Fresh Installer را مستقیم اجرا نکنید؛ ابتدا مسیر Update/Migration و Backup را بررسی کنید.
+اگر روی سرور شما از قبل OVPanel یا سرویس‌های دیگری فعال است، Fresh Installer را مستقیم اجرا نکنید؛ ابتدا Health، Backup و مسیر Update/Migration را بررسی کنید.
 
 مستندات:
 
@@ -77,12 +97,15 @@ ovpv rollback
 - [آپدیت و Rollback](./docs/UPDATES.md)
 - [تمدید کاربران](./docs/RENEWAL.md)
 - [مقایسه امکانات](./docs/FEATURE-MATRIX.md)
+- [ماتریس کمبود نسبت به پنل‌های دیگر](./docs/COMPETITOR-GAP-MATRIX.md)
+- [Backlog کامل شماره‌دار](./docs/FEATURE-BACKLOG.md)
 - [Roadmap](./ROADMAP.md)
+
 ## معماری
 
 ```text
                          ┌──────────────────────────────┐
-                         │        OV-PvNetwork         │
+                         │       PVNetwork Panel       │
                          │       Panel / API / UI      │
                          └──────────────┬───────────────┘
                                         │
@@ -106,31 +129,37 @@ Integrationهای اختیاری می‌توانند شامل AnyConnect/ocserv�
 | نود VPN | 1 vCPU / 512 MB RAM / 5 GB | 1–2 vCPU / 1 GB+ RAM / 10 GB |
 
 هدف Installer: Ubuntu 22.04 LTS، Ubuntu 24.04 LTS و Debian 12 با Best-effort در تفاوت پکیج‌های Upstream.
+
 ## چرخه امن Production
 
-در Updateهای OV-PvNetwork هدف این است که سرویس بدون تغییر مخرب و بدون Overwrite کورکورانه جلو برود:
+1. وضعیت فعلی سرویس و Deployment را بررسی کنید.
+2. قبل از Update بکاپ بگیرید.
+3. فقط Release و Migration بررسی‌شده را اعمال کنید.
+4. Build و تست‌های خودکار را اجرا کنید.
+5. فقط سرویس لازم را Restart کنید.
+6. Health محلی/عمومی و Workflowهای حیاتی را Verify کنید.
+7. در صورت Fail شدن Verification فوراً Rollback کنید.
 
-1. Preflight و بررسی فضای آزاد.
-2. Backup قبل از Update.
-3. اعمال Release و Migration هدف.
-4. Build و Syntax Check.
-5. Restart فقط سرویس موردنیاز.
-6. Health Verification محلی.
-7. Rollback در صورت شکست Verification.
+Node Automation نباید برای راحتی نصب، Firewall را Flush کند، Default Route را عوض کند یا سرویس/Tunnel نامرتبط را حذف کند.
 
-در Node Automation نیز نباید Firewall کامل Flush شود، Default Route کورکورانه عوض شود یا سرویس‌های نامرتبط حذف شوند.
+## مدیریت پروژه و Agentها
+
+`AGENTS.md` قرارداد دائمی اجرای پروژه است. هر کار یک شماره ثابت `PVN-xxx` دارد. Backlog جزئی شامل UI/UX، چرخه کاربر، Device، Node/Fleet، Monitoring، Enterprise Identity، Automation، Protocolهای آینده مانند Xray/WireGuard، Installer/HA/DR و Migration/Client Compatibility است.
+
+هیچ Task فقط با نوشته‌شدن کد `[x]` نمی‌شود؛ تست، Build/Compile، Responsive/Accessibility، Sanitization مخزن و در صورت ارتباط با Production، Health Verification باید پاس شوند.
 
 ## سیاست Release
 
-- `v1.0.0` خط پایه Stable است.
-- نسخه‌های `1.0.x` برای Fixهای سازگار هستند.
-- نسخه‌های `1.x.0` قابلیت جدید سازگار اضافه می‌کنند.
-- نسخه Major می‌تواند تغییر معماری یا رفتار Breaking داشته باشد.
+- `v1.0.0` خط پایه Immutable باقی می‌ماند.
+- `v1.0.1` Hardening سازگار UI/UX/Responsive/Governance را اضافه می‌کند.
+- Patch Releaseها Fix سازگار هستند.
+- Minor Releaseها Feature سازگار اضافه می‌کنند.
+- Major Release می‌تواند تغییر Breaking معماری/Protocol داشته باشد.
 - هر تغییر Production-visible باید در `CHANGELOG.md` ثبت و با GitHub Release جدید منتشر شود.
 
 ## امنیت مخزن عمومی
 
-`.env`، دیتابیس، API/JWT Secret، SSH Credential، Private Key، TLS Material، فایل `.ovpn` کاربران و Screenshot واقعی حاوی اطلاعات Production نباید Commit شوند. تصاویر این README با داده‌های Demo و Blur منتشر می‌شوند.
+`.env`، دیتابیس، API/JWT Secret، SSH Credential، Private Key، TLS Material، فایل `.ovpn` کاربران و Screenshot واقعی حاوی اطلاعات Production نباید Commit شوند. تصاویر عمومی فقط Demo/Sanitized هستند.
 
 راهنمای امنیت: [SECURITY.md](./SECURITY.md)
 

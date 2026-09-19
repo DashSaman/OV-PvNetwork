@@ -1,0 +1,246 @@
+/* PVNetwork v1.1 global UX hardening.
+   Keep business logic out of this file; this layer only strengthens shared interaction/layout behavior. */
+
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+[tabindex]:not([tabindex="-1"]) {
+  scroll-margin: 96px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.actions-dropdown-trigger,
+.action-btn,
+.pagination-btn,
+.close-modal-btn,
+.mobile-nav-link {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.actions-dropdown-item {
+  min-height: 44px;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.modal-overlay {
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modal {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--background-secondary);
+}
+
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--background-secondary);
+}
+
+.table-container,
+.ov-backup-table-wrap {
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+}
+
+.search-container,
+.search-input,
+.search-pagination-controls,
+.pagination-container {
+  max-width: 100%;
+}
+
+.view-header h2,
+.section-title,
+.admin-username,
+td,
+th,
+label,
+p,
+span {
+  overflow-wrap: anywhere;
+}
+
+.mobile-more {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  align-self: stretch;
+}
+
+.mobile-more-trigger {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+}
+
+.mobile-more-menu {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  z-index: 1100;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  max-height: min(62dvh, 420px);
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--background-secondary);
+  box-shadow: var(--shadow);
+}
+
+.mobile-more-menu a {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text-primary);
+  text-decoration: none;
+  background: var(--background-primary);
+}
+
+.mobile-more-menu a.active,
+.mobile-more-menu a:hover {
+  color: var(--accent-color);
+  background: var(--accent-color-transparent);
+}
+
+@media (max-width: 992px) {
+  main {
+    padding-inline: clamp(12px, 3vw, 20px);
+  }
+
+  .view-header {
+    margin-bottom: 20px;
+  }
+
+  .view-header > *,
+  .search-pagination-controls > * {
+    max-width: 100%;
+  }
+
+  .search-container,
+  .search-input {
+    width: 100%;
+  }
+
+  .pagination-container {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .modal {
+    width: min(94vw, 560px);
+  }
+
+  .modal form,
+  .modal-header,
+  .modal-footer {
+    padding-inline: clamp(16px, 4vw, 24px);
+  }
+
+  .mobile-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+    min-height: calc(65px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav-link {
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+  }
+
+  .content-wrapper {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+  .btn,
+  .btn.btn-secondary,
+  .btn.btn-danger,
+  .btn.btn-success {
+    min-height: 44px;
+  }
+
+  .view-header .btn {
+    width: 100%;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .modal-footer .btn,
+  .modal-footer .btn-secondary {
+    width: 100%;
+  }
+
+  .actions-dropdown-menu {
+    max-width: calc(100vw - 16px);
+    max-height: min(70dvh, 360px);
+    overflow-y: auto;
+  }
+
+  .mobile-more-menu {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

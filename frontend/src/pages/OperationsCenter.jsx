@@ -80,6 +80,8 @@ export default function OperationsCenter() {
 
   useEffect(() => {
     load();
+    // Initial dashboard/audit fetch is mount-only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const runAction = async request => {

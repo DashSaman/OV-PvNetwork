@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { useTranslation } from 'react-i18next';
 import ActionsDropdown from './ActionsDropdown';
 function getUsageColor(value) {

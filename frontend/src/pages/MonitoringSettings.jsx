@@ -11,6 +11,7 @@ const defaults = {
   cpu_limit: 85,
   ram_limit: 85,
   disk_limit: 85,
+  node_status_alerts: true,
   ssl_host: '',
   ssl_port: 443,
   ssl_warning_days: 14
@@ -73,6 +74,7 @@ export default function MonitoringSettings() {
         cpu_limit: Number(form.cpu_limit),
         ram_limit: Number(form.ram_limit),
         disk_limit: Number(form.disk_limit),
+        node_status_alerts: Boolean(form.node_status_alerts),
         ssl_host: form.ssl_host || null,
         ssl_port: Number(form.ssl_port),
         ssl_warning_days: Number(form.ssl_warning_days)
@@ -130,6 +132,12 @@ export default function MonitoringSettings() {
           <input type="checkbox" checked={Boolean(form.enabled)} onChange={event => set('enabled', event.target.checked)} />
           <span>{tr('enableAlerts')}</span>
         </label>
+
+        <label className="ov-switch-row">
+          <input type="checkbox" checked={Boolean(form.node_status_alerts)} onChange={event => set('node_status_alerts', event.target.checked)} />
+          <span>{tr('nodeStatusAlerts')}</span>
+        </label>
+        <p className="monitor-help">{tr('nodeStatusAlertsHelp')}</p>
 
         <div className="monitor-grid">
           <label>

@@ -2,7 +2,7 @@
 self.addEventListener("install",()=>self.skipWaiting());
 self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));
 self.addEventListener("push",event=>{
-  let data={}; try{data=event.data?event.data.json():{}}catch(_){}
+  let data={}; try{data=event.data?event.data.json():{}}catch{data={};}
   event.waitUntil(self.registration.showNotification(data.title||"Private Network",{
     body:data.body||"برای تمدید یا خرید سرویس به فروشنده خود مراجعه کنید.",
     icon:data.icon||"/sub-clients/private-network.webp",
@@ -18,7 +18,7 @@ self.addEventListener("notificationclick",event=>{
   try{
     const u=new URL(raw,self.location.origin);
     if(u.origin===self.location.origin&&u.pathname.startsWith("/sub/")){
-      event.waitUntil(clients.openWindow(u.href));
+      event.waitUntil(self.clients.openWindow(u.href));
     }
-  }catch(_){}
+  }catch{return;}
 });

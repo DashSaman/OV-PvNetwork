@@ -76,24 +76,6 @@ const nodeVisual = (name = '') => {
     accent: '#34d399'
   };
 };
-const unwrapNodeInfo = response => {
-  let current = response?.data?.data ?? response?.data ?? response;
-  for (let i = 0; i < 6; i += 1) {
-    if (current && typeof current === 'object' && (current.rx_bytes !== undefined || current.tx_bytes !== undefined)) {
-      return current;
-    }
-    if (current && typeof current === 'object' && current.node_info !== undefined) {
-      current = current.node_info;
-      continue;
-    }
-    if (current && typeof current === 'object' && current.data !== undefined) {
-      current = current.data;
-      continue;
-    }
-    break;
-  }
-  return null;
-};
 const MetricBox = ({
   icon,
   label,
@@ -268,10 +250,6 @@ const ServerStats = () => {
   const [nodes, setNodes] = useState([]);
   const [dashboardError, setDashboardError] = useState('');
   const [nodeMetrics, setNodeMetrics] = useState({});
-  const [onlineInfo, setOnlineInfo] = useState({
-    total: 0,
-    per_node: {}
-  });
   const [history, setHistory] = useState([]);
   const [themeMode, setThemeMode] = useState(() => {
     if (typeof window === 'undefined') {
@@ -283,7 +261,6 @@ const ServerStats = () => {
     }
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   });
-  const previousCounters = useRef({});
   const metricsRef = useRef({});
   const pollBusy = useRef(false);
   useEffect(() => {
@@ -319,21 +296,6 @@ const ServerStats = () => {
         }
       } catch (error) {
         if (active) setDashboardError(error?.response?.data?.detail || error.message || 'Unable to load nodes.');
-      }
-    };
-    const fetchOnline = async () => {
-      try {
-        const response = await apiClient.get('/server/dashboard-online', {
-          timeout: 4000
-        });
-        if (active && response.data?.success) {
-          setOnlineInfo(response.data.data || {
-            total: 0,
-            per_node: {}
-          });
-        }
-      } catch (error) {
-        if (active) setDashboardError(error?.response?.data?.detail || error.message || 'Unable to load online status.');
       }
     };
     fetchServer();
@@ -384,17 +346,6 @@ const ServerStats = () => {
          * Cached/repeated responses never generate
          * fake zero or spike values.
          */
-        const sampleTimeSeconds =
-          Number(
-            payload.sample_time ||
-            payload.timestamp ||
-            0
-          );
-
-        const sampleTimestamp =
-          sampleTimeSeconds > 0
-            ? sampleTimeSeconds * 1000
-            : Date.now();
 
         const next = {
           ...metricsRef.current

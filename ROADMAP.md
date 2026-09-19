@@ -1,117 +1,76 @@
 # PVNetwork Panel Roadmap
 
-This roadmap keeps the released `v1.0.0` baseline immutable. New behavior ships only in a new tagged release.
+This roadmap keeps released tags immutable. Detailed permanent task IDs live in `AGENTS.md` and `docs/FEATURE-BACKLOG.md`.
 
 ## v1.0.0 — released stable baseline
-1. Expired/unlimited user renewal without delete/recreate.
-2. Finite renewal modes: preserve, reset and add traffic.
-3. Renewal support in Mirza integration.
-4. Renewal regression tests.
-5. Unlimited Reset Usage starts a new 30-day period from reset date.
-6. Sanitized production-derived source archive.
-7. One-command fresh panel installer bootstrap.
-8. Automatic SSH node deployment from Node Management.
-9. SHA-256 release artifact verification.
-10. English README.
-11. Persian README.
-12. English/Persian node installation guide.
-13. Illustrated public-safe UI guide.
-14. Competitive feature matrix.
-15. Public-repository privacy rules and secret-scan report.
-16. Semantic release policy.
 
-## v1.0.x — operational hardening / compatible fixes
-17. `pvnetwork status` command.
-18. `pvnetwork doctor` diagnostics.
-19. `pvnetwork backup` command.
-20. `pvnetwork update` with automatic pre-update backup.
-21. `pvnetwork rollback` command.
-22. Migration verification before upgrade.
-23. Automated update rollback when health verification fails.
-24. Fresh-install CI test on disposable VM/container where practical.
-25. End-to-end node auto-deploy test on a disposable VPS.
+- Expired/unlimited user renewal without delete/recreate.
+- Finite renewal modes: preserve, reset and add traffic.
+- Renewal support in Mirza integration.
+- Unlimited Reset Usage starts a new 30-day period.
+- Multi-node OpenVPN, AnyConnect integration, fleet, operations, bandwidth, monitoring and security foundations.
+- Sanitized public source, bilingual illustrated docs, release artifact and SHA256.
 
-## v1.1 — user lifecycle and observability
-26. Periodic traffic reset: daily/weekly/monthly/custom cycle.
-27. Scheduled renewal rules.
-28. Multi-stage expiry notifications.
-29. Configurable traffic threshold notifications.
-30. Generic outbound webhooks for user/node/quota/expiry events.
-31. Prometheus metrics endpoint.
-32. Official Grafana dashboard.
-33. Long-term node traffic history.
-34. Long-term per-user traffic history with configurable retention.
-35. Top users/top nodes analytics.
-36. CSV report export.
-37. Excel report export.
-38. Central log viewer.
-39. Downloadable sanitized support/diagnostic bundle.
-40. Device inventory per user.
-41. Revoke device/session action.
-42. HWID/device-limit option in addition to session limits.
-43. Self-service user portal improvements.
-44. QR codes for applicable connection outputs.
-45. PWA admin installation.
-46. Background job queue for slow node operations.
-47. Retry queue for temporarily offline nodes.
-48. Node capacity thresholds and admission control.
-49. Cost/traffic metadata per node.
-50. Automated disaster-recovery restore test.
+## v1.1.0 — UI/UX, responsive and project-governance hardening
 
-## v1.2 — enterprise access and policy
-51. Granular RBAC permissions beyond role names.
-52. OAuth2/OIDC admin authentication.
-53. Passkey/WebAuthn admin authentication.
-54. LDAP authentication integration.
-55. RADIUS authentication/accounting integration.
-56. SAML SSO integration.
-57. Certificate/Let's Encrypt management from UI.
-58. SSL auto-renewal status and alerts in UI.
-59. HA deployment guide for the control plane.
-60. PostgreSQL HA/backup/replication guide.
-61. Route-policy editor for OpenVPN users/groups.
-62. Split-tunnel policy UI.
-63. Destination policy by user/group.
-64. GeoIP/GeoSite rule management where applicable.
-65. Import/export users and assignments.
-66. Migration utilities from supported third-party panels.
-67. Generic provisioning webhook/API templates for billing systems.
-68. Telegram management bot, not only monitoring.
-69. Additional notification-provider abstraction.
-70. Configurable notification templates.
+Release goal: make every existing panel area consistently usable on desktop, tablet and phone before adding another large feature family.
+
+- Persistent Production-safety and Agent execution contract.
+- Numbered `PVN-xxx` backlog and competitor-gap matrix.
+- Design-system and blocking QA/release gate.
+- Responsive hardening at 360–1920 px plus 125%/150% zoom checks.
+- Touch-target, keyboard, focus, reduced-motion and contrast hardening.
+- Persian RTL and English LTR audits.
+- Mobile-safe action menus, tables, dialogs, search/sort/pagination and fixed navigation.
+- Loading/empty/error/retry and duplicate-submit consistency.
+- Automated governance/UI smoke tests and stronger CI/secret guards.
+- Refreshed sanitized Persian/English illustrated documentation.
+- New `v1.1.0` GitHub Release only after all mandatory release gates pass.
+
+Primary blockers: `PVN-100..139` plus all applicable items in `docs/QA-RELEASE-GATE.md`.
+
+## v1.2.x — user lifecycle, devices, observability and automation
+
+- Periodic traffic reset and scheduled renewal.
+- Multi-stage expiry and traffic-threshold notifications.
+- Generic signed webhooks and resilient background/retry jobs.
+- Prometheus/Grafana and long-term node/user traffic history.
+- Top users/nodes analytics and CSV/Excel/PDF reporting.
+- Device inventory, session revoke and HWID/device limits.
+- Self-service portal and QR connection outputs.
+- Node capacity/admission/failover and richer assignment policies.
+- Management Telegram bot and expanded Mirza lifecycle parity.
+- Import/export and migration foundations.
+
+Detailed tasks: `PVN-200..499` and `PVN-600..699`.
+
+## v1.3.x — enterprise identity, policy, HA and operations
+
+- Granular RBAC/custom roles.
+- OAuth2/OIDC and Passkey/WebAuthn.
+- LDAP, RADIUS and SAML SSO.
+- Certificate/TLS management and renewal visibility.
+- Split-tunnel, destination and GeoIP/GeoSite policy management.
+- Control-plane/PostgreSQL/reverse-proxy HA guides and tested DR workflow.
+- Installer/update/backup/rollback hardening, signed artifacts, SBOM and compatibility matrices.
+
+Detailed tasks: `PVN-500..599` and `PVN-800..899`.
 
 ## v2.0 — optional universal VPN/proxy control plane
-71. WireGuard core integration.
-72. Xray core integration.
-73. VLESS support.
-74. VMess support.
-75. Trojan support.
-76. Shadowsocks support.
-77. REALITY support.
-78. Hysteria2 support.
-79. TUIC support.
-80. Sing-box integration.
-81. Host abstraction independent of physical node.
-82. Reusable config-profile abstraction.
-83. Multi-protocol identity under one user.
-84. Raw/Base64 subscription output.
-85. Xray JSON subscription output.
-86. Sing-box subscription output.
-87. Clash/Mihomo subscription output.
-88. User-Agent subscription-format negotiation.
-89. Subscription template editor.
-90. Subscription response rules.
-91. WARP outbound support.
-92. Custom outbound pools.
-93. Outbound proxy chaining.
-94. Load balancers and failover rules.
-95. Routing rules import/export.
-96. Built-in geosite/geoip updates.
-97. Multi-inbound/single-port fallback configuration.
-98. Protocol-aware traffic analytics.
-99. Protocol-aware node capability negotiation.
-100. Migration assistant from Xray-oriented panels.
+
+Subject to explicit architecture approval after the OpenVPN/AnyConnect line is stable:
+
+- WireGuard and Xray cores.
+- VLESS, VMess, Trojan, Shadowsocks, REALITY, Hysteria2, TUIC and Sing-box.
+- Multi-protocol user identity and protocol-aware quota/session accounting.
+- Base64/Xray JSON/Sing-box/Clash-Mihomo subscriptions and User-Agent negotiation.
+- Subscription template editor/response rules.
+- WARP, custom outbound pools, chaining, load balancing and failover.
+- Host abstraction, reusable config profiles and protocol capability negotiation.
+- Migration assistants and client compatibility suites.
+
+Detailed tasks: `PVN-700..799` and `PVN-900..999`.
 
 ## Release rule
 
-Every production-visible behavior change gets a new version, changelog entry and tagged GitHub Release. Existing tags and release assets are immutable.
+Every Production-visible behavior change gets a version, changelog entry and tagged GitHub Release. Existing tags/assets are immutable. No release is promoted while its blocking `PVN-xxx` QA/security tasks remain open or Production-health verification is unresolved.
