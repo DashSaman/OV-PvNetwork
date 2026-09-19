@@ -1,0 +1,11 @@
+[Unit]
+Description=Renew active PVNetwork emergency bandwidth policy
+
+[Timer]
+OnBootSec=45s
+OnUnitInactiveSec=60s
+AccuracySec=5s
+Unit=pvnetwork-bandwidth-reconcile.service
+
+[Install]
+WantedBy=timers.target

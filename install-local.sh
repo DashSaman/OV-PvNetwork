@@ -82,7 +82,10 @@ for timer in \
   pvnetwork-panel-monitor.timer \
   pvnetwork-panel-smoke.timer \
   pvnetwork-panel-user-notifier.timer \
-  pvnetwork-panel-healthcheck.timer
+  pvnetwork-panel-healthcheck.timer \
+  pvnetwork-usage-sync.timer \
+  pvnetwork-bandwidth-reconcile.timer \
+  pvnetwork-sub-push.timer
 do
   systemctl enable --now "$timer"
 done

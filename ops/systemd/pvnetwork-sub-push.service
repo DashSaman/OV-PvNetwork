@@ -1,0 +1,15 @@
+[Unit]
+Description=PVNetwork subscription renewal Web Push sender
+After=network-online.target pvnetwork-panel.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/pvnetwork-panel
+Environment=PYTHONPATH=/opt/pvnetwork-panel
+ExecStart=/opt/pvnetwork-panel/.venv/bin/python3 /usr/local/sbin/pvnetwork-sub-push-sender.py
+Nice=15
+IOSchedulingClass=idle
+CPUWeight=10
+IOWeight=10
+TimeoutStartSec=5min

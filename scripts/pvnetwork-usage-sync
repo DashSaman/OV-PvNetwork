@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+cd /opt/pvnetwork-panel
+exec .venv/bin/python3 - <<'PY'
+import asyncio
+from backend.operations.daily_checks import check_user_used_traffic, enforce_user_limits
+
+async def main():
+    await check_user_used_traffic()
+    await enforce_user_limits()
+
+asyncio.run(main())
+PY

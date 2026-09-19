@@ -1,0 +1,10 @@
+[Unit]
+Description=PVNetwork shared traffic sync
+After=network-online.target pvnetwork-panel.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/pvnetwork-panel
+ExecStart=/usr/local/sbin/pvnetwork-usage-sync
+User=root

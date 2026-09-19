@@ -1,0 +1,13 @@
+[Unit]
+Description=Renew PVNetwork emergency bandwidth node leases
+After=network-online.target pvnetwork-panel.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/pvnetwork-panel
+ExecStart=/opt/pvnetwork-panel/.venv/bin/python3 -m backend.operations.bandwidth_reconcile
+Nice=5
+PrivateTmp=true
+NoNewPrivileges=true

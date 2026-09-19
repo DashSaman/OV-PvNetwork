@@ -105,6 +105,31 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
         missing = [rel for rel in required if not (root / rel).is_file()]
         self.assertEqual([], missing)
 
+    def test_critical_background_jobs_have_pvnetwork_units(self):
+        root = Path(__file__).resolve().parents[1]
+        required = [
+            "scripts/pvnetwork-usage-sync",
+            "scripts/pvnetwork-sub-push-sender.py",
+            "ops/systemd/pvnetwork-usage-sync.service",
+            "ops/systemd/pvnetwork-usage-sync.timer",
+            "ops/systemd/pvnetwork-bandwidth-reconcile.service",
+            "ops/systemd/pvnetwork-bandwidth-reconcile.timer",
+            "ops/systemd/pvnetwork-sub-push.service",
+            "ops/systemd/pvnetwork-sub-push.timer",
+        ]
+        missing = [rel for rel in required if not (root / rel).is_file()]
+        self.assertEqual([], missing)
+        sender = (root / "scripts/pvnetwork-sub-push-sender.py").read_text()
+        self.assertIn("/etc/pvnetwork-panel/push/vapid-private.pem", sender)
+        self.assertIn("https://example.invalid", sender)
+
+    def test_panel_healthcheck_also_guards_external_node_api(self):
+        root = Path(__file__).resolve().parents[1]
+        health = (root / "scripts/healthcheck.sh").read_text()
+        self.assertIn("pvnetwork-panel.service", health)
+        self.assertIn("ov-node.service", health)
+        self.assertIn("/opt/ov-node/.env", health)
+
     def test_lifecycle_cli_is_pvnetwork_owned(self):
         root = Path(__file__).resolve().parents[1]
         install = (root / "install-local.sh").read_text()
