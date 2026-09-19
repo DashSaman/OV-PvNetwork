@@ -85,6 +85,7 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4173/panel/ >/dev/null
+          node tests/online-user-truth-smoke.mjs
           node tests/responsive-smoke.mjs
           node tests/inline-quick-edit-smoke.mjs
           node tests/user-create-node-selector-smoke.mjs
