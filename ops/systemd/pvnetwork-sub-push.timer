@@ -1,0 +1,12 @@
+[Unit]
+Description=Check PVNetwork subscription renewal push slots hourly
+
+[Timer]
+OnCalendar=*-*-* *:05:00
+AccuracySec=1min
+RandomizedDelaySec=45s
+Persistent=true
+Unit=pvnetwork-sub-push.service
+
+[Install]
+WantedBy=timers.target

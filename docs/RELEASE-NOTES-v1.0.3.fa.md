@@ -26,6 +26,6 @@ Release Gate شامل 37 تست Python/Unit/Governance، ESLint، Python Compile
 
 ## Upgrade / Rollback
 
-این نسخه Migration دیتابیس ندارد. قبل از Deploy بکاپ تأییدشده بگیرید. فقط فایل‌های لازم Panel/Backend/Frontend تغییر می‌کنند؛ Firewall، Default Route، Tunnel و سرویس‌های نامرتبط نباید دست‌کاری شوند. در صورت نیاز فقط `ov-panel` Restart و سپس HTTP داخلی/عمومی، OpenAPI و Error log بررسی می‌شود. اگر Health fail شد به Backup/Release تأییدشده v1.0.2 برگردید.
+این نسخه Migration دیتابیس ندارد. قبل از Deploy بکاپ تأییدشده بگیرید. فقط فایل‌های لازم Panel/Backend/Frontend تغییر می‌کنند؛ Firewall، Default Route، Tunnel و سرویس‌های نامرتبط نباید دست‌کاری شوند. در صورت نیاز فقط `pvnetwork-panel` Restart و سپس HTTP داخلی/عمومی، OpenAPI و Error log بررسی می‌شود. اگر Health fail شد به Backup/Release تأییدشده v1.0.2 برگردید.
 
 </div>

@@ -1,0 +1,8 @@
+[Unit]
+Description=PVNetwork Panel user quota and expiry notifier
+After=pvnetwork-panel.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/pvnetwork-panel
+ExecStart=/opt/pvnetwork-panel/.venv/bin/python3 -m backend.operations.user_notifier

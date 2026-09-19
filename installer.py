@@ -65,7 +65,7 @@ def ask_user(prompt, allow_empty=False, input_type="text"):
                     continue
             return value.strip()
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
 
 
@@ -86,7 +86,7 @@ def ask_password(prompt):
                 continue
             return password
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
 
 
@@ -95,7 +95,7 @@ def show_banner():
     banner = f"""
 {Fore.CYAN}
 ╔═══════════════════╗
-║      OVPANEL      ║
+║      PVNETWORK      ║
 ╚═══════════════════╝
 {Style.RESET_ALL}
 """
@@ -135,7 +135,7 @@ def ask_choice():
                 time.sleep(2)
                 show_menu()
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
 
 
@@ -150,7 +150,7 @@ def ask_confirmation(prompt):
                 time.sleep(2)
                 subprocess.run("clear")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
 
 
@@ -160,7 +160,7 @@ def setup_panel():
         shutil.copy(".env.example", ".env")
 
         subprocess.run("clear")
-        print(f"\n{Fore.YELLOW}OV-Panel Configuration{Style.RESET_ALL}\n")
+        print(f"\n{Fore.YELLOW}PVNetwork Panel Configuration{Style.RESET_ALL}\n")
 
         panel_username = ask_user(f"{Fore.GREEN}> Panel username: {Style.RESET_ALL}")
         panel_password = ask_password(f"{Fore.RED}> Panel password: {Style.RESET_ALL}")
@@ -206,7 +206,7 @@ def setup_panel():
         try:
             input(f"{Fore.YELLOW}Press Enter to return to menu...{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
         main_menu()
 
@@ -215,43 +215,43 @@ def setup_panel():
         try:
             input(f"\n{Fore.YELLOW}Press Enter to return to menu...{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
         main_menu()
 
 
 def refresh_panel():
-    if not os.path.exists("/opt/ov-panel"):
+    if not os.path.exists("/opt/pvnetwork-panel"):
         subprocess.run("clear")
         print(
-            f"\n{Fore.MAGENTA}OV-Panel is not installed on your system.{Style.RESET_ALL}"
+            f"\n{Fore.MAGENTA}PVNetwork Panel is not installed on your system.{Style.RESET_ALL}"
         )
         print(
-            f"{Fore.MAGENTA}Please install OV-Panel first using option 1.{Style.RESET_ALL}"
+            f"{Fore.MAGENTA}Please install PVNetwork Panel first using option 1.{Style.RESET_ALL}"
         )
         try:
             input(f"\n{Fore.MAGENTA}Press Enter to return to menu...{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
         main_menu()
         return
 
-    print(f"\n{Fore.YELLOW}Updating OV-Panel...{Style.RESET_ALL}\n")
+    print(f"\n{Fore.YELLOW}Updating PVNetwork Panel...{Style.RESET_ALL}\n")
 
     try:
-        repo = "https://api.github.com/repos/primeZdev/ov-panel/releases/latest"
-        install_dir = "/opt/ov-panel"
+        repo = "https://api.github.com/repos/DashSaman/OV-PvNetwork/releases/latest"
+        install_dir = "/opt/pvnetwork-panel"
         env_file = os.path.join(install_dir, ".env")
         data_dir = os.path.join(install_dir, "data")
-        backup_env = "/tmp/ovpanel_env_backup"
-        backup_data = "/tmp/ovpanel_data_backup"
+        backup_env = "/tmp/pvnetwork_env_backup"
+        backup_data = "/tmp/pvnetwork_data_backup"
 
         response = requests.get(repo)
         response.raise_for_status()
         release = response.json()
         download_url = release["tarball_url"]
-        filename = "/tmp/ov-panel-latest.tar.gz"
+        filename = "/tmp/pvnetwork-panel-latest.tar.gz"
 
         print(f"{Fore.YELLOW}Downloading latest version...{Style.RESET_ALL}")
         subprocess.run(["wget", "-O", filename, download_url], check=True)
@@ -291,7 +291,7 @@ def refresh_panel():
         try:
             input(f"{Fore.YELLOW}Press Enter to return to menu...{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
         main_menu()
 
@@ -300,39 +300,39 @@ def refresh_panel():
         try:
             input(f"\n{Fore.YELLOW}Press Enter to return to menu...{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
         main_menu()
 
 
 def restart_panel():
     try:
-        if not os.path.exists("/opt/ov-panel"):
-            print(f"\n{Fore.RED}OV-Panel is not installed.{Style.RESET_ALL}")
+        if not os.path.exists("/opt/pvnetwork-panel"):
+            print(f"\n{Fore.RED}PVNetwork Panel is not installed.{Style.RESET_ALL}")
             return
 
-        print(f"\n{Fore.YELLOW}Restarting OV-Panel...{Style.RESET_ALL}")
-        subprocess.run(["systemctl", "restart", "ov-panel"], check=True)
-        print(f"\n{Fore.GREEN}OV-Panel restarted successfully!{Style.RESET_ALL}")
+        print(f"\n{Fore.YELLOW}Restarting PVNetwork Panel...{Style.RESET_ALL}")
+        subprocess.run(["systemctl", "restart", "pvnetwork-panel"], check=True)
+        print(f"\n{Fore.GREEN}PVNetwork Panel restarted successfully!{Style.RESET_ALL}")
         input(f"{Fore.YELLOW}Press Enter to return to menu...{Style.RESET_ALL}")
         main_menu()
 
     except Exception as e:
-        print(f"\n{Fore.RED}Failed to restart OV-Panel: {str(e)}{Style.RESET_ALL}")
+        print(f"\n{Fore.RED}Failed to restart PVNetwork Panel: {str(e)}{Style.RESET_ALL}")
         try:
             input(f"{Fore.YELLOW}Press Enter to return to menu...{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
         main_menu()
 
 
 def remove_panel():
     try:
-        if not os.path.exists("/opt/ov-panel"):
+        if not os.path.exists("/opt/pvnetwork-panel"):
             subprocess.run("clear")
             print(
-                f"\n{Fore.YELLOW}OV-Panel is not installed on your system.{Style.RESET_ALL}"
+                f"\n{Fore.YELLOW}PVNetwork Panel is not installed on your system.{Style.RESET_ALL}"
             )
             try:
                 input(
@@ -340,7 +340,7 @@ def remove_panel():
                 )
             except KeyboardInterrupt:
                 print(
-                    f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n"
+                    f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n"
                 )
                 sys.exit(0)
             main_menu()
@@ -364,7 +364,7 @@ def remove_panel():
         try:
             input(f"{Fore.YELLOW}Press Enter to return to menu...{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
         main_menu()
 
@@ -373,14 +373,14 @@ def remove_panel():
         try:
             input(f"\n{Fore.YELLOW}Press Enter to return to menu...{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit(0)
         main_menu()
 
 
 def build_frontend() -> bool:
     try:
-        frontend_dir = "/opt/ov-panel/frontend"
+        frontend_dir = "/opt/pvnetwork-panel/frontend"
         subprocess.run(["npm", "install"], cwd=frontend_dir)
         subprocess.run(["npm", "run", "build"], cwd=frontend_dir)
         return True
@@ -390,7 +390,7 @@ def build_frontend() -> bool:
 
 
 def apply_migrations() -> None:
-    backend_dir = "/opt/ov-panel/backend"
+    backend_dir = "/opt/pvnetwork-panel/backend"
     current_dir = os.getcwd()
 
     try:
@@ -412,16 +412,16 @@ def apply_migrations() -> None:
 
 
 def start_service() -> None:
-    path = "/etc/systemd/system/ov-panel.service"
+    path = "/etc/systemd/system/pvnetwork-panel.service"
     if os.path.exists(path):
         os.remove(path)
     service_content = """
 [Unit]
-Description=OV-Panel App
+Description=PVNetwork Panel App
 After=network.target
 
 [Service]
-WorkingDirectory=/opt/ov-panel
+WorkingDirectory=/opt/pvnetwork-panel
 ExecStart=/root/.local/bin/uv run main.py
 Restart=always
 RestartSec=5
@@ -437,14 +437,14 @@ WantedBy=multi-user.target
         f.write(service_content)
 
     subprocess.run(["sudo", "systemctl", "daemon-reload"])
-    subprocess.run(["sudo", "systemctl", "enable", "ov-panel"])
-    subprocess.run(["sudo", "systemctl", "start", "ov-panel"])
+    subprocess.run(["sudo", "systemctl", "enable", "pvnetwork-panel"])
+    subprocess.run(["sudo", "systemctl", "start", "pvnetwork-panel"])
 
 
 def stop_service() -> None:
-    service_file = "/etc/systemd/system/ov-panel.service"
+    service_file = "/etc/systemd/system/pvnetwork-panel.service"
 
-    subprocess.run(["sudo", "systemctl", "stop", "ov-panel"], stderr=subprocess.DEVNULL)
+    subprocess.run(["sudo", "systemctl", "stop", "pvnetwork-panel"], stderr=subprocess.DEVNULL)
 
     if os.path.exists(service_file):
         subprocess.run(["rm", "-f", service_file])
@@ -467,10 +467,10 @@ def main_menu():
         elif choice == "4":
             remove_panel()
         elif choice == "5":
-            print(f"\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+            print(f"\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
             sys.exit()
     except KeyboardInterrupt:
-        print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+        print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
         sys.exit(0)
 
 
@@ -478,5 +478,5 @@ if __name__ == "__main__":
     try:
         main_menu()
     except KeyboardInterrupt:
-        print(f"\n\n{Fore.GREEN}Thank you for using OV-Panel!{Style.RESET_ALL}\n")
+        print(f"\n\n{Fore.GREEN}Thank you for using PVNetwork Panel!{Style.RESET_ALL}\n")
         sys.exit(0)

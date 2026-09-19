@@ -79,7 +79,7 @@ const AdminManagement = () => {
         fetchAdmins();
     };
     const handleDelete = admin => {
-        // OV_ADMIN_DELETE_OPTIONS_V7
+        // PVNETWORK_ADMIN_DELETE_OPTIONS_V7
         setDeleteAdminTarget(admin);
         setDeleteMode('transfer_users');
         setError('');

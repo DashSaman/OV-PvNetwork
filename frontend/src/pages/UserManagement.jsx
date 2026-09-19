@@ -47,7 +47,7 @@ const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // OV_USER_SORTING_V2
+  // PVNETWORK_USER_SORTING_V2
   const [sortMode, setSortMode] = useState(() =>
     localStorage.getItem('ov-users-sort-mode') || 'newest'
   );
@@ -323,7 +323,7 @@ const UserManagement = () => {
     setCurrentPage(1);
   };
   const handleDelete = async (uuid, name) => {
-    // OV_USERNAME_REUSE_V7
+    // PVNETWORK_USERNAME_REUSE_V7
     if (!window.confirm(`Are you sure you want to delete user ${name}?`)) return;
     try {
       const response = await apiClient.delete(`/users/${uuid}`);
@@ -626,7 +626,7 @@ const UserManagement = () => {
           minWidth: '230px',
           flex: '0 1 260px'
         }}>
-          {/* OV_USER_SORT_I18N_V1 */}
+          {/* PVNETWORK_USER_SORT_I18N_V1 */}
           <select
             value={sortMode}
             onChange={handleSortChange}

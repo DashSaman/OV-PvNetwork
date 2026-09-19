@@ -10,7 +10,7 @@ def main():
         reload=False,
         ssl_keyfile=config.SSL_KEYFILE,
         ssl_certfile=config.SSL_CERTFILE,
-        # OV_GRACEFUL_SHUTDOWN_V1
+        # PVNETWORK_GRACEFUL_SHUTDOWN_V1
         timeout_graceful_shutdown=10,
     )
 

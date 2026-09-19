@@ -14,13 +14,19 @@
 - Telegram Node DOWN/UP transition alerts with deduplication and a Monitoring Settings toggle.
 - Sanitized Persian/English desktop/mobile screenshots and regression gates.
 
+### v1.0.2
+- Responsive Subscription page (`PVN-111`) with bilingual mobile/desktop regression coverage.
+
+### v1.0.3
+- Inline user Quick Edit and safe multi-node assignment behavior (`PVN-205`).
+
 ## Sequential patch queue
 
-PVNetwork now advances **one Production-visible task per patch release**: `v1.0.2`, `v1.0.3`, `v1.0.4`, ... . Exact task status and the next release are always recorded in `AGENTS.md`.
+PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
-- **v1.0.2 — IN PROGRESS:** PVN-111, responsive Subscription page.
-- Following patches continue the first genuinely open `PVN-xxx` item in `AGENTS.md`; already-completed items are never repeated.
-- Each release refreshes the relevant Persian/English visual documentation, changelog/release notes, sanitized artifact and SHA256.
+- **v1.0.4 — IN PROGRESS:** `PVN-025`, PVNetwork brand purity and runtime naming ownership.
+- Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
+- Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 
 ## Capability streams after current UX blockers
 

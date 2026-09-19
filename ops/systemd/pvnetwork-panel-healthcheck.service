@@ -1,0 +1,7 @@
+[Unit]
+Description=PVNetwork Panel control-plane health check
+After=network-online.target pvnetwork-panel.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pvnetwork-panel-healthcheck

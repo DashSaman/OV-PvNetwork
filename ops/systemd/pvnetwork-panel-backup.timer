@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily PVNetwork Panel backup
+
+[Timer]
+OnCalendar=*-*-* 03:20:00
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

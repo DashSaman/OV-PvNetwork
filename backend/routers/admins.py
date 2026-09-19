@@ -19,7 +19,7 @@ router = APIRouter(prefix="/admin", tags=["Admins"])
 
 
 class AdminDeleteRequest(BaseModel):
-    # OV_ADMIN_DELETE_OPTIONS_V7
+    # PVNETWORK_ADMIN_DELETE_OPTIONS_V7
     mode: Literal["delete_users", "transfer_users"]
     target_owner: str = "owner"
 
@@ -161,7 +161,7 @@ async def delete_admin_with_users(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    # OV_ADMIN_DELETE_OPTIONS_V7
+    # PVNETWORK_ADMIN_DELETE_OPTIONS_V7
     _main_admin_only(user)
     existing_admin = crud.get_admin_by_username(db, username=username)
     if not existing_admin:

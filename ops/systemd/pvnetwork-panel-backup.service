@@ -1,0 +1,7 @@
+[Unit]
+Description=PVNetwork Panel verified backup
+After=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pvnetwork-panel-backup

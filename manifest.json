@@ -1,13 +1,9 @@
 {
   "project": "PVNetwork Panel",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "channel": "stable",
   "project_repo": "DashSaman/OV-PvNetwork",
-  "release_asset": "pvnetwork-panel-v1.0.0.tar.gz",
-  "base_panel": {
-    "repo": "primeZdev/ov-panel",
-    "tag": "v1.7.10"
-  },
+  "release_asset": "pvnetwork-panel-v1.0.4.tar.gz",
   "base_node": {
     "repo": "primeZdev/ov-node",
     "tag": "v1.3.6"
@@ -33,5 +29,9 @@
     "production_identifiers_in_public_release": false,
     "credentials_in_public_release": false,
     "customer_data_in_public_release": false
+  },
+  "foundation_attribution": {
+    "license": "MIT",
+    "copyright": "Copyright (c) 2025 PrimeZ"
   }
 }

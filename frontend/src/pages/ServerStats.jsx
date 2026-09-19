@@ -5,7 +5,7 @@ import { FiActivity, FiClock, FiCpu, FiDownload, FiHardDrive, FiMoon, FiServer, 
 import { BsDeviceSsd } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 
-// OV_DASHBOARD_REAL_OPENVPN_ONLINE_V1
+// PVNETWORK_DASHBOARD_REAL_OPENVPN_ONLINE_V1
 const SAMPLE_INTERVAL = 1000;
 const HISTORY_POINTS = 100;
 const formatBytes = (value, decimals = 2) => {
@@ -267,7 +267,7 @@ const ServerStats = () => {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('ov-dashboard-theme', themeMode);
 
-      // OV_GLOBAL_THEME_SYNC_V2
+      // PVNETWORK_GLOBAL_THEME_SYNC_V2
       document.documentElement.setAttribute('data-ov-theme', themeMode);
       document.body.setAttribute('data-ov-theme', themeMode);
     }
@@ -314,7 +314,7 @@ const ServerStats = () => {
     }
     let active = true;
 
-    // OV_DASHBOARD_AGGREGATED_POLL_V1
+    // PVNETWORK_DASHBOARD_AGGREGATED_POLL_V1
     const pollNodes = async () => {
       if (
         !active ||
@@ -338,7 +338,7 @@ const ServerStats = () => {
           payload.nodes || [];
 
         /*
-         * OV_RATE_SAMPLE_TIME_V1
+         * PVNETWORK_RATE_SAMPLE_TIME_V1
          *
          * Rate is calculated only from a genuinely
          * new backend counter sample.
@@ -376,7 +376,7 @@ const ServerStats = () => {
 
 
           /*
-           * OV_FRONTEND_SERVER_RATE_V2
+           * PVNETWORK_FRONTEND_SERVER_RATE_V2
            *
            * Rate is calculated by the backend with
            * per-node timestamps and a rolling window.
@@ -482,7 +482,7 @@ const ServerStats = () => {
         }
       } catch (error) {
         /*
-         * OV_DASHBOARD_TRANSIENT_FAILOPEN_V1
+         * PVNETWORK_DASHBOARD_TRANSIENT_FAILOPEN_V1
          *
          * A temporary slow/offline node must not break
          * the whole admin dashboard.
@@ -1172,7 +1172,7 @@ const ServerStats = () => {
             width .35s ease;
         }
 
-        .ov-panel-grid {
+        .pvnetwork-panel-grid {
           display: grid;
           grid-template-columns:
             repeat(4, minmax(0, 1fr));
@@ -1188,7 +1188,7 @@ const ServerStats = () => {
 
         @media (max-width: 1050px) {
           .ov-summary-grid,
-          .ov-panel-grid {
+          .pvnetwork-panel-grid {
             grid-template-columns:
               repeat(2, minmax(0, 1fr));
           }
@@ -1206,7 +1206,7 @@ const ServerStats = () => {
 
           .ov-hero-rates,
           .ov-summary-grid,
-          .ov-panel-grid,
+          .pvnetwork-panel-grid,
           .ov-node-grid {
             grid-template-columns: 1fr;
           }
@@ -1295,7 +1295,7 @@ const ServerStats = () => {
           <h3 className="ov-section-title">
             <FiCpu />{t("ui.88a55778015f")}</h3>
 
-          <div className="ov-panel-grid">
+          <div className="pvnetwork-panel-grid">
             <MetricBox icon={<FiCpu />} label="Panel CPU" value={`${Number(stats.cpu || 0).toFixed(1)}%`} accent="#fb923c" />
 
             <MetricBox icon={<BsDeviceSsd />} label="Panel RAM" value={`${Number(stats.memory_percent || 0).toFixed(1)}%`} hint={`${formatBytes(stats.memory_used)} / ${formatBytes(stats.memory_total)}`} accent="#34d399" />

@@ -42,7 +42,7 @@ class Admin(Base):
     is_active: Mapped[bool] = mapped_column(default=True, server_default="true", nullable=False)
     quota_total: Mapped[int] = mapped_column(BigInteger, default=0, server_default="0", nullable=False)
     quota_used: Mapped[int] = mapped_column(BigInteger, default=0, server_default="0", nullable=False)
-    # OV_RESELLER_UNLIMITED_SLOTS_V2
+    # PVNETWORK_RESELLER_UNLIMITED_SLOTS_V2
     unlimited_quota_total: Mapped[int] = mapped_column(default=0, server_default="0", nullable=False)
     unlimited_quota_used: Mapped[int] = mapped_column(default=0, server_default="0", nullable=False)
 
@@ -118,7 +118,7 @@ class Settings(Base):
     protocol: Mapped[str] = mapped_column(default="tcp", nullable=False)
 
 
-# OV_ANYCONNECT_USER_TOGGLE_V1
+# PVNETWORK_ANYCONNECT_USER_TOGGLE_V1
 class AnyConnectCredential(Base):
     __tablename__ = "anyconnect_credentials"
 
@@ -417,7 +417,7 @@ class NotificationState(Base):
 
 
 # ============================================================
-# OV_EMERGENCY_BANDWIDTH_CONTROL_V1
+# PVNETWORK_EMERGENCY_BANDWIDTH_CONTROL_V1
 # ============================================================
 
 class BandwidthGroup(Base):

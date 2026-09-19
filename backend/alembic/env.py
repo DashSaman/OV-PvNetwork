@@ -12,7 +12,7 @@ from db.models import *
 # access to the values within the .ini file in use.
 config = context.config
 
-# OV_DATABASE_URL_V2
+# PVNETWORK_DATABASE_URL_V2
 #
 # Always use the same database URL as
 # the running application.

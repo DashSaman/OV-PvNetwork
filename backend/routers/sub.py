@@ -33,7 +33,7 @@ router = APIRouter(
 )
 
 
-# OV_SUB_PRIVATE_NETWORK_V3
+# PVNETWORK_SUB_PRIVATE_NETWORK_V3
 @router.get("/{uuid}")
 async def get_subscription(
     request: Request,
@@ -85,7 +85,7 @@ async def get_subscription(
                 "maintenance": bool(getattr(node, "maintenance", False)),
                 "tunnel_address": str(
                     getattr(node, "tunnel_address", None)
-                    or "ovpanel.com"
+                    or str(node.address)
                 ),
                 "protocol": str(
                     getattr(node, "protocol", None)
@@ -232,7 +232,7 @@ async def get_subscription(
         item for item in node_items
         if item["online"]
     ]
-    # OV_PVNETWORK_ABSOLUTE_LOAD_V2
+    # PVNETWORK_ABSOLUTE_LOAD_V2
     # Subscription is sampled once while the page is rendered.
     # 100 Mbps is the absolute visual reference.
     for item in online_items:

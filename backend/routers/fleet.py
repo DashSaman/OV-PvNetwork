@@ -11,8 +11,8 @@ from backend.node.health import build_nodes_health
 from backend.node.requests import NodeRequests
 from backend.schema.output import ResponseModel
 router=APIRouter(prefix='/fleet',tags=['Fleet'])
-JOBDIR=Path('/opt/ov-panel/data/fleet-jobs'); JOBDIR.mkdir(parents=True,exist_ok=True); JOBDIR.chmod(0o700)
-KNOWN_HOSTS=Path('/opt/ov-panel/data/fleet_known_hosts')
+JOBDIR=Path('/opt/pvnetwork-panel/data/fleet-jobs'); JOBDIR.mkdir(parents=True,exist_ok=True); JOBDIR.chmod(0o700)
+KNOWN_HOSTS=Path('/opt/pvnetwork-panel/data/fleet_known_hosts')
 KNOWN_HOSTS.parent.mkdir(parents=True,exist_ok=True)
 KNOWN_HOSTS.touch(mode=0o600,exist_ok=True)
 KNOWN_HOSTS.chmod(0o600)
@@ -80,15 +80,15 @@ cp /opt/ov-node/.env "$N/.env"
 if [ -f /opt/ov-node/core/routers/domain_history.py ]; then
   DOMAIN_PRESENT=1
   install -D -m 640 /opt/ov-node/core/routers/domain_history.py "$N/core/routers/domain_history.py"
-  if ! grep -q '^# OV_DOMAIN_HISTORY_INCLUDE_V1$' "$N/core/routers/router.py"; then
-    cat >> "$N/core/routers/router.py" <<'OV_DOMAIN_INCLUDE'
+  if ! grep -q '^# PVNETWORK_DOMAIN_HISTORY_INCLUDE_V1$' "$N/core/routers/router.py"; then
+    cat >> "$N/core/routers/router.py" <<'PVNETWORK_DOMAIN_INCLUDE'
 
 
-# OV_DOMAIN_HISTORY_INCLUDE_V1
+# PVNETWORK_DOMAIN_HISTORY_INCLUDE_V1
 from core.routers.domain_history import router as domain_history_router
 
 router.include_router(domain_history_router)
-OV_DOMAIN_INCLUDE
+PVNETWORK_DOMAIN_INCLUDE
   fi
 fi
 cd "$N"; /root/.local/bin/uv sync
@@ -175,7 +175,7 @@ async def retry(job_id:str,q:Retry,u:dict=Depends(get_current_user)):
  if not launch(j,q.ssh_password):raise HTTPException(409,'Job is already running')
  return ResponseModel(success=True,msg='Retry started',data={'job_id':job_id})
 
-# OV_FINAL_FLEET_ROLLBACK_V1
+# PVNETWORK_FINAL_FLEET_ROLLBACK_V1
 class RollbackRequest(BaseModel):
     ssh_username: str = "root"
     ssh_password: str = Field(min_length=1, max_length=512)

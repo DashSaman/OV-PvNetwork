@@ -84,7 +84,7 @@
 
 - [ ] Verify CI green on release commit.
 - [ ] Create production backup/check before any mutation.
-- [ ] Apply only the release files required; restart only `ov-panel.service` if deployment needs it.
+- [ ] Apply only the release files required; restart only `pvnetwork-panel.service` if deployment needs it.
 - [ ] Verify local/public HTTP, OpenAPI, service errors and critical user/node flows.
 - [ ] Roll back immediately if health verification fails.
 - [ ] Publish new immutable GitHub tag/release with sanitized artifacts and SHA256.

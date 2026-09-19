@@ -17,7 +17,7 @@ from backend.operations.alert_transitions import (
     build_transition_messages,
 )
 
-STATE = Path('/var/lib/ov-panel/monitor-state.json')
+STATE = Path('/var/lib/pvnetwork-panel/monitor-state.json')
 
 
 def send(token, chat_id, message):

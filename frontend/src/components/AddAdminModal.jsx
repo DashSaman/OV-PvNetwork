@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LoadingButton from './LoadingButton';
 
 
-// OV_ADD_ADMIN_ERROR_FIX_V2
+// PVNETWORK_ADD_ADMIN_ERROR_FIX_V2
 const formatApiError = (error, fallback) => {
   const payload = error?.response?.data;
   const detail = payload?.detail;
@@ -88,7 +88,7 @@ const AddAdminModal = ({
       setError(t('fillAllFields'));
       return;
     }
-    // OV_ADD_ADMIN_VALIDATION_V2
+    // PVNETWORK_ADD_ADMIN_VALIDATION_V2
     const username = formData.username.trim();
 
     if (username.length < 3 || username.length > 10) {

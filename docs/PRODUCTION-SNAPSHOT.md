@@ -1,13 +1,13 @@
 # Production snapshot workflow
 
-The running OV-PvNetwork instance contains the authoritative result of many incremental production changes. Reconstructing those files from historical shell snippets risks dropping a small but important behavior. Stable 1:1 publication therefore uses a sanitized source export.
+The running PVNetwork instance contains the authoritative result of many incremental production changes. Reconstructing those files from historical shell snippets risks dropping a small but important behavior. Stable 1:1 publication therefore uses a sanitized source export.
 
 ## Export
 
 On the production panel server:
 
 ```bash
-bash /usr/local/lib/ov-pvnetwork/current/scripts/export-production.sh
+bash /usr/local/lib/pvnetwork-panel/current/scripts/export-production.sh
 ```
 
 If the distribution has not yet been installed on that server, download the exporter directly from this repository and run it as root.

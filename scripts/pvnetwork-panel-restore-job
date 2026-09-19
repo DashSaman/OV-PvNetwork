@@ -1,0 +1,464 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+APP="/opt/pvnetwork-panel"
+JOB_ROOT="/var/lib/pvnetwork-panel/restore-jobs"
+BACKUP_ROOT="/var/backups/pvnetwork-panel"
+SMOKE="/usr/local/sbin/pvnetwork-panel-smoke-test"
+PANEL_PORT="$(awk -F= '$1=="PORT"{print $2}' "$APP/.env" 2>/dev/null | tail -1 | tr -d ' \r')"
+PANEL_PORT="${PANEL_PORT:-19000}"
+
+JOB_ID="${1:-}"
+ARCHIVE="${2:-}"
+
+if [[ ! "$JOB_ID" =~ ^[a-f0-9]{24}$ ]]; then
+    exit 64
+fi
+
+JOB_DIR="$JOB_ROOT/$JOB_ID"
+EXPECTED_ARCHIVE="$JOB_DIR/upload.tar.gz"
+
+if [[ "$ARCHIVE" != "$EXPECTED_ARCHIVE" || ! -f "$ARCHIVE" || -L "$ARCHIVE" ]]; then
+    exit 66
+fi
+
+install -d -m 700 -o root -g root "$JOB_DIR"
+LOG_FILE="$JOB_DIR/restore.log"
+touch "$LOG_FILE"
+chmod 600 "$LOG_FILE"
+
+CURRENT_STEP="starting"
+DB_CHANGED=0
+ENV_CHANGED=0
+TIMER_STOPPED=0
+PG_URL=""
+PRE_BACKUP=""
+CURRENT_ENV="$JOB_DIR/current.env"
+EXTRACT_DIR="$JOB_DIR/extract"
+MERGED_ENV="$JOB_DIR/merged.env"
+
+status_write() {
+    local state="$1"
+    local step="$2"
+    local progress="$3"
+    local message="$4"
+
+    /usr/bin/python3 - "$JOB_DIR/job.json" "$JOB_ID" "$state" "$step" "$progress" "$message" <<'PY'
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+target = Path(sys.argv[1])
+payload = {
+    "job_id": sys.argv[2],
+    "state": sys.argv[3],
+    "step": sys.argv[4],
+    "progress": int(sys.argv[5]),
+    "message": sys.argv[6],
+    "updated_at": int(time.time()),
+}
+temporary = target.with_name(".job.json.tmp")
+temporary.write_text(json.dumps(payload, ensure_ascii=True), encoding="utf-8")
+os.chmod(temporary, 0o600)
+temporary.replace(target)
+PY
+}
+
+cleanup_sensitive_files() {
+    /usr/bin/python3 - "$JOB_DIR" <<'PY'
+import shutil
+import sys
+from pathlib import Path
+
+job = Path(sys.argv[1]).resolve()
+expected_root = Path("/var/lib/pvnetwork-panel/restore-jobs").resolve()
+if job.parent != expected_root:
+    raise SystemExit(1)
+for name in ("extract", "upload.tar.gz", "current.env", "merged.env"):
+    target = job / name
+    if target.is_dir() and not target.is_symlink():
+        shutil.rmtree(target)
+    elif target.exists() or target.is_symlink():
+        target.unlink(missing_ok=True)
+PY
+}
+
+rollback() {
+    local original_rc="$?"
+    trap - ERR
+    set +e
+
+    if [[ "$DB_CHANGED" != "1" && "$ENV_CHANGED" != "1" ]]; then
+        if [[ "$TIMER_STOPPED" == "1" ]]; then
+            systemctl start pvnetwork-panel-backup.timer >>"$LOG_FILE" 2>&1 || true
+        fi
+        status_write "failed" "$CURRENT_STEP" 100 "Restore validation failed; production data was not changed" || true
+        cleanup_sensitive_files || true
+        exit "$original_rc"
+    fi
+
+    status_write "rolling_back" "rollback" 96 "Restore failed; rolling back" || true
+    systemctl stop pvnetwork-panel.service >>"$LOG_FILE" 2>&1 || true
+
+    local rollback_ok=1
+
+    if [[ "$DB_CHANGED" == "1" && -n "$PRE_BACKUP" && -n "$PG_URL" ]]; then
+        pg_restore \
+            --clean \
+            --if-exists \
+            --no-owner \
+            --no-acl \
+            --exit-on-error \
+            --single-transaction \
+            --dbname="$PG_URL" \
+            "$PRE_BACKUP/database.dump" \
+            >>"$LOG_FILE" 2>&1 || rollback_ok=0
+    fi
+
+    if [[ "$ENV_CHANGED" == "1" && -s "$CURRENT_ENV" ]]; then
+        install -m 600 -o root -g root "$CURRENT_ENV" "$APP/.env" || rollback_ok=0
+    fi
+
+    systemctl start pvnetwork-panel.service >>"$LOG_FILE" 2>&1 || rollback_ok=0
+    if [[ "$TIMER_STOPPED" == "1" ]]; then
+        systemctl start pvnetwork-panel-backup.timer >>"$LOG_FILE" 2>&1 || rollback_ok=0
+    fi
+
+    if [[ "$rollback_ok" == "1" ]]; then
+        for _ in $(seq 1 40); do
+            if systemctl is-active --quiet pvnetwork-panel.service && \
+               curl -fsS --max-time 3 "http://127.0.0.1:${PANEL_PORT}/openapi.json" >/dev/null; then
+                break
+            fi
+            sleep 1
+        done
+        "$SMOKE" >>"$LOG_FILE" 2>&1 || rollback_ok=0
+    fi
+
+    if [[ "$rollback_ok" == "1" ]]; then
+        status_write "failed" "$CURRENT_STEP" 100 "Restore failed; previous data and settings were restored" || true
+    else
+        status_write "failed" "$CURRENT_STEP" 100 "Restore failed and automatic rollback needs administrator review" || true
+    fi
+
+    cleanup_sensitive_files || true
+    exit "$original_rc"
+}
+
+trap rollback ERR
+trap cleanup_sensitive_files EXIT
+
+exec 9>"/run/lock/pvnetwork-panel-restore.lock"
+if ! flock -n 9; then
+    status_write "failed" "lock" 100 "Another restore is already running"
+    exit 75
+fi
+
+status_write "running" "validating_archive" 10 "Validating backup archive"
+CURRENT_STEP="validating_archive"
+
+rm -rf -- "$EXTRACT_DIR"
+install -d -m 700 -o root -g root "$EXTRACT_DIR"
+
+PAYLOAD_DIR=$(/usr/bin/python3 - "$ARCHIVE" "$EXTRACT_DIR" <<'PY'
+import os
+import sys
+import tarfile
+from pathlib import Path
+
+archive_path = Path(sys.argv[1])
+extract_root = Path(sys.argv[2]).resolve()
+max_files = 100
+max_uncompressed = 512 * 1024 * 1024
+
+with tarfile.open(archive_path, mode="r:gz") as archive:
+    members = archive.getmembers()
+    if not members or len(members) > max_files:
+        raise SystemExit("invalid archive member count")
+    total = 0
+    for member in members:
+        member_path = Path(member.name)
+        if member_path.is_absolute() or ".." in member_path.parts:
+            raise SystemExit("unsafe archive path")
+        if member.issym() or member.islnk() or member.isdev():
+            raise SystemExit("archive links and devices are forbidden")
+        total += max(0, int(member.size))
+        if total > max_uncompressed:
+            raise SystemExit("archive expands beyond the allowed size")
+        destination = (extract_root / member_path).resolve()
+        if destination != extract_root and extract_root not in destination.parents:
+            raise SystemExit("archive path escapes extraction root")
+    archive.extractall(extract_root, filter="data")
+
+candidates = []
+for database_dump in extract_root.rglob("database.dump"):
+    parent = database_dump.parent
+    if (
+        database_dump.is_file()
+        and not database_dump.is_symlink()
+        and (parent / "env").is_file()
+        and not (parent / "env").is_symlink()
+        and (parent / "SHA256SUMS").is_file()
+        and not (parent / "SHA256SUMS").is_symlink()
+        and (parent / "RESTORE_TEST_OK").is_file()
+        and not (parent / "RESTORE_TEST_OK").is_symlink()
+    ):
+        candidates.append(parent.resolve())
+
+if len(candidates) != 1:
+    raise SystemExit("backup payload is missing or ambiguous")
+payload = candidates[0]
+if payload != extract_root and extract_root not in payload.parents:
+    raise SystemExit("payload escapes extraction root")
+print(payload)
+PY
+)
+
+/usr/bin/python3 - "$PAYLOAD_DIR" <<'PY'
+import hashlib
+import re
+import secrets
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+checksum_file = root / "SHA256SUMS"
+text = checksum_file.read_text(encoding="utf-8", errors="strict")
+if len(text) > 65536:
+    raise SystemExit("checksum file is too large")
+
+expected = {}
+for line in text.splitlines():
+    parts = line.strip().split(maxsplit=1)
+    if len(parts) != 2 or not re.fullmatch(r"[a-fA-F0-9]{64}", parts[0]):
+        continue
+    name = Path(parts[1].lstrip("* ")).name
+    if name in {"database.dump", "env"}:
+        expected[name] = parts[0].lower()
+
+for name in ("database.dump", "env"):
+    path = root / name
+    if not path.is_file() or path.is_symlink() or name not in expected:
+        raise SystemExit(f"missing verified file: {name}")
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    if not secrets.compare_digest(digest.hexdigest(), expected[name]):
+        raise SystemExit(f"checksum mismatch: {name}")
+PY
+
+status_write "running" "testing_database" 30 "Testing database restore in an isolated database"
+CURRENT_STEP="testing_database"
+
+PG_URL=$(cd "$APP" && "$APP/.venv/bin/python" - <<'PY'
+from sqlalchemy.engine import make_url
+from backend.db.engine import DATABASE_URL
+print(make_url(DATABASE_URL).set(drivername="postgresql").render_as_string(hide_password=False))
+PY
+)
+
+OWNER=$(cd "$APP" && "$APP/.venv/bin/python" - <<'PY'
+from sqlalchemy.engine import make_url
+from backend.db.engine import DATABASE_URL
+print(make_url(DATABASE_URL).username or "")
+PY
+)
+
+if [[ ! "$OWNER" =~ ^[A-Za-z_][A-Za-z0-9_-]{0,62}$ ]]; then
+    false
+fi
+
+export PG_URL OWNER
+export RESTORE_DUMP="$PAYLOAD_DIR/database.dump"
+
+"$APP/.venv/bin/python" - <<'PY' >>"$LOG_FILE" 2>&1
+import os
+import secrets
+import subprocess
+from sqlalchemy.engine import make_url
+
+url = make_url(os.environ["PG_URL"])
+name = "pvnetwork_ui_restore_test_" + secrets.token_hex(5)
+target = url.set(database=name).render_as_string(hide_password=False)
+try:
+    subprocess.run(
+        ["sudo", "-u", "postgres", "createdb", f"--owner={os.environ['OWNER']}", "--", name],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    subprocess.run(
+        [
+            "pg_restore",
+            "--exit-on-error",
+            "--no-owner",
+            "--no-acl",
+            "--dbname=" + target,
+            os.environ["RESTORE_DUMP"],
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    subprocess.run(
+        [
+            "psql",
+            "--dbname=" + target,
+            "--no-psqlrc",
+            "--tuples-only",
+            "--command=SELECT count(*) FROM users; SELECT count(*) FROM nodes;",
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+finally:
+    subprocess.run(
+        ["sudo", "-u", "postgres", "dropdb", "--if-exists", "--force", "--", name],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+PY
+
+status_write "running" "creating_rollback" 48 "Creating verified rollback backup"
+CURRENT_STEP="creating_rollback"
+
+if systemctl is-active --quiet pvnetwork-panel-backup.timer; then
+    systemctl stop pvnetwork-panel-backup.timer
+    TIMER_STOPPED=1
+fi
+
+for _ in $(seq 1 300); do
+    if ! systemctl is-active --quiet pvnetwork-panel-backup.service; then
+        break
+    fi
+    sleep 1
+done
+if systemctl is-active --quiet pvnetwork-panel-backup.service; then
+    false
+fi
+
+exec 8>"/run/lock/pvnetwork-panel-manual-backup.lock"
+flock -w 120 8
+
+BEFORE_BACKUP=$(find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -r | sed -n '1p')
+/usr/local/sbin/pvnetwork-panel-backup >>"$LOG_FILE" 2>&1
+AFTER_BACKUP=$(find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -r | sed -n '1p')
+
+if [[ -z "$AFTER_BACKUP" || "$AFTER_BACKUP" == "$BEFORE_BACKUP" ]]; then
+    false
+fi
+
+PRE_BACKUP="$BACKUP_ROOT/$AFTER_BACKUP"
+if [[ ! -s "$PRE_BACKUP/database.dump" || ! -s "$PRE_BACKUP/env" || ! -f "$PRE_BACKUP/RESTORE_TEST_OK" ]]; then
+    false
+fi
+
+install -m 600 -o root -g root "$APP/.env" "$CURRENT_ENV"
+
+export CURRENT_ENV MERGED_ENV
+export RESTORED_ENV="$PAYLOAD_DIR/env"
+cd "$APP"
+"$APP/.venv/bin/python" - <<'PY'
+import os
+import re
+from pathlib import Path
+from dotenv import dotenv_values, set_key
+
+current = dotenv_values(os.environ["CURRENT_ENV"])
+restored_path = Path(os.environ["RESTORED_ENV"])
+if restored_path.stat().st_size > 1024 * 1024:
+    raise SystemExit("environment file is too large")
+restored = dotenv_values(restored_path)
+if not restored:
+    raise SystemExit("environment file is empty")
+
+values = {}
+for key, value in restored.items():
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key or ""):
+        raise SystemExit("invalid environment key")
+    if value is None or "'" in value or "\n" in value or "\r" in value or "\x00" in value:
+        raise SystemExit("unsafe environment value")
+    values[key] = value
+
+target = os.environ["MERGED_ENV"]
+for key in ("DATABASE_URL", "PORT", "URLPATH"):
+    value = current.get(key)
+    if value is not None:
+        if "'" in value or "\n" in value or "\r" in value or "\x00" in value:
+            raise SystemExit("unsafe protected environment value")
+        values[key] = value
+
+Path(target).write_text("", encoding="utf-8")
+for key, value in values.items():
+    set_key(target, key, value, quote_mode="always")
+PY
+chmod 600 "$MERGED_ENV"
+/bin/bash -n "$MERGED_ENV"
+
+status_write "running" "restoring" 65 "Restoring users, nodes and panel settings"
+CURRENT_STEP="restoring"
+
+systemctl stop pvnetwork-panel.service
+install -m 600 -o root -g root "$MERGED_ENV" "$APP/.env"
+ENV_CHANGED=1
+DB_CHANGED=1
+
+pg_restore \
+    --clean \
+    --if-exists \
+    --no-owner \
+    --no-acl \
+    --exit-on-error \
+    --single-transaction \
+    --dbname="$PG_URL" \
+    "$PAYLOAD_DIR/database.dump" \
+    >>"$LOG_FILE" 2>&1
+
+status_write "running" "restarting" 82 "Restarting PVNetwork Panel"
+CURRENT_STEP="restarting"
+
+systemctl start pvnetwork-panel.service
+
+for _ in $(seq 1 40); do
+    if systemctl is-active --quiet pvnetwork-panel.service && \
+       curl -fsS --max-time 3 "http://127.0.0.1:${PANEL_PORT}/openapi.json" >/dev/null; then
+        break
+    fi
+    sleep 1
+done
+
+systemctl is-active --quiet pvnetwork-panel.service
+
+status_write "running" "smoke_test" 92 "Running final safety checks"
+CURRENT_STEP="smoke_test"
+
+"$SMOKE" >>"$LOG_FILE" 2>&1
+curl -fsS --max-time 10 "http://127.0.0.1:${PANEL_PORT}/openapi.json" |
+    "$APP/.venv/bin/python" -c '
+import json, sys
+paths = json.load(sys.stdin)["paths"]
+required = {
+    "/api/backups/",
+    "/api/backups/restore",
+    "/api/backups/restore/{job_id}",
+    "/api/backups/{backup_id}/download",
+}
+missing = required - set(paths)
+assert not missing, sorted(missing)
+' >>"$LOG_FILE" 2>&1
+
+if [[ "$TIMER_STOPPED" == "1" ]]; then
+    systemctl start pvnetwork-panel-backup.timer
+    TIMER_STOPPED=0
+fi
+DB_CHANGED=0
+ENV_CHANGED=0
+status_write "succeeded" "completed" 100 "Backup restored successfully"
+cleanup_sensitive_files
+trap - ERR EXIT
+exit 0

@@ -8,7 +8,7 @@ Run as `root` on a **fresh** supported server:
 bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.2/install.sh)
 ```
 
-The installer downloads the tagged release, installs the bundled PVNetwork source, creates runtime secrets locally, builds the frontend, applies database migrations, installs `ov-panel.service`, installs the lifecycle manager where supported and verifies the local API.
+The installer downloads the tagged release, installs the bundled PVNetwork source, creates runtime secrets locally, builds the frontend, applies database migrations, installs `pvnetwork-panel.service`, installs the lifecycle manager where supported and verifies the local API.
 
 Non-interactive installs can define:
 
@@ -26,7 +26,7 @@ Do not commit runtime values to Git.
 
 ## Critical rule for existing/production servers
 
-Assume an existing server is **live and under load**. The fresh installer intentionally refuses to overwrite a non-empty `/opt/ov-panel`.
+Assume an existing server is **live and under load**. The fresh installer intentionally refuses to overwrite a non-empty `/opt/pvnetwork-panel`.
 
 For an existing deployment:
 
@@ -55,10 +55,10 @@ Expose only the ports you actually use. A normal Internet-facing deployment shou
 ## After installation
 
 ```bash
-ovpv status
-ovpv doctor
-ovpv version
-ovpv backup
+pvnetwork status
+pvnetwork doctor
+pvnetwork version
+pvnetwork backup
 ```
 
 ## Responsive admin UI

@@ -1,0 +1,11 @@
+[Unit]
+Description=PVNetwork Panel periodic health check
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=2min
+RandomizedDelaySec=10s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

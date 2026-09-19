@@ -4,14 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.3-orange?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.4-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
-[![Upstream](https://img.shields.io/badge/upstream-OV--Panel-blue?style=flat-square)](https://github.com/primeZdev/ov-panel)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.4 vs v1.0.3
+
+**PVN-025 — PVNetwork brand purity and runtime ownership.** The tracked project now uses PVNetwork-owned application, service, package, storage and backup identifiers throughout. A blocking test scans every tracked text/path so the former upstream panel product identifier cannot return. Runtime naming is standardized on `/opt/pvnetwork-panel` and `pvnetwork-panel.service`, with safe compatibility for existing SQLite data and browser language preference.
+
+The release also aligns API/package/frontend/release version metadata on **1.0.4** and changes installer/update resolution to the maintained `DashSaman/OV-PvNetwork` releases. Production migration is backup-first and uses a parallel local canary plus atomic proxy switch before retiring the previous runtime.
+
+Latest release: **v1.0.4** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.4).
 
 ## What changed in v1.0.3 vs v1.0.2
 
@@ -23,9 +30,9 @@
 
 Node assignment changes are safety-gated: removed assignments are deactivated instead of deleting certificates, stale disabled profiles are reused where possible, and a newly selected unavailable node is rejected before mutation. Status/update synchronization is assignment-aware. Browser verification covers English LTR and Persian RTL on phone/tablet/desktop widths.
 
-Latest release: **v1.0.3** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.3).
+Previous release: **v1.0.3** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.3).
 
-PVNetwork Panel is a production-derived distribution and operations layer built on the open-source OV-Panel / OV-Node ecosystem. It keeps the simple OpenVPN user workflow while adding multi-node operations, renewal, AnyConnect integration, monitoring, security controls, backup/restore, health scoring, traffic controls and safer deployment tooling.
+PVNetwork Panel is the independently maintained PVNetwork control plane for multi-node OpenVPN operations, renewal, AnyConnect integration, monitoring, security controls, backup/restore, health scoring, traffic controls and safer deployment tooling.
 
 > **Production safety is a project rule:** deployments are assumed live and under load. Changes use backup/check → narrow mutation → smallest necessary restart → health verification → rollback readiness. Public repository content is sanitized and must not contain live users, infrastructure identifiers or secrets.
 
@@ -93,7 +100,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.3/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.4/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.
@@ -101,15 +108,15 @@ The installer uses the tagged release source instead of following an unpinned de
 After installation, use the lifecycle manager where supported by the deployment:
 
 ```bash
-ovpv status
-ovpv doctor
-ovpv version
-ovpv backup
-ovpv update
-ovpv rollback
+pvnetwork status
+pvnetwork doctor
+pvnetwork version
+pvnetwork backup
+pvnetwork update
+pvnetwork rollback
 ```
 
-For a production server that already has OVPanel or other services, do **not** run the fresh installer blindly. Review the update/migration path, create a backup and verify the current service health first.
+For a production server that already has a legacy panel deployment or other services, do **not** run the fresh installer blindly. Review the update/migration path, create a backup and verify the current service health first.
 
 Documentation:
 
@@ -187,4 +194,4 @@ See [SECURITY.md](./SECURITY.md) for reporting and deployment guidance.
 
 ## Credits
 
-OV-PvNetwork is derived from and interoperates with the MIT-licensed OV-Panel / OV-Node projects by PrimeZ. Upstream attribution is preserved in [NOTICE.md](./NOTICE.md) and [LICENSE](./LICENSE).
+PVNetwork includes modifications derived from an MIT-licensed panel foundation and interoperates with the `primeZdev/ov-node` node component. Required attribution is preserved in [NOTICE.md](./NOTICE.md) and [LICENSE](./LICENSE).

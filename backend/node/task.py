@@ -83,7 +83,7 @@ async def get_node_status_handler(node_id: int, db: Session):
     if not node:
         return None
 
-    # OV_FAILOPEN_EVENTLOOP_V1
+    # PVNETWORK_FAILOPEN_EVENTLOOP_V1
     address = str(node.address)
     port = int(node.port)
     api_key = str(node.key)
@@ -364,7 +364,7 @@ async def download_ovpn_client_from_node(
 async def delete_user_on_all_nodes(name: str, db: Session) -> dict:
     """Best-effort concurrent removal from every node.
 
-    OV_DELETE_USER_REUSE_V7
+    PVNETWORK_DELETE_USER_REUSE_V7
     Database deletion is decided by the caller. A temporarily unavailable
     node must not keep a username locked forever in the panel database.
     """

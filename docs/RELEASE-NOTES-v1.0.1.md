@@ -57,7 +57,7 @@ Production is assumed live. Do not replace the live tree blindly.
 1. Verify current health.
 2. Take a backup/snapshot appropriate to the deployment.
 3. Apply only the verified v1.0.1 release tree/build.
-4. Restart only the required `ov-panel` service.
+4. Restart only the required `pvnetwork-panel` service.
 5. Verify local/public panel health and critical user/node workflows.
 6. Roll back immediately if verification fails.
 
@@ -86,6 +86,6 @@ The numbered backlog includes WireGuard, Xray, additional protocols, Prometheus/
 - Only the PVNetwork panel service was restarted; unrelated VPN/tunnel/database services were not restarted.
 - Local panel HTTP: 200.
 - Public panel HTTP: 200.
-- `ov-panel.service`: active/enabled.
-- `ov-panel-monitor.timer`: active; first post-deploy run exited `0/SUCCESS`.
+- `pvnetwork-panel.service`: active/enabled.
+- `pvnetwork-panel-monitor.timer`: active; first post-deploy run exited `0/SUCCESS`.
 - Monitoring migration default: node online/offline alerts enabled.

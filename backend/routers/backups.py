@@ -21,10 +21,10 @@ from backend.schema.output import ResponseModel
 
 router = APIRouter(prefix="/backups", tags=["Backups"])
 
-BACKUP_ROOT = Path("/var/backups/ov-panel")
-JOB_ROOT = Path("/var/lib/ov-panel/restore-jobs")
-BACKUP_COMMAND = Path("/usr/local/sbin/ov-panel-backup")
-RESTORE_COMMAND = Path("/usr/local/sbin/ov-panel-restore-job")
+BACKUP_ROOT = Path("/var/backups/pvnetwork-panel")
+JOB_ROOT = Path("/var/lib/pvnetwork-panel/restore-jobs")
+BACKUP_COMMAND = Path("/usr/local/sbin/pvnetwork-panel-backup")
+RESTORE_COMMAND = Path("/usr/local/sbin/pvnetwork-panel-restore-job")
 MAX_UPLOAD_BYTES = 240 * 1024 * 1024
 BACKUP_ID_RE = re.compile(r"^\d{8}-\d{6}$")
 JOB_ID_RE = re.compile(r"^[a-f0-9]{24}$")
@@ -129,9 +129,9 @@ def _list_backup_directories() -> list[Path]:
 
 def _build_download_archive(directory: Path, destination: Path) -> None:
     selected = ("database.dump", "env", "SHA256SUMS", "RESTORE_TEST_OK")
-    root_name = f"ovpanel-backup-{directory.name}"
+    root_name = f"pvnetwork-backup-{directory.name}"
     manifest = {
-        "format": "ovpanel-manual-backup-v1",
+        "format": "pvnetwork-manual-backup-v1",
         "backup_id": directory.name,
         "created_at": _backup_row(directory)["created_at"],
         "restore_scope": "database-and-settings",
@@ -185,7 +185,7 @@ async def create_backup(user: dict = Depends(get_current_user)):
                     "-n",
                     "-E",
                     "75",
-                    "/run/lock/ov-panel-manual-backup.lock",
+                    "/run/lock/pvnetwork-panel-manual-backup.lock",
                     str(BACKUP_COMMAND),
                 ],
                 stdin=subprocess.DEVNULL,
@@ -222,7 +222,7 @@ async def download_backup(backup_id: str, user: dict = Depends(get_current_user)
         raise HTTPException(status_code=409, detail="Backup is not verified")
 
     descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f"ovpanel-backup-{backup_id}-",
+        prefix=f"pvnetwork-backup-{backup_id}-",
         suffix=".tar.gz",
         dir="/tmp",
     )
@@ -237,7 +237,7 @@ async def download_backup(backup_id: str, user: dict = Depends(get_current_user)
 
     return FileResponse(
         path=temporary,
-        filename=f"ovpanel-backup-{backup_id}.tar.gz",
+        filename=f"pvnetwork-backup-{backup_id}.tar.gz",
         media_type="application/gzip",
         headers={
             "Cache-Control": "no-store, max-age=0",
@@ -294,7 +294,7 @@ async def restore_backup(
         result = subprocess.run(
             [
                 "/usr/bin/systemd-run",
-                f"--unit=ov-panel-restore-{job_id}",
+                f"--unit=pvnetwork-panel-restore-{job_id}",
                 "--property=Type=oneshot",
                 "--collect",
                 "--no-block",

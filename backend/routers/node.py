@@ -25,7 +25,7 @@ from backend.node.task import (
 router = APIRouter(prefix="/nodes", tags=["Nodes"])
 
 
-# OV_NODE_HEALTH_CONTROL_V1
+# PVNETWORK_NODE_HEALTH_CONTROL_V1
 class NodeControlUpdate(BaseModel):
     drain: Optional[bool] = None
     weight: Optional[int] = Field(
@@ -222,7 +222,7 @@ async def delete_node(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    # OV_SAFE_NODE_DELETE_V2
+    # PVNETWORK_SAFE_NODE_DELETE_V2
     from backend.db.models import Node, UserNode
 
     if user["type"] != "main_admin":
@@ -335,7 +335,7 @@ async def delete_node(
         )
 
 
-# OV_AUTO_NODE_DEPLOY_V3
+# PVNETWORK_AUTO_NODE_DEPLOY_V3
 import threading
 import urllib.error
 import urllib.request
@@ -392,7 +392,7 @@ def _verify_node_from_panel(
         )
 
 
-# OV_AUTO_SYNC_NEW_NODE_V1
+# PVNETWORK_AUTO_SYNC_NEW_NODE_V1
 def _normalize_auto_node_name(raw_name: str, address: str) -> str:
     """
     Node names are also used inside OpenVPN certificate/client names.
@@ -609,7 +609,7 @@ def _run_deploy_job(job, request_data: dict) -> None:
             }
 
 
-        # OV_AUTO_ASSIGN_ALL_USERS_V3
+        # PVNETWORK_AUTO_ASSIGN_ALL_USERS_V3
         try:
             from backend.db.models import Node, UserNode
 
@@ -667,7 +667,7 @@ def _run_deploy_job(job, request_data: dict) -> None:
                     "systemctl",
                     "start",
                     "--no-block",
-                    "ov-node-user-reconcile.service",
+                    "pvnetwork-node-user-reconcile.service",
                 ],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,

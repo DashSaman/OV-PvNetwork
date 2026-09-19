@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../services/api';
 
-// OV_ANYCONNECT_USER_TOGGLE_V1
+// PVNETWORK_ANYCONNECT_USER_TOGGLE_V1
 const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
   const [status, setStatus] = useState(null);
   const [customPassword, setCustomPassword] = useState('');

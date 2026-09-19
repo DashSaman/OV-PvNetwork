@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+cd /opt/pvnetwork-panel
+STAMP=$(date -u +%Y%m%d-%H%M%S); DEST=/var/backups/pvnetwork-panel/$STAMP; mkdir -p "$DEST"; chmod 700 "$DEST"
+PG_URL=$(.venv/bin/python - <<'PY'
+from backend.db.engine import DATABASE_URL
+from sqlalchemy.engine import make_url
+print(make_url(DATABASE_URL).set(drivername='postgresql').render_as_string(hide_password=False))
+PY
+)
+OWNER=$(.venv/bin/python - <<'PY'
+from backend.db.engine import DATABASE_URL
+from sqlalchemy.engine import make_url
+print(make_url(DATABASE_URL).username)
+PY
+)
+tar --exclude=.venv --exclude=frontend/node_modules --exclude=frontend/dist -czf "$DEST/source.tar.gz" .
+cp -a .env "$DEST/env"; pg_dump -Fc --no-owner --no-acl -d "$PG_URL" -f "$DEST/database.dump"
+PG_URL="$PG_URL" OWNER="$OWNER" DUMP="$DEST/database.dump" .venv/bin/python - <<'PY'
+import os,secrets,subprocess
+from sqlalchemy.engine import make_url
+u=make_url(os.environ['PG_URL']); name='pvnetwork_restore_test_'+secrets.token_hex(5); target=u.set(database=name).render_as_string(hide_password=False)
+try:
+ subprocess.run(['sudo','-u','postgres','createdb','-O',os.environ['OWNER'],name],check=True)
+ subprocess.run(['pg_restore','--exit-on-error','--no-owner','--no-acl','-d',target,os.environ['DUMP']],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run(['psql','-d',target,'-c','SELECT count(*) FROM users; SELECT count(*) FROM nodes;'],check=True,stdout=subprocess.DEVNULL)
+finally:subprocess.run(['sudo','-u','postgres','dropdb','--if-exists','--force',name],check=False)
+PY
+sha256sum "$DEST/source.tar.gz" "$DEST/database.dump" "$DEST/env">"$DEST/SHA256SUMS"; touch "$DEST/RESTORE_TEST_OK"
+find /var/backups/pvnetwork-panel -mindepth 1 -maxdepth 1 -type d -mtime +14 -exec rm -rf -- {} +

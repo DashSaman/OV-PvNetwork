@@ -25,11 +25,17 @@ load_dotenv(
 )
 
 
-DEFAULT_SQLITE_PATH = (
-    PROJECT_ROOT /
-    "data" /
-    "ov-panel.db"
-)
+def _resolve_default_sqlite_path(data_dir: Path) -> Path:
+    canonical = data_dir / "pvnetwork-panel.db"
+    if canonical.exists():
+        return canonical
+    existing = sorted(path for path in data_dir.glob("*.db") if path.is_file())
+    if len(existing) == 1:
+        return existing[0]
+    return canonical
+
+
+DEFAULT_SQLITE_PATH = _resolve_default_sqlite_path(PROJECT_ROOT / "data")
 
 
 DEFAULT_DATABASE_URL = (
@@ -112,7 +118,7 @@ SessionLocal = sessionmaker(
 #
 # Backward compatibility.
 #
-# Existing OV-Panel code imports:
+# Existing PVNetwork Panel code imports:
 #
 #     sessionLocal
 #

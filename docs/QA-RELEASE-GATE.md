@@ -5,7 +5,7 @@ This file is blocking. A release is not publishable while any applicable item be
 ## 0. Production safety — mandatory
 
 - [ ] Treat Production as live and under load throughout the change.
-- [ ] Development happened on an isolated branch/worktree, not directly in `/opt/ov-panel`.
+- [ ] Development happened on an isolated branch/worktree, not directly in `/opt/pvnetwork-panel`.
 - [ ] No blanket firewall flush, default-route replacement, unrelated service restart, destructive DB reset or unnecessary credential/certificate rotation occurred.
 - [ ] A pre-deploy backup/check exists for every Production mutation.
 - [ ] Only the smallest required service is restarted.
@@ -90,6 +90,6 @@ The release is blocked until the applicable UI/quality tasks `PVN-100..139` in `
 ## User quick-edit browser gate
 
 - [ ] `node frontend/tests/inline-quick-edit-smoke.mjs` passes against the built preview.
-- [ ] Persian tests use the real `ovpanel_language=fa` storage key and verify `dir=rtl`; English verifies `dir=ltr`.
+- [ ] Persian tests use the real `pvnetwork_language=fa` storage key and verify `dir=rtl`; English verifies `dir=ltr`.
 - [ ] Quick Edit remains viewport-safe and its Reset/Cancel/Apply actions meet the mobile touch floor.
 - [ ] Node assignment request payload and assignment-aware status synchronization are covered.

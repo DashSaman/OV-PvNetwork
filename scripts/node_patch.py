@@ -11,7 +11,7 @@ import subprocess
 from core.logger import logger
 from core.schema.all_schemas import UsersUsage
 
-PROFILE_BUILDER = "/usr/local/sbin/ov-build-client-profile"
+PROFILE_BUILDER = "/usr/local/sbin/pvnetwork-build-client-profile"
 INSTALLER = "/root/openvpn-install.sh"
 CCD_DIR = "/etc/openvpn/server/ccd"
 MGMT_SOCKET = "/var/run/openvpn-server/server.sock"
@@ -148,7 +148,7 @@ def change_user_status(name: str, status: str) -> bool:
 
 
 def restart_openvpn_service() -> bool:
-    # Kept for compatibility. OV-PvNetwork intentionally avoids routine OpenVPN restarts.
+    # Kept for compatibility. PVNetwork intentionally avoids routine OpenVPN restarts.
     return True
 
 
@@ -335,7 +335,7 @@ def main() -> int:
     ensure_line(server_conf, "ccd-exclusive")
     ensure_line(server_conf, "status /var/log/openvpn/status.log 10")
     ensure_line(server_conf, "status-version 2")
-    print("OV-PvNetwork node compatibility patch applied")
+    print("PVNetwork node compatibility patch applied")
     return 0
 
 

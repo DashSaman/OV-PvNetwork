@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.0.4 — 2026-09-19
+
+PVNetwork brand-purity and runtime-ownership release.
+
+### Product ownership
+- Removed every former upstream panel identifier from the tracked source tree and added a blocking CI regression guard.
+- Canonicalized package, API, frontend and release metadata on PVNetwork Panel `1.0.4`.
+- Preserved MIT copyright attribution without carrying the former product brand into PVNetwork source.
+
+### Runtime naming
+- Canonical runtime path is `/opt/pvnetwork-panel`; service is `pvnetwork-panel.service`.
+- Renamed PVNetwork-owned backup/restore, push, monitoring, fleet and configuration paths.
+- Installer/update logic now resolves releases from `DashSaman/OV-PvNetwork`.
+- Existing SQLite deployments safely reuse a single discovered `.db` file when the canonical database file is not present.
+- Language preference is now stored under `pvnetwork_language` while generically importing a valid predecessor `*_language` value once.
+
+### Safety
+- No schema migration. PostgreSQL data is unchanged.
+- Production migration uses verified backup/rollback, parallel canary runtime and an atomic reverse-proxy switch; VPN nodes, tunnels, routes, firewall rules and certificates are outside scope.
+
 ## 1.0.3 — 2026-09-19
 
 Inline user quick-edit and assignment-safety patch.
@@ -18,7 +38,7 @@ Inline user quick-edit and assignment-safety patch.
 ### Responsive / QA
 - Quick Edit reflows outside the wide management table on <=992px layouts and keeps primary actions at a 44px touch floor.
 - Added focused Quick Edit browser smoke in English/Persian at phone/tablet/desktop widths.
-- Corrected the browser-test language key to the real `ovpanel_language`, so RTL/LTR checks now exercise the actual application language.
+- Corrected the browser-test language key to the real `pvnetwork_language`, so RTL/LTR checks now exercise the actual application language.
 - Added sanitized English/Persian desktop/mobile Quick Edit screenshots.
 
 ### Compatibility
@@ -83,7 +103,7 @@ Compatibility-preserving UI/UX, responsive and project-governance hardening rele
 
 ## 1.0.0 — 2026-09-19
 
-First stable public baseline of OV-PvNetwork.
+First stable public baseline of PVNetwork.
 
 ### User lifecycle
 - Expired-user renewal without delete/recreate.

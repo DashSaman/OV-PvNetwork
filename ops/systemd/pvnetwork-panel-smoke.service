@@ -1,0 +1,7 @@
+[Unit]
+Description=PVNetwork Panel smoke test
+After=pvnetwork-panel.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pvnetwork-panel-smoke-test

@@ -81,7 +81,7 @@ async def check_user_used_traffic():
 
         for node in nodes:
             try:
-                # OV_FAILOPEN_EVENTLOOP_V1
+                # PVNETWORK_FAILOPEN_EVENTLOOP_V1
                 # Do not hold an idle DB transaction while a remote node
                 # is being queried. expire_on_commit=False keeps node fields.
                 db.commit()

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PVNetwork shared traffic sync
+
+[Timer]
+OnBootSec=60s
+OnUnitInactiveSec=60s
+AccuracySec=2s
+Unit=pvnetwork-usage-sync.service
+
+[Install]
+WantedBy=timers.target

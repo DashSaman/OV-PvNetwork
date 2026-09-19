@@ -1,7 +1,7 @@
 [project]
-name = "ov-panel"
-version = "1.7.10"
-description = "An OpenVPN client management panel on the server"
+name = "pvnetwork-panel"
+version = "1.0.4"
+description = "PVNetwork multi-node OpenVPN control plane"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -24,4 +24,5 @@ dependencies = [
     "colorama",
     "psycopg[binary]>=3.2,<4",
     "paramiko>=5.0.0",
+    "pywebpush>=2.4,<3",
 ]

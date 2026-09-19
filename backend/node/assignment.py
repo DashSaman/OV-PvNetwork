@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 
-# OV_FAILOPEN_EVENTLOOP_V1
+# PVNETWORK_FAILOPEN_EVENTLOOP_V1
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -210,7 +210,7 @@ async def create_user_on_assigned_nodes(
     user_nodes remains the desired assignment.
     Reachable nodes are provisioned immediately.
     Unreachable/maintenance/draining nodes stay assigned and are
-    reconciled later by ov-node-user-reconcile.timer.
+    reconciled later by pvnetwork-node-user-reconcile.timer.
     """
     nodes = get_user_nodes(
         db,

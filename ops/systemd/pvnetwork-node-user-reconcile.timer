@@ -1,0 +1,11 @@
+[Unit]
+Description=PVNetwork periodic user reconciliation
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=30min
+Persistent=true
+Unit=pvnetwork-node-user-reconcile.service
+
+[Install]
+WantedBy=timers.target
