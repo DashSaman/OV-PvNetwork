@@ -25,6 +25,10 @@
 - PVN-021 Safe parallel execution policy for independent non-Production work
 - PVN-022 Safe multi-node username rename with profile migration/rollback
 - PVN-023 Remove duplicate Push test route / duplicate OpenAPI Operation ID warning
+- PVN-024 Owner-authorized live Production deployment contract after verification
+- PVN-025 Complete PVNetwork-owned panel/runtime namespace migration
+- PVN-026 User creation node selector; all available by default, explicit assignments authoritative
+- PVN-027 Consistent unique online-user state across Dashboard and Users with node-direct fallback when central session hooks are missing
 
 `AGENTS.md` defines the execution contract. This file is the readable numbered capability registry. IDs are permanent; do not renumber or reuse them. Completion requires the Definition of Done in `AGENTS.md` and the release gate in `docs/QA-RELEASE-GATE.md`.
 
