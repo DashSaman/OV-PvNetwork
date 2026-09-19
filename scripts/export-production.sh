@@ -25,13 +25,13 @@ rsync -a \
 
 for f in \
   /etc/systemd/system/pvnetwork-panel.service \
-  /etc/systemd/system/ov-node-user-reconcile.service \
-  /etc/systemd/system/ov-node-user-reconcile.timer \
-  /etc/systemd/system/ov-production-healthcheck.service \
-  /etc/systemd/system/ov-production-healthcheck.timer \
-  /usr/local/sbin/ov-node-user-reconcile.py \
-  /usr/local/sbin/ov-production-healthcheck \
-  /usr/local/sbin/ov-sub-push-sender.py
+  /etc/systemd/system/pvnetwork-node-user-reconcile.service \
+  /etc/systemd/system/pvnetwork-node-user-reconcile.timer \
+  /etc/systemd/system/pvnetwork-panel-healthcheck.service \
+  /etc/systemd/system/pvnetwork-panel-healthcheck.timer \
+  /usr/local/sbin/pvnetwork-node-user-reconcile.py \
+  /usr/local/sbin/pvnetwork-panel-healthcheck \
+  /usr/local/sbin/pvnetwork-sub-push-sender.py
 do
   [[ -f "$f" ]] && cp -a "$f" "$STAGE/system/$(basename "$f")"
 done

@@ -667,7 +667,7 @@ def _run_deploy_job(job, request_data: dict) -> None:
                     "systemctl",
                     "start",
                     "--no-block",
-                    "ov-node-user-reconcile.service",
+                    "pvnetwork-node-user-reconcile.service",
                 ],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,

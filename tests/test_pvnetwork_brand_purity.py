@@ -141,6 +141,23 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
         self.assertIn("ov-node.service", health)
         self.assertIn("/opt/ov-node/.env", health)
 
+    def test_node_reconcile_runtime_is_pvnetwork_owned(self):
+        root = Path(__file__).resolve().parents[1]
+        required = [
+            "scripts/pvnetwork-node-user-reconcile.py",
+            "ops/systemd/pvnetwork-node-user-reconcile.service",
+            "ops/systemd/pvnetwork-node-user-reconcile.timer",
+        ]
+        missing = [rel for rel in required if not (root / rel).is_file()]
+        self.assertEqual([], missing)
+        router = (root / "backend/routers/node.py").read_text()
+        assignment = (root / "backend/node/assignment.py").read_text()
+        export = (root / "scripts/export-production.sh").read_text()
+        self.assertIn("pvnetwork-node-user-reconcile.service", router)
+        self.assertIn("pvnetwork-node-user-reconcile.timer", assignment)
+        self.assertIn("pvnetwork-node-user-reconcile.service", export)
+        self.assertIn("pvnetwork-node-user-reconcile.py", export)
+
     def test_lifecycle_cli_is_pvnetwork_owned(self):
         root = Path(__file__).resolve().parents[1]
         install = (root / "install-local.sh").read_text()

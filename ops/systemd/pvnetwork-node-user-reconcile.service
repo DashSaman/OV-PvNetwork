@@ -1,0 +1,12 @@
+[Unit]
+Description=PVNetwork reconcile active users on active nodes
+After=network-online.target pvnetwork-panel.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/pvnetwork-panel
+Environment=PYTHONPATH=/opt/pvnetwork-panel
+ExecStart=/usr/bin/flock -n /run/pvnetwork-node-user-reconcile.lock /opt/pvnetwork-panel/.venv/bin/python3 /usr/local/sbin/pvnetwork-node-user-reconcile.py
+TimeoutStartSec=30min
+Nice=10
