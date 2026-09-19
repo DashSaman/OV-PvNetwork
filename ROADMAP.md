@@ -1,76 +1,31 @@
 # PVNetwork Panel Roadmap
 
-This roadmap keeps released tags immutable. Detailed permanent task IDs live in `AGENTS.md` and `docs/FEATURE-BACKLOG.md`.
+> Production is live and under load. `AGENTS.md` is the execution source of truth. This public roadmap is a sanitized summary only.
 
-## v1.0.0 — released stable baseline
+## Released
 
-- Expired/unlimited user renewal without delete/recreate.
-- Finite renewal modes: preserve, reset and add traffic.
-- Renewal support in Mirza integration.
-- Unlimited Reset Usage starts a new 30-day period.
-- Multi-node OpenVPN, AnyConnect integration, fleet, operations, bandwidth, monitoring and security foundations.
-- Sanitized public source, bilingual illustrated docs, release artifact and SHA256.
+### v1.0.0
+- Sanitized stable public baseline.
+- User renewal without delete/recreate, unlimited 30-day reset behavior, Mirza renewal endpoint.
+- Bilingual illustrated documentation, release artifact and SHA256.
 
-## v1.1.0 — UI/UX, responsive and project-governance hardening
+### v1.0.1
+- Main-admin responsive/mobile hardening across current primary routes and key dialogs.
+- Telegram Node DOWN/UP transition alerts with deduplication and a Monitoring Settings toggle.
+- Sanitized Persian/English desktop/mobile screenshots and regression gates.
 
-Release goal: make every existing panel area consistently usable on desktop, tablet and phone before adding another large feature family.
+## Sequential patch queue
 
-- Persistent Production-safety and Agent execution contract.
-- Numbered `PVN-xxx` backlog and competitor-gap matrix.
-- Design-system and blocking QA/release gate.
-- Responsive hardening at 360–1920 px plus 125%/150% zoom checks.
-- Touch-target, keyboard, focus, reduced-motion and contrast hardening.
-- Persian RTL and English LTR audits.
-- Mobile-safe action menus, tables, dialogs, search/sort/pagination and fixed navigation.
-- Loading/empty/error/retry and duplicate-submit consistency.
-- Automated governance/UI smoke tests and stronger CI/secret guards.
-- Refreshed sanitized Persian/English illustrated documentation.
-- New `v1.1.0` GitHub Release only after all mandatory release gates pass.
+PVNetwork now advances **one Production-visible task per patch release**: `v1.0.2`, `v1.0.3`, `v1.0.4`, ... . Exact task status and the next release are always recorded in `AGENTS.md`.
 
-Primary blockers: `PVN-100..139` plus all applicable items in `docs/QA-RELEASE-GATE.md`.
+- **v1.0.2 — IN PROGRESS:** PVN-111, responsive Subscription page.
+- Following patches continue the first genuinely open `PVN-xxx` item in `AGENTS.md`; already-completed items are never repeated.
+- Each release refreshes the relevant Persian/English visual documentation, changelog/release notes, sanitized artifact and SHA256.
 
-## v1.2.x — user lifecycle, devices, observability and automation
+## Capability streams after current UX blockers
 
-- Periodic traffic reset and scheduled renewal.
-- Multi-stage expiry and traffic-threshold notifications.
-- Generic signed webhooks and resilient background/retry jobs.
-- Prometheus/Grafana and long-term node/user traffic history.
-- Top users/nodes analytics and CSV/Excel/PDF reporting.
-- Device inventory, session revoke and HWID/device limits.
-- Self-service portal and QR connection outputs.
-- Node capacity/admission/failover and richer assignment policies.
-- Management Telegram bot and expanded Mirza lifecycle parity.
-- Import/export and migration foundations.
-
-Detailed tasks: `PVN-200..499` and `PVN-600..699`.
-
-## v1.3.x — enterprise identity, policy, HA and operations
-
-- Granular RBAC/custom roles.
-- OAuth2/OIDC and Passkey/WebAuthn.
-- LDAP, RADIUS and SAML SSO.
-- Certificate/TLS management and renewal visibility.
-- Split-tunnel, destination and GeoIP/GeoSite policy management.
-- Control-plane/PostgreSQL/reverse-proxy HA guides and tested DR workflow.
-- Installer/update/backup/rollback hardening, signed artifacts, SBOM and compatibility matrices.
-
-Detailed tasks: `PVN-500..599` and `PVN-800..899`.
-
-## v2.0 — optional universal VPN/proxy control plane
-
-Subject to explicit architecture approval after the OpenVPN/AnyConnect line is stable:
-
-- WireGuard and Xray cores.
-- VLESS, VMess, Trojan, Shadowsocks, REALITY, Hysteria2, TUIC and Sing-box.
-- Multi-protocol user identity and protocol-aware quota/session accounting.
-- Base64/Xray JSON/Sing-box/Clash-Mihomo subscriptions and User-Agent negotiation.
-- Subscription template editor/response rules.
-- WARP, custom outbound pools, chaining, load balancing and failover.
-- Host abstraction, reusable config profiles and protocol capability negotiation.
-- Migration assistants and client compatibility suites.
-
-Detailed tasks: `PVN-700..799` and `PVN-900..999`.
+The permanent numbered backlog remains in `docs/FEATURE-BACKLOG.md` and covers: user lifecycle and scheduled renewal/reset; notifications; device/HWID/session control; QR and multi-format subscriptions; node/fleet/routing/capacity; Prometheus/Grafana/logging/reporting; enterprise identity/RBAC; webhooks/bots/jobs; WireGuard/Xray/Sing-box and optional proxy protocols; installer/update/backup/rollback; HA/DR; migrations and compatibility.
 
 ## Release rule
 
-Every Production-visible behavior change gets a version, changelog entry and tagged GitHub Release. Existing tags/assets are immutable. No release is promoted while its blocking `PVN-xxx` QA/security tasks remain open or Production-health verification is unresolved.
+Released tags/assets are immutable. Every new Production-visible `PVN-xxx` task ships as the next sequential `1.0.x` GitHub Release after applicable tests, sanitization, verified backup, narrow deployment, health verification, bilingual documentation and release-asset verification pass.

@@ -5,7 +5,7 @@
 Run as `root` on a **fresh** supported server:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.1.0/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.2/install.sh)
 ```
 
 The installer downloads the tagged release, installs the bundled PVNetwork source, creates runtime secrets locally, builds the frontend, applies database migrations, installs `ov-panel.service`, installs the lifecycle manager where supported and verifies the local API.
@@ -19,7 +19,7 @@ export PVNETWORK_PORT=19000
 export PVNETWORK_PATH=panel
 export PVNETWORK_PUBLIC_URL='https://vpn.example.com'
 export PVNETWORK_CORS_ORIGINS='https://vpn.example.com'
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.1.0/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.2/install.sh)
 ```
 
 Do not commit runtime values to Git.

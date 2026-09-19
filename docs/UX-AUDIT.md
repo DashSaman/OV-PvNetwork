@@ -1,4 +1,4 @@
-# PVNetwork UI/UX Audit — v1.1.0
+# PVNetwork UI/UX Audit — sequential 1.0.x hardening
 
 Status values: `PASS`, `PARTIAL`, `OPEN`, `N/A`. A page cannot be marked PASS from code inspection alone when interaction or viewport behavior needs browser verification.
 
@@ -84,7 +84,7 @@ For each release-visible page/workflow, record PASS/FAIL at: `360`, `375`, `390`
 
 ## Current code observations
 
-The existing frontend already has a responsive breakpoint near 992 px, a mobile bottom navigation, table-container horizontal scrolling, responsive admin cards and stacked modal actions near 768 px. These are useful foundations but do not by themselves prove full phone/tablet usability or accessibility. v1.1.0 hardening focuses on global primitives first, then page-specific exceptions.
+The existing frontend already has a responsive breakpoint near 992 px, a mobile bottom navigation, table-container horizontal scrolling, responsive admin cards and stacked modal actions near 768 px. These are useful foundations but do not by themselves prove full phone/tablet usability or accessibility. The sequential 1.0.x UX hardening stream focuses on global primitives first, then page-specific exceptions, with one Production-visible PVN task per patch release.
 
 ## Evidence policy
 

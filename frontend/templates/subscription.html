@@ -1633,6 +1633,43 @@ html[data-theme="light"] .pn-notify-test{
 }
 </style>
 
+<style>
+/* PVN-111 / v1.0.2 — mobile subscription touch-target hardening */
+@media (max-width:768px), (hover:none) and (pointer:coarse){
+  .pn-notify-test,
+  .linux-copy-btn,
+  .copy,
+  .renewal-btn,
+  .icon-btn{
+    min-height:44px !important;
+  }
+
+  .copy,
+  .icon-btn{
+    min-width:44px !important;
+  }
+
+  .any-row{
+    grid-template-columns:minmax(0,1fr) 44px !important;
+    align-items:stretch !important;
+  }
+
+  .any-row .any-label{
+    grid-column:1 / -1 !important;
+  }
+
+  .any-row .any-value{
+    min-width:0 !important;
+    width:100% !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  .linux-command-shell > .linux-copy-btn{
+    min-height:44px !important;
+  }
+}
+</style>
+
 
 <link rel="icon" type="image/webp" href="/sub-clients/private-network.webp">
 <link rel="shortcut icon" type="image/webp" href="/sub-clients/private-network.webp">

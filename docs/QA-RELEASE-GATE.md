@@ -83,6 +83,6 @@ Release-visible admin and subscription flows must be checked at 360, 375, 390, 4
 - [ ] Source artifact and `.sha256` asset are uploaded and verified.
 - [ ] Final Production health verification passes after deployment (or deployment is explicitly not part of the release).
 
-## v1.1.0 mandatory task IDs
+## Active patch mandatory task IDs
 
 The release is blocked until the applicable UI/quality tasks `PVN-100..139` in `AGENTS.md` are either `[x] DONE` with evidence or explicitly deferred/rejected with a documented reason that does not compromise core accessibility/availability.

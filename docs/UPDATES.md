@@ -23,17 +23,17 @@ ovpv update
 
 Where the lifecycle manager is installed, it resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env`/state, applies required migrations/builds, restarts only `ov-panel.service`, then verifies the local API. Failed health verification must trigger rollback rather than repeated blind mutation.
 
-## Target v1.1.0 explicitly
+## Target a specific patch explicitly
 
 ```bash
-OVPV_REF=v1.1.0 ovpv update
+OVPV_REF=v1.0.2 ovpv update
 ```
 
 A branch name can be used in a disposable/staging environment, but Production should normally consume a reviewed tagged release.
 
-## v1.0.0 → v1.1.0 notes
+## Sequential patch update notes
 
-v1.1.0 is primarily UI/UX, responsive and governance hardening. It does not intentionally change the user identity model or Production routing/firewall behavior and does not require a new database migration for those UI changes.
+Patch releases are sequential. Review the target release notes before every update; a patch may include UI, backend or additive database migrations, but must preserve the live-Production safety contract and document upgrade/rollback requirements.
 
 After upgrading, verify:
 
