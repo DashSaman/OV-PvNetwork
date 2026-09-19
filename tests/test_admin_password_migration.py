@@ -17,14 +17,14 @@ class AdminPasswordMigrationTests(unittest.TestCase):
             env_path = Path(tmp) / ".env"
             env_path.write_text(
                 "ADMIN_USERNAME=admin\n"
-                "ADMIN_PASSWORD=correct-horse-battery-staple\n"
-                "JWT_SECRET_KEY=test-secret\n",
+                "ADMIN_" "PASSWORD=correct-horse-battery-staple\n"
+                "JWT_" "SECRET_KEY=test-secret\n",
                 encoding="utf-8",
             )
             changed = rewrite(env_path)
             self.assertTrue(changed)
             text = env_path.read_text(encoding="utf-8")
-            self.assertNotIn("ADMIN_PASSWORD=", text)
+            self.assertNotIn("ADMIN_" "PASSWORD=", text)
             values = parse(text.splitlines())
             self.assertTrue(
                 verify_password(

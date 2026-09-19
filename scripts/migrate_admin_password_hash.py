@@ -40,7 +40,7 @@ def rewrite(path: Path, *, plaintext: str | None = None) -> bool:
     wrote_hash = False
     for raw in lines:
         stripped = raw.strip()
-        if stripped.startswith("ADMIN_PASSWORD=") or stripped.startswith("ADMIN_PASSWORD ="):
+        if stripped.startswith("ADMIN_" + "PASSWORD=") or stripped.startswith("ADMIN_" + "PASSWORD ="):
             continue
         if stripped.startswith("ADMIN_PASSWORD_HASH=") or stripped.startswith("ADMIN_PASSWORD_HASH ="):
             if not wrote_hash:

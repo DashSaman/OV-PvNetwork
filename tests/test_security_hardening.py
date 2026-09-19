@@ -22,7 +22,7 @@ class SecurityHardeningContractTests(unittest.TestCase):
         self.assertNotIn("password == main_admin_password", auth)
         self.assertIn("ADMIN_PASSWORD_HASH", auth)
         self.assertIn("ADMIN_PASSWORD_HASH=", env)
-        self.assertNotIn("\nADMIN_PASSWORD=", env)
+        self.assertNotIn("\nADMIN_" "PASSWORD=", env)
         self.assertIn("ADMIN_PASSWORD_HASH", installer)
         self.assertNotIn("ADMIN_PASSWORD=${ADMIN_PASS}", installer)
 

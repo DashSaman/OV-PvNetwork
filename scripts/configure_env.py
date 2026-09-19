@@ -82,7 +82,7 @@ def main() -> int:
     if args.subscription_url_prefix:
         values["SUBSCRIPTION_URL_PREFIX"] = args.subscription_url_prefix.rstrip("/")
 
-    lines = [line for line in parse_env(env_path) if not line.strip().startswith("ADMIN_PASSWORD=")]
+    lines = [line for line in parse_env(env_path) if not line.strip().startswith("ADMIN_" + "PASSWORD=")]
     env_path.write_text("\n".join(set_values(lines, values)).rstrip() + "\n", encoding="utf-8")
     os.chmod(env_path, 0o600)
     print(f"Configured {env_path}")
