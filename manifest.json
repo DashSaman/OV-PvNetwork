@@ -1,13 +1,9 @@
 {
   "project": "PVNetwork Panel",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "channel": "stable",
   "project_repo": "DashSaman/OV-PvNetwork",
   "release_asset": "pvnetwork-panel-v1.0.0.tar.gz",
-  "base_panel": {
-    "repo": "primeZdev/ov-panel",
-    "tag": "v1.7.10"
-  },
   "base_node": {
     "repo": "primeZdev/ov-node",
     "tag": "v1.3.6"

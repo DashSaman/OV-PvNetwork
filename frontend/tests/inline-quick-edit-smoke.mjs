@@ -49,7 +49,7 @@ for (const language of languages) {
     await context.addInitScript(({ language, authToken }) => {
       localStorage.setItem('authToken', authToken);
       localStorage.setItem('userRole', 'main_admin');
-      localStorage.setItem('ovpanel_language', language);
+      localStorage.setItem('pvnetwork_language', language);
     }, { language, authToken: token() });
     const page = await context.newPage();
     await page.route('**/api/**', async route => {

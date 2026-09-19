@@ -1172,7 +1172,7 @@ const ServerStats = () => {
             width .35s ease;
         }
 
-        .ov-panel-grid {
+        .pvnetwork-panel-grid {
           display: grid;
           grid-template-columns:
             repeat(4, minmax(0, 1fr));
@@ -1188,7 +1188,7 @@ const ServerStats = () => {
 
         @media (max-width: 1050px) {
           .ov-summary-grid,
-          .ov-panel-grid {
+          .pvnetwork-panel-grid {
             grid-template-columns:
               repeat(2, minmax(0, 1fr));
           }
@@ -1206,7 +1206,7 @@ const ServerStats = () => {
 
           .ov-hero-rates,
           .ov-summary-grid,
-          .ov-panel-grid,
+          .pvnetwork-panel-grid,
           .ov-node-grid {
             grid-template-columns: 1fr;
           }
@@ -1295,7 +1295,7 @@ const ServerStats = () => {
           <h3 className="ov-section-title">
             <FiCpu />{t("ui.88a55778015f")}</h3>
 
-          <div className="ov-panel-grid">
+          <div className="pvnetwork-panel-grid">
             <MetricBox icon={<FiCpu />} label="Panel CPU" value={`${Number(stats.cpu || 0).toFixed(1)}%`} accent="#fb923c" />
 
             <MetricBox icon={<BsDeviceSsd />} label="Panel RAM" value={`${Number(stats.memory_percent || 0).toFixed(1)}%`} hint={`${formatBytes(stats.memory_used)} / ${formatBytes(stats.memory_total)}`} accent="#34d399" />

@@ -12,7 +12,7 @@ from sqlalchemy.orm import (
 
 
 # ==========================================================
-# OV DATABASE FOUNDATION V2
+# PVNETWORK DATABASE FOUNDATION V2
 # ==========================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -28,7 +28,7 @@ load_dotenv(
 DEFAULT_SQLITE_PATH = (
     PROJECT_ROOT /
     "data" /
-    "ov-panel.db"
+    "pvnetwork-panel.db"
 )
 
 
@@ -112,7 +112,7 @@ SessionLocal = sessionmaker(
 #
 # Backward compatibility.
 #
-# Existing OV-Panel code imports:
+# Existing modules import:
 #
 #     sessionLocal
 #

@@ -44,12 +44,12 @@ _PASSWORD_ALPHABET = (
 )
 _CREDENTIAL_KEY_PATH = Path(
     os.getenv(
-        "OV_ANYCONNECT_CREDENTIAL_KEY_FILE",
-        "/etc/ovpanel/anyconnect-credential-fernet.key",
+        "PVNETWORK_ANYCONNECT_CREDENTIAL_KEY_FILE",
+        "/etc/pvnetwork/anyconnect-credential-fernet.key",
     )
 )
 _PUBLIC_SERVER = os.getenv(
-    "OV_ANYCONNECT_PUBLIC_SERVER",
+    "PVNETWORK_ANYCONNECT_PUBLIC_SERVER",
     "vpn.example.com:9443",
 ).strip() or "vpn.example.com:9443"
 _OCCTL_SOCKET = "/run/ocserv/occtl.sock"
@@ -402,10 +402,10 @@ def _disconnect_local_ocserv(username: str) -> bool:
 
 def _gateway_state() -> dict:
     docker_ready = Path(
-        "/etc/ovpanel/anyconnect-docker-canary.env"
+        "/etc/pvnetwork/anyconnect-docker-canary.env"
     ).is_file()
     gateway_ready = Path(
-        "/etc/ovpanel/anyconnect-gateway.env"
+        "/etc/pvnetwork/anyconnect-gateway.env"
     ).is_file()
     return {
         "docker_ready": docker_ready,

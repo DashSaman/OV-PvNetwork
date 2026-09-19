@@ -23,8 +23,8 @@ router = APIRouter(
     tags=["Subscription Push"],
 )
 
-SW_PATH = Path("/opt/ov-panel/frontend/push/pn-sw.js")
-VAPID_PUBLIC_PATH = Path("/etc/ov-panel/push/vapid-public.txt")
+SW_PATH = Path("/opt/pvnetwork-panel/frontend/push/pn-sw.js")
+VAPID_PUBLIC_PATH = Path("/etc/pvnetwork/push/vapid-public.txt")
 
 
 def _public_origin() -> str:
@@ -289,7 +289,7 @@ async def test_push(uuid: str, payload: PushTestIn, db: Session = Depends(get_db
         response = webpush(
             subscription_info={"endpoint": row["endpoint"], "keys": {"p256dh": row["p256dh"], "auth": row["auth"]}},
             data=json.dumps(data, ensure_ascii=False),
-            vapid_private_key="/etc/ov-panel/push/vapid-private.pem",
+            vapid_private_key="/etc/pvnetwork/push/vapid-private.pem",
             vapid_claims={"sub": _public_origin()},
             headers={"Urgency": "high"}, ttl=300, timeout=12,
         )
@@ -345,7 +345,7 @@ async def test_push(uuid: str, payload: PushTestIn, db: Session = Depends(get_db
         response = webpush(
             subscription_info={"endpoint": row["endpoint"], "keys": {"p256dh": row["p256dh"], "auth": row["auth"]}},
             data=json.dumps(data, ensure_ascii=False),
-            vapid_private_key="/etc/ov-panel/push/vapid-private.pem",
+            vapid_private_key="/etc/pvnetwork/push/vapid-private.pem",
             vapid_claims={"sub": _public_origin()},
             headers={"Urgency": "normal"}, ttl=120, timeout=12,
         )

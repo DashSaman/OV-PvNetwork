@@ -1682,7 +1682,7 @@ main {
 .ovdash,
 .ov-node-grid,
 .ov-summary-grid,
-.ov-panel-grid {
+.pvnetwork-panel-grid {
     perspective: 1400px;
 }
 
@@ -2101,7 +2101,7 @@ main {
 
 @media (max-width: 980px) {
     .ov-summary-grid,
-    .ov-panel-grid {
+    .pvnetwork-panel-grid {
         grid-template-columns: 1fr 1fr !important;
     }
 
@@ -2151,7 +2151,7 @@ main {
     }
 
     .ov-summary-grid,
-    .ov-panel-grid,
+    .pvnetwork-panel-grid,
     .ov-node-grid {
         grid-template-columns: 1fr !important;
         gap: 14px !important;

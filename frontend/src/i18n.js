@@ -23,7 +23,7 @@ export const resources = {
 };
 
 const normalize = value => String(value || '').replace('-', '_');
-const saved = normalize(window.localStorage.getItem('ovpanel_language'));
+const saved = normalize(window.localStorage.getItem('pvnetwork_language'));
 const browser = normalize(window.navigator.language);
 const initial = resources[saved] ? saved
   : resources[browser] ? browser
@@ -49,7 +49,7 @@ i18n.use(initReactI18next).init({
 applyDocumentLanguage(initial);
 i18n.on('languageChanged', language => {
   const normalized = normalize(language);
-  window.localStorage.setItem('ovpanel_language', normalized);
+  window.localStorage.setItem('pvnetwork_language', normalized);
   applyDocumentLanguage(normalized);
 });
 

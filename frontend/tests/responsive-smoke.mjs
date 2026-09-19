@@ -111,7 +111,7 @@ for (const language of languages) {
     await context.addInitScript(({ token, language }) => {
       localStorage.setItem('authToken', token);
       localStorage.setItem('userRole', 'main_admin');
-      localStorage.setItem('ovpanel_language', language);
+      localStorage.setItem('pvnetwork_language', language);
     }, { token: demoToken(), language });
 
     const page = await context.newPage();
@@ -250,7 +250,7 @@ for (const language of languages) {
     const context = await browser.newContext({ viewport: { width, height: width <= 430 ? 820 : 900 } });
     await context.addInitScript(language => {
       localStorage.clear();
-      localStorage.setItem('ovpanel_language', language);
+      localStorage.setItem('pvnetwork_language', language);
     }, language);
     const page = await context.newPage();
     try {

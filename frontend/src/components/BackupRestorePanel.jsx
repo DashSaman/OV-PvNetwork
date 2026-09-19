@@ -116,7 +116,7 @@ export default function BackupRestorePanel() {
       const href = URL.createObjectURL(response.data);
       const anchor = document.createElement('a');
       anchor.href = href;
-      anchor.download = `ovpanel-backup-${backup.id}.tar.gz`;
+      anchor.download = `pvnetwork-backup-${backup.id}.tar.gz`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
