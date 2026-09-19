@@ -84,6 +84,17 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
         self.assertEqual(version, frontend_lock["version"])
         self.assertEqual("pvnetwork-panel-frontend", frontend["name"])
 
+    def test_webpush_runtime_dependency_is_declared(self):
+        import tomllib
+
+        root = Path(__file__).resolve().parents[1]
+        with (root / "pyproject.toml").open("rb") as handle:
+            dependencies = tomllib.load(handle)["project"]["dependencies"]
+        self.assertTrue(
+            any(item.lower().startswith("pywebpush") for item in dependencies),
+            "pywebpush must be declared because backend.routers.push imports it",
+        )
+
     def test_operational_helpers_and_units_are_version_controlled(self):
         root = Path(__file__).resolve().parents[1]
         required = [
