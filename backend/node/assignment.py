@@ -363,3 +363,152 @@ async def delete_user_on_assigned_nodes(
             success = False
 
     return success
+
+
+async def replace_user_node_assignments(
+    user_uuid: str,
+    name: str,
+    node_ids: list[int],
+    db: Session,
+) -> dict:
+    """Safely replace desired node assignments without deleting live profiles.
+
+    Removed nodes are deactivated first (reversible) instead of deleting their
+    certificate/profile. Added nodes are provisioned fail-open; unavailable
+    nodes remain desired assignments and are left for the existing reconciler.
+    """
+    user = crud.get_user_by_uuid(db, user_uuid)
+    if user is None:
+        raise ValueError("User not found")
+
+    desired_ids: list[int] = []
+    for raw in node_ids:
+        try:
+            node_id = int(raw)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Every node ID must be an integer") from exc
+        if node_id <= 0:
+            raise ValueError("Node IDs must be positive integers")
+        if node_id not in desired_ids:
+            desired_ids.append(node_id)
+    if not desired_ids:
+        raise ValueError("At least one node must be selected")
+
+    desired_nodes = (
+        db.query(Node)
+        .filter(Node.id.in_(desired_ids))
+        .order_by(Node.id)
+        .all()
+    )
+    found = {int(node.id) for node in desired_nodes}
+    missing = [item for item in desired_ids if item not in found]
+    if missing:
+        raise ValueError("Unknown node IDs: " + ", ".join(map(str, missing)))
+
+    current_nodes = get_user_nodes(db, user_uuid, active_only=False)
+    current_ids = {int(node.id) for node in current_nodes}
+    desired_set = set(desired_ids)
+    added_ids = desired_set - current_ids
+    removed_ids = current_ids - desired_set
+
+    by_id = {int(node.id): node for node in desired_nodes}
+    invalid_added = [
+        node_id for node_id in sorted(added_ids)
+        if (
+            not by_id[node_id].status
+            or getattr(by_id[node_id], "drain", False)
+            or getattr(by_id[node_id], "maintenance", False)
+        )
+    ]
+    if invalid_added:
+        raise ValueError(
+            "Unavailable nodes cannot be newly assigned: "
+            + ", ".join(map(str, invalid_added))
+        )
+
+    current_by_id = {int(node.id): node for node in current_nodes}
+    disabled_removed: list[int] = []
+    try:
+        for node_id in sorted(removed_ids):
+            node = current_by_id[node_id]
+            if not node.status:
+                raise RuntimeError(
+                    f"Cannot remove assignment from offline node '{node.name}' safely"
+                )
+            request = _node_request(node)
+            if not await asyncio.to_thread(request.check_node):
+                raise RuntimeError(
+                    f"Cannot remove assignment while node '{node.name}' is unreachable"
+                )
+            client_name = f"{name}-{node.name}"
+            if not await asyncio.to_thread(
+                request.change_user_status,
+                client_name,
+                False,
+            ):
+                raise RuntimeError(
+                    f"Could not deactivate '{client_name}' before unassignment"
+                )
+            disabled_removed.append(node_id)
+    except Exception:
+        if bool(user.is_active):
+            for node_id in disabled_removed:
+                node = current_by_id[node_id]
+                request = _node_request(node)
+                try:
+                    await asyncio.to_thread(
+                        request.change_user_status,
+                        f"{name}-{node.name}",
+                        True,
+                    )
+                except Exception:
+                    logger.exception(
+                        f"Could not restore assignment status on node {node.name}"
+                    )
+        raise
+
+    # The reversible remote deactivation gate passed. Persist desired state.
+    set_user_nodes(db, user_uuid, desired_ids)
+
+    provisioned: list[int] = []
+    pending: list[int] = []
+    for node_id in sorted(added_ids):
+        node = by_id[node_id]
+        request = _node_request(node)
+        if not await asyncio.to_thread(request.check_node):
+            pending.append(node_id)
+            continue
+        client_name = f"{name}-{node.name}"
+        created = await asyncio.to_thread(request.create_user, client_name)
+        if not created:
+            # A stale disabled profile may already exist after a previous
+            # unassignment. Re-using it avoids unnecessary certificate churn.
+            if await asyncio.to_thread(
+                request.change_user_status,
+                client_name,
+                bool(user.is_active),
+            ):
+                provisioned.append(node_id)
+            else:
+                pending.append(node_id)
+            continue
+        if not bool(user.is_active):
+            if not await asyncio.to_thread(
+                request.change_user_status,
+                client_name,
+                False,
+            ):
+                # Do not leave a newly-created client active for an inactive user.
+                await asyncio.to_thread(request.delete_user, client_name)
+                pending.append(node_id)
+                continue
+        provisioned.append(node_id)
+
+    return {
+        "desired_node_ids": sorted(desired_ids),
+        "added_node_ids": sorted(added_ids),
+        "removed_node_ids": sorted(removed_ids),
+        "disabled_removed_node_ids": sorted(disabled_removed),
+        "provisioned_node_ids": sorted(provisioned),
+        "pending_node_ids": sorted(pending),
+    }

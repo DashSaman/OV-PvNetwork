@@ -86,3 +86,10 @@ Release-visible admin and subscription flows must be checked at 360, 375, 390, 4
 ## Active patch mandatory task IDs
 
 The release is blocked until the applicable UI/quality tasks `PVN-100..139` in `AGENTS.md` are either `[x] DONE` with evidence or explicitly deferred/rejected with a documented reason that does not compromise core accessibility/availability.
+
+## User quick-edit browser gate
+
+- [ ] `node frontend/tests/inline-quick-edit-smoke.mjs` passes against the built preview.
+- [ ] Persian tests use the real `ovpanel_language=fa` storage key and verify `dir=rtl`; English verifies `dir=ltr`.
+- [ ] Quick Edit remains viewport-safe and its Reset/Cancel/Apply actions meet the mobile touch floor.
+- [ ] Node assignment request payload and assignment-aware status synchronization are covered.

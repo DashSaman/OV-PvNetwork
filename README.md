@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.2-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.3-orange?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 [![Upstream](https://img.shields.io/badge/upstream-OV--Panel-blue?style=flat-square)](https://github.com/primeZdev/ov-panel)
@@ -12,6 +12,18 @@
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.3 vs v1.0.2
+
+**PVN-205 — inline user quick edit.** The Users page now expands a safe quick editor from the row actions. Traffic limit, expiry (where policy allows), concurrent-device limit, active state, assigned nodes and an optional Reset Usage can be reviewed and applied without opening the full Edit modal. Username is intentionally read-only until the separate safe multi-node rename task (`PVN-022`) is implemented.
+
+![v1.0.3 Quick Edit desktop](./docs/images/v1.0.3/en/desktop/users-inline-quick-edit.png)
+
+![v1.0.3 Quick Edit mobile](./docs/images/v1.0.3/en/mobile/users-inline-quick-edit.png)
+
+Node assignment changes are safety-gated: removed assignments are deactivated instead of deleting certificates, stale disabled profiles are reused where possible, and a newly selected unavailable node is rejected before mutation. Status/update synchronization is assignment-aware. Browser verification covers English LTR and Persian RTL on phone/tablet/desktop widths.
+
+Latest release: **v1.0.3** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.3).
 
 PVNetwork Panel is a production-derived distribution and operations layer built on the open-source OV-Panel / OV-Node ecosystem. It keeps the simple OpenVPN user workflow while adding multi-node operations, renewal, AnyConnect integration, monitoring, security controls, backup/restore, health scoring, traffic controls and safer deployment tooling.
 
@@ -57,7 +69,7 @@ Detailed illustrated documentation:
 
 | Area | Included |
 |---|---|
-| Users | Create, edit, activate/deactivate, delete, renewal, usage reset, profile/subscription delivery |
+| Users | Create, full edit, inline quick edit, activate/deactivate, delete, renewal, usage reset, node assignment, profile/subscription delivery |
 | Renewal | Expired-user renewal, unlimited renewal, finite preserve/reset/add-traffic modes |
 | AnyConnect | Per-user enable/disable, password generation/change, shared user identity |
 | Multi-node | Node CRUD, health view, user assignment, safe node lifecycle |
@@ -81,7 +93,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.2/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.3/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

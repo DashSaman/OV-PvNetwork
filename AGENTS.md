@@ -22,6 +22,8 @@
 10. After each completed task, report the exact `PVN-xxx` number to the user.
 11. If verification is incomplete, keep the task open and record the blocker. Never claim success from assumption.
 12. Applicable competitor gaps discovered in Marzban, 3X-UI, Hiddify, Remnawave, OpenVPN Access Server, Pritunl or similar panels must be recorded in the numbered registry and `docs/COMPETITOR-GAP-MATRIX.md`.
+13. Every release must put a concise bilingual “what changed vs previous release” summary near the top of both README files before the long feature tour.
+14. Independent read-only analysis, tests and documentation may run in parallel to reduce elapsed time. Production mutations, migrations, restarts and rollback-sensitive steps must stay serialized.
 
 ## Definition of Done
 
@@ -54,11 +56,18 @@ Before implementation, record the task and target release here **and commit/push
 
 - `v1.0.0` — RELEASED — sanitized public baseline.
 - `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.
-- `v1.0.2` — IN PROGRESS — `PVN-111` Responsive Subscription page.
-  - Checkpoint: TDD RED reproduced undersized mobile notification/Linux/AnyConnect copy controls at 360/375/390/430 px.
-  - Checkpoint: minimal touch-target/layout fix GREEN; `SUBSCRIPTION_RESPONSIVE_SMOKE=PASS widths=7`.
-  - Checkpoint: sanitized FA/EN desktop/mobile Subscription screenshots generated.
-  - Next: bilingual v1.0.2 docs/release notes → full release gates → verified backup → narrow Production template deploy → health check → GitHub merge/tag/release/artifact verify → mark PVN-111 `[x]`.
+- `v1.0.2` — RELEASED — `PVN-111` Responsive Subscription page; CI/Production/asset verification passed.
+- `v1.0.3` — IN PROGRESS — `PVN-205` User profile/details + inline quick-edit row.
+  - Requested UX: expand a user row for fast edit of traffic limit, expiry, max devices, active state, node assignment, Reset Usage, Apply and Cancel.
+  - Username is intentionally read-only in this patch: safe multi-node rename is tracked separately as `PVN-022`.
+  - TDD RED: all 7 inline-edit contract tests failed before implementation.
+  - GREEN checkpoint: 8/8 inline-edit contract tests PASS; 3/3 safe assignment behavior tests PASS; full suite 37/37 PASS.
+  - Assignment removal deactivates instead of deleting profiles; stale disabled profiles are re-used when possible; unavailable new nodes are rejected before mutation.
+  - Browser checkpoint: focused Quick Edit smoke PASS in EN/FA at 360/390/768/1440; full responsive matrix PASS for 2 languages × 9 widths × 9 routes; Subscription responsive smoke remains PASS.
+  - QA correction: browser tests now use the real `ovpanel_language` key and assert FA=`rtl`, EN=`ltr`.
+  - Sanitized FA/EN desktop/mobile Quick Edit screenshots and bilingual release/UI documentation generated and visually checked.
+  - Local release gate PASS: Python compile, 37 tests, shell/JSON syntax, ESLint, npm audit=0 vulnerabilities, Vite production build, JS bundle 731617 bytes, private-material and Production-identifier guards.
+  - Next: push final source/docs + CI workflow → GitHub CI success → verified Production backup → narrow deploy → health/regression → merge/tag/release/assets → mark PVN-205 `[x]`.
 
 ## Current release baseline
 
@@ -81,6 +90,10 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-017 [x] Require public-data/secret/forbidden-file scans before every public release.
 - PVN-018 [x] Require release artifact + SHA256 upload and post-publish verification.
 - PVN-019 [x] Align active Roadmap/release policy with the sequential `1.0.x` release model.
+- PVN-020 [x] Every release README starts with a clear “what changed vs previous release” block in English and Persian.
+- PVN-021 [x] Parallelize independent research/tests/docs when safe; never run concurrent Production mutations or restarts.
+- PVN-022 [ ] Safe multi-node username rename with profile migration, rollback and no silent certificate breakage.
+- PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 
 ## UI/UX task ledger
 
@@ -95,7 +108,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-108 [x] Responsive Bandwidth page. Release: v1.0.1.
 - PVN-109 [x] Responsive Dashboard. Release: v1.0.1.
 - PVN-110 [x] Responsive Login page. Release: v1.0.1.
-- PVN-111 [~] Responsive Subscription page. Target: v1.0.2.
+- PVN-111 [x] Responsive Subscription page. Release: v1.0.2.
 - PVN-112 [x] Mobile-friendly action menus. Release: v1.0.1.
 - PVN-113 [x] 44×44 touch target audit. Release: v1.0.1.
 - PVN-114 [x] No page-level horizontal overflow. Release: v1.0.1.
@@ -124,6 +137,10 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-137 [ ] Frontend bundle-size budget.
 - PVN-138 [ ] Long-translation/clipped-text stress test.
 - PVN-139 [ ] Persian/English typography rendering audit.
+
+## Active user-lifecycle task ledger
+
+- PVN-205 [~] User profile/details + inline quick-edit row. Target: v1.0.3.
 
 ## High-priority capability backlog index
 
@@ -271,7 +288,7 @@ This section intentionally mirrors the complete permanent task registry so an ag
 - PVN-202 Multi-stage expiry notifications
 - PVN-203 Configurable traffic-threshold notifications
 - PVN-204 Improved self-service user portal
-- PVN-205 User profile/details page
+- PVN-205 User profile/details page + inline quick-edit row
 - PVN-206 Per-user device inventory
 - PVN-207 Revoke device/session
 - PVN-208 HWID/device-limit mode

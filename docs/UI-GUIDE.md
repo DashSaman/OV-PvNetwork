@@ -57,6 +57,16 @@ The create dialog supports quota, duration, node assignment and optional AnyConn
 
 The actions menu groups common lifecycle controls and keeps destructive actions visually separate.
 
+### Inline Quick Edit — v1.0.3
+
+![Quick Edit desktop](./images/v1.0.3/en/desktop/users-inline-quick-edit.png)
+
+![Quick Edit mobile](./images/v1.0.3/en/mobile/users-inline-quick-edit.png)
+
+Use **Quick Edit** for frequent safe changes without opening the full Edit dialog. Traffic quota, expiry when policy permits, concurrent-device limit, active state, assigned nodes and an optional Reset Usage are available together. On phones/tablets the editor leaves the horizontally scrollable table and becomes a full-width panel, so Apply/Cancel/Reset and node choices remain reachable. Username stays read-only because changing it also changes node-side client/profile names; safe rename is tracked separately as `PVN-022`.
+
+Assignment behavior is conservative: removing a node deactivates that profile instead of deleting its certificate; re-adding can reuse a stale disabled profile; newly selected unavailable nodes are rejected before mutation.
+
 ### Renew user
 
 ![Renew User](./images/ui/workflow-renew-user.jpg)

@@ -4,11 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.2-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.3-orange?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.3 نسبت به v1.0.2
+
+**PVN-205 — ویرایش سریع داخل ردیف کاربر.** از منوی عملیات Users می‌توان Quick Edit را باز کرد و بدون رفتن به Modal کامل، حجم، تاریخ انقضا در حالت‌های مجاز، تعداد اتصال هم‌زمان، وضعیت فعال/غیرفعال، Node Assignment و Reset Usage را بررسی و اعمال کرد. Username عمداً Read-only است تا زمانی که Rename امن چندنودی در `PVN-022` پیاده‌سازی شود.
+
+![Quick Edit دسکتاپ v1.0.3](./docs/images/v1.0.3/fa/desktop/users-inline-quick-edit.png)
+
+![Quick Edit موبایل v1.0.3](./docs/images/v1.0.3/fa/mobile/users-inline-quick-edit.png)
+
+تغییر Assignment با Guard امن انجام می‌شود: نود حذف‌شده از Assignment به‌جای حذف Certificate فقط Deactivate می‌شود، پروفایل غیرفعال قدیمی در صورت امکان دوباره استفاده می‌شود و نود جدیدِ غیرقابل‌دسترس قبل از Mutation رد می‌شود. Sync وضعیت و ویرایش فقط روی نودهای Assigned انجام می‌شود. تست Browser واقعی برای فارسی RTL و انگلیسی LTR روی موبایل، تبلت و دسکتاپ اجرا می‌شود.
+
+آخرین Release: **v1.0.3** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.3)
 
 PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
 
@@ -29,8 +41,6 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 ![مدیریت پیشرفته، مانیتورینگ و پهنای‌باند](./docs/images/ui/03-operations.jpg)
 
 
-### نمونه واقعی نسخه 1.1 در دسکتاپ و موبایل
-
 ### تصویر Subscription در v1.0.2
 
 ![Subscription دسکتاپ v1.0.2](./docs/images/v1.0.2/fa/desktop/subscription.png)
@@ -46,7 +56,7 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 مستندات تصویری کامل:
 
 - [راهنمای کامل تصویری فارسی](./docs/UI-GUIDE.fa.md)
-- [راهنمای Responsive و Accessibility نسخه 1.1](./docs/RESPONSIVE-GUIDE.fa.md)
+- [راهنمای Responsive و Accessibility نسخه 1.0.x](./docs/RESPONSIVE-GUIDE.fa.md)
 - [Complete English UI guide](./docs/UI-GUIDE.md)
 - [English responsive & accessibility guide](./docs/RESPONSIVE-GUIDE.md)
 
@@ -54,7 +64,7 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 
 | بخش | امکانات اصلی |
 |---|---|
-| کاربران | ساخت، ویرایش، فعال/غیرفعال، حذف، تمدید، Reset Usage، دانلود پروفایل و لینک اشتراک |
+| کاربران | ساخت، ویرایش کامل، Quick Edit داخل ردیف، فعال/غیرفعال، حذف، تمدید، Reset Usage، Node Assignment، دانلود پروفایل و لینک اشتراک |
 | تمدید | تمدید کاربر Expired بدون حذف، تمدید نامحدود، حالت‌های حفظ/ریست/افزایش حجم |
 | AnyConnect | فعال/غیرفعال برای هر کاربر، ساخت یا تغییر رمز، هویت مشترک کاربر |
 | نودها | افزودن و ویرایش نود، Health، Assignment، حذف کنترل‌شده |
@@ -65,9 +75,9 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 | پهنای‌باند | Emergency Off، Preview/Canary/Activate Policy، گروه‌ها و وضعیت نودها |
 | بکاپ | ساخت و دانلود بکاپ تأییدشده و Restore با تأیید صریح |
 | Integration | API میرزا، API نود OpenVPN و Hookهای اختیاری AnyConnect/ocserv |
-| UX نسخه 1.1 | منوی کامل موبایل Main Admin، Modalهای Viewport-safe، Touch/Focus/Reduced-motion و تست Browser برای RTL/LTR |
+| UX نسخه 1.0.x | منوی کامل موبایل Main Admin، Modalهای Viewport-safe، Touch/Focus/Reduced-motion و تست Browser برای RTL/LTR |
 
-## رفتار Responsive نسخه 1.1
+## رفتار Responsive نسخه 1.0.x
 
 در موبایل Dashboard، Users و Nodes مستقیم در Bottom Navigation هستند و بخش‌های Admins، Operations، Security، Fleet، Monitoring و Bandwidth از منوی **More** در دسترس‌اند. بنابراین هیچ بخش اصلی Main Admin فقط به Sidebar دسکتاپ وابسته نیست.
 
@@ -80,7 +90,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.2/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.3/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

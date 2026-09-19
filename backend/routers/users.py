@@ -9,7 +9,7 @@ from sqlalchemy import func
 
 from backend.operations.daily_checks import enforce_user_limits, reset_shared_user_usage
 from backend.schema.output import ResponseModel, Users
-from backend.schema._input import CreateUser, RenewUser, UpdateUser
+from backend.schema._input import CreateUser, RenewUser, UpdateUser, UserNodeAssignmentUpdate
 from backend.db.engine import get_db
 from backend.db.models import (
     ActiveSession,
@@ -17,16 +17,18 @@ from backend.db.models import (
     AnyConnectCredential,
     ResellerCreditTransaction,
     User,
+    UserNode,
+    Node,
 )
 from backend.routers.anyconnect import provision_new_user_if_enabled
 from backend.operations.user_renewal import build_renewal_plan, unlimited_reset_expiry
-from backend.node.assignment import change_user_status_on_assigned_nodes
+from backend.node.assignment import (
+    change_user_status_on_assigned_nodes,
+    replace_user_node_assignments,
+)
 from backend.db import crud
 from backend.auth.auth import get_current_user
-from backend.node.task import (
-    delete_user_on_all_nodes,
-    change_user_status_on_all_nodes,
-)
+from backend.node.task import delete_user_on_all_nodes
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -139,6 +141,20 @@ def _users_with_live_state(
     }
 
     user_uuids = [str(item.uuid) for item in users if item.uuid]
+    assignment_rows = []
+    if user_uuids:
+        assignment_rows = (
+            db.query(UserNode.user_uuid, UserNode.node_id)
+            .filter(UserNode.user_uuid.in_(user_uuids))
+            .all()
+        )
+    assignments: dict[str, list[int]] = {}
+    for user_uuid, node_id in assignment_rows:
+        assignments.setdefault(str(user_uuid), []).append(int(node_id))
+    # Legacy users without explicit user_nodes rows retain historical all-node
+    # access; expose their effective assignment instead of an empty list.
+    all_node_ids = [int(row[0]) for row in db.query(Node.id).order_by(Node.id).all()]
+
     credential_rows = []
     if user_uuids:
         credential_rows = (
@@ -183,6 +199,7 @@ def _users_with_live_state(
         item.anyconnect_password_available = bool(
             credential and credential["password_available"]
         )
+        item.node_ids = sorted(assignments.get(str(item.uuid), all_node_ids))
 
         output.append(
             Users.from_orm(item)
@@ -427,9 +444,9 @@ async def update_user(
         target = crud.get_user_by_uuid(db, uuid)
         used = target.used or 0
         if target.expiry_date >= datetime.today().date() and (target.total == 0 or target.total > used):
-            await change_user_status_on_all_nodes(uuid, target.name, True, db)
+            await change_user_status_on_assigned_nodes(uuid, target.name, True, db)
         else:
-            await change_user_status_on_all_nodes(uuid, target.name, False, db)
+            await change_user_status_on_assigned_nodes(uuid, target.name, False, db)
     enforce_user_limits()
     return ResponseModel(success=True, msg="User updated successfully", data=result)
 
@@ -506,6 +523,36 @@ async def renew_user(
     )
 
 
+@router.put("/{uuid}/nodes", response_model=ResponseModel)
+async def update_user_nodes(
+    uuid: str,
+    request: UserNodeAssignmentUpdate,
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    target = _owned_user_or_404(db, uuid, actor)
+    try:
+        result = await replace_user_node_assignments(
+            target.uuid,
+            target.name,
+            request.node_ids,
+            db,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return ResponseModel(
+        success=True,
+        msg=(
+            "Node assignments updated; some newly assigned nodes are pending reconciliation"
+            if result.get("pending_node_ids")
+            else "Node assignments updated successfully"
+        ),
+        data=result,
+    )
+
+
 @router.put("/{uuid}/status", response_model=ResponseModel)
 async def change_user_status(
     uuid: str,
@@ -514,7 +561,7 @@ async def change_user_status(
     user: dict = Depends(get_current_user),
 ):
     target = _owned_user_or_404(db, uuid, user)
-    await change_user_status_on_all_nodes(uuid, target.name, request.status, db)
+    await change_user_status_on_assigned_nodes(uuid, target.name, request.status, db)
     return ResponseModel(success=True, msg="Changed user status successfully")
 
 

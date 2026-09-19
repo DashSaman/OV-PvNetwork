@@ -24,6 +24,21 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
+      - name: Use Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install backend test dependencies
+        run: |
+          python - <<'PYDEPS'
+          import subprocess, sys, tomllib
+          with open('pyproject.toml', 'rb') as handle:
+              deps = tomllib.load(handle)['project']['dependencies']
+          subprocess.check_call([sys.executable, '-m', 'pip', 'install', *deps])
+          PYDEPS
+
       - name: Bash syntax
         run: |
           set -e
@@ -43,6 +58,7 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
+          npm run lint -- --quiet
           npm run build
 
       - name: Frontend runtime audit and bundle budget
@@ -70,6 +86,7 @@ jobs:
           done
           curl -fsS http://127.0.0.1:4173/panel/ >/dev/null
           node tests/responsive-smoke.mjs
+          node tests/inline-quick-edit-smoke.mjs
           PV_PYTHON=python3 node tests/subscription-responsive-smoke.mjs
 
       - name: JSON syntax
