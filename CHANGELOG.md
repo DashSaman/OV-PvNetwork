@@ -1,8 +1,28 @@
 ## 1.0.5 — 2026-09-19
 
-### In progress
-- PVN-026: user creation node selector with all available nodes selected by default and explicit per-user assignment persistence.
-- Reconciler hardening so explicit node selections are never widened automatically.
+PVN-026 user-creation node-selection release.
+
+### User creation
+- Added a node selector to Add User with every available node selected by default.
+- Offline, draining and maintenance nodes remain visible but cannot be selected.
+- Added `node_ids` to the create-user contract; omitted `node_ids` preserves legacy all-available behavior.
+- Node selection is validated before user creation or reseller-entitlement mutation, then persisted in the same transaction.
+- Immediate node provisioning is limited to the stored assignment and remains fail-open for temporary node/API outages.
+
+### Reconciliation safety
+- Explicit `user_nodes` rows are authoritative and are never widened by the scheduled reconciler.
+- Legacy users with no assignment rows retain all-available fallback behavior.
+- Reconciliation skips nodes in drain/maintenance state while still repairing missing profiles on desired available nodes.
+
+### Responsive / QA
+- Added English/Persian browser smoke at 360, 390, 768 and 1440 px for default selections, unavailable-node disabling, POST payload and mobile touch/overflow behavior.
+- Full existing responsive, Quick Edit and Subscription browser matrices remain regression gates.
+- Added sanitized English/Persian desktop/mobile screenshots.
+
+### Compatibility
+- No database schema migration.
+- Existing user UUIDs, certificates and assignments are not rewritten by this release.
+- Firewall, routing, tunnels and unrelated services remain outside scope.
 
 # Changelog
 

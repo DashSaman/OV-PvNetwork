@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.4-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.5-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,13 +12,25 @@
 
 </div>
 
+## What changed in v1.0.5 vs v1.0.4
+
+**PVN-026 — choose target nodes while creating a user.** The Add User dialog now lists every known node, selects every currently available node by default, and keeps offline/draining/maintenance nodes visible but disabled. Operators can uncheck any available node before creation; the API persists the chosen assignment before remote provisioning and creates the profile only on the selected nodes.
+
+![v1.0.5 Add User node selector desktop](./docs/images/v1.0.5/en/desktop/user-create-node-selector.png)
+
+![v1.0.5 Add User node selector mobile](./docs/images/v1.0.5/en/mobile/user-create-node-selector.png)
+
+Backward-compatible API calls that omit `node_ids` still resolve to all currently available nodes. Explicit assignments are authoritative: the periodic reconciler can repair missing profiles on selected nodes but cannot silently widen a user's node set. The selector is covered in English/Persian at phone, tablet and desktop widths.
+
+Latest release: **v1.0.5** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.5).
+
 ## What changed in v1.0.4 vs v1.0.3
 
 **PVN-025 — PVNetwork brand purity and runtime ownership.** The tracked project now uses PVNetwork-owned application, service, package, storage and backup identifiers throughout. A blocking test scans every tracked text/path so the former upstream panel product identifier cannot return. Runtime naming is standardized on `/opt/pvnetwork-panel` and `pvnetwork-panel.service`, with safe compatibility for existing SQLite data and browser language preference.
 
 The release also aligns API/package/frontend/release version metadata on **1.0.4** and changes installer/update resolution to the maintained `DashSaman/OV-PvNetwork` releases. Production migration is backup-first and uses a parallel local canary plus atomic proxy switch before retiring the previous runtime.
 
-Latest release: **v1.0.4** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.4).
+Previous release: **v1.0.4** — [release notes](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.4).
 
 ## What changed in v1.0.3 vs v1.0.2
 
@@ -76,7 +88,7 @@ Detailed illustrated documentation:
 
 | Area | Included |
 |---|---|
-| Users | Create, full edit, inline quick edit, activate/deactivate, delete, renewal, usage reset, node assignment, profile/subscription delivery |
+| Users | Create with per-node selection, full edit, inline quick edit, activate/deactivate, delete, renewal, usage reset, node assignment, profile/subscription delivery |
 | Renewal | Expired-user renewal, unlimited renewal, finite preserve/reset/add-traffic modes |
 | AnyConnect | Per-user enable/disable, password generation/change, shared user identity |
 | Multi-node | Node CRUD, health view, user assignment, safe node lifecycle |
@@ -100,7 +112,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.4/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.5/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

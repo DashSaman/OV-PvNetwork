@@ -48,11 +48,13 @@ Rate از اختلاف Sampleها محاسبه می‌شود؛ Counter تجمع�
 | Copy Link | کپی لینک Subscription |
 
 UUID، Username و Assignmentهای کاربر هنگام Renew حفظ می‌شوند.
-### ساخت کاربر
+### ساخت کاربر — Node Selector در v1.0.5
 
-![Add User](./images/ui/workflow-add-user.jpg)
+![Node Selector ساخت کاربر در دسکتاپ](./images/v1.0.5/fa/desktop/user-create-node-selector.png)
 
-در فرم ساخت کاربر می‌توان حجم، مدت، Assignment نود و AnyConnect را تعیین کرد. مقدار حجم صفر به‌عنوان Unlimited در نظر گرفته می‌شود و برای Unlimited مدت پایه ۳۰ روز است.
+![Node Selector ساخت کاربر در موبایل](./images/v1.0.5/fa/mobile/user-create-node-selector.png)
+
+در فرم ساخت کاربر می‌توان حجم، مدت، Assignment دقیق Node و AnyConnect را تعیین کرد. همه Nodeهای Available به‌صورت پیش‌فرض انتخاب می‌شوند؛ Nodeهای Offline، Drain و Maintenance قابل مشاهده‌اند اما Disabled هستند. قبل از ساخت می‌توان Nodeهای غیرضروری را برداشت. Backend انتخاب را پیش از ساخت User یا کم‌کردن سهم نماینده Validate می‌کند، Assignment را در همان Transaction ثبت می‌کند و سپس Profile را فقط روی Nodeهای انتخاب‌شده Provision می‌کند. مقدار حجم صفر به‌عنوان Unlimited در نظر گرفته می‌شود و برای Unlimited مدت پایه ۳۰ روز است.
 
 ### منوی عملیات کاربر
 

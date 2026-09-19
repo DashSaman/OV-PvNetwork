@@ -98,7 +98,11 @@ Before implementation, record the task and target release here **and commit/push
   - UX contract: Add User exposes all currently available nodes, selected by default; unavailable/draining/maintenance nodes are visible but not selectable.
   - Backend contract: explicit `node_ids` are validated before any user/quota mutation; only desired nodes are persisted and provisioned. Requests that omit `node_ids` keep backward-compatible all-available behavior.
   - Reconciliation contract: explicit assignments remain authoritative; the periodic reconciler may repair missing profiles but must never widen an explicitly selected node set. Legacy users without assignment rows retain all-available fallback behavior.
-  - Next: TDD RED → backend/frontend/reconciler implementation → responsive browser gate → CI → verified Production backup/canary/cutover → release/tag/assets → mark `PVN-026` `[x]`.
+  - TDD evidence: test-only commit `9d6c9183d39a7e2bc0d191e4f1e23024272350c9` reproduced the missing contract with 5 failures + 2 errors; implementation commit `dbd4d887fba16e44371f64df407892535a3e00d3` turned the focused contract green. CI smoke wiring commit: `c70257ff9407b92369c665061fd60a4f94a2b659`.
+  - Local verification: focused assignment/Quick Edit/brand regression 32/32 PASS; full Python unit/governance 58/58 PASS; compile/shell/JSON/uv-lock, ESLint, Vite production build and runtime npm audit PASS; largest JS 733926 bytes within budget.
+  - Browser verification: node-selector smoke PASS in EN/FA at 360/390/768/1440; full responsive matrix PASS for 2 languages × 9 widths × 9 routes; Quick Edit and Subscription browser regressions PASS.
+  - Documentation checkpoint: sanitized EN/FA desktop/mobile node-selector screenshots and bilingual README/UI-guide/release-note updates prepared; no live customer/infrastructure data is used.
+  - Next: exact-head GitHub CI → verified Production backup/canary/cutover → post-deploy workflow evidence → merge/tag/release artifact + SHA256 verification → mark `PVN-026` `[x]`.
 
 ## Current release baseline
 
