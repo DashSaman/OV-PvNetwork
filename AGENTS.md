@@ -85,12 +85,14 @@ Before implementation, record the task and target release here **and commit/push
   - GitHub Release `v1.0.3` published with verified artifact SHA256 `82fd4b95f2941ca8aebe323355393ce617f199b470f41930e40244a16ccb12b4`.
 
 - `v1.0.4` — IN PROGRESS — `PVN-025` Complete PVNetwork ownership namespace.
-  - Canonical runtime root: `/opt/pvnetwork-panel`.
-  - Canonical service: `pvnetwork-panel.service`.
-  - Canonical config root: `/etc/pvnetwork`.
-  - Canonical lifecycle CLI: `pvnetwork`.
-  - Canonical frontend language key: `pvnetwork_language`.
-  - Blocking gate: current tracked source must pass the ownership namespace scanner with zero forbidden legacy tokens before release.
+  - Canonical runtime root: `/opt/pvnetwork-panel`; service: `pvnetwork-panel.service`; config root: `/etc/pvnetwork`; lifecycle CLI: `pvnetwork`; frontend language key: `pvnetwork_language`.
+  - Release source commit deployed to Production: `6ea491600b601760c3bb0fffa58a24f08b245e17`; GitHub CI run `35424953456` PASS including responsive browser matrix, ownership namespace guard, secret guard, production build and lifecycle checks.
+  - Production preflight passed; verified application archive plus native PostgreSQL dump recorded at `/root/pvnetwork-deploy-backups/v1.0.4-pvn025-20260919-055213` with archive/database integrity checks.
+  - Deployment used a parallel local canary and atomic Nginx upstream switch; only `pvnetwork-panel.service` was restarted, with no observed public health gap.
+  - Post-deploy gates: local/public API and UI HTTP 200; release runtime files matched the tested commit; post-deploy application error scan clean; Mirza integration continued returning successful traffic.
+  - Runtime ownership cleanup: Push and AnyConnect state preserved without key rotation under `/etc/pvnetwork`; Push public-key endpoint returned 200; scheduled Push sender completed successfully; all non-empty stored AnyConnect ciphertexts decrypted with the preserved key. Legacy config roots were retired into the rollback set.
+  - Active PostgreSQL database/role identity is intentionally unchanged in this release and remains scoped to `PVN-026` / `v1.0.5`.
+  - Remaining completion gate: PR merge, immutable `v1.0.4` tag/GitHub Release, release artifact SHA256 upload and post-publish verification.
 
 ## Current release baseline
 
