@@ -4,13 +4,25 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.8-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.9-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.9 vs v1.0.8
+
+**PVN-029 — opt-in Router / MikroTik OpenVPN compatibility without changing normal OpenVPN.** Normal users keep the existing certificate-only profile and never need a username/password. A compatible Node can explicitly enable a separate secondary OpenVPN listener with certificate + one-time-generated password authentication, isolated port/subnet/firewall state, and its own Router profile.
+
+The secondary listener reuses the existing client certificate Common Name for identity, so device/session accounting remains tied to the same PVNetwork user. Router credentials are per-user/per-node, plaintext passwords are returned only when generated/rotated and are never persisted, and old Nodes report `upgrade_required` rather than breaking normal OpenVPN actions.
+
+![v1.0.9 Router compatibility user flow](./docs/images/v1.0.9/en/desktop/router-user.png)
+
+![v1.0.9 Router compatibility node flow](./docs/images/v1.0.9/en/mobile/router-node.png)
+
+Latest release line: **v1.0.9** — [release notes](./docs/RELEASE-NOTES-v1.0.9.md).
 
 ## What changed in v1.0.8 vs v1.0.7
 

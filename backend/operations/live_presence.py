@@ -156,12 +156,26 @@ def _read_node_clients(spec: dict) -> set[str] | None:
         set_new_setting=False,
     )
     data = request.get_users_usage(timeout=(1.0, 2.5))
-    if not isinstance(data, dict):
+    normal_clients: set[str] = set()
+    if isinstance(data, dict):
+        users = data.get("users")
+        if isinstance(users, dict):
+            normal_clients = {str(client_name) for client_name in users.keys()}
+
+    router_clients: set[str] = set()
+    router_status = request.router_openvpn_status()
+    if isinstance(router_status, dict) and router_status.get("ok"):
+        router_data = router_status.get("data")
+        if isinstance(router_data, dict):
+            common_names = router_data.get("online_common_names")
+            if isinstance(common_names, list):
+                router_clients = {
+                    str(item) for item in common_names if str(item or "").strip()
+                }
+
+    if not isinstance(data, dict) and not router_clients:
         return None
-    users = data.get("users")
-    if not isinstance(users, dict):
-        return set()
-    return {str(client_name) for client_name in users.keys()}
+    return normal_clients | router_clients
 
 
 async def _collect_direct_clients(node_specs: list[dict]) -> tuple[dict, list[int]]:

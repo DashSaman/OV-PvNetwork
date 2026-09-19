@@ -32,13 +32,15 @@
 ### v1.0.7
 - Online-presence snapshot synchronization hotfix so adjacent views do not race between samples (`PVN-031`).
 
+### v1.0.8
+- Production security hardening: hashed main-admin credentials, pinned SSH host keys, dependency/static audits, response/login hardening and reversible host filtering (`PVN-028`).
+
 ## Sequential patch queue
 
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
-- **v1.0.8 — IN PROGRESS:** `PVN-028`, Production security hardening for admin credentials, SSH host verification, dependency/static security gates, web headers/login throttling and reversible inventory-first host filtering.
-- The existing certificate-only OpenVPN listener/profile flow is explicitly outside this security patch and remains the default user experience.
-- **v1.0.9 queued:** `PVN-029`, opt-in Router/legacy compatibility on a separate listener/profile; no username/password requirement for normal users.
+- **v1.0.9 — IN PROGRESS:** `PVN-029`, opt-in Router/MikroTik compatibility on a separate listener/profile. Normal certificate-only OpenVPN remains the default and never requires username/password.
+- **v1.0.10 queued:** next open numbered task from `AGENTS.md` after v1.0.9 release verification.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 

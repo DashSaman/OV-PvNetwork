@@ -6,7 +6,7 @@ from backend.logger import logger
 from backend.schema._input import NodeCreate
 from .requests import NodeRequests
 from backend.db import crud
-from backend.db.models import Node
+from backend.db.models import Node, RouterOpenVpnCredential
 
 
 async def add_node_handler(request: NodeCreate, db: Session) -> bool:
@@ -359,6 +359,59 @@ async def download_ovpn_client_from_node(
     )
 
 
+
+
+def snapshot_router_credentials_for_user(
+    user_uuid: str, name: str, db: Session
+) -> list[dict]:
+    rows = (
+        db.query(RouterOpenVpnCredential, Node)
+        .join(Node, Node.id == RouterOpenVpnCredential.node_id)
+        .filter(RouterOpenVpnCredential.user_uuid == str(user_uuid))
+        .all()
+    )
+    return [
+        {
+            "node_id": int(node.id),
+            "node_name": str(node.name),
+            "address": str(node.address),
+            "port": int(node.port),
+            "api_key": str(node.key),
+            "cn": f"{name}-{node.name}",
+            "username": str(credential.router_username),
+            "verifier": str(credential.password_hash),
+        }
+        for credential, node in rows
+    ]
+
+
+async def revoke_router_credentials_snapshot(items: list[dict]) -> dict:
+    revoked = []
+    failed = []
+    for item in items:
+        request = NodeRequests(
+            address=item["address"],
+            port=item["port"],
+            api_key=item["api_key"],
+        )
+        try:
+            result = await asyncio.to_thread(
+                request.router_openvpn_set_credential,
+                cn=item["cn"], username=item["username"],
+                verifier=item["verifier"], enabled=False,
+            )
+            target = {"node_id": item["node_id"], "node": item["node_name"]}
+            if result.get("ok"):
+                revoked.append(target)
+            else:
+                failed.append(target)
+        except Exception as exc:
+            logger.warning(
+                "Router/OpenVPN post-delete revoke pending on node %s: %s",
+                item["node_name"], type(exc).__name__,
+            )
+            failed.append({"node_id": item["node_id"], "node": item["node_name"]})
+    return {"all_ok": not failed, "revoked": revoked, "failed": failed}
 
 
 async def delete_user_on_all_nodes(name: str, db: Session) -> dict:

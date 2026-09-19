@@ -1,3 +1,11 @@
+## v1.0.9 — PVN-029 Router / MikroTik OpenVPN compatibility
+
+- Adds an opt-in secondary OpenVPN listener per compatible Node; the normal certificate-only listener/profile remains unchanged.
+- Adds certificate + password dual authentication for RouterOS/legacy clients, with per-user/per-node credentials and one-time plaintext password display only.
+- Adds Node preflight, isolated enable/disable/rollback, profile generation, capability upgrade detection and raw secondary-listener observability.
+- Merges secondary Common Names into display-only online presence without double counting and without synthesizing enforcement sessions.
+- Adds bilingual Node/User Router flows and a RouterOS import command while keeping normal OpenVPN downloads credential-free.
+
 ## v1.0.8 — PVN-028 Production security hardening
 
 - main-admin password hash migration with rollback-safe deployment

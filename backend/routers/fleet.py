@@ -10,6 +10,9 @@ from backend.db.engine import get_db, SessionLocal
 from backend.db.models import Node
 from backend.node.health import build_nodes_health
 from backend.node.requests import NodeRequests
+from backend.node.deploy import (
+ router_capability_install_script as _router_capability_install_script,
+)
 from backend.schema.output import ResponseModel
 router=APIRouter(prefix='/fleet',tags=['Fleet'])
 JOBDIR=Path('/opt/pvnetwork-panel/data/fleet-jobs'); JOBDIR.mkdir(parents=True,exist_ok=True); JOBDIR.chmod(0o700)
@@ -141,6 +144,17 @@ fi
 if [ "$ready" = 1 ]; then echo "${TAG:-latest}"; exit 0; fi
 systemctl stop ov-node;rm -rf /opt/ov-node;mv "$B" /opt/ov-node;systemctl restart ov-node;exit 1
 '''
+
+def router_capability_install_script(node_root='/opt/ov-node'):
+ return _router_capability_install_script(node_root)
+
+def build_upgrade_script():
+ capability=router_capability_install_script('/opt/ov-node')
+ marker='systemctl restart ov-node\nready=0'
+ if marker not in SCRIPT:
+  raise RuntimeError('Fleet upgrade restart marker not found')
+ return SCRIPT.replace(marker,capability+'\nsystemctl restart ov-node\nready=0',1)
+
 def run(job,password):
  db=SessionLocal();job['state']='running';save(job)
  try:
@@ -150,7 +164,7 @@ def run(job,password):
    n=db.query(Node).filter(Node.id==i).first()
    if not n:raise RuntimeError(f'Node {i} not found')
    n.maintenance=True;n.drain=True;n.last_upgrade_status='running';db.commit();job['stage']=f'upgrading:{n.name}';save(job)
-   out=ssh(n,job['ssh_username'],password,job['ssh_port'],SCRIPT,job.get('ssh_fingerprints',{}).get(str(i)))
+   out=ssh(n,job['ssh_username'],password,job['ssh_port'],build_upgrade_script(),job.get('ssh_fingerprints',{}).get(str(i)))
    info=NodeRequests(n.address,n.port,n.key,n.tunnel_address or n.address,n.protocol,n.ovpn_port).get_node_info()
    if not info or info.get('status')!='running':raise RuntimeError(f'Health check failed: {n.name}')
    n.version=(out.strip().splitlines()[-1] if out.strip() else 'latest')[:128];n.last_upgrade_at=int(time.time());n.last_upgrade_status='succeeded';n.maintenance=False;n.drain=False;db.commit();job['completed'][str(i)]='succeeded';save(job)

@@ -3,6 +3,7 @@ import { FiServer, FiCheckCircle, FiXCircle, FiSearch } from 'react-icons/fi';
 import apiClient from '../services/api';
 import AddNodeModal from '../components/AddNodeModal';
 import EditNodeModal from '../components/EditNodeModal';
+import RouterOpenVpnNodeModal from '../components/RouterOpenVpnNodeModal';
 import NodeTable from '../components/NodeTable';
 import NodeHealthPanel from '../components/NodeHealthPanel';
 import UserStatCard from '../components/UserStatCard';
@@ -15,6 +16,7 @@ const NodeManagement = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [routerNode, setRouterNode] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [nodesError, setNodesError] = useState('');
   const [nodeStatusError, setNodeStatusError] = useState('');
@@ -210,11 +212,13 @@ const NodeManagement = () => {
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
 
-      <NodeTable nodes={paginatedNodes} isLoading={isLoading} nodeInfo={nodeInfo} onDelete={handleDelete} onCheckStatus={handleCheckStatus} onEdit={handleOpenEditModal} />
+      <NodeTable nodes={paginatedNodes} isLoading={isLoading} nodeInfo={nodeInfo} onDelete={handleDelete} onCheckStatus={handleCheckStatus} onEdit={handleOpenEditModal} onRouterOpenVpn={setRouterNode} />
 
       {isAddModalOpen && <AddNodeModal onClose={() => setIsAddModalOpen(false)} onNodeCreated={handleNodeCreated} />}
 
       {isEditModalOpen && <EditNodeModal node={selectedNode} onClose={() => setIsEditModalOpen(false)} onNodeUpdated={handleNodeUpdated} />}
+
+      {routerNode && <RouterOpenVpnNodeModal node={routerNode} onClose={() => setRouterNode(null)} onChanged={() => { fetchNodeHealth(); fetchNodes(); }} />}
 
     </div>;
 };

@@ -10,6 +10,9 @@ permissions:
 env:
   URLPATH: panel
   VITE_URLPATH: panel
+  ADMIN_USERNAME: ci-admin
+  ADMIN_PASSWORD_HASH: ci-not-a-production-hash
+  JWT_SECRET_KEY: ci-jwt-secret-key-not-production-32chars
 
 jobs:
   validate:
@@ -39,6 +42,11 @@ jobs:
           subprocess.check_call([sys.executable, '-m', 'pip', 'install', *deps])
           PYDEPS
 
+      - name: Install OpenVPN integration dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y openvpn iproute2
+
       - name: Backend dependency and static security audit
         run: |
           python -m pip install --disable-pip-version-check pip-audit bandit
@@ -55,7 +63,7 @@ jobs:
       - name: Bash syntax
         run: |
           set -e
-          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening scripts/pvnetwork-firewall-boot; do
+          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening scripts/pvnetwork-firewall-boot scripts/pvnetwork-router-openvpn; do
             [ -f "$f" ] && bash -n "$f"
           done
 
@@ -66,6 +74,22 @@ jobs:
 
       - name: Unit and governance tests
         run: python3 -m unittest discover -s tests -v
+
+      - name: Router OpenVPN safety contracts
+        run: |
+          python3 -m unittest \
+            tests.test_router_openvpn_schema \
+            tests.test_router_openvpn_credentials \
+            tests.test_router_openvpn_node_contract \
+            tests.test_router_openvpn_node_helper \
+            tests.test_router_openvpn_handshake \
+            tests.test_router_openvpn_api \
+            tests.test_router_openvpn_user_lifecycle \
+            tests.test_router_openvpn_presence -v
+
+      - name: Router OpenVPN real dual-auth handshake
+        run: |
+          sudo -E env PYTHON="$(command -v python3)" bash tests/router_openvpn_real_handshake.sh
 
       - name: Frontend production build
         working-directory: frontend
@@ -102,6 +126,7 @@ jobs:
           node tests/responsive-smoke.mjs
           node tests/inline-quick-edit-smoke.mjs
           node tests/user-create-node-selector-smoke.mjs
+          node tests/router-openvpn-smoke.mjs
           PV_PYTHON=python3 node tests/subscription-responsive-smoke.mjs
 
       - name: JSON syntax

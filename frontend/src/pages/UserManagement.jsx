@@ -5,6 +5,7 @@ import AddUserModal from '../components/AddUserModal';
 import EditUserModal from '../components/EditUserModal';
 import RenewUserModal from '../components/RenewUserModal';
 import AnyConnectUserModal from '../components/AnyConnectUserModal';
+import RouterOpenVpnUserModal from '../components/RouterOpenVpnUserModal';
 import SelectNodeForDownloadModal from '../components/SelectNodeForDownloadModal';
 import DomainHistoryModal from '../components/DomainHistoryModal';
 import UserStatCard from '../components/UserStatCard';
@@ -37,6 +38,8 @@ const UserManagement = () => {
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isDomainHistoryOpen, setIsDomainHistoryOpen] = useState(false);
   const [isAnyConnectModalOpen, setIsAnyConnectModalOpen] = useState(false);
+  const [isRouterOpenVpnModalOpen, setIsRouterOpenVpnModalOpen] = useState(false);
+  const [routerHealthyNodeIds, setRouterHealthyNodeIds] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const {
     t
@@ -109,6 +112,28 @@ const UserManagement = () => {
       setNodes([]);
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadRouterHealth = async () => {
+      if (!nodes.length) {
+        if (!cancelled) setRouterHealthyNodeIds([]);
+        return;
+      }
+      const results = await Promise.all(nodes.map(async node => {
+        try {
+          const response = await apiClient.get(`/router-openvpn/nodes/${node.id}`);
+          const data = response.data?.data || {};
+          return data.enabled && data.healthy ? Number(node.id) : null;
+        } catch {
+          return null;
+        }
+      }));
+      if (!cancelled) setRouterHealthyNodeIds(results.filter(value => value !== null));
+    };
+    loadRouterHealth();
+    return () => { cancelled = true; };
+  }, [nodes]);
 
   const fetchSubscriptionSettings = async () => {
     try {
@@ -470,6 +495,10 @@ const UserManagement = () => {
     setSelectedUser(user);
     setIsAnyConnectModalOpen(true);
   };
+  const handleOpenRouterOpenVpn = user => {
+    setSelectedUser(user);
+    setIsRouterOpenVpnModalOpen(true);
+  };
   const handleUserAdded = () => {
     setIsAddModalOpen(false);
     fetchUsers();
@@ -696,13 +725,17 @@ const UserManagement = () => {
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
 
-      <UserTable users={paginatedUsers} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} availableNodes={nodes} userRole={userRole} onQuickSave={handleQuickSave} />
+      <UserTable users={paginatedUsers} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onRouterOpenVpn={handleOpenRouterOpenVpn} routerOpenVpnNodeIds={routerHealthyNodeIds} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} availableNodes={nodes} userRole={userRole} onQuickSave={handleQuickSave} />
       {isAddModalOpen && <AddUserModal onClose={() => setIsAddModalOpen(false)} onUserAdded={handleUserAdded} userRole={userRole} anyConnectDefaultEnabled={Boolean(anyConnectSettings.default_enabled)} nodes={nodes} />}
       {isEditModalOpen && <EditUserModal user={selectedUser} onClose={() => setIsEditModalOpen(false)} onUserUpdated={handleUserUpdated} userRole={userRole} />}
       {isRenewModalOpen && <RenewUserModal user={selectedUser} onClose={() => setIsRenewModalOpen(false)} onRenewed={handleUserRenewed} />}
       {isDownloadModalOpen && <SelectNodeForDownloadModal user={selectedUser} onClose={() => setIsDownloadModalOpen(false)} />}
       {isAnyConnectModalOpen && selectedUser && <AnyConnectUserModal user={selectedUser} onChanged={fetchUsers} onClose={() => {
         setIsAnyConnectModalOpen(false);
+        setSelectedUser(null);
+      }} />}
+      {isRouterOpenVpnModalOpen && selectedUser && <RouterOpenVpnUserModal user={selectedUser} nodes={nodes} healthyNodeIds={routerHealthyNodeIds} onClose={() => {
+        setIsRouterOpenVpnModalOpen(false);
         setSelectedUser(null);
       }} />}
       {isDomainHistoryOpen && selectedUser && <DomainHistoryModal user={selectedUser} onClose={() => {

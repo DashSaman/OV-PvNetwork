@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+"""OpenVPN via-file verifier for PVNetwork's router-only listener."""
+
+from __future__ import annotations
+
+import base64
+import hashlib
+import hmac
+import os
+from pathlib import Path
+import sys
+
+DEFAULT_CREDENTIAL_FILE = "/etc/pvnetwork/router-openvpn/credentials.tsv"
+MAXMEM = 128 * 1024 * 1024
+
+
+def _b64decode(value: str) -> bytes:
+    padding = "=" * (-len(value) % 4)
+    return base64.urlsafe_b64decode((value + padding).encode("ascii"))
+
+
+def _verify(password: str, encoded: str) -> bool:
+    try:
+        scheme, n_raw, r_raw, p_raw, salt_raw, digest_raw = encoded.split("$", 5)
+        if scheme != "scrypt":
+            return False
+        n, r, p = int(n_raw), int(r_raw), int(p_raw)
+        if (n, r, p) != (32768, 8, 1):
+            return False
+        expected = _b64decode(digest_raw)
+        actual = hashlib.scrypt(
+            password.encode("utf-8"),
+            salt=_b64decode(salt_raw),
+            n=n,
+            r=r,
+            p=p,
+            dklen=len(expected),
+            maxmem=MAXMEM,
+        )
+        return hmac.compare_digest(actual, expected)
+    except (ValueError, TypeError, UnicodeError):
+        return False
+
+
+def _load_record(path: Path, username: str):
+    try:
+        lines = path.read_text(encoding="utf-8", errors="strict").splitlines()
+    except OSError:
+        return None
+    for raw in lines:
+        parts = raw.split("\t")
+        if len(parts) != 4:
+            continue
+        record_username, expected_cn, enabled, verifier = parts
+        if hmac.compare_digest(record_username, username):
+            return expected_cn, enabled == "1", verifier
+    return None
+
+
+def main() -> int:
+    if len(sys.argv) != 2:
+        return 1
+    auth_path = Path(sys.argv[1])
+    try:
+        auth_lines = auth_path.read_text(
+            encoding="utf-8", errors="strict"
+        ).splitlines()
+    except OSError:
+        return 1
+    if len(auth_lines) < 2:
+        return 1
+    username = auth_lines[0].strip()
+    password = auth_lines[1]
+    common_name = os.getenv("common_name", "").strip()
+    if not username or not password or not common_name:
+        return 1
+
+    credential_file = Path(
+        os.getenv("PVNETWORK_ROUTER_CREDENTIAL_FILE", DEFAULT_CREDENTIAL_FILE)
+    )
+    record = _load_record(credential_file, username)
+    if record is None:
+        return 1
+    expected_cn, enabled, verifier = record
+    if not enabled:
+        return 1
+    if not hmac.compare_digest(expected_cn, common_name):
+        return 1
+    return 0 if _verify(password, verifier) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

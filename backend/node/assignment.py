@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 
 # PVNETWORK_FAILOPEN_EVENTLOOP_V1
 from typing import Optional
@@ -8,7 +9,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from backend.db import crud
-from backend.db.models import Node, UserNode
+from backend.db.models import Node, RouterOpenVpnCredential, UserNode
 from backend.logger import logger
 from backend.node.requests import NodeRequests
 
@@ -212,6 +213,39 @@ def _node_request(node: Node) -> NodeRequests:
     )
 
 
+async def _disable_router_credential_best_effort(
+    db: Session, user_uuid: str, name: str, node: Node
+) -> bool:
+    if not hasattr(db, "get"):
+        return True
+    row = db.get(RouterOpenVpnCredential, (str(user_uuid), int(node.id)))
+    if row is None:
+        return True
+    row.enabled = False
+    row.updated_at = int(time.time())
+    db.commit()
+    try:
+        result = await asyncio.to_thread(
+            _node_request(node).router_openvpn_set_credential,
+            cn=f"{name}-{node.name}",
+            username=str(row.router_username),
+            verifier=str(row.password_hash),
+            enabled=False,
+        )
+        if result.get("ok"):
+            return True
+        logger.warning(
+            "Router/OpenVPN credential disable pending for %s on node %s",
+            user_uuid, node.name,
+        )
+    except Exception:
+        logger.exception(
+            "Router/OpenVPN credential disable failed for %s on node %s",
+            user_uuid, node.name,
+        )
+    return False
+
+
 async def create_user_on_assigned_nodes(
     uuid: str,
     name: str,
@@ -337,6 +371,13 @@ async def change_user_status_on_assigned_nodes(
         uuid,
         status,
     )
+
+    if not status:
+        for node in nodes:
+            if not await _disable_router_credential_best_effort(
+                db, uuid, name, node
+            ):
+                success = False
 
     return success
 
@@ -483,6 +524,14 @@ async def replace_user_node_assignments(
     # The reversible remote deactivation gate passed. Persist desired state.
     set_user_nodes(db, user_uuid, desired_ids)
 
+    router_cleanup_pending: list[int] = []
+    for node_id in sorted(removed_ids):
+        node = current_by_id[node_id]
+        if not await _disable_router_credential_best_effort(
+            db, user_uuid, name, node
+        ):
+            router_cleanup_pending.append(node_id)
+
     provisioned: list[int] = []
     pending: list[int] = []
     for node_id in sorted(added_ids):
@@ -524,4 +573,5 @@ async def replace_user_node_assignments(
         "disabled_removed_node_ids": sorted(disabled_removed),
         "provisioned_node_ids": sorted(provisioned),
         "pending_node_ids": sorted(pending),
+        "router_cleanup_pending_node_ids": sorted(router_cleanup_pending),
     }

@@ -9,6 +9,8 @@ const UserTable = ({
   onDelete,
   onDownload,
   onAnyConnect,
+  onRouterOpenVpn,
+  routerOpenVpnNodeIds = [],
   onToggleAnyConnect,
   anyConnectBusy,
   onEdit,
@@ -275,7 +277,11 @@ const UserTable = ({
               label: 'AnyConnect',
               onClick: () => onAnyConnect && onAnyConnect(user),
               className: 'secondary-action'
-            }, ...(canViewDomainHistory ? [{
+            }, ...(((user.node_ids || []).some(id => routerOpenVpnNodeIds.map(Number).includes(Number(id)))) ? [{
+              label: t('routerOpenVpn.action', 'Router / MikroTik'),
+              onClick: () => onRouterOpenVpn && onRouterOpenVpn(user),
+              className: 'secondary-action'
+            }] : []), ...(canViewDomainHistory ? [{
               label: 'Domain History',
               onClick: () => onViewDomainHistory && onViewDomainHistory(user),
               className: 'secondary-action'

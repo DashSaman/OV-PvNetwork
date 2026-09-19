@@ -12,6 +12,7 @@ from backend.config import config
 from backend.routers import all_routers
 from backend.routers.sub import router as subscription_router
 from backend.routers.push import router as push_router
+from backend.routers.router_openvpn import router as router_openvpn_router
 from backend.routers.anyconnect import (
     router as anyconnect_router,
     integration_router as anyconnect_integration_router,
@@ -86,6 +87,7 @@ for router in all_routers:
 
 api.include_router(subscription_router)
 api.include_router(push_router)
+api.include_router(prefix="/api", router=router_openvpn_router)
 api.include_router(prefix="/api", router=anyconnect_router)
 api.include_router(
     prefix="/api",
