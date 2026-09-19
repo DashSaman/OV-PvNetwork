@@ -94,7 +94,7 @@ Before implementation, record the task and target release here **and commit/push
   - Main release commit `56a90462b40500096344fdf105c2c426ba0ac4cb`; GitHub CI run `35417072048` PASS including browser matrix, private-material guard and lifecycle checks.
   - GitHub Release `v1.0.4` published with verified artifact SHA256 `523ba892f33584eaec787a9e4001abe699ba3b2f6c2569a271a900b1e9fa9956`; downloaded asset checksum and tag target re-verified.
 
-- `v1.0.5` — IN PROGRESS — `PVN-026` user-creation node selector.
+- `v1.0.5` — RELEASED — `PVN-026` user-creation node selector.
   - UX contract: Add User exposes all currently available nodes, selected by default; unavailable/draining/maintenance nodes are visible but not selectable.
   - Backend contract: explicit `node_ids` are validated before any user/quota mutation; only desired nodes are persisted and provisioned. Requests that omit `node_ids` keep backward-compatible all-available behavior.
   - Reconciliation contract: explicit assignments remain authoritative; periodic reconciliation and automatic new-node deployment may repair/provision legacy fallback users but must never widen an explicitly selected node set.
@@ -105,7 +105,13 @@ Before implementation, record the task and target release here **and commit/push
   - Production deployment: exact commit `3caf9f4c7140e0460f7534781af1304b4ae758b9` passed PostgreSQL/API/UI/Push/OpenAPI canary gates on port 19002, then Nginx was switched atomically while only `pvnetwork-panel.service` was restarted on the canonical 19001 runtime.
   - Post-deploy evidence: local/public API and UI 200, JS/CSS assets 200, Push 200, CreateUser OpenAPI exposes `node_ids`, DB remained 68 users / 4 nodes / 264 assignments, changed tracked files were hash-identical to the tested commit, `REAL_ERRORS=0`, `HTTP_5XX=0`, Mirza continued with 2xx traffic, and the canary was retired after cutback to 19001.
   - Documentation checkpoint: sanitized EN/FA desktop/mobile node-selector screenshots and bilingual README/UI-guide/release-note updates prepared; no live customer/infrastructure data is used.
-  - Remaining completion gate: merge PR #24 → main CI → immutable `v1.0.5` tag/GitHub Release → source artifact + SHA256 post-publish verification → mark `PVN-026` `[x]`.
+  - Release completion: PR #24 merged as main commit `e8ac5c531bf84fe3552c302ebc9ed8bbbb3d2cbd`; main CI run `35427077332` PASS including browser matrix and private-material guard; annotated tag `v1.0.5` resolves to the same merge commit.
+  - GitHub Release `v1.0.5` published with `pvnetwork-panel-v1.0.5.tar.gz` and checksum asset. Post-publish download verification PASS: artifact SHA256 `85f9634911af9998a35d01c37565c08bf865d24c7f3bf196238973b95f2af301`, VERSION `1.0.5`, zero forbidden private-file extensions and no real `.env`.
+
+- `v1.0.6` — IN PROGRESS — `PVN-027` consistent online-user truth across Dashboard and Users.
+  - Production discrepancy recorded during v1.0.5 verification: at least one node can report live OpenVPN users directly while central session hooks do not populate the same users into the panel session view.
+  - Contract: Dashboard and Users must count unique online users from a shared truth layer with node-direct fallback only when central hooks are missing/stale; device-limit/session enforcement semantics must not be loosened or rewritten by the display fix.
+  - Next: read-only source/runtime/data-flow inventory → TDD RED for divergence/fallback/dedup → implementation in an isolated v1.0.6 worktree → full browser/CI gates → verified Production deployment/release.
 
 ## Current release baseline
 
@@ -134,8 +140,8 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 - PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
 - PVN-025 [x] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Release: v1.0.4.
-- PVN-026 [~] User creation node selector with all available nodes selected by default; create only on selected nodes. Target: v1.0.5.
-- PVN-027 [ ] Unify Dashboard and Users online-user truth with a node-direct fallback when a node is not reporting central session hooks; count unique users consistently without changing device-limit enforcement. Target: v1.0.6.
+- PVN-026 [x] User creation node selector with all available nodes selected by default; create only on selected nodes. Release: v1.0.5.
+- PVN-027 [~] Unify Dashboard and Users online-user truth with a node-direct fallback when a node is not reporting central session hooks; count unique users consistently without changing device-limit enforcement. Target: v1.0.6.
 
 ## UI/UX task ledger
 
