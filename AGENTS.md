@@ -57,17 +57,16 @@ Before implementation, record the task and target release here **and commit/push
 - `v1.0.0` — RELEASED — sanitized public baseline.
 - `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.
 - `v1.0.2` — RELEASED — `PVN-111` Responsive Subscription page; CI/Production/asset verification passed.
-- `v1.0.3` — IN PROGRESS — `PVN-205` User profile/details + inline quick-edit row.
-  - Requested UX: expand a user row for fast edit of traffic limit, expiry, max devices, active state, node assignment, Reset Usage, Apply and Cancel.
-  - Username is intentionally read-only in this patch: safe multi-node rename is tracked separately as `PVN-022`.
-  - TDD RED: all 7 inline-edit contract tests failed before implementation.
-  - GREEN checkpoint: 8/8 inline-edit contract tests PASS; 3/3 safe assignment behavior tests PASS; full suite 37/37 PASS.
+- `v1.0.3` — RELEASED — `PVN-205` User profile/details + inline quick-edit row.
+  - Requested UX shipped: expand a user row for fast edit of traffic limit, expiry, max devices, active state, node assignment, Reset Usage, Apply and Cancel.
+  - Username remains intentionally read-only in this patch: safe multi-node rename is tracked separately as `PVN-022`.
+  - TDD evidence: 8/8 inline-edit contract tests PASS; 3/3 safe assignment behavior tests PASS; full suite 37/37 PASS.
   - Assignment removal deactivates instead of deleting profiles; stale disabled profiles are re-used when possible; unavailable new nodes are rejected before mutation.
-  - Browser checkpoint: focused Quick Edit smoke PASS in EN/FA at 360/390/768/1440; full responsive matrix PASS for 2 languages × 9 widths × 9 routes; Subscription responsive smoke remains PASS.
-  - QA correction: browser tests now use the real `ovpanel_language` key and assert FA=`rtl`, EN=`ltr`.
-  - Sanitized FA/EN desktop/mobile Quick Edit screenshots and bilingual release/UI documentation generated and visually checked.
-  - Local release gate PASS: Python compile, 37 tests, shell/JSON syntax, ESLint, npm audit=0 vulnerabilities, Vite production build, JS bundle 731617 bytes, private-material and Production-identifier guards.
-  - Next: push final source/docs + CI workflow → GitHub CI success → verified Production backup → narrow deploy → health/regression → merge/tag/release/assets → mark PVN-205 `[x]`.
+  - Browser evidence: focused Quick Edit smoke PASS in EN/FA at 360/390/768/1440; full responsive matrix PASS for 2 languages × 9 widths × 9 routes; Subscription responsive smoke remains PASS.
+  - Sanitized FA/EN desktop/mobile Quick Edit screenshots and bilingual release/UI documentation published.
+  - Main release commit `15073b80fe741b418ea7062351bbe1078e4b11ed`; GitHub CI run `35412943040` PASS including browser matrix, secret guard and production build.
+  - Production evidence: verified application + native PostgreSQL backup; narrow backend/frontend deploy; local/public health 200; 0 post-deploy HTTP 5xx; Mirza integration traffic continued successfully.
+  - GitHub Release `v1.0.3` published with verified artifact SHA256 `82fd4b95f2941ca8aebe323355393ce617f199b470f41930e40244a16ccb12b4`.
 
 ## Current release baseline
 
@@ -140,7 +139,7 @@ Before implementation, record the task and target release here **and commit/push
 
 ## Active user-lifecycle task ledger
 
-- PVN-205 [~] User profile/details + inline quick-edit row. Target: v1.0.3.
+- PVN-205 [x] User profile/details + inline quick-edit row. Release: v1.0.3.
 
 ## High-priority capability backlog index
 
