@@ -68,7 +68,8 @@ class RouterOpenVpnNodeContractTests(unittest.TestCase):
     def test_fresh_node_stage_installs_capability_but_does_not_enable_listener(self):
         from backend.node.deploy import _stage_script
 
-        script = _stage_script(9090, 1194, "udp", "key", "203.0.113.5")
+        with patch("backend.node.deploy._domain_payload", return_value="Zm9v"):
+            script = _stage_script(9090, 1194, "udp", "key", "203.0.113.5")
         self.assertIn("pvnetwork-router-openvpn", script)
         self.assertIn("pvnetwork-router-auth", script)
         self.assertNotIn("systemctl start openvpn-server@pvnetwork-router", script)
