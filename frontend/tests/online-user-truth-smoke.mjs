@@ -35,6 +35,7 @@ for (const language of languages) {
       let payload = ok({});
       if (path === '/nodes/' || path === '/nodes') payload = ok(nodes);
       else if (path === '/users/' || path === '/users') payload = ok(users);
+      else if (path === '/users/presence') payload = ok({ counts_by_uuid: { u1: 1, u2: 1, u3: 1 }, online_users: 3, sample_time: 1234567890 });
       else if (path === '/server/info') payload = ok({ cpu: 10, memory_total: 100, memory_used: 20, memory_percent: 20, disk_total: 100, disk_used: 20, disk_percent: 20, uptime: 1000 });
       else if (path === '/server/dashboard-live') payload = ok({
         presence: { online_users: 3, central_online_users: 2, direct_fallback_users: 1 },
