@@ -2,12 +2,12 @@
 set -Eeuo pipefail
 umask 077
 
-APP="/opt/ov-panel"
+APP="/opt/pvnetwork-panel"
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 fail(){ printf '[PVNetwork] ERROR: %s\n' "$*" >&2; exit 1; }
 [[ ${EUID:-$(id -u)} -eq 0 ]] || fail "run as root"
-[[ ! -e "$APP" || -z "$(ls -A "$APP" 2>/dev/null || true)" ]] || fail "/opt/ov-panel already exists; this installer is for a fresh server"
+[[ ! -e "$APP" || -z "$(ls -A "$APP" 2>/dev/null || true)" ]] || fail "/opt/pvnetwork-panel already exists; this installer is for a fresh server"
 
 . /etc/os-release
 case "${ID:-}:${VERSION_ID:-}" in
@@ -67,7 +67,7 @@ DATABASE_URL=${PVNETWORK_DATABASE_URL:-}
 JWT_ACCESS_TOKEN_EXPIRES=86400
 SUBSCRIPTION_URL_PREFIX=${PUBLIC_URL%/}
 SUBSCRIPTION_PATH=sub
-OV_ANYCONNECT_PUBLIC_SERVER=${PVNETWORK_ANYCONNECT_SERVER:-vpn.example.com:9443}
+PVNETWORK_ANYCONNECT_PUBLIC_SERVER=${PVNETWORK_ANYCONNECT_SERVER:-vpn.example.com:9443}
 CORS_ORIGINS=${PVNETWORK_CORS_ORIGINS:-${PUBLIC_URL%/}}
 ENV
 chmod 600 "$APP/.env"
@@ -75,7 +75,7 @@ chmod 600 "$APP/.env"
 uv sync
 (cd frontend && npm ci && npm run build)
 .venv/bin/alembic -c backend/alembic.ini upgrade head
-cat > /etc/systemd/system/ov-panel.service <<'UNIT'
+cat > /etc/systemd/system/pvnetwork-panel.service <<'UNIT'
 [Unit]
 Description=PVNetwork Panel
 After=network-online.target
@@ -83,7 +83,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/ov-panel
+WorkingDirectory=/opt/pvnetwork-panel
 Environment=PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/root/.local/bin/uv run main.py
 Restart=always
@@ -95,24 +95,24 @@ KillMode=mixed
 WantedBy=multi-user.target
 UNIT
 
-mkdir -p /etc/ov-pvnetwork /var/backups/ov-pvnetwork
-install -m 0755 "$APP/scripts/manage.sh" /usr/local/sbin/ovpv
-printf '%s\n' "$(cat "$APP/VERSION")" > /etc/ov-pvnetwork/version
+mkdir -p /etc/pvnetwork /var/backups/pvnetwork-panel
+install -m 0755 "$APP/scripts/manage.sh" /usr/local/sbin/pvnetwork
+printf '%s\n' "$(cat "$APP/VERSION")" > /etc/pvnetwork/version
 
 if [[ -x "$APP/scripts/healthcheck.sh" ]]; then
-  install -m 0755 "$APP/scripts/healthcheck.sh" /usr/local/sbin/ov-pvnetwork-healthcheck
-  cat > /etc/systemd/system/ov-pvnetwork-healthcheck.service <<'HEALTHUNIT'
+  install -m 0755 "$APP/scripts/healthcheck.sh" /usr/local/sbin/pvnetwork-panel-healthcheck
+  cat > /etc/systemd/system/pvnetwork-panel-healthcheck.service <<'HEALTHUNIT'
 [Unit]
-Description=OV-PvNetwork control-plane health check
+Description=PVNetwork control-plane health check
 After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/sbin/ov-pvnetwork-healthcheck
+ExecStart=/usr/local/sbin/pvnetwork-panel-healthcheck
 HEALTHUNIT
-  cat > /etc/systemd/system/ov-pvnetwork-healthcheck.timer <<'HEALTHTIMER'
+  cat > /etc/systemd/system/pvnetwork-panel-healthcheck.timer <<'HEALTHTIMER'
 [Unit]
-Description=OV-PvNetwork periodic health check
+Description=PVNetwork periodic health check
 
 [Timer]
 OnBootSec=2min
@@ -126,8 +126,8 @@ HEALTHTIMER
 fi
 
 systemctl daemon-reload
-systemctl enable --now ov-panel.service
-[[ -f /etc/systemd/system/ov-pvnetwork-healthcheck.timer ]] && systemctl enable --now ov-pvnetwork-healthcheck.timer
+systemctl enable --now pvnetwork-panel.service
+[[ -f /etc/systemd/system/pvnetwork-panel-healthcheck.timer ]] && systemctl enable --now pvnetwork-panel-healthcheck.timer
 
 for _ in $(seq 1 30); do
   if curl -fsS --connect-timeout 1 --max-time 2 "http://127.0.0.1:${PANEL_PORT}/openapi.json" >/dev/null; then

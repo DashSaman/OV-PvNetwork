@@ -2,8 +2,8 @@
 set -Eeuo pipefail
 
 REPO="DashSaman/OV-PvNetwork"
-REF="${OVPV_REF:-v1.0.0}"
-TMP="$(mktemp -d /tmp/ov-pvnetwork-install.XXXXXX)"
+REF="${PVNETWORK_REF:-v1.0.0}"
+TMP="$(mktemp -d /tmp/pvnetwork-panel-install.XXXXXX)"
 trap 'rm -rf "$TMP"' EXIT
 
 [[ "${EUID:-$(id -u)}" -eq 0 ]] || { echo '[PVNetwork] ERROR: run as root' >&2; exit 1; }

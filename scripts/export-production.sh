@@ -2,10 +2,10 @@
 set -Eeuo pipefail
 umask 077
 
-ROOT="${1:-/opt/ov-panel}"
+ROOT="${1:-/opt/pvnetwork-panel}"
 [[ -d "$ROOT" ]] || { echo "panel source not found: $ROOT" >&2; exit 1; }
 STAMP="$(date -u +%Y%m%d-%H%M%S)"
-OUT="/root/ov-pvnetwork-production-export-$STAMP"
+OUT="/root/pvnetwork-production-export-$STAMP"
 STAGE="$OUT/stage"
 mkdir -p "$STAGE/panel" "$STAGE/system"
 
@@ -24,14 +24,14 @@ rsync -a \
   "$ROOT/" "$STAGE/panel/"
 
 for f in \
-  /etc/systemd/system/ov-panel.service \
-  /etc/systemd/system/ov-node-user-reconcile.service \
-  /etc/systemd/system/ov-node-user-reconcile.timer \
-  /etc/systemd/system/ov-production-healthcheck.service \
-  /etc/systemd/system/ov-production-healthcheck.timer \
-  /usr/local/sbin/ov-node-user-reconcile.py \
-  /usr/local/sbin/ov-production-healthcheck \
-  /usr/local/sbin/ov-sub-push-sender.py
+  /etc/systemd/system/pvnetwork-panel.service \
+  /etc/systemd/system/pvnetwork-node-user-reconcile.service \
+  /etc/systemd/system/pvnetwork-node-user-reconcile.timer \
+  /etc/systemd/system/pvnetwork-panel-healthcheck.service \
+  /etc/systemd/system/pvnetwork-panel-healthcheck.timer \
+  /usr/local/sbin/pvnetwork-node-user-reconcile.py \
+  /usr/local/sbin/pvnetwork-panel-healthcheck \
+  /usr/local/sbin/pvnetwork-sub-push-sender.py
 do
   [[ -f "$f" ]] && cp -a "$f" "$STAGE/system/$(basename "$f")"
 done
@@ -64,12 +64,12 @@ Path(sys.argv[2]).write_text(
 )
 PY
 
-tar -C "$STAGE" -czf "$OUT/ov-pvnetwork-production-source-$STAMP.tar.gz" .
-sha256sum "$OUT/ov-pvnetwork-production-source-$STAMP.tar.gz" > "$OUT/SHA256SUMS"
+tar -C "$STAGE" -czf "$OUT/pvnetwork-production-source-$STAMP.tar.gz" .
+sha256sum "$OUT/pvnetwork-production-source-$STAMP.tar.gz" > "$OUT/SHA256SUMS"
 rm -rf "$STAGE"
 
 echo "EXPORT_DIR=$OUT"
-echo "ARCHIVE=$OUT/ov-pvnetwork-production-source-$STAMP.tar.gz"
+echo "ARCHIVE=$OUT/pvnetwork-production-source-$STAMP.tar.gz"
 echo "SECRET_SCAN=$SCAN"
 if [[ -s "$SCAN" ]]; then
   echo 'SECRET_SCAN=REVIEW_REQUIRED'
