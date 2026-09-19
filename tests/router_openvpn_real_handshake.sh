@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AUTH_SCRIPT="$ROOT/scripts/pvnetwork-router-auth"
-PY="${PYTHON:-/opt/pvnetwork-panel/.venv/bin/python}"
+PY="${PYTHON:-python3}"
 TMP="$(mktemp -d /tmp/pvn029-handshake.XXXXXX)"
 NS="pvn029-$RANDOM-$$"
 PIDS=()
