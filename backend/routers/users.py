@@ -242,6 +242,37 @@ async def get_all_users(
     )
 
 
+@router.get("/presence", response_model=ResponseModel)
+async def get_user_presence(
+    db: Session = Depends(get_db),
+    user: dict = Depends(get_current_user),
+):
+    if user["type"] not in {"main_admin", "admin"}:
+        return ResponseModel(success=False, msg="Unauthorized access")
+
+    presence = await get_display_live_presence()
+    counts = {
+        str(uuid): max(0, int(count))
+        for uuid, count in (presence.get("counts_by_uuid") or {}).items()
+    }
+    if user["type"] == "admin":
+        allowed = {
+            str(uuid)
+            for (uuid,) in db.query(User.uuid).filter(User.owner == user["username"]).all()
+        }
+        counts = {uuid: count for uuid, count in counts.items() if uuid in allowed}
+
+    return ResponseModel(
+        success=True,
+        msg="Live user presence retrieved",
+        data={
+            "counts_by_uuid": counts,
+            "online_users": sum(1 for count in counts.values() if count > 0),
+            "sample_time": presence.get("sample_time"),
+        },
+    )
+
+
 @router.get("/{uuid}", response_model=ResponseModel)
 async def reset_user_usage(uuid: str, db: Session = Depends(get_db), actor: dict = Depends(get_current_user)):
     # MULTINODE_RESET_ROUTE_V2

@@ -16,6 +16,7 @@ import { useAuth } from '../context/AuthContext';
 const ITEMS_PER_PAGE = 10;
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
+  const [presenceOnline, setPresenceOnline] = useState(null);
   const [nodes, setNodes] = useState([]);
   const [subscriptionSettings, setSubscriptionSettings] = useState(null);
   const [anyConnectSettings, setAnyConnectSettings] = useState({
@@ -60,8 +61,8 @@ const UserManagement = () => {
       setReseller(null);
     }
   };
-  const fetchUsers = async () => {
-    setIsLoading(true);
+  const fetchUsers = async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     setError('');
     try {
       const response = await apiClient.get('/users/');
@@ -73,7 +74,27 @@ const UserManagement = () => {
       setError(errorText(exception));
       setUsers([]);
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
+    }
+  };
+  const fetchPresence = async () => {
+    try {
+      const response = await apiClient.get('/users/presence');
+      if (!response.data?.success) return;
+      const payload = response.data.data || {};
+      const counts = payload.counts_by_uuid || {};
+      setPresenceOnline(Number(payload.online_users || 0));
+      setUsers(previous => previous.map(item => {
+        const count = Number(counts[item.uuid] || 0);
+        const nextOnline = count > 0;
+        const currentOnlineCount = Number(item.online_count || 0);
+        if (currentOnlineCount === count && Boolean(item.is_online) === nextOnline) {
+          return item;
+        }
+        return { ...item, online_count: count, is_online: nextOnline };
+      }));
+    } catch {
+      // Keep the last good presence snapshot on transient polling failures.
     }
   };
   const fetchNodes = async () => {
@@ -116,10 +137,14 @@ const UserManagement = () => {
     fetchAnyConnectSettings();
     refreshResellerProfile();
 
-    // Refresh VPN online/offline state every 10 seconds.
-    const liveStatusTimer = setInterval(fetchUsers, 10000);
+    fetchPresence();
+    // Lightweight shared presence refresh keeps Dashboard and Users on the same snapshot.
+    const liveStatusTimer = setInterval(fetchPresence, 1000);
+    // Keep non-presence user fields eventually fresh without polling the full list every second.
+    const userRefreshTimer = setInterval(() => fetchUsers(false), 30000);
     return () => {
       clearInterval(liveStatusTimer);
+      clearInterval(userRefreshTimer);
     };
     // Polling callbacks intentionally use the mount-time function set; state updates are functional/server-derived.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,14 +152,15 @@ const UserManagement = () => {
   const userStats = useMemo(() => {
     const activeUsersCount = users.filter(user => user.is_active).length;
     const inactiveUsersCount = users.length - activeUsersCount;
-    const onlineUsersCount = users.filter(user => user.is_online).length;
+    const rowOnlineUsersCount = users.filter(user => user.is_online).length;
+    const onlineUsersCount = Number.isFinite(presenceOnline) ? presenceOnline : rowOnlineUsersCount;
     return {
       total: users.length,
       online: onlineUsersCount,
       active: activeUsersCount,
       inactive: inactiveUsersCount
     };
-  }, [users]);
+  }, [users, presenceOnline]);
 
   // Filter, sort and then paginate users.
   const filteredUsers = useMemo(() => {

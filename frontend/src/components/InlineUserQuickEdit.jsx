@@ -24,6 +24,10 @@ const InlineUserQuickEdit = ({ user, nodes, userRole, onSave, onCancel }) => {
   const unlimited = Number(trafficGb || 0) <= 0;
   const effectiveDeviceLimit = isReseller && unlimited ? '1' : deviceLimit;
 
+  const editableNodeIdsKey = Array.isArray(user?.node_ids)
+    ? user.node_ids.map(Number).join(',')
+    : '';
+
   useEffect(() => {
     setTrafficGb(gbFromBytes(user?.total));
     setExpiryDate(String(user?.expiry_date || '').split('T')[0]);
@@ -32,7 +36,14 @@ const InlineUserQuickEdit = ({ user, nodes, userRole, onSave, onCancel }) => {
     setNodeIds(Array.isArray(user?.node_ids) ? user.node_ids.map(Number) : []);
     setResetUsage(false);
     setError('');
-  }, [user]);
+  }, [
+    user?.uuid,
+    user?.total,
+    user?.expiry_date,
+    user?.device_limit,
+    user?.is_active,
+    editableNodeIdsKey,
+  ]);
 
   const sortedNodes = useMemo(
     () => [...(nodes || [])].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''))),

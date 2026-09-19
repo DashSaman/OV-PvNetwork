@@ -65,6 +65,7 @@ for (const language of languages) {
       const ok = data => ({ success: true, msg: 'ok', data });
       let payload = ok({});
       if (path === '/users/' || path === '/users') payload = ok([demoUser()]);
+      else if (path === '/users/presence') payload = ok({ counts_by_uuid: { 'demo-user-v103': 1 }, online_users: 1, sample_time: 1234567890 });
       else if (path === '/nodes/' || path === '/nodes') payload = ok(demoNodes);
       else if (path === '/anyconnect/settings') payload = ok({ default_enabled: false });
       else if (path === '/server/settings/' || path === '/server/settings') payload = ok({ subscription_url_prefix: 'https://demo.example.invalid/', subscription_path: 'sub' });
