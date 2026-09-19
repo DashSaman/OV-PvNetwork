@@ -1027,7 +1027,7 @@ This section intentionally mirrors the complete permanent task registry so an ag
 - PVN-937 RTL browser compatibility
 - PVN-938 Accessibility browser compatibility
 - PVN-939 Upgrade migration from v1.0
-- PVN-940 Upgrade migration from v1.1
+- PVN-940 Upgrade migration from legacy/future minor-version schemes
 - PVN-941 DB schema compatibility validator
 - PVN-942 API compatibility validator
 - PVN-943 Subscription backward-compatibility validator

@@ -4,7 +4,7 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.1-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.2-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -30,6 +30,14 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 
 
 ### نمونه واقعی نسخه 1.1 در دسکتاپ و موبایل
+
+### تصویر Subscription در v1.0.2
+
+![Subscription دسکتاپ v1.0.2](./docs/images/v1.0.2/fa/desktop/subscription.png)
+
+![Subscription موبایل v1.0.2](./docs/images/v1.0.2/fa/mobile/subscription.png)
+
+در v1.0.2 صفحه Subscription برای موبایل سخت‌گیرانه‌تر شده است: دکمه‌های Notification، کپی Linux و Copyهای AnyConnect حداقل فضای Touch مناسب دارند، Username/Host طولانی از صفحه بیرون نمی‌زنند و RTL فارسی / LTR انگلیسی بدون Horizontal Overflow باقی می‌ماند.
 
 ![PVNetwork v1.0.1 دسکتاپ](./docs/images/v1.0.1/fa/desktop/users.png)
 
@@ -72,7 +80,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.1/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.2/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

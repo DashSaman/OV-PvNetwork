@@ -68,6 +68,14 @@ Renewal reuses the same UUID and username. Finite plans support preserve, reset 
 ![AnyConnect](./images/ui/workflow-anyconnect.jpg)
 
 The AnyConnect dialog manages account state and credential generation/change while keeping the same panel user identity.
+## Subscription page — v1.0.2
+
+![Subscription desktop](./images/v1.0.2/en/desktop/subscription.png)
+
+![Subscription mobile](./images/v1.0.2/en/mobile/subscription.png)
+
+The public Subscription page presents status/usage, expiry, simultaneous-device allowance, smart node choices, client downloads, Linux install command, AnyConnect credentials and renewal notifications. On narrow screens, Copy/Test/Renew controls keep a 44px touch floor, long usernames/hosts wrap inside their cards, and the page itself must not horizontally scroll. The language and theme controls remain reachable.
+
 ## 3. Node Management
 
 ![Nodes](./images/ui/nodes.jpg)

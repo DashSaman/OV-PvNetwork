@@ -63,7 +63,7 @@ ovpv backup
 
 ## Responsive admin UI
 
-v1.1 adds mobile/tablet hardening and complete Main Admin navigation on narrow screens. After installation, verify the core UI at phone/tablet/desktop widths and both Persian RTL/English LTR if those languages are used.
+The sequential 1.0.x stream adds mobile/tablet hardening and complete Main Admin navigation on narrow screens. After installation, verify the core UI at phone/tablet/desktop widths and both Persian RTL/English LTR if those languages are used.
 
 See:
 
