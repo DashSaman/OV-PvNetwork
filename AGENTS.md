@@ -85,13 +85,14 @@ Before implementation, record the task and target release here **and commit/push
   - Production evidence: verified application + native PostgreSQL backup; narrow backend/frontend deploy; local/public health 200; 0 post-deploy HTTP 5xx; Mirza integration traffic continued successfully.
   - GitHub Release `v1.0.3` published with verified artifact SHA256 `82fd4b95f2941ca8aebe323355393ce617f199b470f41930e40244a16ccb12b4`.
 
-- `v1.0.4` — IN PROGRESS — `PVN-025` PVNetwork brand-purity + runtime naming migration.
+- `v1.0.4` — RELEASED — `PVN-025` PVNetwork brand-purity + runtime naming migration.
   - TDD RED recorded: permanent tracked-tree brand guard found legacy source/runtime identifiers before implementation.
   - Source GREEN: zero forbidden tracked-tree identifiers; metadata consistency guard; SQLite upgrade reuse; node tunnel fallback; PVNetwork-owned runtime-path tests.
-  - Local gate: 46/46 unit/governance tests PASS; Python compile, shell/JSON syntax, uv lock, ESLint, production npm audit=0 and Vite production build PASS.
-  - Canonical runtime contract: `/opt/pvnetwork-panel`, `pvnetwork-panel.service`, CLI `pvnetwork`, and PVNetwork-owned backup/restore/smoke/monitor/notifier/healthcheck/config identifiers.
-  - Hardened Production backup/restore/smoke helpers and all panel systemd unit/timer definitions are now version-controlled; retired internal brand aliases and prefixes are blocked by regression tests except the repository's actual GitHub slug.
-  - Next: browser matrix + GitHub CI → verified Production app/PostgreSQL backup → parallel canary → atomic nginx switch → health/integration verification → release/tag/assets → mark `PVN-025` `[x]`.
+  - Final local gate: 50/50 unit/governance tests PASS; Python compile, shell/JSON syntax, uv lock, ESLint, production npm audit=0 and Vite production build PASS.
+  - Canonical runtime contract: `/opt/pvnetwork-panel`, `pvnetwork-panel.service`, CLI `pvnetwork`, PVNetwork-owned background jobs/timers and PVNetwork-owned backup/restore/smoke/monitor/notifier/healthcheck/config identifiers.
+  - Production evidence: verified application + native PostgreSQL backup; parallel canary passed against the live database; atomic nginx cutover completed; previous live app/service retired into the rollback set; local/public health 200; 0 post-cutover HTTP 5xx; 0 Traceback/CRITICAL/FATAL; Mirza integration 2xx continued; canonical service restart count remained 0 after final cutover.
+  - Main release commit `56a90462b40500096344fdf105c2c426ba0ac4cb`; GitHub CI run `35417072048` PASS including browser matrix, private-material guard and lifecycle checks.
+  - GitHub Release `v1.0.4` published with verified artifact SHA256 `523ba892f33584eaec787a9e4001abe699ba3b2f6c2569a271a900b1e9fa9956`; downloaded asset checksum and tag target re-verified.
 
 ## Current release baseline
 
@@ -119,7 +120,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-022 [ ] Safe multi-node username rename with profile migration, rollback and no silent certificate breakage.
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 - PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
-- PVN-025 [~] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Target: v1.0.4.
+- PVN-025 [x] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Release: v1.0.4.
 - PVN-026 [ ] User creation node selector with all available nodes selected by default; create only on selected nodes. Target: v1.0.5 after PVN-025.
 
 ## UI/UX task ledger
