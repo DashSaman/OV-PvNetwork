@@ -1,0 +1,197 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+MODE="${1:---inventory}"
+shift || true
+BACKUP_ROOT="${PVNETWORK_FIREWALL_BACKUP_ROOT:-/var/backups/pvnetwork-panel/firewall}"
+TCP_PORTS=""
+UDP_PORTS=""
+ROLLBACK_DIR=""
+ROLLBACK_AFTER=120
+CONFIRM_DIR=""
+
+usage() {
+  cat <<'EOF'
+Usage:
+  pvnetwork-firewall-hardening --inventory
+  pvnetwork-firewall-hardening --apply --tcp PORTS --udp PORTS [--rollback-after SECONDS]
+  pvnetwork-firewall-hardening --confirm BACKUP_DIR
+  pvnetwork-firewall-hardening --rollback BACKUP_DIR
+PORTS is a comma-separated list of ports or inclusive ranges (e.g. 22,80,443,5000:5010).
+EOF
+}
+
+while (($#)); do
+  case "$1" in
+    --tcp) TCP_PORTS="${2:-}"; shift 2 ;;
+    --udp) UDP_PORTS="${2:-}"; shift 2 ;;
+    --rollback-after) ROLLBACK_AFTER="${2:-}"; shift 2 ;;
+    --confirm) MODE="--confirm"; CONFIRM_DIR="${2:-}"; shift 2 ;;
+    --rollback) MODE="--rollback"; ROLLBACK_DIR="${2:-}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
+require_root() {
+  [[ $EUID -eq 0 ]] || { echo "root required" >&2; exit 3; }
+}
+
+inventory() {
+  echo "# listening sockets"
+  ss -H -lntup || true
+  echo "# IPv4 INPUT"
+  iptables -S INPUT || true
+  echo "# IPv6 INPUT"
+  ip6tables -S INPUT 2>/dev/null || true
+  echo "# routes"
+  ip route show || true
+  ip -6 route show 2>/dev/null || true
+}
+
+validate_ports() {
+  local value="$1"
+  [[ -z "$value" ]] && return 0
+  [[ "$value" =~ ^[0-9,:]+$ ]] || return 1
+  local item start end
+  IFS=',' read -ra ITEMS <<<"$value"
+  for item in "${ITEMS[@]}"; do
+    [[ -n "$item" ]] || return 1
+    if [[ "$item" == *:* ]]; then
+      start="${item%%:*}"; end="${item##*:}"
+      ((start >= 1 && start <= 65535 && end >= start && end <= 65535)) || return 1
+    else
+      ((item >= 1 && item <= 65535)) || return 1
+    fi
+  done
+}
+
+backup_rules() {
+  local stamp dir
+  stamp="$(date +%Y%m%d-%H%M%S)"
+  dir="$BACKUP_ROOT/$stamp"
+  install -d -m 0700 "$dir"
+  iptables-save >"$dir/iptables.v4"
+  if command -v ip6tables-save >/dev/null 2>&1; then
+    ip6tables-save >"$dir/iptables.v6"
+  fi
+  inventory >"$dir/inventory.txt" 2>&1 || true
+  chmod 0600 "$dir"/* 2>/dev/null || true
+  printf '%s\n' "$dir"
+}
+
+add_port_rules() {
+  local tool="$1" proto="$2" value="$3" item
+  [[ -z "$value" ]] && return 0
+  IFS=',' read -ra ITEMS <<<"$value"
+  for item in "${ITEMS[@]}"; do
+    "$tool" -A PVNETWORK_INPUT -p "$proto" --dport "$item" -m conntrack --ctstate NEW -j ACCEPT
+  done
+}
+
+build_chain() {
+  local tool="$1" tcp="$2" udp="$3"
+  "$tool" -N PVNETWORK_INPUT 2>/dev/null || "$tool" -F PVNETWORK_INPUT
+  "$tool" -F PVNETWORK_INPUT
+  "$tool" -A PVNETWORK_INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  "$tool" -A PVNETWORK_INPUT -i lo -j ACCEPT
+  if [[ "$tool" == "ip6tables" ]]; then
+    "$tool" -A PVNETWORK_INPUT -p ipv6-icmp -j ACCEPT
+  else
+    "$tool" -A PVNETWORK_INPUT -p icmp -j ACCEPT
+  fi
+  add_port_rules "$tool" tcp "$tcp"
+  add_port_rules "$tool" udp "$udp"
+  "$tool" -A PVNETWORK_INPUT -j DROP
+  # Preserve every pre-existing tunnel/NFQUEUE/source-specific INPUT rule.
+  # Only traffic not already handled by those rules reaches this final chain.
+  while "$tool" -C INPUT -j PVNETWORK_INPUT 2>/dev/null; do
+    "$tool" -D INPUT -j PVNETWORK_INPUT
+  done
+  "$tool" -A INPUT -j PVNETWORK_INPUT
+}
+
+schedule_rollback() {
+  local backup="$1" seconds="$2" unit script
+  [[ "$seconds" =~ ^[0-9]+$ ]] && ((seconds >= 30 && seconds <= 900)) || {
+    echo "rollback-after must be 30..900 seconds" >&2
+    return 1
+  }
+  script="$(readlink -f "$0")"
+  unit="pvnetwork-firewall-rollback-$(basename "$backup")"
+  systemd-run --quiet --unit="$unit" --on-active="${seconds}s" \
+    "$script" --rollback "$backup"
+  printf '%s\n' "$unit" >"$backup/rollback-unit"
+  chmod 0600 "$backup/rollback-unit"
+  echo "rollback_unit=$unit"
+}
+
+confirm_rules() {
+  require_root
+  local dir="$1" unit
+  [[ -n "$dir" && -f "$dir/rollback-unit" ]] || {
+    echo "Valid firewall backup with rollback-unit required" >&2
+    exit 6
+  }
+  unit="$(cat "$dir/rollback-unit")"
+  systemctl stop "${unit}.timer" "${unit}.service" 2>/dev/null || true
+  systemctl reset-failed "${unit}.service" 2>/dev/null || true
+  rm -f "$dir/rollback-unit"
+  echo "PVNETWORK_FIREWALL_CONFIRM=PASS dir=$dir"
+}
+
+rollback() {
+  require_root
+  local dir="$1"
+  [[ -n "$dir" && -s "$dir/iptables.v4" ]] || {
+    echo "Valid rollback directory required" >&2
+    exit 4
+  }
+  iptables-restore <"$dir/iptables.v4"
+  if [[ -s "$dir/iptables.v6" ]] && command -v ip6tables-restore >/dev/null 2>&1; then
+    ip6tables-restore <"$dir/iptables.v6"
+  fi
+  echo "PVNETWORK_FIREWALL_ROLLBACK=PASS dir=$dir"
+}
+
+apply_rules() {
+  require_root
+  validate_ports "$TCP_PORTS" || { echo "Invalid TCP allowlist" >&2; exit 5; }
+  validate_ports "$UDP_PORTS" || { echo "Invalid UDP allowlist" >&2; exit 5; }
+  [[ -n "$TCP_PORTS$UDP_PORTS" ]] || { echo "Explicit allowlist required" >&2; exit 5; }
+
+  local backup
+  backup="$(backup_rules)"
+  schedule_rollback "$backup" "$ROLLBACK_AFTER"
+  trap 'iptables-restore <"$backup/iptables.v4"; if [[ -s "$backup/iptables.v6" ]]; then ip6tables-restore <"$backup/iptables.v6" 2>/dev/null || true; fi' ERR
+
+  build_chain iptables "$TCP_PORTS" "$UDP_PORTS"
+  if command -v ip6tables >/dev/null 2>&1; then
+    build_chain ip6tables "$TCP_PORTS" "$UDP_PORTS"
+  fi
+
+  iptables -C PVNETWORK_INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  iptables -C PVNETWORK_INPUT -j DROP
+  trap - ERR
+  echo "PVNETWORK_FIREWALL_APPLY=PASS"
+  echo "rollback=$backup"
+}
+
+case "$MODE" in
+  --inventory)
+    inventory
+    ;;
+  --apply)
+    apply_rules
+    ;;
+  --confirm)
+    confirm_rules "$CONFIRM_DIR"
+    ;;
+  --rollback)
+    rollback "$ROLLBACK_DIR"
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

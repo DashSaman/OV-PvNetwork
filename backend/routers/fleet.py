@@ -1,6 +1,7 @@
 import json, threading, time, uuid
 from pathlib import Path
 import paramiko
+from backend.security_ssh import configure_ssh_client
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -26,7 +27,7 @@ def _job_is_active(job_id):
 class Control(BaseModel):
  drain:bool|None=None; maintenance:bool|None=None; weight:int|None=Field(None,ge=0,le=1000)
 class Upgrade(BaseModel):
- node_ids:list[int]=Field(min_length=1); ssh_username:str='root'; ssh_password:str=Field(min_length=1,max_length=512); ssh_port:int=Field(22,ge=1,le=65535); canary_node_id:int|None=None
+ node_ids:list[int]=Field(min_length=1); ssh_username:str='root'; ssh_password:str=Field(min_length=1,max_length=512); ssh_port:int=Field(22,ge=1,le=65535); canary_node_id:int|None=None; ssh_fingerprints:dict[int,str]=Field(default_factory=dict)
 class Retry(BaseModel): ssh_password:str=Field(min_length=1,max_length=512)
 def admin(u):
  if u['type']!='main_admin':raise HTTPException(403,'Main administrator required')
@@ -56,17 +57,40 @@ async def control(node_id:int,q:Control,db:Session=Depends(get_db),u:dict=Depend
  if q.maintenance is not None:n.maintenance=q.maintenance;n.drain=q.maintenance or n.drain
  if q.weight is not None:n.weight=q.weight
  db.commit();return ResponseModel(success=True,msg='Node control updated',data={'id':n.id,'drain':n.drain,'maintenance':n.maintenance,'weight':n.weight})
-def ssh(node,user,password,port,script):
- c=paramiko.SSHClient()
- c.load_system_host_keys()
- c.load_host_keys(str(KNOWN_HOSTS))
- c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
- try:
-  c.connect(node.address,port=port,username=user,password=password,timeout=20,allow_agent=False,look_for_keys=False)
-  _,o,e=c.exec_command('bash -s',timeout=900);o.channel.sendall(script.encode());o.channel.shutdown_write();rc=o.channel.recv_exit_status();out=o.read().decode(errors='replace')+e.read().decode(errors='replace')
-  if rc:raise RuntimeError(out[-1500:])
-  return out
- finally:c.close()
+def ssh(node, user, password, port, script, expected_fingerprint=None):
+    client = paramiko.SSHClient()
+    configure_ssh_client(
+        client,
+        expected_fingerprint=expected_fingerprint,
+    )
+    try:
+        client.connect(
+            node.address,
+            port=port,
+            username=user,
+            password=password,
+            timeout=20,
+            allow_agent=False,
+            look_for_keys=False,
+        )
+        # Fixed command; the deployment script is sent on stdin.
+        _, stdout, stderr = client.exec_command(
+            "bash -s",
+            timeout=900,
+        )  # nosec B601
+        stdout.channel.sendall(script.encode())
+        stdout.channel.shutdown_write()
+        rc = stdout.channel.recv_exit_status()
+        output = (
+            stdout.read().decode(errors="replace")
+            + stderr.read().decode(errors="replace")
+        )
+        if rc:
+            raise RuntimeError(output[-1500:])
+        return output
+    finally:
+        client.close()
+
 SCRIPT='''set -Eeuo pipefail
 . /opt/ov-node/.env
 STAMP=$(date +%s); B=/opt/ov-node.rollback; N=/opt/ov-node.new.$STAMP
@@ -126,7 +150,7 @@ def run(job,password):
    n=db.query(Node).filter(Node.id==i).first()
    if not n:raise RuntimeError(f'Node {i} not found')
    n.maintenance=True;n.drain=True;n.last_upgrade_status='running';db.commit();job['stage']=f'upgrading:{n.name}';save(job)
-   out=ssh(n,job['ssh_username'],password,job['ssh_port'],SCRIPT)
+   out=ssh(n,job['ssh_username'],password,job['ssh_port'],SCRIPT,job.get('ssh_fingerprints',{}).get(str(i)))
    info=NodeRequests(n.address,n.port,n.key,n.tunnel_address or n.address,n.protocol,n.ovpn_port).get_node_info()
    if not info or info.get('status')!='running':raise RuntimeError(f'Health check failed: {n.name}')
    n.version=(out.strip().splitlines()[-1] if out.strip() else 'latest')[:128];n.last_upgrade_at=int(time.time());n.last_upgrade_status='succeeded';n.maintenance=False;n.drain=False;db.commit();job['completed'][str(i)]='succeeded';save(job)
@@ -154,7 +178,7 @@ def launch(job,password):
   raise
 @router.post('/upgrade',response_model=ResponseModel)
 async def upgrade(q:Upgrade,u:dict=Depends(get_current_user)):
- admin(u);i=str(uuid.uuid4());j={'id':i,'state':'queued','stage':'queued','error':None,'node_ids':q.node_ids,'canary_node_id':q.canary_node_id,'ssh_username':q.ssh_username,'ssh_port':q.ssh_port,'completed':{},'created_at':int(time.time())};save(j)
+ admin(u);i=str(uuid.uuid4());j={'id':i,'state':'queued','stage':'queued','error':None,'node_ids':q.node_ids,'canary_node_id':q.canary_node_id,'ssh_username':q.ssh_username,'ssh_port':q.ssh_port,'ssh_fingerprints':{str(k):v for k,v in q.ssh_fingerprints.items()},'completed':{},'created_at':int(time.time())};save(j)
  if not launch(j,q.ssh_password):raise HTTPException(409,'Job is already running')
  return ResponseModel(success=True,msg='Canary upgrade started',data={'job_id':i})
 @router.get('/jobs/{job_id}',response_model=ResponseModel)
@@ -180,6 +204,7 @@ class RollbackRequest(BaseModel):
     ssh_username: str = "root"
     ssh_password: str = Field(min_length=1, max_length=512)
     ssh_port: int = Field(22, ge=1, le=65535)
+    ssh_fingerprint: str | None = Field(default=None, max_length=160)
 
 ROLLBACK_SCRIPT = r'''set -Eeuo pipefail
 test -d /opt/ov-node.rollback
@@ -236,6 +261,7 @@ async def rollback_node(
             request.ssh_password,
             request.ssh_port,
             ROLLBACK_SCRIPT,
+            request.ssh_fingerprint,
         )
         info = await __import__("asyncio").to_thread(
             NodeRequests(

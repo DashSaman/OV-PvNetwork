@@ -140,6 +140,9 @@ Before implementation, record the task and target release here **and commit/push
 - `v1.0.8` — IN PROGRESS — `PVN-028` Production security hardening from the authorized 2026-09-19 review.
   - Scope: dependency remediation + CI `pip-audit`/`bandit`; main-admin one-way password hash migration; SSH host-key pinning/verification; Production OpenAPI/Redoc reduction; security headers; login-specific throttle; AnyConnect secret-file permissions; inventory-first reversible firewall policy.
   - Safety boundary: no firewall apply, SSH lockout risk, VPN/tunnel/Xray mutation or credential cutover occurs until rollback and alternative access are proven. Existing security WIP was preserved before the v1.0.7 hotfix and resumed in isolated `release/v1.0.8`.
+  - Local implementation gate: 84/84 Python unit/governance tests PASS; admin-password migration and SSH pinning have dedicated behavior tests; Python dependency audit reports zero known vulnerabilities; Bandit Medium/High gate PASS; shell/JSON/compile/uv-lock, ESLint/build and runtime npm audit PASS; largest JS 735270 bytes under the 768000 budget.
+  - Browser gate: online-truth, full EN/FA responsive matrix (2 languages × 9 widths × 9 routes), Inline Quick Edit, Add User Node Selector and Subscription smoke tests all PASS. Sanitized EN/FA SSH-pinning screenshots were generated from mock-only data.
+  - Host-filter design was corrected after Production inventory: existing tunnel/NFQUEUE/source-specific INPUT rules remain ahead of the final PVNetwork allow/drop chain; WireGuard/OpenVPN/Xray/tunnel configuration itself is not modified. Applying the chain requires an explicit allowlist, verified rules snapshot and timed automatic rollback until health is confirmed.
 
 ## Current release baseline
 

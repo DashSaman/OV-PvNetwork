@@ -7,6 +7,15 @@ import os
 import secrets
 from pathlib import Path
 
+from passlib.context import CryptContext
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
 
 def secret_key(length: int = 64) -> str:
     return base64.urlsafe_b64encode(secrets.token_bytes(length)).decode().rstrip("=")
@@ -62,8 +71,8 @@ def main() -> int:
     sub_path = args.subscription_path.strip("/") or "sub"
     values = {
         "ADMIN_USERNAME": args.username,
-        "ADMIN_PASSWORD": args.password,
-        "HOST": "0.0.0.0",
+        "ADMIN_PASSWORD_HASH": hash_password(args.password),
+        "HOST": "127.0.0.1",
         "PORT": str(args.port),
         "URLPATH": path,
         "VITE_URLPATH": path,
@@ -73,7 +82,7 @@ def main() -> int:
     if args.subscription_url_prefix:
         values["SUBSCRIPTION_URL_PREFIX"] = args.subscription_url_prefix.rstrip("/")
 
-    lines = parse_env(env_path)
+    lines = [line for line in parse_env(env_path) if not line.strip().startswith("ADMIN_PASSWORD=")]
     env_path.write_text("\n".join(set_values(lines, values)).rstrip() + "\n", encoding="utf-8")
     os.chmod(env_path, 0o600)
     print(f"Configured {env_path}")

@@ -224,7 +224,6 @@ async def download_backup(backup_id: str, user: dict = Depends(get_current_user)
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f"pvnetwork-backup-{backup_id}-",
         suffix=".tar.gz",
-        dir="/tmp",
     )
     os.close(descriptor)
     temporary = Path(temporary_name)

@@ -55,24 +55,38 @@ class SecurityHardeningContractTests(unittest.TestCase):
         self.assertIn("pyjwt>=2.13", pyproject)
         self.assertIn("python-dotenv>=1.2.2", pyproject)
 
+    def test_anyconnect_secret_key_requires_private_permissions(self):
+        source = text("backend/routers/anyconnect.py")
+        self.assertIn("metadata.st_mode & 0o077", source)
+        self.assertIn("must not be group/world accessible", source)
+
     def test_health_checks_do_not_depend_on_public_openapi(self):
-        paths = [
+        panel_paths = [
             "install-local.sh",
-            "scripts/healthcheck.sh",
             "scripts/manage.sh",
             "scripts/verify.sh",
             "scripts/pvnetwork-panel-restore-job",
         ]
-        for path in paths:
+        for path in panel_paths:
             body = text(path)
             self.assertIn("/healthz", body, path)
             self.assertNotIn("/openapi.json", body, path)
+
+        healthcheck = text("scripts/healthcheck.sh")
+        self.assertIn("/healthz", healthcheck)
+        self.assertIn("/sync/status", healthcheck)
+        self.assertIn("API_KEY", healthcheck)
+        self.assertIn("set_new_setting", healthcheck)
+        self.assertNotIn("/openapi.json", healthcheck)
 
     def test_firewall_hardening_is_inventory_first_and_reversible(self):
         body = text("scripts/pvnetwork-firewall-hardening")
         self.assertIn("--inventory", body)
         self.assertIn("--apply", body)
         self.assertIn("rollback", body.lower())
+        self.assertIn("--rollback-after", body)
+        self.assertIn("--confirm", body)
+        self.assertIn("systemd-run", body)
         self.assertIn("established,related", body.lower())
 
 

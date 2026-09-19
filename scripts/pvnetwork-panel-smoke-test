@@ -29,6 +29,14 @@ echo "PVNETWORK_SMOKE_STAGE=FRONTEND"
 
 test -s frontend/dist/index.html
 
+# The built SPA must use the live panel base path. A mismatched base returns
+# HTTP 200 for index.html but a blank page because JS/CSS resolve elsewhere.
+if ! grep -Fq "/${URLPATH}/assets/" frontend/dist/index.html; then
+  echo "ERROR: frontend base path does not match URLPATH=${URLPATH}" >&2
+  grep -E "(script type=|stylesheet)" frontend/dist/index.html >&2 || true
+  exit 31
+fi
+
 echo "PVNETWORK_SMOKE_STAGE=CONTROL_SERVICE"
 
 systemctl is-active --quiet pvnetwork-panel.service
@@ -114,36 +122,11 @@ curl \
 
 echo "PANEL_HTTP=PASS"
 
-echo "PVNETWORK_SMOKE_STAGE=OPENAPI"
+echo "PVNETWORK_SMOKE_STAGE=ROUTES"
 
-OPENAPI_TMP="$(mktemp /tmp/pvnetwork-openapi-XXXXXX.json)"
-
-curl \
-    -fsS \
-    --connect-timeout 3 \
-    --max-time 15 \
-    "${BASE}/openapi.json" \
-    -o "$OPENAPI_TMP"
-
-test -s "$OPENAPI_TMP"
-
-OPENAPI_FILE="$OPENAPI_TMP" \
-.venv/bin/python - <<'PY'
-import json
-import os
-from pathlib import Path
-
-path = Path(os.environ["OPENAPI_FILE"])
-
-data = json.loads(
-    path.read_text(
-        encoding="utf-8",
-        errors="strict",
-    )
-)
-
-paths = data.get("paths", {})
-
+.venv/bin/python - <<'PYROUTES'
+from backend.app import api
+paths = {getattr(route, "path", "") for route in api.routes}
 required = {
     "/api/server/monitoring",
     "/api/security/",
@@ -153,22 +136,12 @@ required = {
     "/api/operations/users/transfer",
     "/api/operations/audit",
 }
-
-missing = required - set(paths)
-
-assert not missing, (
-    "MISSING_API_PATHS="
-    + ",".join(sorted(missing))
-)
-
-assert any(
-    p.startswith("/api/fleet")
-    for p in paths
-), "FLEET_API_MISSING"
-
-print(f"OPENAPI_PATH_COUNT={len(paths)}")
-print("OPENAPI=PASS")
-PY
+missing = required - paths
+assert not missing, "MISSING_API_PATHS=" + ",".join(sorted(missing))
+assert any(p.startswith("/api/fleet") for p in paths), "FLEET_API_MISSING"
+print(f"ROUTE_COUNT={len(paths)}")
+print("ROUTES=PASS")
+PYROUTES
 
 echo "PVNETWORK_SMOKE_STAGE=TIMERS"
 

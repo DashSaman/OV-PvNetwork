@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError as JWTError
 from passlib.context import CryptContext
 
 from backend.auth.hash import verify_password
@@ -22,8 +23,12 @@ router = APIRouter(tags=["Login"])
 
 def authenticate_user(db: Session, username: str, password: str):
     main_admin_username = config.ADMIN_USERNAME
-    main_admin_password = config.ADMIN_PASSWORD
-    if username == main_admin_username and password == main_admin_password:
+    main_admin_password_hash = config.ADMIN_PASSWORD_HASH
+    if (
+        username == main_admin_username
+        and main_admin_password_hash
+        and verify_password(password, main_admin_password_hash)
+    ):
         return {"username": username, "type": "main_admin"}
 
     admin = crud.it_is_admin(db, username=username)

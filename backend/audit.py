@@ -2,7 +2,8 @@ import hashlib
 import time
 import uuid
 
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError as JWTError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from backend.auth.auth import ALGORITHM

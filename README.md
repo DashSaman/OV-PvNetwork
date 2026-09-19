@@ -4,13 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.7-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.8-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.8 vs v1.0.7
+
+**PVN-028 — Production security hardening without changing default OpenVPN authentication.** Main-admin credentials are migrated to a one-way hash, Production docs/schema exposure follows the DOC switch, login throttling and response security headers are hardened, SSH host keys require explicit verification, dependency/static security scans are CI gates, and the host-firewall rollout is inventory-first with timed rollback. Existing certificate-only OpenVPN profiles remain the default for normal users.
+
+![v1.0.8 SSH host-key pinning](./docs/images/v1.0.8/en/desktop/ssh-host-key-pinning.png)
+
+Latest release line: **v1.0.8** — [release notes](./docs/RELEASE-NOTES-v1.0.8.md).
 
 ## What changed in v1.0.7 vs v1.0.6
 

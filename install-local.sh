@@ -48,16 +48,22 @@ if [[ -z "$ADMIN_PASS" && -t 0 ]]; then
   read -r -p "Public base URL [${PUBLIC_URL}]: " input
   PUBLIC_URL="${input:-$PUBLIC_URL}"
 fi
-[[ -n "$ADMIN_PASS" ]] || ADMIN_PASS="$(openssl rand -base64 24 | tr -d '\n')"
+GENERATED_ADMIN=0
+if [[ -z "$ADMIN_PASS" ]]; then
+  ADMIN_PASS="$(openssl rand -base64 24 | tr -d '\n')"
+  GENERATED_ADMIN=1
+fi
 JWT_SECRET="$(openssl rand -hex 48)"
 MIRZA_KEY="$(openssl rand -hex 32)"
+uv sync
+ADMIN_HASH="$(printf '%s\n' "$ADMIN_PASS" | .venv/bin/python -c 'import sys; from passlib.context import CryptContext; c=CryptContext(schemes=["bcrypt"], deprecated="auto"); print(c.hash(sys.stdin.readline().rstrip("\r\n")))')"
 
 cat > "$APP/.env" <<ENV
 ADMIN_USERNAME=${ADMIN_USER}
-ADMIN_PASSWORD=${ADMIN_PASS}
+ADMIN_PASSWORD_HASH=${ADMIN_HASH}
 URLPATH=${PANEL_PATH}
 VITE_URLPATH=${PANEL_PATH}
-HOST=0.0.0.0
+HOST=127.0.0.1
 PORT=${PANEL_PORT}
 DEBUG=WARNING
 DOC=false
@@ -65,6 +71,7 @@ JWT_SECRET_KEY=${JWT_SECRET}
 MIRZA_API_KEY=${MIRZA_KEY}
 DATABASE_URL=${PVNETWORK_DATABASE_URL:-}
 JWT_ACCESS_TOKEN_EXPIRES=86400
+LOGIN_RATE_LIMIT_PER_MINUTE=10
 SUBSCRIPTION_URL_PREFIX=${PUBLIC_URL%/}
 SUBSCRIPTION_PATH=sub
 PVNETWORK_ANYCONNECT_PUBLIC_SERVER=${PVNETWORK_ANYCONNECT_SERVER:-vpn.example.com:9443}
@@ -72,7 +79,6 @@ CORS_ORIGINS=${PVNETWORK_CORS_ORIGINS:-${PUBLIC_URL%/}}
 ENV
 chmod 600 "$APP/.env"
 
-uv sync
 (cd frontend && npm ci && npm run build)
 .venv/bin/alembic -c backend/alembic.ini upgrade head
 "$APP/scripts/install-runtime-tools.sh"
@@ -94,15 +100,19 @@ if awk -F= '$1=="DATABASE_URL" && $2 ~ /^postgres/{found=1} END{exit !found}' "$
 fi
 
 for _ in $(seq 1 30); do
-  if curl -fsS --connect-timeout 1 --max-time 2 "http://127.0.0.1:${PANEL_PORT}/openapi.json" >/dev/null; then
+  if curl -fsS --connect-timeout 1 --max-time 2 "http://127.0.0.1:${PANEL_PORT}/healthz" >/dev/null; then
     break
   fi
   sleep 1
 done
-curl -fsS "http://127.0.0.1:${PANEL_PORT}/openapi.json" >/dev/null || fail "local API health check failed"
+curl -fsS "http://127.0.0.1:${PANEL_PORT}/healthz" >/dev/null || fail "local API health check failed"
 echo '[PVNetwork] installation verified.'
 echo "[PVNetwork] panel: ${PUBLIC_URL%/}/${PANEL_PATH}"
 echo "[PVNetwork] admin username: ${ADMIN_USER}"
-echo "[PVNetwork] admin password: ${ADMIN_PASS}"
+if [[ "$GENERATED_ADMIN" == "1" ]]; then
+  echo "[PVNetwork] generated admin password: ${ADMIN_PASS}"
+else
+  echo "[PVNetwork] admin password: supplied securely by installer input/environment"
+fi
 echo '[PVNetwork] save the credentials now; the local .env file is mode 600.'
 echo '[PVNetwork] add VPN nodes from Node Management using the automatic SSH deploy workflow.'
