@@ -16,6 +16,7 @@ import { useAuth } from '../context/AuthContext';
 const ITEMS_PER_PAGE = 10;
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
+  const [nodes, setNodes] = useState([]);
   const [subscriptionSettings, setSubscriptionSettings] = useState(null);
   const [anyConnectSettings, setAnyConnectSettings] = useState({
     default_enabled: false
@@ -75,6 +76,19 @@ const UserManagement = () => {
       setIsLoading(false);
     }
   };
+  const fetchNodes = async () => {
+    try {
+      const response = await apiClient.get('/nodes/');
+      if (!response.data?.success || !Array.isArray(response.data?.data)) {
+        throw new Error(response.data?.msg || 'Unable to load nodes.');
+      }
+      setNodes(response.data.data);
+    } catch (exception) {
+      setError(errorText(exception));
+      setNodes([]);
+    }
+  };
+
   const fetchSubscriptionSettings = async () => {
     try {
       const response = await apiClient.get('/server/settings/');
@@ -97,6 +111,7 @@ const UserManagement = () => {
   };
   useEffect(() => {
     fetchUsers();
+    fetchNodes();
     fetchSubscriptionSettings();
     fetchAnyConnectSettings();
     refreshResellerProfile();
@@ -455,6 +470,77 @@ const UserManagement = () => {
     refreshResellerProfile();
   };
 
+  const handleQuickSave = async (user, draft) => {
+    const GB = 1024 * 1024 * 1024;
+    const total = Math.round(Number(draft.totalTrafficGb) * GB);
+    const desiredNodeIds = [...draft.nodeIds].map(Number).sort((a, b) => a - b);
+    const currentNodeIds = [...(user.node_ids || [])].map(Number).sort((a, b) => a - b);
+    const assignmentsChanged =
+      desiredNodeIds.length !== currentNodeIds.length ||
+      desiredNodeIds.some((value, index) => value !== currentNodeIds[index]);
+
+    try {
+      // Reset first. For unlimited users this starts the existing fresh 30-day
+      // cycle; the normal update below preserves that new unlimited expiry.
+      if (draft.resetUsage) {
+        const resetResponse = await apiClient.get(`/users/${user.uuid}`);
+        if (!resetResponse.data?.success) {
+          throw new Error(resetResponse.data?.msg || 'Usage reset failed.');
+        }
+      }
+
+      const updateResponse = await apiClient.put(`/users/${user.uuid}/`, {
+        name: user.name,
+        expiry_date: draft.expiryDate || user.expiry_date,
+        total,
+        device_limit: Number(draft.deviceLimit),
+        status: Boolean(draft.isActive)
+      });
+      if (!updateResponse.data?.success) {
+        throw new Error(updateResponse.data?.msg || 'User update failed.');
+      }
+
+      // Explicit deactivation comes after the edit because the normal update
+      // recalculates active state from expiry/quota. Activation is left to that
+      // server-side validity rule so expired/exhausted users are not forced on.
+      if (!draft.isActive) {
+        const statusResponse = await apiClient.put(`/users/${user.uuid}/status`, {
+          name: user.name,
+          status: false,
+          expiry_date: null
+        });
+        if (!statusResponse.data?.success) {
+          throw new Error(statusResponse.data?.msg || 'Unable to deactivate user.');
+        }
+      }
+
+      let assignmentData = null;
+      if (assignmentsChanged) {
+        const assignmentResponse = await apiClient.put(`/users/${user.uuid}/nodes`, {
+          node_ids: desiredNodeIds
+        });
+        if (!assignmentResponse.data?.success) {
+          throw new Error(assignmentResponse.data?.msg || 'Node assignment failed.');
+        }
+        assignmentData = assignmentResponse.data?.data || null;
+      }
+
+      await fetchUsers();
+      await refreshResellerProfile();
+      if (assignmentData?.pending_node_ids?.length) {
+        window.alert(
+          t('quickEditSavedPendingNodes', 'Changes saved. Some newly assigned nodes are pending reconciliation.')
+        );
+      }
+      return assignmentData;
+    } catch (exception) {
+      const message = errorText(exception);
+      setError(message);
+      await fetchUsers();
+      throw new Error(message);
+    }
+  };
+
   // Generate subscription link for each user
   const getSubscriptionLink = user => {
     if (!subscriptionSettings || !user || !user.uuid) return '';
@@ -496,6 +582,7 @@ const UserManagement = () => {
         <p className="error-message">{error}</p>
         <button className="btn" disabled={isLoading} onClick={() => {
           fetchUsers();
+          fetchNodes();
           fetchSubscriptionSettings();
           fetchAnyConnectSettings();
         }}>
@@ -583,7 +670,7 @@ const UserManagement = () => {
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
 
-      <UserTable users={paginatedUsers} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} />
+      <UserTable users={paginatedUsers} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} availableNodes={nodes} userRole={userRole} onQuickSave={handleQuickSave} />
       {isAddModalOpen && <AddUserModal onClose={() => setIsAddModalOpen(false)} onUserAdded={handleUserAdded} userRole={userRole} anyConnectDefaultEnabled={Boolean(anyConnectSettings.default_enabled)} />}
       {isEditModalOpen && <EditUserModal user={selectedUser} onClose={() => setIsEditModalOpen(false)} onUserUpdated={handleUserUpdated} userRole={userRole} />}
       {isRenewModalOpen && <RenewUserModal user={selectedUser} onClose={() => setIsRenewModalOpen(false)} onRenewed={handleUserRenewed} />}

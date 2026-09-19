@@ -429,5 +429,20 @@
     }
   },
   "feature.nodeStatusAlerts": "Node online/offline alerts",
-  "feature.nodeStatusAlertsHelp": "Send 🔴 Node DOWN when a node goes offline and 🟢 Node UP when it recovers. Unchanged states are not repeated."
+  "feature.nodeStatusAlertsHelp": "Send 🔴 Node DOWN when a node goes offline and 🟢 Node UP when it recovers. Unchanged states are not repeated.",
+  "quickEditButton": "Quick Edit",
+  "quickEditTitle": "Quick edit user",
+  "quickEditUsernameLocked": "Username rename is locked here because it requires a safe multi-node profile migration.",
+  "quickEditTrafficInvalid": "Traffic limit must be zero or greater.",
+  "quickEditNodeRequired": "Select at least one node.",
+  "quickEditExpiryRequired": "Expiry date is required.",
+  "quickEditSaveFailed": "Unable to apply quick edit.",
+  "quickEditUnlimitedHint": "0 = unlimited",
+  "quickEditExpiryLocked": "Expiry follows the existing reseller/unlimited policy.",
+  "quickEditDeviceHint": "0 = unlimited simultaneous connections",
+  "quickEditNodes": "Assigned nodes",
+  "quickEditNodeUnavailable": "Unavailable",
+  "quickEditResetQueued": "Reset Usage on Apply ✓",
+  "quickEditApply": "Apply",
+  "quickEditSavedPendingNodes": "Changes saved. Some newly assigned nodes are pending reconciliation."
 }

@@ -25,6 +25,7 @@ class Users(BaseModel):
     anyconnect_configured: bool = False
     anyconnect_enabled: bool = False
     anyconnect_password_available: bool = False
+    node_ids: list[int] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

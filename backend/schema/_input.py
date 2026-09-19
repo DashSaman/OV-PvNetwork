@@ -30,6 +30,10 @@ class RenewUser(BaseModel):
     add_traffic: int = Field(default=0, ge=0)
 
 
+class UserNodeAssignmentUpdate(BaseModel):
+    node_ids: list[int] = Field(min_length=1, max_length=256)
+
+
 class NodeCreate(BaseModel):
     name: str = Field(max_length=64)
     address: str

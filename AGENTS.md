@@ -58,9 +58,13 @@ Before implementation, record the task and target release here **and commit/push
 - `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.
 - `v1.0.2` — RELEASED — `PVN-111` Responsive Subscription page; CI/Production/asset verification passed.
 - `v1.0.3` — IN PROGRESS — `PVN-205` User profile/details + inline quick-edit row.
-  - Requested UX: expand a user row for fast edit of username, traffic limit, expiry, max devices, active state, node assignment, Reset Usage, Apply and Cancel.
-  - Desktop/tablet/mobile must keep all controls reachable; mobile may reflow to cards/stacked fields instead of preserving a wide table.
-  - Next: inspect current API/edit model → TDD UI tests → implement inline editor → responsive/accessibility tests → bilingual sanitized screenshots/docs → full release gates → backup → narrow Production deploy → health → merge/tag/release.
+  - Requested UX: expand a user row for fast edit of traffic limit, expiry, max devices, active state, node assignment, Reset Usage, Apply and Cancel.
+  - Username is intentionally read-only in this patch: safe multi-node rename is tracked separately as `PVN-022`.
+  - TDD RED: all 7 inline-edit contract tests failed before implementation.
+  - GREEN checkpoint: 7/7 inline-edit contract tests PASS; 3/3 safe assignment behavior tests PASS.
+  - Assignment removal deactivates instead of deleting profiles; stale disabled profiles are re-used when possible; unavailable new nodes are rejected before mutation.
+  - Desktop/tablet/mobile must keep all controls reachable; mobile reflows fields and node controls.
+  - Next: browser regression/interaction smoke → sanitized FA/EN screenshots/docs → full release gates → backup → narrow Production deploy → health → merge/tag/release.
 
 ## Current release baseline
 
@@ -85,6 +89,8 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-019 [x] Align active Roadmap/release policy with the sequential `1.0.x` release model.
 - PVN-020 [x] Every release README starts with a clear “what changed vs previous release” block in English and Persian.
 - PVN-021 [x] Parallelize independent research/tests/docs when safe; never run concurrent Production mutations or restarts.
+- PVN-022 [ ] Safe multi-node username rename with profile migration, rollback and no silent certificate breakage.
+- PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 
 ## UI/UX task ledger
 

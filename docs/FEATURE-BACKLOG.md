@@ -23,6 +23,8 @@
 - PVN-019 Active Roadmap/release-policy consistency with sequential 1.0.x model
 - PVN-020 Bilingual README “what changed vs previous release” block for every release
 - PVN-021 Safe parallel execution policy for independent non-Production work
+- PVN-022 Safe multi-node username rename with profile migration/rollback
+- PVN-023 Remove duplicate Push test route / duplicate OpenAPI Operation ID warning
 
 `AGENTS.md` defines the execution contract. This file is the readable numbered capability registry. IDs are permanent; do not renumber or reuse them. Completion requires the Definition of Done in `AGENTS.md` and the release gate in `docs/QA-RELEASE-GATE.md`.
 

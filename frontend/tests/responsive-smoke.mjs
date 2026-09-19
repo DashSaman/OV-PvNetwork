@@ -17,7 +17,7 @@ const demoUser = {
   online_count: 0,
   device_limit: 1,
   anyconnect_enabled: false,
-  nodes: [],
+  node_ids: [1],
 };
 
 function responseFor(url) {
@@ -25,7 +25,10 @@ function responseFor(url) {
   const ok = (data = {}) => ({ success: true, msg: 'ok', data });
 
   if (path === '/server/info') return ok({ cpu_usage: 12, memory_usage: 24, uptime: 7200, disk_usage: 31 });
-  if (path === '/nodes/' || path === '/nodes') return ok([]);
+  if (path === '/nodes/' || path === '/nodes') return ok([
+    { id: 1, name: 'Demo Europe', status: true, drain: false, maintenance: false },
+    { id: 2, name: 'Demo USA', status: true, drain: false, maintenance: false },
+  ]);
   if (path.includes('/users/online')) return ok({ total: 0, per_node: {} });
   if (path === '/users/' || path === '/users') return ok([demoUser]);
   if (path.startsWith('/users')) return ok({});
@@ -172,8 +175,30 @@ for (const language of languages) {
         await page.keyboard.press('Escape');
         if (await menu.count()) failures.push(`${language} ${width}px user action menu did not close with Escape`);
 
+        // Quick Edit is an inline row, not a modal. Verify it stays usable on phones.
         await trigger.click({ timeout: 5000 });
-        await page.locator('.actions-dropdown-item').nth(1).click();
+        await page.getByRole('menuitem', { name: /quick edit|ویرایش سریع/i }).click();
+        const quickEdit = page.locator('.inline-user-quick-edit');
+        await quickEdit.waitFor({ state: 'visible', timeout: 5000 });
+        const quickBox = await quickEdit.boundingBox();
+        if (!quickBox || quickBox.x < -1 || quickBox.x + quickBox.width > width + 1) {
+          failures.push(`${language} ${width}px Quick Edit escapes viewport`);
+        }
+        for (const selector of ['.quick-edit-reset-usage', '.quick-edit-apply', '.quick-edit-cancel']) {
+          const buttonBox = await page.locator(selector).boundingBox();
+          if (!buttonBox || buttonBox.height < 44) failures.push(`${language} ${width}px ${selector} touch target below 44px`);
+        }
+        const usernameReadonly = await page.locator('.quick-edit-username').getAttribute('readonly');
+        if (usernameReadonly === null) failures.push(`${language} ${width}px Quick Edit username must stay read-only until safe rename ships`);
+        await page.locator('.quick-edit-node').filter({ hasText: 'Demo USA' }).click();
+        await page.locator('.quick-edit-reset-usage').click();
+        const resetPressed = await page.locator('.quick-edit-reset-usage').getAttribute('aria-pressed');
+        if (resetPressed !== 'true') failures.push(`${language} ${width}px Quick Edit reset queue did not toggle`);
+        await page.locator('.quick-edit-cancel').click();
+        if (await quickEdit.count()) failures.push(`${language} ${width}px Quick Edit did not close on Cancel`);
+
+        await trigger.click({ timeout: 5000 });
+        await page.getByRole('menuitem', { name: /renew|تمدید/i }).click();
         const modal = page.locator('.modal').last();
         const modalBox = await modal.boundingBox();
         if (!modalBox || modalBox.y < 0 || modalBox.height > 820 + 1) {
@@ -187,7 +212,7 @@ for (const language of languages) {
         await closeLastModal(page);
 
         await trigger.click();
-        await page.locator('.actions-dropdown-item').nth(0).click();
+        await page.getByRole('menuitem', { name: /edit|ویرایش$/i }).click();
         await assertModalInsideViewport(page, `${language} ${width}px Edit User`, width, 820);
         await closeLastModal(page);
 

@@ -429,5 +429,20 @@
     }
   },
   "feature.nodeStatusAlerts": "هشدار قطع و وصل نودها",
-  "feature.nodeStatusAlertsHelp": "وقتی نود آفلاین شود 🔴 Node DOWN و بعد از وصل‌شدن دوباره 🟢 Node UP در تلگرام ارسال می‌شود؛ وضعیت تکراری دوباره پیام نمی‌دهد."
+  "feature.nodeStatusAlertsHelp": "وقتی نود آفلاین شود 🔴 Node DOWN و بعد از وصل‌شدن دوباره 🟢 Node UP در تلگرام ارسال می‌شود؛ وضعیت تکراری دوباره پیام نمی‌دهد.",
+  "quickEditButton": "ویرایش سریع",
+  "quickEditTitle": "ویرایش سریع کاربر",
+  "quickEditUsernameLocked": "تغییر نام کاربری در این بخش قفل است چون نیاز به مهاجرت امن پروفایل روی همه نودها دارد.",
+  "quickEditTrafficInvalid": "حجم باید صفر یا بیشتر باشد.",
+  "quickEditNodeRequired": "حداقل یک نود را انتخاب کنید.",
+  "quickEditExpiryRequired": "تاریخ انقضا الزامی است.",
+  "quickEditSaveFailed": "اعمال ویرایش سریع انجام نشد.",
+  "quickEditUnlimitedHint": "۰ = نامحدود",
+  "quickEditExpiryLocked": "تاریخ طبق سیاست فعلی نماینده/اکانت نامحدود مدیریت می‌شود.",
+  "quickEditDeviceHint": "۰ = بدون محدودیت اتصال همزمان",
+  "quickEditNodes": "نودهای اختصاص داده‌شده",
+  "quickEditNodeUnavailable": "غیرقابل‌دسترس",
+  "quickEditResetQueued": "Reset Usage هنگام Apply ✓",
+  "quickEditApply": "اعمال",
+  "quickEditSavedPendingNodes": "تغییرات ذخیره شد؛ ساخت کاربر روی بعضی نودهای جدید در انتظار Reconcile است."
 }
