@@ -30,6 +30,7 @@
 18. Backend changes may restart only `ov-panel.service` when required. Frontend-only changes should use an atomic asset/index switch and should not restart the backend unless technically necessary. Never restart VPN nodes, tunnels or unrelated services for a panel UI/backend release.
 19. After deployment, verify local and public health, the changed endpoint/workflow, database readability, service restart count/state, post-deploy 5xx/traceback errors and critical integrations. If a required check fails, rollback immediately to the recorded pre-deploy state before further experimentation.
 20. Production evidence must be written back into the active task ledger: deployed version/commit, backup verification, health result, rollback readiness and any restart/outage observed. A task remains `[~]` until this evidence exists.
+21. **PVNetwork brand purity is permanent:** the tracked tree must contain zero references to the former upstream panel identifier in dashed, underscored, spaced or concatenated forms. Runtime paths, service/unit names, package names, UI/storage keys, backup formats/commands and new documentation must use PVNetwork-owned naming. CI must block regressions.
 
 ## Production deployment contract — owner-authorized live server
 
@@ -84,6 +85,11 @@ Before implementation, record the task and target release here **and commit/push
   - Production evidence: verified application + native PostgreSQL backup; narrow backend/frontend deploy; local/public health 200; 0 post-deploy HTTP 5xx; Mirza integration traffic continued successfully.
   - GitHub Release `v1.0.3` published with verified artifact SHA256 `82fd4b95f2941ca8aebe323355393ce617f199b470f41930e40244a16ccb12b4`.
 
+- `v1.0.4` — IN PROGRESS — `PVN-025` PVNetwork brand-purity + runtime naming migration.
+  - TDD RED: permanent tracked-tree brand guard fails against legacy source/runtime identifiers.
+  - Scope: source/runtime paths, service names, package names, UI/storage keys, backup/restore identifiers, installer/update source, docs and attribution wording.
+  - Production rule: parallel PVNetwork runtime canary + verified backup/rollback before traffic switch; no VPN/node/tunnel/firewall changes.
+
 ## Current release baseline
 
 - PVN-001 [x] Stable public `v1.0.0` release.
@@ -110,6 +116,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-022 [ ] Safe multi-node username rename with profile migration, rollback and no silent certificate breakage.
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 - PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
+- PVN-025 [~] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Target: v1.0.4.
 
 ## UI/UX task ledger
 
