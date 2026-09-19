@@ -6,7 +6,7 @@ import path from 'path'
 const __dirname = import.meta.dirname;
 
 // Load .env from the project root
-dotenv.config({ path: path.resolve(__dirname, '../.env'), override: true })
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 const urlPath = process.env.URLPATH || 'panel'
 
