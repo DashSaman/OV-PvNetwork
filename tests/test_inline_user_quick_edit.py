@@ -70,6 +70,13 @@ class InlineUserQuickEditContractTests(unittest.TestCase):
         self.assertIn("safe multi-node username rename", agents.lower())
         self.assertIn("PVN-022", backlog)
 
+    def test_presence_refresh_does_not_reset_quick_edit_form(self):
+        editor = (ROOT / "frontend/src/components/InlineUserQuickEdit.jsx").read_text(encoding="utf-8")
+        users = (ROOT / "frontend/src/pages/UserManagement.jsx").read_text(encoding="utf-8")
+        self.assertNotIn("}, [user]);", editor)
+        self.assertIn("return item;", users)
+        self.assertIn("currentOnlineCount", users)
+
 
 if __name__ == "__main__":
     unittest.main()

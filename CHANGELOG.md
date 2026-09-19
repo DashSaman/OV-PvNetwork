@@ -1,3 +1,12 @@
+## 1.0.7 — 2026-09-19
+
+PVN-031 online-presence synchronization hotfix.
+
+- Added one process-wide short-lived display-presence snapshot to prevent near-simultaneous Dashboard and Users requests from repolling different node states.
+- Added a lightweight role-scoped `/users/presence` endpoint.
+- User Management now refreshes live presence every second without reloading the complete user list every second; full-list refresh remains slower and separate.
+- No database migration and no writes to `active_sessions`; device-limit/session enforcement is unchanged.
+
 ## 1.0.6 — 2026-09-19
 
 PVN-027 consistent online-user truth release.

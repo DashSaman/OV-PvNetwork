@@ -108,7 +108,7 @@ Before implementation, record the task and target release here **and commit/push
   - Release completion: PR #24 merged as main commit `e8ac5c531bf84fe3552c302ebc9ed8bbbb3d2cbd`; main CI run `35427077332` PASS including browser matrix and private-material guard; annotated tag `v1.0.5` resolves to the same merge commit.
   - GitHub Release `v1.0.5` published with `pvnetwork-panel-v1.0.5.tar.gz` and checksum asset. Post-publish download verification PASS: artifact SHA256 `85f9634911af9998a35d01c37565c08bf865d24c7f3bf196238973b95f2af301`, VERSION `1.0.5`, zero forbidden private-file extensions and no real `.env`.
 
-- `v1.0.6` — IN PROGRESS — `PVN-027` consistent online-user truth across Dashboard and Users.
+- `v1.0.6` — RELEASED — `PVN-027` consistent online-user truth across Dashboard and Users.
   - Production discrepancy: User Management counted fresh central `active_sessions`, while Dashboard summed direct Node online counts. Read-only Production diagnosis showed central unique users=6 while a shared central+direct snapshot resolved 8 current PVNetwork users; two additional direct USA profiles were unmapped/orphan clients and are intentionally excluded from the global user count. One Node direct usage poll was unavailable.
   - Safety contract: shared presence is display/observability only. It never creates/updates `active_sessions`, does not loosen device limits, and does not change acquire/heartbeat/release enforcement. Raw per-node online/session metrics remain available on Node cards.
   - TDD RED commit `f81f9005aced1234c79b20bd7660eac59b54a00e` reproduced the missing shared-truth module/contract. Implementation checkpoint `22420052ad7467a5b312ea3754dafac3433bac00` added the shared display presence service, direct-node fallback/cache, Users wiring and Dashboard shared summary.
@@ -121,7 +121,14 @@ Before implementation, record the task and target release here **and commit/push
   - Production deployment: exact commit `2f9caa4c2f721c4bb5477dfc6fb6bc14b7ca5698` passed API/UI/PostgreSQL/shared-presence canary gates on 19002. Nginx was atomically switched to the canary while only `pvnetwork-panel.service` was restarted on canonical 19001, then traffic was returned to 19001 and the canary retired.
   - Post-deploy evidence: Users and Dashboard both reported the same current unique online-user total (9 at verification time) while central hooks accounted for 7 and direct fallback supplied 2; `active_sessions` row count was unchanged by presence reads. DB remained 68 users / 4 nodes / 264 assignments; key runtime source parity 9/9 and built `frontend/dist` parity were exact; public UI/assets 200; unauthenticated protected API 401; 11/11 sampled Mirza requests were 2xx; `HTTP_5XX=0`; `REAL_ERRORS=0`; canonical service `NRestarts=0` after cutback.
   - Runtime housekeeping discovered during the authorized security review: stale Nginx `/sub-clients/` alias still referenced the removed predecessor app path. It was backed up, migrated to `/opt/pvnetwork-panel/frontend/sub_clients/`, validated with `nginx -t`, reloaded without panel restart, and the referenced asset returned HTTP 200.
-  - Next: merge PR #26 → main CI → tag/release artifact + SHA256 verification → mark `PVN-027` `[x]`; then start security hardening as the next sequential patch.
+  - Release completion: PR #26 merged as main commit `cc1cc9df3e6b5a23d6c63f64496bdcdbd7a0ae6c`; main CI run `35429229023` PASS including browser matrix, private-material guard and lifecycle checks; annotated tag `v1.0.6` resolves to the same merge commit.
+  - GitHub Release `v1.0.6` published with source artifact + checksum. Post-publish download verification PASS: SHA256 `c4e98371c0b1ebc3279c5a8f6016b8492bb35e39453caee4cfcebc5e0b04a80e`, VERSION `1.0.6`, zero forbidden private-file extensions, and tag target re-verified.
+
+- `v1.0.7` — IN PROGRESS — `PVN-031` online-presence snapshot synchronization hotfix.
+  - Production follow-up to `PVN-027`: Dashboard and User Management already share the same presence algorithm, but independent polling can still land on adjacent live samples.
+  - Contract: one process-wide short-lived presence snapshot, a lightweight role-scoped `/users/presence` endpoint, and 1-second User Management presence refresh; no writes to `active_sessions` and no device-limit/enforcement changes.
+  - TDD RED reproduced both defects: repeated presence calls repolled nodes and User Management lacked a lightweight presence endpoint. GREEN adds snapshot reuse plus a lightweight presence poll while the full user list refreshes separately at a slower cadence.
+  - `PVN-028` security-hardening WIP is preserved separately and deferred to v1.0.8 so this hotfix remains the only Production-visible task in v1.0.7.
 
 ## Current release baseline
 
@@ -151,10 +158,11 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
 - PVN-025 [x] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Release: v1.0.4.
 - PVN-026 [x] User creation node selector with all available nodes selected by default; create only on selected nodes. Release: v1.0.5.
-- PVN-027 [~] Unify Dashboard and Users online-user truth with a node-direct fallback when a node is not reporting central session hooks; count unique users consistently without changing device-limit enforcement. Target: v1.0.6.
-- PVN-028 [ ] Production security hardening from the authorized 2026-09-19 review: dependency remediation, SSH host-key pinning, main-admin credential hardening, Production API/docs/header hardening, login-specific throttling, and an inventory-preserving host-firewall policy with zero VPN/tunnel interruption. Target: v1.0.7.
-- PVN-029 [ ] Router/OpenVPN compatibility for RouterOS and other username/password-oriented clients using an isolated compatibility listener/profile; prefer certificate+password dual auth, keep password-only opt-in and isolated, and do not disturb existing OpenVPN certificates/listener. Target: v1.0.8.
-- PVN-030 [ ] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Target: v1.0.9.
+- PVN-027 [x] Unify Dashboard and Users online-user truth with a node-direct fallback when a node is not reporting central session hooks; count unique users consistently without changing device-limit enforcement. Release: v1.0.6.
+- PVN-028 [ ] Production security hardening from the authorized 2026-09-19 review: dependency remediation, SSH host-key pinning, main-admin credential hardening, Production API/docs/header hardening, login-specific throttling, and an inventory-preserving host-firewall policy with zero VPN/tunnel interruption. Target: v1.0.8.
+- PVN-029 [ ] Router/OpenVPN compatibility for RouterOS and other username/password-oriented clients using an isolated compatibility listener/profile; prefer certificate+password dual auth, keep password-only opt-in and isolated, and do not disturb existing OpenVPN certificates/listener. Target: v1.0.9.
+- PVN-030 [ ] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Target: v1.0.10.
+- PVN-031 [~] Synchronize Dashboard and User Management on one short-lived presence snapshot and lightweight live-presence polling so adjacent views do not race between samples. Target: v1.0.7.
 
 ## UI/UX task ledger
 

@@ -4,13 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.6-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.7-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.7 vs v1.0.6
+
+**PVN-031 — synchronize the final online-user display race.** Dashboard and User Management now read from one short-lived process-wide presence snapshot. User Management refreshes only the lightweight role-scoped presence map every second instead of waiting up to 10 seconds for a full user-list refresh, while the complete user list refreshes separately at a slower cadence.
+
+This hotfix is display-only: it does not write `active_sessions`, does not alter device-limit enforcement, and does not change OpenVPN profiles or node state. It specifically closes the case where two pages used the same merge logic but still displayed different numbers because their requests landed on adjacent live samples.
+
+Latest release: **v1.0.7** — [release notes](./docs/RELEASE-NOTES-v1.0.7.md).
 
 ## What changed in v1.0.6 vs v1.0.5
 

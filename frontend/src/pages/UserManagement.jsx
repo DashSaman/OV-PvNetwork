@@ -86,7 +86,12 @@ const UserManagement = () => {
       setPresenceOnline(Number(payload.online_users || 0));
       setUsers(previous => previous.map(item => {
         const count = Number(counts[item.uuid] || 0);
-        return { ...item, online_count: count, is_online: count > 0 };
+        const nextOnline = count > 0;
+        const currentOnlineCount = Number(item.online_count || 0);
+        if (currentOnlineCount === count && Boolean(item.is_online) === nextOnline) {
+          return item;
+        }
+        return { ...item, online_count: count, is_online: nextOnline };
       }));
     } catch {
       // Keep the last good presence snapshot on transient polling failures.

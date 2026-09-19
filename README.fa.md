@@ -4,11 +4,19 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.6-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.7-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.7 نسبت به v1.0.6
+
+**PVN-031 — حذف race نهایی در نمایش کاربران آنلاین.** داشبورد و مدیریت کاربران اکنون یک Snapshot کوتاه‌عمر مشترک از وضعیت آنلاین می‌خوانند. صفحه کاربران به‌جای انتظار تا ۱۰ ثانیه برای دریافت دوباره کل لیست، هر یک ثانیه فقط Presence سبک و Scope‌شده را می‌گیرد و Full User List با فاصله بیشتر تازه می‌شود.
+
+این Hotfix فقط نمایشی است: چیزی داخل `active_sessions` نمی‌نویسد، Device Limit را تغییر نمی‌دهد و Profileهای OpenVPN یا وضعیت Nodeها را دستکاری نمی‌کند. هدف فقط این است که دو صفحه با وجود استفاده از منطق مشترک، به‌خاطر افتادن روی دو Sample زمانی متفاوت عدد متفاوت نشان ندهند.
+
+آخرین Release: **v1.0.7** — [توضیحات Release](./docs/RELEASE-NOTES-v1.0.7.fa.md).
 
 ## تغییرات v1.0.6 نسبت به v1.0.5
 
