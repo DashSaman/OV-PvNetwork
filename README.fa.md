@@ -4,11 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.8-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.9-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.9 نسبت به v1.0.8
+
+**PVN-029 — سازگاری اختیاری Router / MikroTik بدون تغییر OpenVPN عادی.** کاربران معمولی همان Profile گواهی‌محور قبلی را استفاده می‌کنند و به Username/Password نیاز ندارند. برای Nodeهای سازگار می‌توان به‌صورت صریح یک Listener دوم با Port/Subnet/Firewall جدا فعال کرد که هم‌زمان Certificate و Password یک‌بارساخت را بررسی می‌کند و Profile مخصوص Router می‌دهد.
+
+هویت همچنان Common Name همان Certificate کاربر است؛ بنابراین Session/Device accounting به همان User PVNetwork وصل می‌ماند. Credential روتر برای هر User/Node جداست، Password خام فقط هنگام Generate/Rotate یک‌بار نمایش داده می‌شود و ذخیره نمی‌شود، و Node قدیمی به‌جای خراب‌کردن OpenVPN عادی فقط `upgrade_required` برمی‌گرداند.
+
+![جریان کاربر Router در v1.0.9](./docs/images/v1.0.9/fa/desktop/router-user.png)
+
+![جریان Node Router در v1.0.9](./docs/images/v1.0.9/fa/mobile/router-node.png)
+
+خط انتشار فعلی: **v1.0.9** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.9.fa.md).
 
 ## تغییرات v1.0.8 نسبت به v1.0.7
 

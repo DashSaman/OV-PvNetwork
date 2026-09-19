@@ -1,9 +1,13 @@
 import { chromium } from 'playwright';
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const baseUrl = (process.env.PV_UI_BASE_URL || 'http://127.0.0.1:4173/panel').replace(/\/$/, '');
 const failures = [];
 const widths = [390, 1440];
 const languages = ['en', 'fa'];
+const captureDir = process.env.PV_CAPTURE_DIR || '';
+if (captureDir) mkdirSync(captureDir, { recursive: true });
 
 const nodes = [
   { id: 1, name: 'Demo Europe', address: '192.0.2.10', port: 9090, protocol: 'udp', ovpn_port: 1194, status: true },
@@ -79,6 +83,11 @@ for (const language of languages) {
       if (!(await normalCopy.count())) failures.push(`${language} ${width}: normal certificate-only explanation missing`);
       await page.getByRole('button', { name: /generate|rotate|ساخت|تغییر/i }).click();
       await page.locator('.router-openvpn-one-time-secret input[value="r_demo_1"]').waitFor({ state: 'visible', timeout: 5000 });
+      if (captureDir && width === 1440) {
+        const dir = join(captureDir, language, 'desktop');
+        mkdirSync(dir, { recursive: true });
+        await page.screenshot({ path: join(dir, 'router-user.png'), fullPage: true });
+      }
       await page.locator('.router-openvpn-one-time-secret input[value="OneTimePassword-Example-123456789"]').waitFor({ state: 'visible', timeout: 5000 });
       await page.getByRole('button', { name: /close|بستن/i }).last().click();
 
@@ -98,6 +107,11 @@ for (const language of languages) {
       await page.locator('.router-openvpn-node-modal').waitFor({ state: 'visible', timeout: 5000 });
       await page.getByRole('button', { name: /preflight|بررسی/i }).click();
       await page.getByText(/preflight.*pass|بررسی.*موفق/i).waitFor({ state: 'visible', timeout: 5000 });
+      if (captureDir && width === 390) {
+        const dir = join(captureDir, language, 'mobile');
+        mkdirSync(dir, { recursive: true });
+        await page.screenshot({ path: join(dir, 'router-node.png'), fullPage: true });
+      }
       const metrics = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }));
       if (metrics.sw > metrics.iw + 1) failures.push(`${language} ${width}: router modal horizontal overflow ${metrics.sw}>${metrics.iw}`);
       await page.getByRole('button', { name: /close|بستن/i }).last().click();
