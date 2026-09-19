@@ -13,6 +13,8 @@ class CreateUser(BaseModel):
     device_limit: int = Field(default=1, ge=0)
     # None follows the global AnyConnect default.
     anyconnect_enabled: Optional[bool] = None
+    # None preserves backward-compatible all-available-node behavior.
+    node_ids: Optional[list[int]] = Field(default=None, min_length=1, max_length=256)
 
 
 class UpdateUser(BaseModel):

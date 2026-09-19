@@ -94,6 +94,19 @@ Before implementation, record the task and target release here **and commit/push
   - Main release commit `56a90462b40500096344fdf105c2c426ba0ac4cb`; GitHub CI run `35417072048` PASS including browser matrix, private-material guard and lifecycle checks.
   - GitHub Release `v1.0.4` published with verified artifact SHA256 `523ba892f33584eaec787a9e4001abe699ba3b2f6c2569a271a900b1e9fa9956`; downloaded asset checksum and tag target re-verified.
 
+- `v1.0.5` — IN PROGRESS — `PVN-026` user-creation node selector.
+  - UX contract: Add User exposes all currently available nodes, selected by default; unavailable/draining/maintenance nodes are visible but not selectable.
+  - Backend contract: explicit `node_ids` are validated before any user/quota mutation; only desired nodes are persisted and provisioned. Requests that omit `node_ids` keep backward-compatible all-available behavior.
+  - Reconciliation contract: explicit assignments remain authoritative; periodic reconciliation and automatic new-node deployment may repair/provision legacy fallback users but must never widen an explicitly selected node set.
+  - TDD evidence: test-only commit `9d6c9183d39a7e2bc0d191e4f1e23024272350c9` reproduced the missing contract with 5 failures + 2 errors; implementation commit `dbd4d887fba16e44371f64df407892535a3e00d3` turned the focused contract green. A second RED caught automatic new-node assignment widening; fix commit `3caf9f4c7140e0460f7534781af1304b4ae758b9` preserves explicit assignments and provisions only legacy users without assignment rows.
+  - Verification: full Python unit/governance 59/59 PASS; focused Production-source assignment tests 12/12 PASS; compile/shell/JSON/uv-lock, ESLint, Vite production build and runtime npm audit PASS; largest JS 733926 bytes within budget. Browser node-selector smoke PASS in EN/FA at 360/390/768/1440; full 2-language × 9-width × 9-route matrix, Quick Edit and Subscription regressions PASS.
+  - Exact-head GitHub CI run `35426637297` PASS, including browser matrix, private-material guard and lifecycle checks.
+  - Production rollback point: `/root/pvnetwork-deploy-backups/v1.0.5-pvn026-20260919-063026`; application archive and native PostgreSQL dump both passed integrity verification before mutation.
+  - Production deployment: exact commit `3caf9f4c7140e0460f7534781af1304b4ae758b9` passed PostgreSQL/API/UI/Push/OpenAPI canary gates on port 19002, then Nginx was switched atomically while only `pvnetwork-panel.service` was restarted on the canonical 19001 runtime.
+  - Post-deploy evidence: local/public API and UI 200, JS/CSS assets 200, Push 200, CreateUser OpenAPI exposes `node_ids`, DB remained 68 users / 4 nodes / 264 assignments, changed tracked files were hash-identical to the tested commit, `REAL_ERRORS=0`, `HTTP_5XX=0`, Mirza continued with 2xx traffic, and the canary was retired after cutback to 19001.
+  - Documentation checkpoint: sanitized EN/FA desktop/mobile node-selector screenshots and bilingual README/UI-guide/release-note updates prepared; no live customer/infrastructure data is used.
+  - Remaining completion gate: merge PR #24 → main CI → immutable `v1.0.5` tag/GitHub Release → source artifact + SHA256 post-publish verification → mark `PVN-026` `[x]`.
+
 ## Current release baseline
 
 - PVN-001 [x] Stable public `v1.0.0` release.
@@ -121,7 +134,8 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 - PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
 - PVN-025 [x] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Release: v1.0.4.
-- PVN-026 [ ] User creation node selector with all available nodes selected by default; create only on selected nodes. Target: v1.0.5 after PVN-025.
+- PVN-026 [~] User creation node selector with all available nodes selected by default; create only on selected nodes. Target: v1.0.5.
+- PVN-027 [ ] Unify Dashboard and Users online-user truth with a node-direct fallback when a node is not reporting central session hooks; count unique users consistently without changing device-limit enforcement. Target: v1.0.6.
 
 ## UI/UX task ledger
 

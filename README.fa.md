@@ -4,11 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.4-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.5-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.5 نسبت به v1.0.4
+
+**PVN-026 — انتخاب Node هنگام ساخت User.** در پنجره Add User همه نودهای شناخته‌شده نمایش داده می‌شوند؛ همه نودهای Available به‌صورت پیش‌فرض انتخاب‌اند و Nodeهای Offline/Drain/Maintenance دیده می‌شوند اما قابل انتخاب نیستند. ادمین می‌تواند قبل از ساخت، هر Node غیرضروری را بردارد؛ Backend ابتدا Assignment انتخاب‌شده را ثبت می‌کند و Profile فقط روی همان Nodeها Provision می‌شود.
+
+![Node Selector ساخت کاربر در دسکتاپ v1.0.5](./docs/images/v1.0.5/fa/desktop/user-create-node-selector.png)
+
+![Node Selector ساخت کاربر در موبایل v1.0.5](./docs/images/v1.0.5/fa/mobile/user-create-node-selector.png)
+
+برای سازگاری، APIهایی که `node_ids` نمی‌فرستند همچنان همه Nodeهای Available را انتخاب می‌کنند. Assignment صریح مرجع نهایی است: Reconciler می‌تواند Profile گم‌شده را روی Node انتخاب‌شده ترمیم کند اما اجازه ندارد User را خودکار روی Node جدیدی گسترش دهد. این جریان در فارسی/انگلیسی و اندازه‌های موبایل، تبلت و دسکتاپ تست شده است.
+
+آخرین Release: **v1.0.5** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.5)
 
 ## تغییرات v1.0.4 نسبت به v1.0.3
 
@@ -16,7 +28,7 @@
 
 نسخه API، Python package، Frontend package و Release همگی روی **1.0.4** هماهنگ شده‌اند و Installer/Update فقط Releaseهای نگهداری‌شده در `DashSaman/OV-PvNetwork` را می‌گیرد. مهاجرت Production با Backup، Canary موازی و سوییچ Atomic Proxy انجام می‌شود.
 
-آخرین Release: **v1.0.4** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.4)
+Release قبلی: **v1.0.4** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.4)
 
 ## تغییرات v1.0.3 نسبت به v1.0.2
 
@@ -72,7 +84,7 @@ PVNetwork Panel کنترل‌پلین مستقل PVNetwork برای مدیریت
 
 | بخش | امکانات اصلی |
 |---|---|
-| کاربران | ساخت، ویرایش کامل، Quick Edit داخل ردیف، فعال/غیرفعال، حذف، تمدید، Reset Usage، Node Assignment، دانلود پروفایل و لینک اشتراک |
+| کاربران | ساخت با انتخاب Node، ویرایش کامل، Quick Edit داخل ردیف، فعال/غیرفعال، حذف، تمدید، Reset Usage، Node Assignment، دانلود پروفایل و لینک اشتراک |
 | تمدید | تمدید کاربر Expired بدون حذف، تمدید نامحدود، حالت‌های حفظ/ریست/افزایش حجم |
 | AnyConnect | فعال/غیرفعال برای هر کاربر، ساخت یا تغییر رمز، هویت مشترک کاربر |
 | نودها | افزودن و ویرایش نود، Health، Assignment، حذف کنترل‌شده |
@@ -98,7 +110,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.4/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.5/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

@@ -45,11 +45,13 @@ User Management covers the full account lifecycle.
 | Copy Link | Copy the subscription link |
 
 Renewal preserves UUID, username and node assignments.
-### Create user
+### Create user — node selector in v1.0.5
 
-![Add User](./images/ui/workflow-add-user.jpg)
+![Add User node selector desktop](./images/v1.0.5/en/desktop/user-create-node-selector.png)
 
-The create dialog supports quota, duration, node assignment and optional AnyConnect. A zero traffic quota represents an unlimited plan; the unlimited baseline period is 30 days.
+![Add User node selector mobile](./images/v1.0.5/en/mobile/user-create-node-selector.png)
+
+The create dialog supports quota, duration, explicit node assignment and optional AnyConnect. Every currently available node is selected by default; offline, draining and maintenance nodes remain visible but disabled. Uncheck any available node that should not receive the new profile. The server validates the selection before creating the user or consuming reseller quota, persists the assignment transactionally, then provisions only the selected nodes. A zero traffic quota represents an unlimited plan; the unlimited baseline period is 30 days.
 
 ### User actions menu
 

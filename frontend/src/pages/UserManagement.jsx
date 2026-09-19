@@ -671,7 +671,7 @@ const UserManagement = () => {
       </div>
 
       <UserTable users={paginatedUsers} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} availableNodes={nodes} userRole={userRole} onQuickSave={handleQuickSave} />
-      {isAddModalOpen && <AddUserModal onClose={() => setIsAddModalOpen(false)} onUserAdded={handleUserAdded} userRole={userRole} anyConnectDefaultEnabled={Boolean(anyConnectSettings.default_enabled)} />}
+      {isAddModalOpen && <AddUserModal onClose={() => setIsAddModalOpen(false)} onUserAdded={handleUserAdded} userRole={userRole} anyConnectDefaultEnabled={Boolean(anyConnectSettings.default_enabled)} nodes={nodes} />}
       {isEditModalOpen && <EditUserModal user={selectedUser} onClose={() => setIsEditModalOpen(false)} onUserUpdated={handleUserUpdated} userRole={userRole} />}
       {isRenewModalOpen && <RenewUserModal user={selectedUser} onClose={() => setIsRenewModalOpen(false)} onRenewed={handleUserRenewed} />}
       {isDownloadModalOpen && <SelectNodeForDownloadModal user={selectedUser} onClose={() => setIsDownloadModalOpen(false)} />}

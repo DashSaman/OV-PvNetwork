@@ -72,6 +72,7 @@ Purpose: prevent useful capabilities discovered in competitor research from disa
 | Capability | Seen in / comparison source | PVNetwork | Task |
 |---|---|---|---:|
 | Live node CPU/RAM/traffic | current PVNetwork | Already present | baseline |
+| Consistent unique online-user truth across node/direct and central session sources | internal Production discrepancy | Gap | PVN-027 |
 | Telegram monitoring | current PVNetwork | Already present | baseline |
 | Prometheus endpoint | Remnawave / infrastructure tooling | Gap | PVN-400 |
 | Official Grafana dashboard | infrastructure tooling | Gap | PVN-401 |
