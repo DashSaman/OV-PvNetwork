@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { FiMoreVertical } from 'react-icons/fi';
 
@@ -9,7 +9,7 @@ const ActionsDropdown = ({ actions = [] }) => {
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
 
-  const locate = () => {
+  const locate = useCallback(() => {
     if (!triggerRef.current) return;
 
     const r = triggerRef.current.getBoundingClientRect();
@@ -37,7 +37,7 @@ const ActionsDropdown = ({ actions = [] }) => {
     }
 
     setPos({ top, left });
-  };
+  }, [actions.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -79,7 +79,7 @@ const ActionsDropdown = ({ actions = [] }) => {
       window.removeEventListener('resize', reposition);
       window.removeEventListener('scroll', reposition, true);
     };
-  }, [open, actions.length]);
+  }, [open, locate]);
 
   return (
     <>

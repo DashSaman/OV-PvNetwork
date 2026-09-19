@@ -22,11 +22,11 @@ const AdminManagement = () => {
     const [error, setError] = useState('');
     const { t } = useTranslation();
 
-    const errorText = exception =>
+    const errorText = useCallback(exception =>
         exception?.response?.data?.detail ||
         exception?.response?.data?.msg ||
         exception?.message ||
-        t('unableToLoadAdmins', 'Unable to load administrators.');
+        t('unableToLoadAdmins', 'Unable to load administrators.'), [t]);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -45,7 +45,7 @@ const AdminManagement = () => {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [errorText]);
 
     useEffect(() => {
         fetchAdmins();

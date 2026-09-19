@@ -495,6 +495,7 @@ from backend.db.models import MonitoringSettings
 from backend.monitoring_crypto import encrypt_secret, decrypt_secret
 class MonitoringUpdate(BaseModel):
     enabled: bool=False; telegram_token: str|None=Field(None,max_length=512); telegram_chat_id: str|None=Field(None,max_length=128)
+    node_status_alerts: bool=True
     cpu_limit: int=Field(85,ge=1,le=100); ram_limit: int=Field(85,ge=1,le=100); disk_limit: int=Field(85,ge=1,le=100)
     ssl_host: str|None=Field(None,max_length=255); ssl_port: int=Field(443,ge=1,le=65535); ssl_warning_days: int=Field(14,ge=1,le=365)
 def _mr(db):
@@ -502,7 +503,7 @@ def _mr(db):
     if not r: r=MonitoringSettings(id=1); db.add(r); db.commit(); db.refresh(r)
     return r
 def _mo(r): return {'enabled':r.enabled,'telegram_configured':bool(r.telegram_token_encrypted and r.telegram_chat_id),'telegram_chat_id':r.telegram_chat_id or '',
- 'cpu_limit':r.cpu_limit,'ram_limit':r.ram_limit,'disk_limit':r.disk_limit,'ssl_host':r.ssl_host or '','ssl_port':r.ssl_port,'ssl_warning_days':r.ssl_warning_days}
+ 'cpu_limit':r.cpu_limit,'ram_limit':r.ram_limit,'disk_limit':r.disk_limit,'node_status_alerts':getattr(r,'node_status_alerts',True),'ssl_host':r.ssl_host or '','ssl_port':r.ssl_port,'ssl_warning_days':r.ssl_warning_days}
 def _tg(token,chat,text):
     data=urllib.parse.urlencode({'chat_id':chat,'text':text}).encode()
     with urllib.request.urlopen(urllib.request.Request(f'https://api.telegram.org/bot{token}/sendMessage',data=data,method='POST'),timeout=15) as x:
@@ -516,7 +517,7 @@ async def monitoring_put(q:MonitoringUpdate,db:Session=Depends(get_db),user:dict
     if user['type']!='main_admin': raise HTTPException(403,'Main administrator required')
     r=_mr(db)
     if q.telegram_token and q.telegram_token.strip(): r.telegram_token_encrypted=encrypt_secret(q.telegram_token.strip())
-    r.enabled=q.enabled; r.telegram_chat_id=(q.telegram_chat_id or '').strip() or None; r.cpu_limit=q.cpu_limit; r.ram_limit=q.ram_limit; r.disk_limit=q.disk_limit
+    r.enabled=q.enabled; r.telegram_chat_id=(q.telegram_chat_id or '').strip() or None; r.cpu_limit=q.cpu_limit; r.ram_limit=q.ram_limit; r.disk_limit=q.disk_limit; r.node_status_alerts=q.node_status_alerts
     r.ssl_host=(q.ssl_host or '').strip() or None; r.ssl_port=q.ssl_port; r.ssl_warning_days=q.ssl_warning_days; r.updated_at=int(time.time()); r.updated_by=user['username']
     if r.enabled and not(r.telegram_token_encrypted and r.telegram_chat_id): raise HTTPException(422,'Telegram token and Chat ID are required')
     db.commit(); db.refresh(r); return ResponseModel(success=True,msg='Monitoring settings saved',data=_mo(r))

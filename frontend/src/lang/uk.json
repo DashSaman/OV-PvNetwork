@@ -427,5 +427,7 @@
       "group": "Група швидкості",
       "users": "Вибрані користувачі"
     }
-  }
+  },
+  "feature.nodeStatusAlerts": "Node online/offline alerts",
+  "feature.nodeStatusAlertsHelp": "Send Node DOWN/UP Telegram alerts only when node status changes."
 }

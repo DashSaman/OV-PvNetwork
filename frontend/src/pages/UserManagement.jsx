@@ -106,6 +106,8 @@ const UserManagement = () => {
     return () => {
       clearInterval(liveStatusTimer);
     };
+    // Polling callbacks intentionally use the mount-time function set; state updates are functional/server-derived.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const userStats = useMemo(() => {
     const activeUsersCount = users.filter(user => user.is_active).length;
@@ -369,7 +371,7 @@ const UserManagement = () => {
   };
 
   const handleToggleAnyConnect = async user => {
-    const enabled = !Boolean(user.anyconnect_enabled);
+    const enabled = !user.anyconnect_enabled;
     setAnyConnectBusy(user.uuid);
     setError('');
     try {

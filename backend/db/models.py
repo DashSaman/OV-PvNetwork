@@ -353,6 +353,7 @@ class MonitoringSettings(Base):
     cpu_limit: Mapped[int]=mapped_column(default=85,nullable=False)
     ram_limit: Mapped[int]=mapped_column(default=85,nullable=False)
     disk_limit: Mapped[int]=mapped_column(default=85,nullable=False)
+    node_status_alerts: Mapped[bool]=mapped_column(default=True,nullable=False)
     ssl_host: Mapped[str]=mapped_column(String(255),nullable=True)
     ssl_port: Mapped[int]=mapped_column(default=443,nullable=False)
     ssl_warning_days: Mapped[int]=mapped_column(default=14,nullable=False)

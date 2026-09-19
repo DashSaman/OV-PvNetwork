@@ -92,6 +92,8 @@ const BandwidthControl = () => {
 
   useEffect(() => {
     refreshAll();
+    // Initial configuration/status fetch is mount-only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selectedUsers = useMemo(

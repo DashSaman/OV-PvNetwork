@@ -1,16 +1,16 @@
 <div dir="rtl" align="right">
 
-# OV-PvNetwork
+# PVNetwork Panel
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.1-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
-OV-PvNetwork بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
+PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
 
 > **قانون ثابت پروژه:** Production همیشه زیر بار و در حال استفاده فرض می‌شود. هر تغییر Production باید با ترتیب «Backup/Check → تغییر محدود → کمترین Restart لازم → Health Verification → آمادگی Rollback» انجام شود. مخزن عمومی نیز نباید اطلاعات واقعی کاربران یا زیرساخت و Secretها را داشته باشد.
 
@@ -28,6 +28,13 @@ OV-PvNetwork بر پایه OV-Panel / OV-Node ساخته شده و امکانا�
 
 ![مدیریت پیشرفته، مانیتورینگ و پهنای‌باند](./docs/images/ui/03-operations.jpg)
 
+
+### نمونه واقعی نسخه 1.1 در دسکتاپ و موبایل
+
+![PVNetwork v1.0.1 دسکتاپ](./docs/images/v1.0.1/fa/desktop/users.png)
+
+![PVNetwork v1.0.1 موبایل](./docs/images/v1.0.1/fa/mobile/users-renew.png)
+
 مستندات تصویری کامل:
 
 - [راهنمای کامل تصویری فارسی](./docs/UI-GUIDE.fa.md)
@@ -44,7 +51,7 @@ OV-PvNetwork بر پایه OV-Panel / OV-Node ساخته شده و امکانا�
 | AnyConnect | فعال/غیرفعال برای هر کاربر، ساخت یا تغییر رمز، هویت مشترک کاربر |
 | نودها | افزودن و ویرایش نود، Health، Assignment، حذف کنترل‌شده |
 | Fleet | Health Score، Maintenance، Drain/Resume، Upgrade و Retry کنترل‌شده |
-| مانیتورینگ | ترافیک زنده، CPU/RAM/Uptime، تنظیمات هشدار تلگرام |
+| مانیتورینگ | ترافیک زنده، CPU/RAM/Uptime، هشدار تلگرام و پیام صریح قطع/وصل نود (Node DOWN/UP) |
 | امنیت | IP Allowlist، Rate Limit، TOTP 2FA، API Token با Scope و Expiry |
 | عملیات | عملیات گروهی کاربران، انتقال/Rebalance، تاریخچه مصرف و Audit/Operations |
 | پهنای‌باند | Emergency Off، Preview/Canary/Activate Policy، گروه‌ها و وضعیت نودها |
@@ -65,7 +72,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.1.0/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.1/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.
@@ -98,7 +105,7 @@ ovpv rollback
 
 ```text
                          ┌──────────────────────────────┐
-                         │        OV-PvNetwork         │
+                         │       PVNetwork Panel       │
                          │       Panel / API / UI      │
                          └──────────────┬───────────────┘
                                         │
@@ -144,7 +151,7 @@ Node Automation نباید برای راحتی نصب، Firewall را Flush کن
 ## سیاست Release
 
 - `v1.0.0` خط پایه Immutable باقی می‌ماند.
-- `v1.1.0` Hardening سازگار UI/UX/Responsive/Governance را اضافه می‌کند.
+- `v1.0.1` Hardening سازگار UI/UX/Responsive/Governance را اضافه می‌کند.
 - Patch Releaseها Fix سازگار هستند.
 - Minor Releaseها Feature سازگار اضافه می‌کنند.
 - Major Release می‌تواند تغییر Breaking معماری/Protocol داشته باشد.

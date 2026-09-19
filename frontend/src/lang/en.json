@@ -427,5 +427,7 @@
       "group": "Speed group",
       "users": "Selected users"
     }
-  }
+  },
+  "feature.nodeStatusAlerts": "Node online/offline alerts",
+  "feature.nodeStatusAlertsHelp": "Send 🔴 Node DOWN when a node goes offline and 🟢 Node UP when it recovers. Unchanged states are not repeated."
 }

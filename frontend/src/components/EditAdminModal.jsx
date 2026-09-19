@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';

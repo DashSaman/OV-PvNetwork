@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +20,7 @@ const LoginPage = () => {
     try {
       await login(username, password, otp);
       navigate('/');
-    } catch (err) {
+    } catch {
       setError(t('loginError'));
     }
   };

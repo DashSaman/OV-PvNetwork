@@ -1,10 +1,10 @@
 <div align="center">
 
-# OV-PvNetwork
+# PVNetwork Panel
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.1-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 [![Upstream](https://img.shields.io/badge/upstream-OV--Panel-blue?style=flat-square)](https://github.com/primeZdev/ov-panel)
@@ -13,7 +13,7 @@
 
 </div>
 
-OV-PvNetwork is a production-derived distribution and operations layer built on the open-source OV-Panel / OV-Node ecosystem. It keeps the simple OpenVPN user workflow while adding multi-node operations, renewal, AnyConnect integration, monitoring, security controls, backup/restore, health scoring, traffic controls and safer deployment tooling.
+PVNetwork Panel is a production-derived distribution and operations layer built on the open-source OV-Panel / OV-Node ecosystem. It keeps the simple OpenVPN user workflow while adding multi-node operations, renewal, AnyConnect integration, monitoring, security controls, backup/restore, health scoring, traffic controls and safer deployment tooling.
 
 > **Production safety is a project rule:** deployments are assumed live and under load. Changes use backup/check → narrow mutation → smallest necessary restart → health verification → rollback readiness. Public repository content is sanitized and must not contain live users, infrastructure identifiers or secrets.
 
@@ -31,10 +31,17 @@ OV-PvNetwork is a production-derived distribution and operations layer built on 
 
 ![Advanced fleet, monitoring and bandwidth controls](./docs/images/ui/03-operations.jpg)
 
+
+### v1.0.1 desktop / mobile proof
+
+![PVNetwork v1.0.1 desktop](./docs/images/v1.0.1/en/desktop/users.png)
+
+![PVNetwork v1.0.1 mobile](./docs/images/v1.0.1/en/mobile/users-renew.png)
+
 Detailed illustrated documentation:
 
 - [Complete English UI guide](./docs/UI-GUIDE.md)
-- [v1.1 Responsive & accessibility guide](./docs/RESPONSIVE-GUIDE.md)
+- [v1.0.1 Responsive & accessibility guide](./docs/RESPONSIVE-GUIDE.md)
 - [راهنمای کامل فارسی رابط کاربری](./docs/UI-GUIDE.fa.md)
 - [راهنمای فارسی Responsive و Accessibility](./docs/RESPONSIVE-GUIDE.fa.md)
 
@@ -47,15 +54,15 @@ Detailed illustrated documentation:
 | AnyConnect | Per-user enable/disable, password generation/change, shared user identity |
 | Multi-node | Node CRUD, health view, user assignment, safe node lifecycle |
 | Fleet | Health score, maintenance, drain/resume, controlled upgrade/retry workflows |
-| Monitoring | Realtime traffic dashboard, node CPU/RAM/uptime, Telegram monitoring configuration |
+| Monitoring | Realtime traffic dashboard, node CPU/RAM/uptime, Telegram monitoring plus explicit Node DOWN/UP transition alerts |
 | Security | IP allowlist, rate limiting, TOTP 2FA, scoped/expiring API tokens |
 | Operations | Bulk user actions, transfer/rebalance tools, usage history, audit/operational views |
 | Bandwidth | Emergency off, policy preview/canary/activate, groups and per-node status |
 | Backup | Verified manual backup download and guarded restore workflow |
 | Integrations | Mirza integration API, OpenVPN node API, optional AnyConnect/ocserv hooks |
-| v1.1 UX | Full mobile Main Admin navigation, viewport-safe dialogs, touch/focus/reduced-motion hardening, RTL/LTR responsive browser smoke matrix |
+| v1.0.1 UX | Full mobile Main Admin navigation, viewport-safe dialogs, touch/focus/reduced-motion hardening, RTL/LTR responsive browser smoke matrix |
 
-## v1.1 responsive behavior
+## v1.0.1 responsive behavior
 
 Main Admin routes remain reachable on phones through Dashboard, Users, Nodes and a **More** menu containing Admins, Operations, Security, Fleet, Monitoring and Bandwidth. Shared CSS hardening keeps primary touch targets usable, dialogs inside the dynamic viewport, tables bounded to their own scroll region and long translated text able to reflow.
 
@@ -66,7 +73,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.1.0/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.1/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.
@@ -99,7 +106,7 @@ Documentation:
 
 ```text
                          ┌──────────────────────────────┐
-                         │        OV-PvNetwork         │
+                         │       PVNetwork Panel       │
                          │       Panel / API / UI      │
                          └──────────────┬───────────────┘
                                         │
@@ -146,7 +153,7 @@ A task is not marked done merely because code exists; tests, build/compile, resp
 ## Release policy
 
 - `v1.0.0` remains the immutable stable baseline.
-- `v1.1.0` adds compatible UX/responsive/governance hardening.
+- `v1.0.1` adds compatible UX/responsive/governance hardening.
 - Patch releases are backwards-compatible fixes.
 - Minor releases add backwards-compatible capabilities.
 - Major releases may contain breaking architecture/protocol changes.

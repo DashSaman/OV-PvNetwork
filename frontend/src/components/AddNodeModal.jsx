@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { useEffect, useRef, useState } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -110,6 +109,8 @@ const AddNodeModal = ({
       setIsLoading(true);
       watchJob(existing);
     }
+    // Resume a persisted deployment only on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const handleChange = ({
     target

@@ -85,6 +85,20 @@ async function openRoute(page, route, timeout = 10000) {
   await page.waitForTimeout(180);
 }
 
+async function assertModalInsideViewport(page, label, width, height) {
+  const modal = page.locator('.modal').last();
+  await modal.waitFor({ state: 'visible', timeout: 5000 });
+  const box = await modal.boundingBox();
+  if (!box || box.x < -1 || box.y < -1 || box.x + box.width > width + 1 || box.y + box.height > height + 1) {
+    failures.push(`${label}: modal escapes viewport`);
+  }
+}
+
+async function closeLastModal(page) {
+  const close = page.locator('.modal .close-modal-btn').last();
+  if (await close.count()) await close.click();
+}
+
 const browser = await chromium.launch({ headless: true });
 const failures = [];
 
@@ -166,11 +180,63 @@ for (const language of languages) {
           failures.push(`${language} ${width}px Renew modal escapes viewport height`);
         }
         await page.locator('.close-modal-btn').last().click();
+
+        // Core user dialogs must all remain reachable on a phone viewport.
+        await page.getByRole('button', { name: /add new user|افزودن کاربر|ایجاد کاربر/i }).first().click();
+        await assertModalInsideViewport(page, `${language} ${width}px Add User`, width, 820);
+        await closeLastModal(page);
+
+        await trigger.click();
+        await page.locator('.actions-dropdown-item').nth(0).click();
+        await assertModalInsideViewport(page, `${language} ${width}px Edit User`, width, 820);
+        await closeLastModal(page);
+
+        const anyConnectButton = page.getByRole('button', { name: /AnyConnect/i }).first();
+        await anyConnectButton.click();
+        await assertModalInsideViewport(page, `${language} ${width}px AnyConnect`, width, 820);
+        await closeLastModal(page);
+
+        await openRoute(page, '/nodes');
+        await page.locator('#nodes-view .view-header .btn').first().click();
+        await assertModalInsideViewport(page, `${language} ${width}px Add Node`, width, 820);
+        await closeLastModal(page);
+
+        await openRoute(page, '/admins');
+        await page.locator('#admins-view .view-header .btn').first().click();
+        await assertModalInsideViewport(page, `${language} ${width}px Add Admin`, width, 820);
+        await closeLastModal(page);
       } catch (error) {
         failures.push(`${language} ${width}px mobile interactions: ${error.message}`);
       }
     }
 
+    await context.close();
+  }
+}
+
+// Login is unauthenticated, so verify it in fresh contexts at phone and desktop widths.
+for (const language of languages) {
+  for (const width of [360, 1440]) {
+    const context = await browser.newContext({ viewport: { width, height: width <= 430 ? 820 : 900 } });
+    await context.addInitScript(language => {
+      localStorage.clear();
+      localStorage.setItem('i18nextLng', language);
+    }, language);
+    const page = await context.newPage();
+    try {
+      await page.goto(`${baseUrl}/login`, { waitUntil: 'domcontentloaded', timeout: 10000 });
+      await page.waitForTimeout(120);
+      const metrics = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        innerWidth: window.innerWidth,
+        hasUsername: Boolean(document.querySelector('#username')),
+        hasPassword: Boolean(document.querySelector('#password')),
+      }));
+      if (!metrics.hasUsername || !metrics.hasPassword) failures.push(`${language} ${width}px login: fields missing`);
+      if (metrics.scrollWidth > metrics.innerWidth + 1) failures.push(`${language} ${width}px login: horizontal overflow`);
+    } catch (error) {
+      failures.push(`${language} ${width}px login: ${error.message}`);
+    }
     await context.close();
   }
 }

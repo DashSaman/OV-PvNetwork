@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { FiServer, FiCheckCircle, FiXCircle, FiSearch } from 'react-icons/fi';
 import apiClient from '../services/api';
@@ -150,7 +149,7 @@ const NodeManagement = () => {
       const response = await apiClient.get(`/nodes/${nodeId}/status/`);
       alert(response.data.msg || 'Status check complete.');
       fetchNodes();
-    } catch (error) {
+    } catch {
       alert(t("ui.88fed087db4c"));
     }
   };

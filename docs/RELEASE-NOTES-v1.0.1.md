@@ -1,10 +1,16 @@
-# PVNetwork Panel v1.1.0 — Release Notes
+# PVNetwork Panel v1.0.1 — Release Notes
 
 Status: release candidate documentation. Publish only after `docs/QA-RELEASE-GATE.md` is fully satisfied.
 
 ## Focus
 
-v1.1.0 is a compatibility-preserving UI/UX and project-governance release. It does not replace the OpenVPN/AnyConnect data model or intentionally change existing Production routing/firewall behavior.
+v1.0.1 is a compatibility-preserving UI/UX and project-governance release. It does not replace the OpenVPN/AnyConnect data model or intentionally change existing Production routing/firewall behavior.
+
+## Monitoring improvements
+
+- Optional Telegram node status alerts now send `🔴 Node DOWN` when a node becomes offline and `🟢 Node UP` after recovery.
+- The node-status alert toggle is enabled by default to preserve the existing down-alert behavior while making recovery explicit.
+- Repeated unchanged states are deduplicated through the monitor state file.
 
 ## UI/UX improvements
 
@@ -28,6 +34,8 @@ v1.1.0 is a compatibility-preserving UI/UX and project-governance release. It do
 - Blocking release QA checklist and explicit UX audit matrix.
 - CI now runs Python/backend compilation, all unit/governance tests, frontend production build, JSON validation and public/private-material guards.
 - Chromium responsive smoke matrix covers all major Main Admin routes at 360, 375, 390, 430, 768, 1024, 1366, 1440 and 1920 px.
+- Frontend ESLint is clean with 0 errors and 0 warnings.
+- Sanitized v1.0.1 screenshot evidence includes desktop/mobile captures for English and Persian route families.
 
 ## Documentation
 
@@ -48,7 +56,7 @@ Production is assumed live. Do not replace the live tree blindly.
 
 1. Verify current health.
 2. Take a backup/snapshot appropriate to the deployment.
-3. Apply only the verified v1.1.0 release tree/build.
+3. Apply only the verified v1.0.1 release tree/build.
 4. Restart only the required `ov-panel` service.
 5. Verify local/public panel health and critical user/node workflows.
 6. Roll back immediately if verification fails.
@@ -69,4 +77,15 @@ Do not flush firewalls, replace default routes, recreate working nodes, rotate v
 
 ## Known scope boundaries
 
-The numbered backlog includes WireGuard, Xray, additional protocols, Prometheus/Grafana, advanced enterprise SSO and lifecycle automation, but those are future tasks. Their presence in the backlog does not imply they are included in v1.1.0.
+The numbered backlog includes WireGuard, Xray, additional protocols, Prometheus/Grafana, advanced enterprise SSO and lifecycle automation, but those are future tasks. Their presence in the backlog does not imply they are included in v1.0.1.
+
+## Production verification
+
+- Verified pre-deploy backup with restore test: PASS.
+- Alembic advanced from `c1d2e3f4a5b6` to `c2d3e4f5a6b7` transactionally.
+- Only the PVNetwork panel service was restarted; unrelated VPN/tunnel/database services were not restarted.
+- Local panel HTTP: 200.
+- Public panel HTTP: 200.
+- `ov-panel.service`: active/enabled.
+- `ov-panel-monitor.timer`: active; first post-deploy run exited `0/SUCCESS`.
+- Monitoring migration default: node online/offline alerts enabled.

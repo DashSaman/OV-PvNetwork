@@ -1,6 +1,6 @@
 <div dir="rtl" align="right">
 
-# راهنمای تصویری Responsive و دسترسی‌پذیری PVNetwork v1.1
+# راهنمای تصویری Responsive و دسترسی‌پذیری PVNetwork v1.0.1
 
 این راهنما مکمل [راهنمای کامل تصویری پنل](./UI-GUIDE.fa.md) است و توضیح می‌دهد منوها، جدول‌ها، Modalها و عملیات مدیریتی در دسکتاپ، تبلت و موبایل چگونه باید استفاده شوند.
 
@@ -8,23 +8,39 @@
 
 ## نمای کلی پنل
 
-![Dashboard](./images/ui/dashboard.jpg)
+**دسکتاپ**
 
-در نسخه v1.1 چیدمان عمومی برای عرض‌های 360 تا 1920 پیکسل سخت‌گیری بیشتری دارد: متن باید بدون بریدگی Reflow شود، صفحه نباید Horizontal Scroll ناخواسته داشته باشد و کنترل‌های اصلی برای Touch حداقل حدود 44×44 پیکسل باشند.
+![داشبورد دسکتاپ](./images/v1.0.1/fa/desktop/dashboard.png)
+
+**موبایل**
+
+![داشبورد موبایل](./images/v1.0.1/fa/mobile/dashboard.png)
+
+در نسخه v1.0.1 چیدمان عمومی برای عرض‌های 360 تا 1920 پیکسل سخت‌گیری بیشتری دارد: متن باید بدون بریدگی Reflow شود، صفحه نباید Horizontal Scroll ناخواسته داشته باشد و کنترل‌های اصلی برای Touch حداقل حدود 44×44 پیکسل باشند.
 
 ## کاربران و عملیات روزمره
 
-![Users](./images/ui/users.jpg)
+**دسکتاپ**
+
+![کاربران دسکتاپ](./images/v1.0.1/fa/desktop/users.png)
+
+**موبایل**
+
+![کاربران موبایل](./images/v1.0.1/fa/mobile/users.png)
 
 در موبایل اولویت با دسترسی به Search، Sort، Pagination و منوی عملیات هر کاربر است. جدول می‌تواند داخل محدوده خودش Scroll شود، اما خود صفحه نباید به خاطر جدول از Viewport بیرون بزند.
 
-![User Actions](./images/ui/workflow-user-actions.jpg)
+![عملیات کاربر دسکتاپ](./images/v1.0.1/fa/desktop/users-actions.png)
+
+![عملیات کاربر موبایل](./images/v1.0.1/fa/mobile/users-actions.png)
 
 منوی سه‌نقطه اکنون Semantic Menu دارد، با Keyboard قابل دسترسی است، با `Escape` بسته می‌شود و در لبه‌های صفحه داخل Viewport باقی می‌ماند.
 
 ## تمدید کاربر
 
-![Renew User](./images/ui/workflow-renew-user.jpg)
+![تمدید دسکتاپ](./images/v1.0.1/fa/desktop/users-renew.png)
+
+![تمدید موبایل](./images/v1.0.1/fa/mobile/users-renew.png)
 
 Modal تمدید در Viewport کوتاه به‌صورت داخلی Scroll می‌شود و Header/Footer عملیات قابل دسترسی باقی می‌مانند. همان UUID/Username حفظ می‌شود و این تغییر فقط UX را سخت‌گیرانه‌تر می‌کند؛ منطق Renewal نسخه 1.0 تغییر داده نمی‌شود.
 
@@ -36,7 +52,9 @@ Credentialها و دکمه‌های Copy/Change/Enable باید روی موبا�
 
 ## نودها
 
-![Nodes](./images/ui/nodes.jpg)
+![نودها دسکتاپ](./images/v1.0.1/fa/desktop/nodes.png)
+
+![نودها موبایل](./images/v1.0.1/fa/mobile/nodes.png)
 
 در صفحه Node، وضعیت Health و عملیات Add/Edit/Download باید در موبایل هم قابل دسترس بماند. هیچ Hardening رابط کاربری اجازه ندارد Firewall، Default Route، Tunnel یا سرویس نامرتبط نود Production را تغییر دهد.
 
@@ -66,31 +84,43 @@ flowchart TD
 
 ## Operations و Backup/Restore
 
-![Operations](./images/ui/operations.jpg)
+![عملیات دسکتاپ](./images/v1.0.1/fa/desktop/operations.png)
+
+![عملیات موبایل](./images/v1.0.1/fa/mobile/operations.png)
 
 Bulk action، Transfer، Rebalance، Usage History و Audit باید در صفحه کوچک بدون پنهان‌شدن دکمه‌ها قابل استفاده باشند. Restore همچنان عملیات حساس است و نیاز به تأیید صریح دارد.
 
 ## Security
 
-![Security](./images/ui/security.jpg)
+![امنیت دسکتاپ](./images/v1.0.1/fa/desktop/security.png)
+
+![امنیت موبایل](./images/v1.0.1/fa/mobile/security.png)
 
 TOTP، IP Allowlist، Rate Limit و API Tokenها در موبایل باید قابل استفاده باشند. Focus کیبورد قابل مشاهده است و Controlهای Icon-only باید Accessible Name داشته باشند.
 
 ## Fleet
 
-![Fleet](./images/ui/fleet.jpg)
+![Fleet دسکتاپ](./images/v1.0.1/fa/desktop/fleet.png)
+
+![Fleet موبایل](./images/v1.0.1/fa/mobile/fleet.png)
 
 Maintenance، Drain/Resume و Upgrade عملیات حساس‌اند. دکمه‌ها در عرض کم Wrap/Stack می‌شوند ولی معنی و ترتیبشان تغییر نمی‌کند.
 
 ## Monitoring
 
-![Monitoring](./images/ui/monitoring.jpg)
+![مانیتورینگ دسکتاپ](./images/v1.0.1/fa/desktop/monitoring.png)
+
+![مانیتورینگ موبایل](./images/v1.0.1/fa/mobile/monitoring.png)
 
 تنظیم Alert و Test Telegram در عرض کم به یک ستون تبدیل می‌شود. Loading/Error/Retry باید مشخص باشد و Long label نباید باعث بریدگی Form شود.
+هشدار اتصال نودها در Monitoring یک سوییچ جدا دارد. فقط هنگام تغییر وضعیت، پیام `Node DOWN` برای قطع و `Node UP` برای وصل مجدد ارسال می‌شود و تا وقتی وضعیت ثابت است پیام تکراری نمی‌آید.
+
 
 ## Bandwidth Control
 
-![Bandwidth](./images/ui/bandwidth.jpg)
+![پهنای‌باند دسکتاپ](./images/v1.0.1/fa/desktop/bandwidth.png)
+
+![پهنای‌باند موبایل](./images/v1.0.1/fa/mobile/bandwidth.png)
 
 Preview، Canary، Activate و Emergency Off عمداً از نظر معنایی از هم جدا هستند. در موبایل Actionها Full-width می‌شوند تا اشتباه Touch کمتر شود و Group/User/Node pickerها داخل Viewport باقی بمانند.
 
@@ -98,7 +128,7 @@ Preview، Canary، Activate و Emergency Off عمداً از نظر معنایی
 
 قبل از Release رسمی، مسیرهای اصلی روی عرض‌های `360`, `375`, `390`, `430`, `768`, `1024`, `1366`, `1440`, `1920` تست می‌شوند. علاوه بر آن، جریان‌های اصلی با Keyboard و Touch و حالت‌های RTL/LTR بررسی می‌شوند.
 
-CI نسخه v1.1 یک Browser Smoke Matrix با Chromium اجرا می‌کند و برای تمام Routeهای اصلی Horizontal Overflow و خطای Runtime را بررسی می‌کند. این تست جای بررسی Production را نمی‌گیرد؛ Deployment واقعی فقط بعد از Backup و Health Check انجام می‌شود.
+CI نسخه v1.0.1 یک Browser Smoke Matrix با Chromium اجرا می‌کند و برای تمام Routeهای اصلی Horizontal Overflow و خطای Runtime را بررسی می‌کند. این تست جای بررسی Production را نمی‌گیرد؛ Deployment واقعی فقط بعد از Backup و Health Check انجام می‌شود.
 
 ## Workflow امن Release
 

@@ -427,5 +427,7 @@
       "group": "速度グループ",
       "users": "選択ユーザー"
     }
-  }
+  },
+  "feature.nodeStatusAlerts": "Node online/offline alerts",
+  "feature.nodeStatusAlertsHelp": "Send Node DOWN/UP Telegram alerts only when node status changes."
 }

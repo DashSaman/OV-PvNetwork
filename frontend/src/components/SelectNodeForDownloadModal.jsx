@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +23,7 @@ const SelectNodeForDownloadModal = ({
           setNodes(available);
           if (available.length > 0) setSelectedNodeAddress(available[0].address);
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load available nodes.');
       } finally {
         setIsLoadingNodes(false);

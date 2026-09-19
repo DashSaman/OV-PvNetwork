@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { FiEdit, FiTrash2, FiUser, FiUsers } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 const AdminTable = ({

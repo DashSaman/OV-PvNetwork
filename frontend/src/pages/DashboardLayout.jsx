@@ -1,4 +1,3 @@
-import { t } from "../i18n";
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import MobileNav from '../components/MobileNav';

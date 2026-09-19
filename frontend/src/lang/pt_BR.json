@@ -427,5 +427,7 @@
       "group": "Grupo de velocidade",
       "users": "Usuários selecionados"
     }
-  }
+  },
+  "feature.nodeStatusAlerts": "Node online/offline alerts",
+  "feature.nodeStatusAlertsHelp": "Send Node DOWN/UP Telegram alerts only when node status changes."
 }
