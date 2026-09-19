@@ -55,7 +55,7 @@ jobs:
       - name: Bash syntax
         run: |
           set -e
-          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening; do
+          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening scripts/pvnetwork-firewall-boot; do
             [ -f "$f" ] && bash -n "$f"
           done
 
