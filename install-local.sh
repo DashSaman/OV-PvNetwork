@@ -79,7 +79,7 @@ CORS_ORIGINS=${PVNETWORK_CORS_ORIGINS:-${PUBLIC_URL%/}}
 ENV
 chmod 600 "$APP/.env"
 
-(cd frontend && npm ci && npm run build)
+(cd frontend && npm ci && URLPATH="$PANEL_PATH" VITE_URLPATH="$PANEL_PATH" npm run build)
 .venv/bin/alembic -c backend/alembic.ini upgrade head
 "$APP/scripts/install-runtime-tools.sh"
 

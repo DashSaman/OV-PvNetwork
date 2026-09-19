@@ -85,7 +85,10 @@ build_panel(){
   command -v node >/dev/null 2>&1 || fail 'node is not installed'
   uv sync
   .venv/bin/python scripts/migrate_admin_password_hash.py --env "$APP/.env"
-  (cd frontend && npm ci && npm run build)
+  local panel_path
+  panel_path="$(awk -F= '$1=="URLPATH"{print $2}' "$APP/.env" 2>/dev/null | tail -1 | tr -d ' \r')"
+  [[ -n "$panel_path" ]] || fail 'URLPATH is missing from .env'
+  (cd frontend && npm ci && URLPATH="$panel_path" VITE_URLPATH="$panel_path" npm run build)
   .venv/bin/python -m compileall -q backend
   [[ -f backend/alembic.ini ]] && .venv/bin/alembic -c backend/alembic.ini upgrade head
 }
