@@ -42,6 +42,11 @@ jobs:
           subprocess.check_call([sys.executable, '-m', 'pip', 'install', *deps])
           PYDEPS
 
+      - name: Install OpenVPN integration dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y openvpn iproute2
+
       - name: Backend dependency and static security audit
         run: |
           python -m pip install --disable-pip-version-check pip-audit bandit
@@ -81,6 +86,10 @@ jobs:
             tests.test_router_openvpn_api \
             tests.test_router_openvpn_user_lifecycle \
             tests.test_router_openvpn_presence -v
+
+      - name: Router OpenVPN real dual-auth handshake
+        run: |
+          sudo -E env PYTHON="$(command -v python3)" bash tests/router_openvpn_real_handshake.sh
 
       - name: Frontend production build
         working-directory: frontend
