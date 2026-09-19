@@ -177,6 +177,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-029 [ ] Router/OpenVPN compatibility for RouterOS and other username/password-oriented clients using an isolated compatibility listener/profile; prefer certificate+password dual auth, keep password-only opt-in and isolated, and do not disturb existing OpenVPN certificates/listener. Target: v1.0.9.
 - PVN-030 [ ] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Target: v1.0.10.
 - PVN-031 [x] Synchronize Dashboard and User Management on one short-lived presence snapshot and lightweight live-presence polling so adjacent views do not race between samples. Release: v1.0.7.
+- PVN-032 [ ] Allow the main administrator to change the panel URL path and main-admin username/password from the authenticated UI; password changes must store only a strong hash, path changes must rebuild/switch frontend atomically with rollback and must never strand the active admin session. Target: v1.0.11.
 
 ## UI/UX task ledger
 

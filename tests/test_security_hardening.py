@@ -88,6 +88,14 @@ class SecurityHardeningContractTests(unittest.TestCase):
         self.assertIn("--confirm", body)
         self.assertIn("systemd-run", body)
         self.assertIn("established,related", body.lower())
+        self.assertIn("PVNETWORK_INPUT -p tcp -j DROP", body)
+        self.assertIn("PVNETWORK_INPUT -p udp -j DROP", body)
+        self.assertIn("PVNETWORK_INPUT -j RETURN", body)
+        boot = text("scripts/pvnetwork-firewall-boot")
+        unit = text("ops/systemd/pvnetwork-firewall-hardening.service")
+        self.assertIn("PVNETWORK_FIREWALL_PUBLIC_HEALTH_URL", boot)
+        self.assertIn("--confirm", boot)
+        self.assertIn("ConditionPathExists=/etc/pvnetwork-panel/firewall.env", unit)
 
 
 if __name__ == "__main__":

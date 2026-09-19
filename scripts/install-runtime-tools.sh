@@ -13,6 +13,8 @@ install -m 0755 "$ROOT/scripts/pvnetwork-panel-smoke-test" /usr/local/sbin/pvnet
 install -m 0755 "$ROOT/scripts/pvnetwork-usage-sync" /usr/local/sbin/pvnetwork-usage-sync
 install -m 0755 "$ROOT/scripts/pvnetwork-sub-push-sender.py" /usr/local/sbin/pvnetwork-sub-push-sender.py
 install -m 0755 "$ROOT/scripts/pvnetwork-node-user-reconcile.py" /usr/local/sbin/pvnetwork-node-user-reconcile.py
+install -m 0755 "$ROOT/scripts/pvnetwork-firewall-hardening" /usr/local/sbin/pvnetwork-firewall-hardening
+install -m 0755 "$ROOT/scripts/pvnetwork-firewall-boot" /usr/local/sbin/pvnetwork-firewall-boot
 for unit in "$ROOT"/ops/systemd/pvnetwork-*.service "$ROOT"/ops/systemd/pvnetwork-*.timer; do
   install -m 0644 "$unit" "/etc/systemd/system/$(basename "$unit")"
 done

@@ -102,7 +102,11 @@ build_chain() {
   fi
   add_port_rules "$tool" tcp "$tcp"
   add_port_rules "$tool" udp "$udp"
-  "$tool" -A PVNETWORK_INPUT -j DROP
+  # Filter only new TCP/UDP listeners here. Raw tunnel protocols are handled
+  # by pre-existing INPUT rules or returned to the host policy unchanged.
+  "$tool" -A PVNETWORK_INPUT -p tcp -j DROP
+  "$tool" -A PVNETWORK_INPUT -p udp -j DROP
+  "$tool" -A PVNETWORK_INPUT -j RETURN
   # Preserve every pre-existing tunnel/NFQUEUE/source-specific INPUT rule.
   # Only traffic not already handled by those rules reaches this final chain.
   while "$tool" -C INPUT -j PVNETWORK_INPUT 2>/dev/null; do
@@ -171,7 +175,8 @@ apply_rules() {
   fi
 
   iptables -C PVNETWORK_INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-  iptables -C PVNETWORK_INPUT -j DROP
+  iptables -C PVNETWORK_INPUT -p tcp -j DROP
+  iptables -C PVNETWORK_INPUT -p udp -j DROP
   trap - ERR
   echo "PVNETWORK_FIREWALL_APPLY=PASS"
   echo "rollback=$backup"
