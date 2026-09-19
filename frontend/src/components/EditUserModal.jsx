@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LoadingButton from './LoadingButton';
 
 const EditUserModal = ({ user, onClose, onUserUpdated, userRole }) => {
-  // OV_DURATION_EDIT_UI_V8
+  // PVNETWORK_DURATION_EDIT_UI_V8
   const effectiveRole = userRole || localStorage.getItem('userRole') || '';
   const isReseller = effectiveRole === 'admin';
   const [expiryDate, setExpiryDate] = useState('');

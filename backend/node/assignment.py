@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 
-# OV_FAILOPEN_EVENTLOOP_V1
+# PVNETWORK_FAILOPEN_EVENTLOOP_V1
 from typing import Optional
 
 from sqlalchemy.orm import Session

@@ -106,12 +106,12 @@ Installer از Tag ثابت Release استفاده می‌کند و نباید �
 بعد از نصب، در Deploymentهایی که Lifecycle Manager فعال است:
 
 ```bash
-ovpv status
-ovpv doctor
-ovpv version
-ovpv backup
-ovpv update
-ovpv rollback
+pvnetwork status
+pvnetwork doctor
+pvnetwork version
+pvnetwork backup
+pvnetwork update
+pvnetwork rollback
 ```
 
 اگر روی سرور شما از قبل نسخه قدیمی پنل یا سرویس‌های دیگری فعال است، Fresh Installer را مستقیم اجرا نکنید؛ ابتدا Health، Backup و مسیر Update/Migration را بررسی کنید.
@@ -191,6 +191,6 @@ Node Automation نباید برای راحتی نصب، Firewall را Flush کن
 
 ## اعتبار پروژه
 
-OV-PvNetwork از PVNetwork Panel / OV-Node با مجوز MIT مشتق شده است. Attribution پروژه Upstream در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
+PVNetwork شامل تغییراتی بر پایه یک foundation دارای مجوز MIT است و با کامپوننت نود `primeZdev/ov-node` کار می‌کند. Attribution لازم در [NOTICE.md](./NOTICE.md) و [LICENSE](./LICENSE) حفظ شده است.
 
 </div>

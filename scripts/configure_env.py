@@ -39,7 +39,7 @@ def set_values(lines: list[str], values: dict[str, str]) -> list[str]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Configure OV-PvNetwork environment")
+    ap = argparse.ArgumentParser(description="Configure PVNetwork environment")
     ap.add_argument("--panel-dir", default="/opt/pvnetwork-panel")
     ap.add_argument("--username", required=True)
     ap.add_argument("--password", required=True)

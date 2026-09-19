@@ -33,6 +33,8 @@
 
 ### Task 2: Source/runtime rename
 - [x] Rename runtime/service/config/package/UI/storage/backup identifiers to PVNetwork equivalents.
+- [x] Version-control PVNetwork backup/restore/smoke helpers and systemd units; canonical lifecycle CLI is `pvnetwork`.
+- [x] Remove retired internal lifecycle aliases/prefixes; permit the historical token only inside the repository's actual GitHub slug.
 - [x] Switch installer release source to DashSaman/OV-PvNetwork.
 - [x] Preserve MIT copyright attribution while removing the former product brand.
 - [x] Run focused guard GREEN, full unit/governance suite, compile, lint, build, audit, JSON/shell checks.

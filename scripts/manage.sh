@@ -4,9 +4,9 @@ umask 077
 
 REPO="DashSaman/OV-PvNetwork"
 APP="/opt/pvnetwork-panel"
-STATE="/etc/ov-pvnetwork"
-BACKUPS="/var/backups/ov-pvnetwork"
-MANAGER="/usr/local/sbin/ovpv"
+STATE="/etc/pvnetwork-panel"
+BACKUPS="/var/backups/pvnetwork-panel/lifecycle"
+MANAGER="/usr/local/sbin/pvnetwork"
 COMMAND="${1:-help}"
 [[ $# -gt 0 ]] && shift || true
 
@@ -33,7 +33,7 @@ verify(){
   return 1
 }
 latest_ref(){
-  if [[ -n "${OVPV_REF:-}" ]]; then printf '%s\n' "$OVPV_REF"; return; fi
+  if [[ -n "${PVNETWORK_REF:-}" ]]; then printf '%s\n' "$PVNETWORK_REF"; return; fi
   local tag
   tag="$(curl -fsSL --connect-timeout 5 "https://api.github.com/repos/${REPO}/releases/latest" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("tag_name", ""))' 2>/dev/null || true)"
   [[ -n "$tag" ]] && printf '%s\n' "$tag" || printf 'v%s\n' "$(current_version)"
@@ -99,7 +99,7 @@ sync_source(){
     --exclude='frontend/dist/' \
     --exclude='backups/' \
     "$src/" "$APP/"
-  install -m 0755 "$APP/scripts/manage.sh" "$MANAGER"
+  "$APP/scripts/install-runtime-tools.sh"
   mkdir -p "$STATE"
   printf '%s\n' "$(cat "$APP/VERSION")" > "$STATE/version"
 }
@@ -108,7 +108,7 @@ update_install(){
   need_root; need_install; warn_external_db
   local backup tmp ref
   backup="$(make_backup | tail -1)"
-  tmp="$(mktemp -d /tmp/ovpv-update.XXXXXX)"
+  tmp="$(mktemp -d /tmp/pvnetwork-update.XXXXXX)"
   trap 'rm -rf "$tmp"' RETURN
   ref="$(latest_ref)"
   say "target release: $ref"
@@ -137,7 +137,7 @@ restore_backup(){
   build_panel
   systemctl start pvnetwork-panel.service
   verify || fail 'restored panel is unhealthy'
-  install -m 0755 "$APP/scripts/manage.sh" "$MANAGER" 2>/dev/null || true
+  "$APP/scripts/install-runtime-tools.sh"
   mkdir -p "$STATE"
   printf '%s\n' "$(cat "$APP/VERSION" 2>/dev/null || echo unknown)" > "$STATE/version"
 }
@@ -175,15 +175,15 @@ case "$COMMAND" in
     say "rollback complete: $(current_version)"
     ;;
   help|*) cat <<'EOF'
-OV-PvNetwork manager
-  ovpv status
-  ovpv doctor
-  ovpv version
-  ovpv backup
-  ovpv update
-  ovpv rollback [backup-directory]
+PVNetwork manager
+  pvnetwork status
+  pvnetwork doctor
+  pvnetwork version
+  pvnetwork backup
+  pvnetwork update
+  pvnetwork rollback [backup-directory]
 
-Set OVPV_REF=v1.1.0 (or a branch name) to target a specific update source.
+Set PVNETWORK_REF=v1.1.0 (or a branch name) to target a specific update source.
 EOF
   ;;
 esac

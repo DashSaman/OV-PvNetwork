@@ -47,7 +47,7 @@ async def get_server_information(user: dict = Depends(get_current_user)):
 
 
 # ============================================================
-# OV_DASHBOARD_AGGREGATOR_V1
+# PVNETWORK_DASHBOARD_AGGREGATOR_V1
 #
 # One dashboard request -> four concurrent node status calls.
 #
@@ -63,7 +63,7 @@ _dashboard_live_cache = {
 }
 
 
-# OV_DASHBOARD_SERVER_RATE_V2
+# PVNETWORK_DASHBOARD_SERVER_RATE_V2
 #
 # Rate calculation lives on the panel backend.
 # Each node gets its OWN sample timestamp.
@@ -183,7 +183,7 @@ async def get_dashboard_live(
         ]
     )
 
-    # OV_DASHBOARD_SERVER_RATE_PROCESS_V2
+    # PVNETWORK_DASHBOARD_SERVER_RATE_PROCESS_V2
     #
     # The UI refreshes every second, but rate is derived from
     # approximately a 3-second rolling counter window.

@@ -1,4 +1,4 @@
-# OV-PvNetwork v1.0.0 — Visual UI Guide
+# PVNetwork v1.0.0 — Visual UI Guide
 
 This guide documents the main pages, controls and operator workflows in the v1.0.0 panel.
 

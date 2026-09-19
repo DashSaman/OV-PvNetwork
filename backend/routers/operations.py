@@ -58,7 +58,7 @@ async def transfer(q:Transfer,db:Session=Depends(get_db),u:dict=Depends(get_curr
 async def audit(limit:int=Query(200,ge=1,le=500),db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u);rows=db.query(AuditLog).order_by(AuditLog.id.desc()).limit(limit).all();return ResponseModel(success=True,msg='Audit',data=[{'id':x.id,'actor':x.actor,'action':x.action,'resource':x.resource,'success':x.success,'status_code':x.status_code,'ip_address':x.ip_address,'duration_ms':x.duration_ms,'created_at':x.created_at} for x in rows])
 
-# OV_AUTOMATIC_REBALANCE_V1
+# PVNETWORK_AUTOMATIC_REBALANCE_V1
 class RebalanceRequest(BaseModel):
     execute: bool = False
     source_node_id: int | None = None

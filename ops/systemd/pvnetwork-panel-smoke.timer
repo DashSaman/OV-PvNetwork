@@ -1,0 +1,10 @@
+[Unit]
+Description=PVNetwork Panel smoke timer
+
+[Timer]
+OnBootSec=5m
+OnUnitActiveSec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

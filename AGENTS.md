@@ -88,8 +88,9 @@ Before implementation, record the task and target release here **and commit/push
 - `v1.0.4` — IN PROGRESS — `PVN-025` PVNetwork brand-purity + runtime naming migration.
   - TDD RED recorded: permanent tracked-tree brand guard found legacy source/runtime identifiers before implementation.
   - Source GREEN: zero forbidden tracked-tree identifiers; metadata consistency guard; SQLite upgrade reuse; node tunnel fallback; PVNetwork-owned runtime-path tests.
-  - Local gate: 42/42 unit/governance tests PASS; Python compile, shell/JSON syntax, uv lock, ESLint, production npm audit=0 and Vite production build PASS.
-  - Canonical runtime contract: `/opt/pvnetwork-panel`, `pvnetwork-panel.service`, PVNetwork-owned backup/push/monitoring/fleet/config identifiers.
+  - Local gate: 46/46 unit/governance tests PASS; Python compile, shell/JSON syntax, uv lock, ESLint, production npm audit=0 and Vite production build PASS.
+  - Canonical runtime contract: `/opt/pvnetwork-panel`, `pvnetwork-panel.service`, CLI `pvnetwork`, and PVNetwork-owned backup/restore/smoke/monitor/notifier/healthcheck/config identifiers.
+  - Hardened Production backup/restore/smoke helpers and all panel systemd unit/timer definitions are now version-controlled; retired internal brand aliases and prefixes are blocked by regression tests except the repository's actual GitHub slug.
   - Next: browser matrix + GitHub CI → verified Production app/PostgreSQL backup → parallel canary → atomic nginx switch → health/integration verification → release/tag/assets → mark `PVN-025` `[x]`.
 
 ## Current release baseline
@@ -119,6 +120,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 - PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
 - PVN-025 [~] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Target: v1.0.4.
+- PVN-026 [ ] User creation node selector with all available nodes selected by default; create only on selected nodes. Target: v1.0.5 after PVN-025.
 
 ## UI/UX task ledger
 

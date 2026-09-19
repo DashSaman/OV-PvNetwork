@@ -59,7 +59,7 @@ if cors_origins:
 def start_scheduler():
     """This function starts the scheduler for every 5 minutes tasks"""
     scheduler = AsyncIOScheduler()
-    # OV_FAILOPEN_EVENTLOOP_V1
+    # PVNETWORK_FAILOPEN_EVENTLOOP_V1
     # Usage sync and limit enforcement run only through
     # ov-usage-sync.timer. Do not run blocking node I/O
     # inside Uvicorn's single asyncio event loop.

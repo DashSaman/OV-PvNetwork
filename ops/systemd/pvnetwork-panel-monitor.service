@@ -1,0 +1,8 @@
+[Unit]
+Description=PVNetwork Panel Telegram monitor
+After=network-online.target pvnetwork-panel.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/pvnetwork-panel
+ExecStart=/opt/pvnetwork-panel/.venv/bin/python3 -m backend.operations.telegram_monitor

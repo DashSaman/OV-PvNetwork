@@ -5,7 +5,7 @@ umask 077
 ROOT="${1:-/opt/pvnetwork-panel}"
 [[ -d "$ROOT" ]] || { echo "panel source not found: $ROOT" >&2; exit 1; }
 STAMP="$(date -u +%Y%m%d-%H%M%S)"
-OUT="/root/ov-pvnetwork-production-export-$STAMP"
+OUT="/root/pvnetwork-production-export-$STAMP"
 STAGE="$OUT/stage"
 mkdir -p "$STAGE/panel" "$STAGE/system"
 
@@ -64,12 +64,12 @@ Path(sys.argv[2]).write_text(
 )
 PY
 
-tar -C "$STAGE" -czf "$OUT/ov-pvnetwork-production-source-$STAMP.tar.gz" .
-sha256sum "$OUT/ov-pvnetwork-production-source-$STAMP.tar.gz" > "$OUT/SHA256SUMS"
+tar -C "$STAGE" -czf "$OUT/pvnetwork-production-source-$STAMP.tar.gz" .
+sha256sum "$OUT/pvnetwork-production-source-$STAMP.tar.gz" > "$OUT/SHA256SUMS"
 rm -rf "$STAGE"
 
 echo "EXPORT_DIR=$OUT"
-echo "ARCHIVE=$OUT/ov-pvnetwork-production-source-$STAMP.tar.gz"
+echo "ARCHIVE=$OUT/pvnetwork-production-source-$STAMP.tar.gz"
 echo "SECRET_SCAN=$SCAN"
 if [[ -s "$SCAN" ]]; then
   echo 'SECRET_SCAN=REVIEW_REQUIRED'

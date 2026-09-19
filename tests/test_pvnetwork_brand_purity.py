@@ -84,6 +84,70 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
         self.assertEqual(version, frontend_lock["version"])
         self.assertEqual("pvnetwork-panel-frontend", frontend["name"])
 
+    def test_operational_helpers_and_units_are_version_controlled(self):
+        root = Path(__file__).resolve().parents[1]
+        required = [
+            "scripts/pvnetwork-panel-backup",
+            "scripts/pvnetwork-panel-restore-job",
+            "scripts/pvnetwork-panel-smoke-test",
+            "ops/systemd/pvnetwork-panel.service",
+            "ops/systemd/pvnetwork-panel-backup.service",
+            "ops/systemd/pvnetwork-panel-backup.timer",
+            "ops/systemd/pvnetwork-panel-monitor.service",
+            "ops/systemd/pvnetwork-panel-monitor.timer",
+            "ops/systemd/pvnetwork-panel-smoke.service",
+            "ops/systemd/pvnetwork-panel-smoke.timer",
+            "ops/systemd/pvnetwork-panel-user-notifier.service",
+            "ops/systemd/pvnetwork-panel-user-notifier.timer",
+            "ops/systemd/pvnetwork-panel-healthcheck.service",
+            "ops/systemd/pvnetwork-panel-healthcheck.timer",
+        ]
+        missing = [rel for rel in required if not (root / rel).is_file()]
+        self.assertEqual([], missing)
+
+    def test_lifecycle_cli_is_pvnetwork_owned(self):
+        root = Path(__file__).resolve().parents[1]
+        install = (root / "install-local.sh").read_text()
+        runtime_tools = (root / "scripts/install-runtime-tools.sh").read_text()
+        manage = (root / "scripts/manage.sh").read_text()
+        bootstrap = (root / "install.sh").read_text()
+        self.assertIn("install-runtime-tools.sh", install)
+        self.assertIn("/usr/local/sbin/pvnetwork", runtime_tools)
+        self.assertIn("/etc/pvnetwork-panel", manage)
+        self.assertIn("/var/backups/pvnetwork-panel/lifecycle", manage)
+        self.assertIn("PVNETWORK_REF", manage)
+        self.assertIn("PVNETWORK_REF", bootstrap)
+
+    def test_tracked_tree_has_no_retired_internal_brand_aliases(self):
+        root = Path(__file__).resolve().parents[1]
+        tracked = subprocess.check_output(
+            ["git", "ls-files", "-z"], cwd=root
+        ).decode().split("\0")
+        tracked = [item for item in tracked if item]
+        repo_slug = "DashSaman/" + "O" + "V-PvNetwork"
+        retired = [
+            "O" + "V-PvNetwork",
+            "o" + "v-pvnetwork",
+            "o" + "v" + "p" + "v",
+            "O" + "V" + "P" + "V" + "_",
+        ]
+        pattern = re.compile("|".join(re.escape(item) for item in retired), re.I)
+        retired_upper_prefix = "O" + "V" + "_"
+        violations = []
+        for rel in tracked:
+            path = root / rel
+            try:
+                data = path.read_bytes()
+            except OSError:
+                continue
+            if b"\0" in data:
+                continue
+            text = data.decode("utf-8", errors="ignore").replace(repo_slug, "")
+            for lineno, line in enumerate(text.splitlines(), start=1):
+                if pattern.search(line) or retired_upper_prefix in line:
+                    violations.append(f"content:{rel}:{lineno}")
+        self.assertEqual([], violations, "\n".join(violations[:200]))
+
     def test_pvnetwork_owned_runtime_contract_is_declared(self):
         root = Path(__file__).resolve().parents[1]
         install = (root / "install-local.sh").read_text()

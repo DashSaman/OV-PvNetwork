@@ -1,0 +1,10 @@
+[Unit]
+Description=PVNetwork Panel user notifier timer
+
+[Timer]
+OnBootSec=5m
+OnUnitActiveSec=30m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

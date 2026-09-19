@@ -7,7 +7,7 @@ This document separates **public RC installer coverage** from **production-deriv
 | PVNetwork release metadata | ✅ Public | Canonical version is shared by API, package and release files |
 | Pinned OV-Node base | ✅ Public | `v1.3.6` |
 | Pinned OpenVPN installer | ✅ Public | commit in `manifest.json` |
-| One-line panel installer | ✅ Public | `install.sh` + `ovpv` manager |
+| One-line panel installer | ✅ Public | `install.sh` + `pvnetwork` manager |
 | Update / backup / rollback / doctor | ✅ Public | transactional lifecycle foundation |
 | Node profile builder | ✅ Public | rebuilds valid inline `.ovpn` profiles |
 | Node NIC counters | ✅ Public helper | provided by `node_patch.py` |

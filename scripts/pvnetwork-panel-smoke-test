@@ -1,0 +1,241 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+cd /opt/pvnetwork-panel
+
+set -a
+. ./.env
+set +a
+
+PORT="${PORT:-19000}"
+URLPATH="${URLPATH:-hajsaman}"
+BASE="http://127.0.0.1:${PORT}"
+
+OPENAPI_TMP=""
+
+cleanup() {
+    if [[ -n "${OPENAPI_TMP:-}" && -f "$OPENAPI_TMP" ]]; then
+        rm -f "$OPENAPI_TMP"
+    fi
+}
+
+trap cleanup EXIT
+
+echo "PVNETWORK_SMOKE_STAGE=PYTHON_COMPILE"
+
+.venv/bin/python -m compileall -q backend
+
+echo "PVNETWORK_SMOKE_STAGE=FRONTEND"
+
+test -s frontend/dist/index.html
+
+echo "PVNETWORK_SMOKE_STAGE=CONTROL_SERVICE"
+
+systemctl is-active --quiet pvnetwork-panel.service
+
+echo "PVNETWORK_SMOKE_STAGE=ALEMBIC"
+
+cd backend
+
+mapfile -t HEADS < <(
+    ../.venv/bin/alembic \
+        -c alembic.ini heads 2>/dev/null |
+    awk '{print $1}' |
+    grep -E '^[0-9a-f]+$'
+)
+
+if [[ "${#HEADS[@]}" -ne 1 ]]; then
+    echo "ALEMBIC_HEAD_COUNT_INVALID=${#HEADS[@]}"
+    printf 'ALEMBIC_HEAD=%s\n' "${HEADS[@]:-NONE}"
+    exit 31
+fi
+
+EXPECTED_HEAD="${HEADS[0]}"
+
+CURRENT_HEAD="$(
+    ../.venv/bin/alembic \
+        -c alembic.ini current 2>/dev/null |
+    awk '/^[0-9a-f]+/{print $1; exit}'
+)"
+
+if [[ -z "$CURRENT_HEAD" ]]; then
+    echo "ALEMBIC_CURRENT_NOT_FOUND"
+    exit 32
+fi
+
+echo "ALEMBIC_EXPECTED_HEAD=$EXPECTED_HEAD"
+echo "ALEMBIC_CURRENT_HEAD=$CURRENT_HEAD"
+
+if [[ "$CURRENT_HEAD" != "$EXPECTED_HEAD" ]]; then
+    echo "ALEMBIC_NOT_AT_HEAD"
+    exit 33
+fi
+
+cd ..
+
+echo "PVNETWORK_SMOKE_STAGE=DATABASE"
+
+EXPECTED_HEAD="$EXPECTED_HEAD" \
+.venv/bin/python - <<'PY'
+import os
+from sqlalchemy import text
+from backend.db.engine import sessionLocal
+
+expected = os.environ["EXPECTED_HEAD"]
+
+db = sessionLocal()
+
+try:
+    assert db.execute(text("SELECT 1")).scalar() == 1
+
+    current = db.execute(
+        text("SELECT version_num FROM alembic_version")
+    ).scalar()
+
+    assert current == expected, (
+        f"database revision mismatch: "
+        f"current={current!r} expected={expected!r}"
+    )
+
+finally:
+    db.close()
+
+print("DATABASE=PASS")
+PY
+
+echo "PVNETWORK_SMOKE_STAGE=PANEL_HTTP"
+
+curl \
+    -fsS \
+    --connect-timeout 3 \
+    --max-time 10 \
+    "${BASE}/${URLPATH}" \
+    >/dev/null
+
+echo "PANEL_HTTP=PASS"
+
+echo "PVNETWORK_SMOKE_STAGE=OPENAPI"
+
+OPENAPI_TMP="$(mktemp /tmp/pvnetwork-openapi-XXXXXX.json)"
+
+curl \
+    -fsS \
+    --connect-timeout 3 \
+    --max-time 15 \
+    "${BASE}/openapi.json" \
+    -o "$OPENAPI_TMP"
+
+test -s "$OPENAPI_TMP"
+
+OPENAPI_FILE="$OPENAPI_TMP" \
+.venv/bin/python - <<'PY'
+import json
+import os
+from pathlib import Path
+
+path = Path(os.environ["OPENAPI_FILE"])
+
+data = json.loads(
+    path.read_text(
+        encoding="utf-8",
+        errors="strict",
+    )
+)
+
+paths = data.get("paths", {})
+
+required = {
+    "/api/server/monitoring",
+    "/api/security/",
+    "/api/security/tokens",
+    "/api/operations/dashboard",
+    "/api/operations/users/bulk",
+    "/api/operations/users/transfer",
+    "/api/operations/audit",
+}
+
+missing = required - set(paths)
+
+assert not missing, (
+    "MISSING_API_PATHS="
+    + ",".join(sorted(missing))
+)
+
+assert any(
+    p.startswith("/api/fleet")
+    for p in paths
+), "FLEET_API_MISSING"
+
+print(f"OPENAPI_PATH_COUNT={len(paths)}")
+print("OPENAPI=PASS")
+PY
+
+echo "PVNETWORK_SMOKE_STAGE=TIMERS"
+
+for timer in \
+    pvnetwork-panel-monitor.timer \
+    pvnetwork-panel-smoke.timer \
+    pvnetwork-panel-user-notifier.timer \
+    pvnetwork-panel-healthcheck.timer
+do
+    if ! systemctl is-active --quiet "$timer"; then
+        echo "TIMER_INACTIVE=$timer"
+        exit 34
+    fi
+done
+
+if awk -F= '$1=="DATABASE_URL" && $2 ~ /^postgres/{found=1} END{exit !found}' .env; then
+    systemctl is-active --quiet pvnetwork-panel-backup.timer || {
+        echo "TIMER_INACTIVE=pvnetwork-panel-backup.timer"
+        exit 34
+    }
+fi
+
+echo "TIMERS=PASS"
+
+echo "PVNETWORK_SMOKE_STAGE=RESELLER_SCHEMA"
+
+.venv/bin/python - <<'PY'
+from sqlalchemy import inspect
+from backend.db.engine import sessionLocal
+
+db = sessionLocal()
+
+try:
+    bind = db.get_bind()
+    inspector = inspect(bind)
+
+    admin_columns = {
+        column["name"]
+        for column in inspector.get_columns("admins")
+    }
+
+    required_admin_columns = {
+        "quota_total",
+        "quota_used",
+        "unlimited_quota_total",
+        "unlimited_quota_used",
+        "is_active",
+    }
+
+    missing = required_admin_columns - admin_columns
+
+    assert not missing, (
+        "RESELLER_COLUMNS_MISSING="
+        + ",".join(sorted(missing))
+    )
+
+    tables = set(inspector.get_table_names())
+
+    assert "reseller_credit_transactions" in tables, (
+        "RESELLER_LEDGER_TABLE_MISSING"
+    )
+
+finally:
+    db.close()
+
+print("RESELLER_SCHEMA=PASS")
+PY
+
+echo
+echo "PVNETWORK_SMOKE_TEST_OK"

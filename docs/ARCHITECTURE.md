@@ -6,7 +6,7 @@ The panel is the source of configuration truth for users, nodes and subscription
 
 ## Data plane
 
-OpenVPN runs on each node. OV-PvNetwork intentionally separates control-plane restarts from the OpenVPN data plane; routine user/profile operations should not restart OpenVPN.
+OpenVPN runs on each node. PVNetwork intentionally separates control-plane restarts from the OpenVPN data plane; routine user/profile operations should not restart OpenVPN.
 
 ## Desired state and reconciliation
 

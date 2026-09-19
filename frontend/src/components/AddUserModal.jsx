@@ -9,8 +9,8 @@ const AddUserModal = ({
   userRole,
   anyConnectDefaultEnabled = false
 }) => {
-  // OV_DURATION_UI_V8
-  // OV_RESELLER_DURATION_MAX6_V8_1
+  // PVNETWORK_DURATION_UI_V8
+  // PVNETWORK_RESELLER_DURATION_MAX6_V8_1
   const effectiveRole = userRole || localStorage.getItem('userRole') || '';
   const isReseller = effectiveRole === 'admin';
   const isMainAdmin = effectiveRole === 'main_admin';

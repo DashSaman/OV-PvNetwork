@@ -10,7 +10,7 @@ class ResponseModel(BaseModel):
 
 
 class Users(BaseModel):
-    # OV_USER_SORT_ID_V2
+    # PVNETWORK_USER_SORT_ID_V2
     id: int
     name: str
     is_active: bool

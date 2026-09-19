@@ -17,4 +17,4 @@ Please avoid publishing live credentials, private keys, VPN profiles, API keys o
 
 ## Update safety
 
-Back up before upgrades and validate local API health before considering an update successful. OV-PvNetwork intentionally avoids routine OpenVPN restarts during control-plane maintenance.
+Back up before upgrades and validate local API health before considering an update successful. PVNetwork intentionally avoids routine OpenVPN restarts during control-plane maintenance.

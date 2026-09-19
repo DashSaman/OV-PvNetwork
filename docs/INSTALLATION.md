@@ -55,10 +55,10 @@ Expose only the ports you actually use. A normal Internet-facing deployment shou
 ## After installation
 
 ```bash
-ovpv status
-ovpv doctor
-ovpv version
-ovpv backup
+pvnetwork status
+pvnetwork doctor
+pvnetwork version
+pvnetwork backup
 ```
 
 ## Responsive admin UI

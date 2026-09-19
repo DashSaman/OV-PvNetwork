@@ -53,7 +53,7 @@ def _finite_total(value):
 
 
 def _add_calendar_months(start: date, months: int) -> date:
-    # OV_RESELLER_EXPIRY_MONTHS_LOCK_V1
+    # PVNETWORK_RESELLER_EXPIRY_MONTHS_LOCK_V1
     months = int(months)
     if months < 1 or months > 120:
         raise HTTPException(
@@ -71,7 +71,7 @@ def _change_reseller_entitlements(
     db: Session, username: str, *, traffic_delta: int = 0,
     unlimited_delta: int = 0, action: str, user_uuid=None, note=None,
 ):
-    # OV_RESELLER_UNLIMITED_SLOTS_V2
+    # PVNETWORK_RESELLER_UNLIMITED_SLOTS_V2
     admin = db.query(Admin).filter(Admin.username == username).with_for_update().first()
     if not admin or not admin.is_active:
         raise HTTPException(status_code=403, detail="Reseller account is disabled")
@@ -291,7 +291,7 @@ async def create_user(
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
-    # OV_USERNAME_REUSE_V7
+    # PVNETWORK_USERNAME_REUSE_V7
     normalized_name = request.name.strip().replace(" ", "_")
     request.name = normalized_name
     check_user = (
@@ -306,8 +306,8 @@ async def create_user(
             data=None,
         )
 
-    # OV_DURATION_POLICY_V8
-    # OV_RESELLER_DURATION_MAX6_V8_1
+    # PVNETWORK_DURATION_POLICY_V8
+    # PVNETWORK_RESELLER_DURATION_MAX6_V8_1
     total = _finite_total(request.total)
 
     if user["type"] == "admin":
@@ -569,7 +569,7 @@ async def change_user_status(
 async def delete_user(
     uuid: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)
 ):
-    # OV_DELETE_USER_REUSE_V7
+    # PVNETWORK_DELETE_USER_REUSE_V7
     target = _owned_user_or_404(db, uuid, user)
     total = _finite_total(target.total)
 

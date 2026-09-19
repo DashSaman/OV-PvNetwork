@@ -1,6 +1,6 @@
-# OV-PvNetwork v1.0.0
+# PVNetwork v1.0.0
 
-Stable public baseline for the production-derived OV-PvNetwork control plane.
+Stable public baseline for the production-derived PVNetwork control plane.
 
 ## Highlights
 

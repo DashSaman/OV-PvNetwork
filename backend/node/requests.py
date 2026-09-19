@@ -1,6 +1,6 @@
 import requests
 
-# OV_FAILOPEN_EVENTLOOP_V1
+# PVNETWORK_FAILOPEN_EVENTLOOP_V1
 from fastapi.responses import Response
 from backend.logger import logger
 
@@ -173,7 +173,7 @@ class NodeRequests:
             return False
 
     # ========================================================
-    # OV_EMERGENCY_BANDWIDTH_CONTROL_V1
+    # PVNETWORK_EMERGENCY_BANDWIDTH_CONTROL_V1
     # ========================================================
 
     def _bandwidth_call(self, method: str, path: str, payload: dict | None = None) -> dict:

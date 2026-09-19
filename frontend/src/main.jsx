@@ -8,7 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import './i18n';
 
-// OV_THEME_BOOT_V2
+// PVNETWORK_THEME_BOOT_V2
 try {
   const saved =
     window.localStorage.getItem(

@@ -103,7 +103,7 @@ Compatibility-preserving UI/UX, responsive and project-governance hardening rele
 
 ## 1.0.0 — 2026-09-19
 
-First stable public baseline of OV-PvNetwork.
+First stable public baseline of PVNetwork.
 
 ### User lifecycle
 - Expired-user renewal without delete/recreate.

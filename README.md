@@ -108,12 +108,12 @@ The installer uses the tagged release source instead of following an unpinned de
 After installation, use the lifecycle manager where supported by the deployment:
 
 ```bash
-ovpv status
-ovpv doctor
-ovpv version
-ovpv backup
-ovpv update
-ovpv rollback
+pvnetwork status
+pvnetwork doctor
+pvnetwork version
+pvnetwork backup
+pvnetwork update
+pvnetwork rollback
 ```
 
 For a production server that already has a legacy panel deployment or other services, do **not** run the fresh installer blindly. Review the update/migration path, create a backup and verify the current service health first.
@@ -194,4 +194,4 @@ See [SECURITY.md](./SECURITY.md) for reporting and deployment guidance.
 
 ## Credits
 
-OV-PvNetwork is derived from and interoperates with the MIT-licensed PVNetwork Panel / OV-Node projects by PrimeZ. Upstream attribution is preserved in [NOTICE.md](./NOTICE.md) and [LICENSE](./LICENSE).
+PVNetwork includes modifications derived from an MIT-licensed panel foundation and interoperates with the `primeZdev/ov-node` node component. Required attribution is preserved in [NOTICE.md](./NOTICE.md) and [LICENSE](./LICENSE).
