@@ -24,10 +24,26 @@
 12. Applicable competitor gaps discovered in Marzban, 3X-UI, Hiddify, Remnawave, OpenVPN Access Server, Pritunl or similar panels must be recorded in the numbered registry and `docs/COMPETITOR-GAP-MATRIX.md`.
 13. Every release must put a concise bilingual “what changed vs previous release” summary near the top of both README files before the long feature tour.
 14. Independent read-only analysis, tests and documentation may run in parallel to reduce elapsed time. Production mutations, migrations, restarts and rollback-sensitive steps must stay serialized.
+15. **GitHub-only completion is forbidden for Production-visible work.** When the human owner has authorized deployment, the exact tested release must also be applied to the authorized live Production host before the task can become `[x]`.
+16. Before every Production-visible deployment, perform read-only preflight/health checks and create a verified rollback point: application/runtime backup plus a database-native backup when a database is involved. Record the rollback path before mutation.
+17. Deploy only the files/build required by the tested commit. Preserve runtime `.env`, database state, certificates, node credentials, routing, firewall and unrelated host state. Never replace the live tree wholesale for convenience.
+18. Backend changes may restart only `ov-panel.service` when required. Frontend-only changes should use an atomic asset/index switch and should not restart the backend unless technically necessary. Never restart VPN nodes, tunnels or unrelated services for a panel UI/backend release.
+19. After deployment, verify local and public health, the changed endpoint/workflow, database readability, service restart count/state, post-deploy 5xx/traceback errors and critical integrations. If a required check fails, rollback immediately to the recorded pre-deploy state before further experimentation.
+20. Production evidence must be written back into the active task ledger: deployed version/commit, backup verification, health result, rollback readiness and any restart/outage observed. A task remains `[~]` until this evidence exists.
+
+## Production deployment contract — owner-authorized live server
+
+For this project, the live panel checkout is expected at `/opt/ov-panel` on the authorized Production server/session provided by the human owner. Treat it as runtime state, not as a development checkout. Development and release preparation stay in an isolated Git worktree; only the verified artifact/required files move to `/opt/ov-panel`.
+
+Required order for every approved Production-visible release:
+
+`read-only preflight → verified app + DB backup → rollback path recorded → narrow deploy → smallest required restart/atomic frontend switch → local health → public health → changed-workflow regression → log/integration checks → ledger evidence`
+
+If any post-deploy gate fails, restore the pre-deploy application state and database state when applicable, restart only the panel if necessary, verify health, and keep the task open. Do not continue stacking fixes on an unhealthy Production state.
 
 ## Definition of Done
 
-A task is DONE only when all applicable gates pass: acceptance criteria; focused tests; regression tests; frontend production build/backend compile; responsive matrix; accessibility/touch/keyboard checks; RTL/LTR; light/dark; loading/empty/error states; backup and rollback readiness for Production; sanitized public repository; changelog/docs; final health check.
+A task is DONE only when all applicable gates pass: acceptance criteria; focused tests; regression tests; frontend production build/backend compile; responsive matrix; accessibility/touch/keyboard checks; RTL/LTR; light/dark; loading/empty/error states; **owner-authorized Production deployment for every Production-visible task**; verified backup and rollback readiness; local/public post-deploy health and changed-workflow verification; sanitized public repository; changelog/docs; final health check.
 
 ## Responsive acceptance matrix
 
@@ -93,6 +109,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-021 [x] Parallelize independent research/tests/docs when safe; never run concurrent Production mutations or restarts.
 - PVN-022 [ ] Safe multi-node username rename with profile migration, rollback and no silent certificate breakage.
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
+- PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
 
 ## UI/UX task ledger
 
