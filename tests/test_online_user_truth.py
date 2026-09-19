@@ -84,6 +84,8 @@ class OnlineUserTruthTests(unittest.TestCase):
         self.assertNotIn("db.add(ActiveSession", live_presence)
         self.assertNotIn("db.merge(ActiveSession", live_presence)
         self.assertIn("def get_users_usage(self, timeout=", requests_source)
+        workflow = (ROOT / ".github/workflows/ci.yml").read_text()
+        self.assertIn("node tests/online-user-truth-smoke.mjs", workflow)
 
 
 class OnlineUserTruthAsyncTests(unittest.IsolatedAsyncioTestCase):

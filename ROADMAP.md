@@ -20,11 +20,18 @@
 ### v1.0.3
 - Inline user Quick Edit and safe multi-node assignment behavior (`PVN-205`).
 
+### v1.0.4
+- Complete PVNetwork-owned source/runtime namespace and release-engineering guard (`PVN-025`).
+
+### v1.0.5
+- Add User node selector with explicit assignment authority and no silent new-node widening (`PVN-026`).
+
 ## Sequential patch queue
 
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
-- **v1.0.4 — IN PROGRESS:** `PVN-025`, PVNetwork brand purity and runtime naming ownership.
+- **v1.0.6 — IN PROGRESS:** `PVN-027`, one consistent unique-user online truth across Dashboard and Users with a display-only direct-node fallback when central session hooks are missing/stale.
+- The fallback does not synthesize enforcement sessions or alter device-limit semantics; raw per-node metrics remain separately visible.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 
