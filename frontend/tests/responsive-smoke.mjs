@@ -111,7 +111,7 @@ for (const language of languages) {
     await context.addInitScript(({ token, language }) => {
       localStorage.setItem('authToken', token);
       localStorage.setItem('userRole', 'main_admin');
-      localStorage.setItem('i18nextLng', language);
+      localStorage.setItem('ovpanel_language', language);
     }, { token: demoToken(), language });
 
     const page = await context.newPage();
@@ -136,8 +136,13 @@ for (const language of languages) {
           innerWidth: window.innerWidth,
           bodyText: document.body.innerText.slice(0, 500),
           hasRootContent: Boolean(document.querySelector('#root')?.children.length),
+          dir: document.documentElement.dir,
+          lang: document.documentElement.lang,
         }));
         if (!metrics.hasRootContent) failures.push(`${language} ${width}px ${route}: React root not rendered`);
+        const expectedDir = language === 'fa' ? 'rtl' : 'ltr';
+        if (metrics.dir !== expectedDir) failures.push(`${language} ${width}px ${route}: dir=${metrics.dir}, expected ${expectedDir}`);
+        if (!String(metrics.lang || '').toLowerCase().startsWith(language)) failures.push(`${language} ${width}px ${route}: lang=${metrics.lang}`);
         if (metrics.scrollWidth > metrics.innerWidth + 1) {
           failures.push(`${language} ${width}px ${route}: horizontal overflow ${metrics.scrollWidth}>${metrics.innerWidth}`);
         }
@@ -212,7 +217,7 @@ for (const language of languages) {
         await closeLastModal(page);
 
         await trigger.click();
-        await page.getByRole('menuitem', { name: /edit|ویرایش$/i }).click();
+        await page.getByRole('menuitem', { name: /^(Edit|ویرایش)$/i }).click();
         await assertModalInsideViewport(page, `${language} ${width}px Edit User`, width, 820);
         await closeLastModal(page);
 
@@ -245,7 +250,7 @@ for (const language of languages) {
     const context = await browser.newContext({ viewport: { width, height: width <= 430 ? 820 : 900 } });
     await context.addInitScript(language => {
       localStorage.clear();
-      localStorage.setItem('i18nextLng', language);
+      localStorage.setItem('ovpanel_language', language);
     }, language);
     const page = await context.newPage();
     try {

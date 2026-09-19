@@ -60,6 +60,16 @@ UUID، Username و Assignmentهای کاربر هنگام Renew حفظ می‌ش
 
 منوی سه‌نقطه عملیات اصلی را یکجا در اختیار ادمین قرار می‌دهد و عملیات مخرب از عملیات روزمره جدا شده‌اند.
 
+### Quick Edit داخل ردیف — v1.0.3
+
+![Quick Edit دسکتاپ](./images/v1.0.3/fa/desktop/users-inline-quick-edit.png)
+
+![Quick Edit موبایل](./images/v1.0.3/fa/mobile/users-inline-quick-edit.png)
+
+برای تغییرات پرتکرار از **ویرایش سریع** استفاده کنید. حجم، تاریخ انقضا در حالت‌هایی که Policy اجازه می‌دهد، تعداد اتصال هم‌زمان، وضعیت Active، Node Assignment و Reset Usage در یک پنل قابل کنترل‌اند. روی موبایل/تبلت، Quick Edit از عرض ثابت جدول جدا و به پنل تمام‌عرض تبدیل می‌شود تا Nodeها و دکمه‌های Apply/Cancel/Reset همیشه قابل دسترس باشند. Username فعلاً Read-only است چون تغییر آن نام Client/Profile روی نودها را هم عوض می‌کند؛ Rename امن در `PVN-022` جداگانه پیاده‌سازی خواهد شد.
+
+در تغییر Assignment رفتار محافظه‌کارانه است: حذف نود از Assignment فقط Profile را Deactivate می‌کند و Certificate را حذف نمی‌کند؛ هنگام اضافه‌کردن دوباره، پروفایل غیرفعال قبلی در صورت امکان Reuse می‌شود؛ نود جدیدی که Offline/Drain/Maintenance باشد قبل از Mutation رد می‌شود.
+
 ### تمدید کاربر
 
 ![Renew User](./images/ui/workflow-renew-user.jpg)

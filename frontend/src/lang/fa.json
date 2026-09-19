@@ -442,7 +442,11 @@
   "quickEditDeviceHint": "۰ = بدون محدودیت اتصال همزمان",
   "quickEditNodes": "نودهای اختصاص داده‌شده",
   "quickEditNodeUnavailable": "غیرقابل‌دسترس",
-  "quickEditResetQueued": "Reset Usage هنگام Apply ✓",
+  "quickEditResetQueued": "بازنشانی مصرف هنگام اعمال ✓",
   "quickEditApply": "اعمال",
-  "quickEditSavedPendingNodes": "تغییرات ذخیره شد؛ ساخت کاربر روی بعضی نودهای جدید در انتظار Reconcile است."
+  "quickEditSavedPendingNodes": "تغییرات ذخیره شد؛ ساخت کاربر روی بعضی نودهای جدید در انتظار Reconcile است.",
+  "disabled": "خاموش",
+  "anyConnectDefaultNewUsers": "AnyConnect پیش‌فرض کاربران جدید",
+  "anyConnectManage": "مدیریت AnyConnect",
+  "anyConnectEnabledGenerated": "AnyConnect برای {{name}} فعال شد. رمز ساخته‌شده در صفحه اشتراک و بخش مدیریت AnyConnect قابل مشاهده است."
 }

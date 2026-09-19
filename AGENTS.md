@@ -61,10 +61,13 @@ Before implementation, record the task and target release here **and commit/push
   - Requested UX: expand a user row for fast edit of traffic limit, expiry, max devices, active state, node assignment, Reset Usage, Apply and Cancel.
   - Username is intentionally read-only in this patch: safe multi-node rename is tracked separately as `PVN-022`.
   - TDD RED: all 7 inline-edit contract tests failed before implementation.
-  - GREEN checkpoint: 7/7 inline-edit contract tests PASS; 3/3 safe assignment behavior tests PASS.
+  - GREEN checkpoint: 8/8 inline-edit contract tests PASS; 3/3 safe assignment behavior tests PASS; full suite 37/37 PASS.
   - Assignment removal deactivates instead of deleting profiles; stale disabled profiles are re-used when possible; unavailable new nodes are rejected before mutation.
-  - Desktop/tablet/mobile must keep all controls reachable; mobile reflows fields and node controls.
-  - Next: browser regression/interaction smoke → sanitized FA/EN screenshots/docs → full release gates → backup → narrow Production deploy → health → merge/tag/release.
+  - Browser checkpoint: focused Quick Edit smoke PASS in EN/FA at 360/390/768/1440; full responsive matrix PASS for 2 languages × 9 widths × 9 routes; Subscription responsive smoke remains PASS.
+  - QA correction: browser tests now use the real `ovpanel_language` key and assert FA=`rtl`, EN=`ltr`.
+  - Sanitized FA/EN desktop/mobile Quick Edit screenshots and bilingual release/UI documentation generated and visually checked.
+  - Local release gate PASS: Python compile, 37 tests, shell/JSON syntax, ESLint, npm audit=0 vulnerabilities, Vite production build, JS bundle 731617 bytes, private-material and Production-identifier guards.
+  - Next: push final source/docs + CI workflow → GitHub CI success → verified Production backup → narrow deploy → health/regression → merge/tag/release/assets → mark PVN-205 `[x]`.
 
 ## Current release baseline
 

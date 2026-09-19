@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiCopy } from 'react-icons/fi';
 import ActionsDropdown from './ActionsDropdown';
@@ -27,6 +27,20 @@ const UserTable = ({
     t
   } = useTranslation();
   const [expandedUserUuid, setExpandedUserUuid] = useState('');
+  const [compactQuickEdit, setCompactQuickEdit] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(max-width: 992px)').matches
+      : false
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const media = window.matchMedia('(max-width: 992px)');
+    const sync = event => setCompactQuickEdit(event.matches);
+    setCompactQuickEdit(media.matches);
+    media.addEventListener?.('change', sync);
+    return () => media.removeEventListener?.('change', sync);
+  }, []);
   const formatTrafficGB = bytes => {
     if (bytes === null || bytes === undefined) {
       return '-';
@@ -204,7 +218,7 @@ const UserTable = ({
                       fontSize: '11px',
                       color: user.anyconnect_enabled ? '#4ade80' : '#94a3b8'
                     }}>
-                      {user.anyconnect_enabled ? 'فعال' : 'خاموش'}
+                      {user.anyconnect_enabled ? t('enabled', 'Enabled') : t('disabled', 'Disabled')}
                     </span>
                   </label>
                 </td>
@@ -283,7 +297,7 @@ const UserTable = ({
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    title="مدیریت AnyConnect"
+                    title={t('anyConnectManage', 'Manage AnyConnect')}
                     onClick={() => onAnyConnect && onAnyConnect(user)}
                     style={{
                       padding: '5px 9px',
@@ -312,7 +326,7 @@ const UserTable = ({
                 </td>
 
               </tr>
-              {expandedUserUuid === user.uuid && <tr className="user-quick-edit-row">
+              {expandedUserUuid === user.uuid && !compactQuickEdit && <tr className="user-quick-edit-row desktop-user-quick-edit-row">
                 <td colSpan="9">
                   <InlineUserQuickEdit
                     user={user}
@@ -328,6 +342,21 @@ const UserTable = ({
         </tbody>
 
       </table>
+
+      {expandedUserUuid && compactQuickEdit && (() => {
+        const expandedUser = users.find(item => item.uuid === expandedUserUuid);
+        return expandedUser ? (
+          <div className="mobile-user-quick-edit-panel">
+            <InlineUserQuickEdit
+              user={expandedUser}
+              nodes={availableNodes}
+              userRole={userRole}
+              onSave={onQuickSave}
+              onCancel={() => setExpandedUserUuid('')}
+            />
+          </div>
+        ) : null;
+      })()}
 
     </div>;
 };

@@ -444,5 +444,9 @@
   "quickEditNodeUnavailable": "Unavailable",
   "quickEditResetQueued": "Reset Usage on Apply ✓",
   "quickEditApply": "Apply",
-  "quickEditSavedPendingNodes": "Changes saved. Some newly assigned nodes are pending reconciliation."
+  "quickEditSavedPendingNodes": "Changes saved. Some newly assigned nodes are pending reconciliation.",
+  "disabled": "Disabled",
+  "anyConnectDefaultNewUsers": "AnyConnect default for new users",
+  "anyConnectManage": "Manage AnyConnect",
+  "anyConnectEnabledGenerated": "AnyConnect was enabled for {{name}}. The generated password is available in the subscription page and AnyConnect management."
 }

@@ -12,9 +12,15 @@
 
 ## تغییرات v1.0.3 نسبت به v1.0.2
 
-> **در حال توسعه — PVN-205.** در صفحه Users یک ویرایشگر سریع داخل همان ردیف اضافه می‌شود تا بدون بازکردن Modal جدا بتوان Username، حجم، تاریخ انقضا، Device Limit، وضعیت Active و Node Assignment را تغییر داد و Reset Usage / Apply / Cancel را همان‌جا انجام داد. این Workflow برای دسکتاپ، تبلت، موبایل، فارسی RTL و انگلیسی LTR تست می‌شود.
+**PVN-205 — ویرایش سریع داخل ردیف کاربر.** از منوی عملیات Users می‌توان Quick Edit را باز کرد و بدون رفتن به Modal کامل، حجم، تاریخ انقضا در حالت‌های مجاز، تعداد اتصال هم‌زمان، وضعیت فعال/غیرفعال، Node Assignment و Reset Usage را بررسی و اعمال کرد. Username عمداً Read-only است تا زمانی که Rename امن چندنودی در `PVN-022` پیاده‌سازی شود.
 
-آخرین نسخه منتشرشده: **v1.0.2** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.2)
+![Quick Edit دسکتاپ v1.0.3](./docs/images/v1.0.3/fa/desktop/users-inline-quick-edit.png)
+
+![Quick Edit موبایل v1.0.3](./docs/images/v1.0.3/fa/mobile/users-inline-quick-edit.png)
+
+تغییر Assignment با Guard امن انجام می‌شود: نود حذف‌شده از Assignment به‌جای حذف Certificate فقط Deactivate می‌شود، پروفایل غیرفعال قدیمی در صورت امکان دوباره استفاده می‌شود و نود جدیدِ غیرقابل‌دسترس قبل از Mutation رد می‌شود. Sync وضعیت و ویرایش فقط روی نودهای Assigned انجام می‌شود. تست Browser واقعی برای فارسی RTL و انگلیسی LTR روی موبایل، تبلت و دسکتاپ اجرا می‌شود.
+
+آخرین Release: **v1.0.3** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.3)
 
 PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
 
@@ -58,7 +64,7 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 
 | بخش | امکانات اصلی |
 |---|---|
-| کاربران | ساخت، ویرایش، فعال/غیرفعال، حذف، تمدید، Reset Usage، دانلود پروفایل و لینک اشتراک |
+| کاربران | ساخت، ویرایش کامل، Quick Edit داخل ردیف، فعال/غیرفعال، حذف، تمدید، Reset Usage، Node Assignment، دانلود پروفایل و لینک اشتراک |
 | تمدید | تمدید کاربر Expired بدون حذف، تمدید نامحدود، حالت‌های حفظ/ریست/افزایش حجم |
 | AnyConnect | فعال/غیرفعال برای هر کاربر، ساخت یا تغییر رمز، هویت مشترک کاربر |
 | نودها | افزودن و ویرایش نود، Health، Assignment، حذف کنترل‌شده |
@@ -84,7 +90,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.2/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.3/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

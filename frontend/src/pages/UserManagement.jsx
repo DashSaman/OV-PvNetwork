@@ -407,7 +407,7 @@ const UserManagement = () => {
       ));
       if (data.password_generated) {
         window.alert(
-          `AnyConnect برای ${user.name} فعال شد. رمز تصادفی در صفحه اشتراک و بخش مدیریت AnyConnect قابل مشاهده است.`
+          t('anyConnectEnabledGenerated', 'AnyConnect was enabled for {{name}}. The generated password is available in the subscription page and AnyConnect management.', { name: user.name })
         );
       }
     } catch (exception) {
@@ -572,7 +572,7 @@ const UserManagement = () => {
               checked={Boolean(anyConnectSettings.default_enabled)}
               onChange={handleAnyConnectDefaultChange}
             />
-            <span>AnyConnect پیش‌فرض کاربران جدید</span>
+            <span>{t('anyConnectDefaultNewUsers', 'AnyConnect default for new users')}</span>
           </label>}
           <button onClick={() => setIsAddModalOpen(true)} className="btn">{t('addNewUser')}</button>
         </div>

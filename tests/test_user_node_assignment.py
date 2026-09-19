@@ -1,3 +1,10 @@
+import os
+
+# Public CI-only defaults; never use Production credentials in tests.
+os.environ.setdefault("ADMIN_USERNAME", "ci-admin")
+os.environ.setdefault("ADMIN_PASSWORD", "ci-password-not-production")
+os.environ.setdefault("JWT_SECRET_KEY", "ci-jwt-secret-not-production-32chars")
+
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch

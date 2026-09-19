@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.0.3 — 2026-09-19
+
+Inline user quick-edit and assignment-safety patch.
+
+### User management
+- Added expandable Quick Edit from each user row for traffic quota, expiry where policy permits, device limit, active state, assigned nodes and queued Reset Usage.
+- Kept username read-only; safe multi-node rename is tracked separately as `PVN-022`.
+- User list responses now expose effective `node_ids`, including backward-compatible legacy all-node assignments.
+
+### Multi-node safety
+- Added guarded assignment replacement: removals deactivate instead of deleting profiles/certificates.
+- Re-adding a stale disabled profile attempts safe reuse before generating anything new.
+- Newly assigned offline/draining/maintenance nodes are rejected before mutation.
+- Normal user edits and status changes synchronize only assigned nodes.
+
+### Responsive / QA
+- Quick Edit reflows outside the wide management table on <=992px layouts and keeps primary actions at a 44px touch floor.
+- Added focused Quick Edit browser smoke in English/Persian at phone/tablet/desktop widths.
+- Corrected the browser-test language key to the real `ovpanel_language`, so RTL/LTR checks now exercise the actual application language.
+- Added sanitized English/Persian desktop/mobile Quick Edit screenshots.
+
+### Compatibility
+- No database migration.
+- No intended firewall, routing, tunnel, certificate rotation or unrelated-service changes.
+
+
 ## 1.0.2 — 2026-09-19
 
 Subscription-page mobile usability patch.

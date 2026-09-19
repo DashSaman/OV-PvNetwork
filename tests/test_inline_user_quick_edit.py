@@ -48,6 +48,14 @@ class InlineUserQuickEditContractTests(unittest.TestCase):
         self.assertIn('@router.put("/{uuid}/nodes"', users)
         self.assertIn("replace_user_node_assignments", users)
 
+    def test_normal_user_update_sync_is_assignment_aware(self):
+        users = (ROOT / "backend/routers/users.py").read_text(encoding="utf-8")
+        start = users.index('@router.put("/{uuid}", response_model=ResponseModel)')
+        end = users.index('@router.post("/{uuid}/renew"', start)
+        section = users[start:end]
+        self.assertIn("change_user_status_on_assigned_nodes", section)
+        self.assertNotIn("change_user_status_on_all_nodes", section)
+
     def test_status_sync_is_assignment_aware(self):
         users = (ROOT / "backend/routers/users.py").read_text(encoding="utf-8")
         start = users.index('@router.put("/{uuid}/status"')
