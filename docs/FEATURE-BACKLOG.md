@@ -21,6 +21,8 @@
 - PVN-017 Per-release public-data/secret/forbidden-file scan
 - PVN-018 Per-release artifact + SHA256 publish/verification
 - PVN-019 Active Roadmap/release-policy consistency with sequential 1.0.x model
+- PVN-020 Bilingual README “what changed vs previous release” block for every release
+- PVN-021 Safe parallel execution policy for independent non-Production work
 
 `AGENTS.md` defines the execution contract. This file is the readable numbered capability registry. IDs are permanent; do not renumber or reuse them. Completion requires the Definition of Done in `AGENTS.md` and the release gate in `docs/QA-RELEASE-GATE.md`.
 
@@ -134,7 +136,7 @@
 - PVN-202 Multi-stage expiry notifications
 - PVN-203 Configurable traffic-threshold notifications
 - PVN-204 Improved self-service user portal
-- PVN-205 User profile/details page
+- PVN-205 User profile/details page + inline quick-edit row
 - PVN-206 Per-user device inventory
 - PVN-207 Revoke device/session
 - PVN-208 HWID/device-limit mode

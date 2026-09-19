@@ -4,11 +4,17 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.2-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.3-orange?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.3 نسبت به v1.0.2
+
+> **در حال توسعه — PVN-205.** در صفحه Users یک ویرایشگر سریع داخل همان ردیف اضافه می‌شود تا بدون بازکردن Modal جدا بتوان Username، حجم، تاریخ انقضا، Device Limit، وضعیت Active و Node Assignment را تغییر داد و Reset Usage / Apply / Cancel را همان‌جا انجام داد. این Workflow برای دسکتاپ، تبلت، موبایل، فارسی RTL و انگلیسی LTR تست می‌شود.
+
+آخرین نسخه منتشرشده: **v1.0.2** — [مشاهده Release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.2)
 
 PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکانات لازم برای استفاده واقعی چندنودی را اضافه می‌کند: مدیریت کاربران، تمدید، AnyConnect، سلامت نودها، مانیتورینگ، امنیت پنل، عملیات گروهی، کنترل پهنای‌باند، بکاپ/بازیابی و ابزارهای نصب و به‌روزرسانی امن‌تر.
 
@@ -29,8 +35,6 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 ![مدیریت پیشرفته، مانیتورینگ و پهنای‌باند](./docs/images/ui/03-operations.jpg)
 
 
-### نمونه واقعی نسخه 1.1 در دسکتاپ و موبایل
-
 ### تصویر Subscription در v1.0.2
 
 ![Subscription دسکتاپ v1.0.2](./docs/images/v1.0.2/fa/desktop/subscription.png)
@@ -46,7 +50,7 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 مستندات تصویری کامل:
 
 - [راهنمای کامل تصویری فارسی](./docs/UI-GUIDE.fa.md)
-- [راهنمای Responsive و Accessibility نسخه 1.1](./docs/RESPONSIVE-GUIDE.fa.md)
+- [راهنمای Responsive و Accessibility نسخه 1.0.x](./docs/RESPONSIVE-GUIDE.fa.md)
 - [Complete English UI guide](./docs/UI-GUIDE.md)
 - [English responsive & accessibility guide](./docs/RESPONSIVE-GUIDE.md)
 
@@ -65,9 +69,9 @@ PVNetwork Panel بر پایه OV-Panel / OV-Node ساخته شده و امکان
 | پهنای‌باند | Emergency Off، Preview/Canary/Activate Policy، گروه‌ها و وضعیت نودها |
 | بکاپ | ساخت و دانلود بکاپ تأییدشده و Restore با تأیید صریح |
 | Integration | API میرزا، API نود OpenVPN و Hookهای اختیاری AnyConnect/ocserv |
-| UX نسخه 1.1 | منوی کامل موبایل Main Admin، Modalهای Viewport-safe، Touch/Focus/Reduced-motion و تست Browser برای RTL/LTR |
+| UX نسخه 1.0.x | منوی کامل موبایل Main Admin، Modalهای Viewport-safe، Touch/Focus/Reduced-motion و تست Browser برای RTL/LTR |
 
-## رفتار Responsive نسخه 1.1
+## رفتار Responsive نسخه 1.0.x
 
 در موبایل Dashboard، Users و Nodes مستقیم در Bottom Navigation هستند و بخش‌های Admins، Operations، Security، Fleet، Monitoring و Bandwidth از منوی **More** در دسترس‌اند. بنابراین هیچ بخش اصلی Main Admin فقط به Sidebar دسکتاپ وابسته نیست.
 

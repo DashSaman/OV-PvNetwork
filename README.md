@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.2-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.3-orange?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 [![Upstream](https://img.shields.io/badge/upstream-OV--Panel-blue?style=flat-square)](https://github.com/primeZdev/ov-panel)
@@ -12,6 +12,12 @@
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changes in v1.0.3 vs v1.0.2
+
+> **In development — PVN-205.** The Users screen gains an expandable inline quick editor so common edits can be made without opening a separate full modal: username, traffic limit, expiry, device limit, active state and node assignment, with Reset Usage plus Apply/Cancel. The workflow is being built and tested for desktop, tablet, phone, Persian RTL and English LTR.
+
+Latest released version: **v1.0.2**. See the [v1.0.2 release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.2).
 
 PVNetwork Panel is a production-derived distribution and operations layer built on the open-source OV-Panel / OV-Node ecosystem. It keeps the simple OpenVPN user workflow while adding multi-node operations, renewal, AnyConnect integration, monitoring, security controls, backup/restore, health scoring, traffic controls and safer deployment tooling.
 
