@@ -82,6 +82,21 @@ class SecurityHardeningContractTests(unittest.TestCase):
         self.assertIn("set_new_setting", healthcheck)
         self.assertNotIn("/openapi.json", healthcheck)
 
+    def test_firewall_confirm_and_rollback_cli_consume_backup_path(self):
+        import subprocess
+
+        script = str(ROOT / "scripts/pvnetwork-firewall-hardening")
+        for mode in ("--confirm", "--rollback"):
+            result = subprocess.run(
+                ["bash", script, mode, "/tmp/pvnetwork-nonexistent-backup"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 2, result.stdout)
+            self.assertNotIn("Unknown argument", result.stdout)
+
     def test_firewall_hardening_is_inventory_first_and_reversible(self):
         body = text("scripts/pvnetwork-firewall-hardening")
         self.assertIn("--inventory", body)

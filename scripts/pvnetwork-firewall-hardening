@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-MODE="${1:---inventory}"
-shift || true
+MODE="--inventory"
 BACKUP_ROOT="${PVNETWORK_FIREWALL_BACKUP_ROOT:-/var/backups/pvnetwork-panel/firewall}"
 TCP_PORTS=""
 UDP_PORTS=""
@@ -23,6 +22,7 @@ EOF
 
 while (($#)); do
   case "$1" in
+    --inventory|--apply) MODE="$1"; shift ;;
     --tcp) TCP_PORTS="${2:-}"; shift 2 ;;
     --udp) UDP_PORTS="${2:-}"; shift 2 ;;
     --rollback-after) ROLLBACK_AFTER="${2:-}"; shift 2 ;;
