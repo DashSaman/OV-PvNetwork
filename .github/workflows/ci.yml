@@ -42,7 +42,7 @@ jobs:
       - name: Bash syntax
         run: |
           set -e
-          for f in install.sh install-local.sh scripts/*.sh scripts/ov-build-client-profile; do
+          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test; do
             [ -f "$f" ] && bash -n "$f"
           done
 
@@ -120,5 +120,5 @@ jobs:
       - name: Installer bootstrap and lifecycle references
         run: |
           grep -q 'install-local.sh' install.sh
-          grep -q 'ovpv update' README.md
-          grep -q 'ovpv update' README.fa.md
+          grep -q 'pvnetwork update' README.md
+          grep -q 'pvnetwork update' README.fa.md
