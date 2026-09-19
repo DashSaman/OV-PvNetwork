@@ -116,7 +116,12 @@ Before implementation, record the task and target release here **and commit/push
   - Local verification: 67/67 Python unit/governance tests PASS; focused online/assignment/Quick Edit regression 28/28 PASS; compile/shell/JSON/uv-lock, ESLint, production build and runtime npm audit PASS; largest JS 734101 bytes within the 768000 budget.
   - Browser verification: dedicated online-truth smoke PASS in EN/FA at 390/1440 with raw Node counts intentionally summing to 5 while Dashboard and Users both must show shared unique total 3; full responsive matrix PASS for 2 languages × 9 widths × 9 routes; Quick Edit PASS; Add User Node Selector PASS; Subscription responsive smoke PASS.
   - Sanitized bilingual release notes and mock-only EN/FA desktop/mobile screenshots prepared under `docs/images/v1.0.6`; ROADMAP/README/CHANGELOG and release metadata are aligned on v1.0.6.
-  - Next: commit/push release preparation → exact-head GitHub CI → verified Production app+PostgreSQL backup → exact commit canary/cutover → post-deploy shared-count parity/error/integration gates → merge/main CI/tag/release artifact verification → mark `PVN-027` `[x]`.
+  - Exact-head PR #26 CI run `35428670099` PASS on commit `2f9caa4c2f721c4bb5477dfc6fb6bc14b7ca5698`, including the dedicated online-truth browser smoke, full responsive matrix, private-material guard and lifecycle checks.
+  - Production rollback point: `/root/pvnetwork-deploy-backups/v1.0.6-pvn027-20260919-071519`; app archive and native PostgreSQL dump passed tar/`pg_restore -l` integrity verification before mutation.
+  - Production deployment: exact commit `2f9caa4c2f721c4bb5477dfc6fb6bc14b7ca5698` passed API/UI/PostgreSQL/shared-presence canary gates on 19002. Nginx was atomically switched to the canary while only `pvnetwork-panel.service` was restarted on canonical 19001, then traffic was returned to 19001 and the canary retired.
+  - Post-deploy evidence: Users and Dashboard both reported the same current unique online-user total (9 at verification time) while central hooks accounted for 7 and direct fallback supplied 2; `active_sessions` row count was unchanged by presence reads. DB remained 68 users / 4 nodes / 264 assignments; key runtime source parity 9/9 and built `frontend/dist` parity were exact; public UI/assets 200; unauthenticated protected API 401; 11/11 sampled Mirza requests were 2xx; `HTTP_5XX=0`; `REAL_ERRORS=0`; canonical service `NRestarts=0` after cutback.
+  - Runtime housekeeping discovered during the authorized security review: stale Nginx `/sub-clients/` alias still referenced the removed predecessor app path. It was backed up, migrated to `/opt/pvnetwork-panel/frontend/sub_clients/`, validated with `nginx -t`, reloaded without panel restart, and the referenced asset returned HTTP 200.
+  - Next: merge PR #26 → main CI → tag/release artifact + SHA256 verification → mark `PVN-027` `[x]`; then start security hardening as the next sequential patch.
 
 ## Current release baseline
 
@@ -147,6 +152,9 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-025 [x] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Release: v1.0.4.
 - PVN-026 [x] User creation node selector with all available nodes selected by default; create only on selected nodes. Release: v1.0.5.
 - PVN-027 [~] Unify Dashboard and Users online-user truth with a node-direct fallback when a node is not reporting central session hooks; count unique users consistently without changing device-limit enforcement. Target: v1.0.6.
+- PVN-028 [ ] Production security hardening from the authorized 2026-09-19 review: dependency remediation, SSH host-key pinning, main-admin credential hardening, Production API/docs/header hardening, login-specific throttling, and an inventory-preserving host-firewall policy with zero VPN/tunnel interruption. Target: v1.0.7.
+- PVN-029 [ ] Router/OpenVPN compatibility for RouterOS and other username/password-oriented clients using an isolated compatibility listener/profile; prefer certificate+password dual auth, keep password-only opt-in and isolated, and do not disturb existing OpenVPN certificates/listener. Target: v1.0.8.
+- PVN-030 [ ] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Target: v1.0.9.
 
 ## UI/UX task ledger
 
