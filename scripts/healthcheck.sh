@@ -53,6 +53,7 @@ check_node_three() {
   local payload='{"tunnel_address":"127.0.0.1","protocol":"udp","ovpn_port":1194,"set_new_setting":false}'
   for _ in 1 2 3; do
     curl -fsS --connect-timeout 1 --max-time 4 \
+      -X GET \
       -H "key: ${NODE_KEY}" \
       -H 'content-type: application/json' \
       --data "$payload" \

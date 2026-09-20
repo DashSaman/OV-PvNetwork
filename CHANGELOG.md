@@ -5,6 +5,7 @@
 - Path changes build and verify a candidate panel on `127.0.0.1:19002`, switch atomically, and roll back the panel environment/frontend if canonical verification fails.
 - The previous panel path returns HTTP 307 to the new path for exactly 300 seconds, preserving the suffix, then naturally returns 404.
 - OpenVPN listeners, Router compatibility listeners, `ov-node.service`, VPN profiles, certificates, routing and active user tunnels are outside the mutation path and are never restarted by PVN-032.
+- Release rollout hardens control-plane checks: Node health probes use the actual `GET /sync/status` JSON-body contract, and the panel smoke test reads only `PORT`/`URLPATH` instead of sourcing secret-bearing `.env` values.
 
 ## v1.0.11 — PVN-033 live online-count truth regression fix
 
