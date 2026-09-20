@@ -159,6 +159,17 @@ Before implementation, record the task and target release here **and commit/push
   - Production Router safety: the temporary canary secondary listener had zero Router sessions and was disabled after validation; `openvpn-server@pvnetwork-router.service` is inactive and port 1195 is closed by default. Node capability remains detectable, while central Router config/credential tables are empty until an administrator explicitly opts in.
   - Post-deploy evidence: local/public `/healthz` reports `1.0.9`; public UI and assets return 200; public Router API is present and protected (401 unauthenticated); public Chromium render returns HTTP 200 with zero console/page errors; DB remains 68 users / 4 nodes / 264 assignments; `REAL_ERRORS=0`, `HTTP_5XX=0`, panel `NRestarts=0` and normal OpenVPN remains active.
 
+
+- `v1.0.10` — RELEASED — `PVN-030` backward-compatible migration of PVNetwork-owned protocol/token aliases.
+  - Release scope: newly issued API tokens use `pvn_` while existing `ovp_` tokens remain accepted; Node integrations accept both `X-PVNetwork-Node-Key` and legacy `X-OV-Node-Key`; mismatched dual headers are rejected with HTTP 400; PVNetwork-injected Node helper aliases migrate from `_ov_*` to `_pvnetwork_*` during Node upgrade.
+  - Upstream compatibility boundary: `primeZdev/ov-node`, `/opt/ov-node` and `ov-node.service` remain unchanged; existing Nodes do not require immediate upgrade and normal certificate-only OpenVPN remains untouched.
+  - Verification: focused TDD compatibility tests plus 127/127 Python tests passed locally; dependency/static security audits, frontend lint/build/runtime audit, bundle budget and the complete browser matrix passed. PR #34 exact-head CI run `35492644546` PASS; behavior merged as main commit `84d6b1e8bcafad6b815aafe7d093396a86a5be39`; exact main CI run `35492790042` PASS.
+  - Production rollback point: `/root/pvnetwork-deploy-backups/v1.0.10-pvn030-20260920-055659`; application archive, native PostgreSQL dump/restore test, Nginx and IPv4/IPv6 firewall snapshots and SHA256 integrity checks passed before mutation.
+  - Production canary: exact main tree was built with the live URL path and validated on 19002. Legacy header 200, new header 200, equal dual headers 200 and conflicting dual headers 400. Public Nginx traffic was switched to the validated canary while canonical 19001 was updated, then returned to 19001 and the canary was retired.
+  - Production deployment: exact release tree deployed with 403/403 tracked-file parity and zero frontend-dist mismatches. Only `pvnetwork-panel.service` restarted; normal OpenVPN PID `1022714` and `server.conf` SHA256 `4fe892bb014b2ce656c22dd65551f7946056ae2d23d0eed1b6b834a31653d708` remained unchanged, and the Node service was not restarted by this rollout.
+  - Post-deploy evidence: local/public `/healthz` reports `1.0.10`; public UI and built asset return 200; deployed header compatibility matrix is 200/200/200/400; DB remains 68 users / 4 nodes / 264 assignments; `REAL_ERRORS=0`, `HTTP_5XX=0`, panel `NRestarts=0` and normal OpenVPN remains active.
+  - Next Production priority is a fresh online-count regression task because the owner still observes an incorrect online total on the live server despite the earlier `PVN-027`/`PVN-031` work; that historical work remains closed and is not silently reopened.
+
 ## Current release baseline
 
 - PVN-001 [x] Stable public `v1.0.0` release.
@@ -190,9 +201,10 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-027 [x] Unify Dashboard and Users online-user truth with a node-direct fallback when a node is not reporting central session hooks; count unique users consistently without changing device-limit enforcement. Release: v1.0.6.
 - PVN-028 [x] Production security hardening from the authorized 2026-09-19 review: dependency remediation, SSH host-key pinning, main-admin credential hardening, Production API/docs/header hardening, login-specific throttling, and an inventory-preserving host-firewall policy with zero VPN/tunnel interruption. Release: v1.0.8.
 - PVN-029 [x] Router/OpenVPN compatibility for RouterOS and other username/password-oriented clients using an isolated compatibility listener/profile; certificate+password dual auth remains isolated and opt-in, and existing OpenVPN certificates/listener are not disturbed. Release: v1.0.9.
-- PVN-030 [ ] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Target: v1.0.10.
+- PVN-030 [x] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Release: v1.0.10.
 - PVN-031 [x] Synchronize Dashboard and User Management on one short-lived presence snapshot and lightweight live-presence polling so adjacent views do not race between samples. Release: v1.0.7.
-- PVN-032 [ ] Allow the main administrator to change the panel URL path and main-admin username/password from the authenticated UI; password changes must store only a strong hash, path changes must rebuild/switch frontend atomically with rollback and must never strand the active admin session. Target: v1.0.11.
+- PVN-032 [ ] Allow the main administrator to change the panel URL path and main-admin username/password from the authenticated UI; password changes must store only a strong hash, path changes must rebuild/switch frontend atomically with rollback and must never strand the active admin session. Target: v1.0.12.
+- PVN-033 [ ] Reproduce and fix the remaining Production online-user count mismatch on the owner server using live-source evidence, preserving device-limit enforcement and the shared presence snapshot contract. Target: v1.0.11.
 
 ## UI/UX task ledger
 
