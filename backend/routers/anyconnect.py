@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 from cryptography.fernet import Fernet, InvalidToken
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -23,6 +23,7 @@ from backend.db import crud
 from backend.db.engine import get_db
 from backend.db.models import Node
 from backend.node.assignment import user_can_access_node
+from backend.protocol_compat import node_key_header
 
 
 router = APIRouter(prefix="/anyconnect", tags=["AnyConnect"])
@@ -667,9 +668,8 @@ async def change_anyconnect_status(
 async def authenticate_anyconnect_user(
     request: AnyConnectAuthRequest,
     db: Session = Depends(get_db),
-    x_ov_node_key: str = Header(..., alias="X-OV-Node-Key"),
+    node_key: str = Depends(node_key_header),
 ):
-    node_key = (x_ov_node_key or "").strip()
     node = (
         db.query(Node)
         .filter(

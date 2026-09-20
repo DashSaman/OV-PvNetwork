@@ -538,7 +538,6 @@ from datetime import datetime as _SessionDateTime, timezone as _SessionTimezone
 
 from fastapi import (
     Depends as _SessionDepends,
-    Header as _SessionHeader,
     HTTPException as _SessionHTTPException,
 )
 from pydantic import (
@@ -554,6 +553,7 @@ from backend.db.models import Node as _SessionNode
 from backend.node.assignment import (
     user_can_access_node as _session_user_can_access_node,
 )
+from backend.protocol_compat import node_key_header
 
 
 # If disconnect hook is missed, heartbeat expiration allows
@@ -744,14 +744,11 @@ async def global_session_node_check(
     db: _SessionDB = _SessionDepends(
         _session_get_db
     ),
-    x_ov_node_key: str = _SessionHeader(
-        ...,
-        alias="X-OV-Node-Key",
-    ),
+    node_key: str = _SessionDepends(node_key_header),
 ):
     node = _get_session_node(
         db,
-        x_ov_node_key,
+        node_key,
     )
 
     _ensure_session_table(db)
@@ -770,14 +767,11 @@ async def global_session_acquire(
     db: _SessionDB = _SessionDepends(
         _session_get_db
     ),
-    x_ov_node_key: str = _SessionHeader(
-        ...,
-        alias="X-OV-Node-Key",
-    ),
+    node_key: str = _SessionDepends(node_key_header),
 ):
     node = _get_session_node(
         db,
-        x_ov_node_key,
+        node_key,
     )
 
     if getattr(
@@ -1051,10 +1045,7 @@ async def global_session_heartbeat(
     db: _SessionDB = _SessionDepends(
         _session_get_db
     ),
-    x_ov_node_key: str = _SessionHeader(
-        ...,
-        alias="X-OV-Node-Key",
-    ),
+    node_key: str = _SessionDepends(node_key_header),
 ):
     """
     Refresh or recover a real OpenVPN connection.
@@ -1070,7 +1061,7 @@ async def global_session_heartbeat(
 
     node = _get_session_node(
         db,
-        x_ov_node_key,
+        node_key,
     )
 
     user = _resolve_session_user(
@@ -1467,10 +1458,7 @@ async def global_session_snapshot(
     db: _SessionDB = _SessionDepends(
         _session_get_db
     ),
-    x_ov_node_key: str = _SessionHeader(
-        ...,
-        alias="X-OV-Node-Key",
-    ),
+    node_key: str = _SessionDepends(node_key_header),
 ):
     """Reconcile central locks with one complete OpenVPN status snapshot.
 
@@ -1482,7 +1470,7 @@ async def global_session_snapshot(
 
     node = _get_session_node(
         db,
-        x_ov_node_key,
+        node_key,
     )
 
     _ensure_session_table(db)
@@ -1610,14 +1598,11 @@ async def global_session_release(
     db: _SessionDB = _SessionDepends(
         _session_get_db
     ),
-    x_ov_node_key: str = _SessionHeader(
-        ...,
-        alias="X-OV-Node-Key",
-    ),
+    node_key: str = _SessionDepends(node_key_header),
 ):
     node = _get_session_node(
         db,
-        x_ov_node_key,
+        node_key,
     )
 
     user = _resolve_session_user(

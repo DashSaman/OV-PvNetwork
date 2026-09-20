@@ -4,7 +4,7 @@ import ipaddress
 import re
 import time
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -15,6 +15,7 @@ from backend.db import crud
 from backend.db.engine import get_db
 from backend.db.models import DomainActivity, Node
 from backend.node.assignment import user_can_access_node
+from backend.protocol_compat import node_key_header
 from backend.schema.output import ResponseModel
 
 
@@ -130,7 +131,7 @@ def _user_for_common_name(db: Session, node: Node, common_name: str):
 async def ingest_domain_activity(
     request: DomainActivityBatch,
     db: Session = Depends(get_db),
-    node_key: str = Header(..., alias="X-OV-Node-Key"),
+    node_key: str = Depends(node_key_header),
 ):
     node = _node_from_key(db, node_key)
 
