@@ -19,6 +19,7 @@ PVN-032 adds guarded runtime controls for the panel URL path and the main-admini
 - PVN-032 may restart only `pvnetwork-panel.service`.
 - Normal OpenVPN listeners, the optional Router/MikroTik compatibility listener, `ov-node.service`, certificates, profiles, routing, firewall policy and active VPN tunnels are not reconfigured or restarted by this feature.
 - Production acceptance requires before/after PID and normal OpenVPN configuration-hash evidence proving that isolation.
+- Rollout guard fix: the Node healthcheck now uses the Node API's real `GET /sync/status` request shape, avoiding false 405-triggered `ov-node.service` restarts; the smoke checker no longer shell-sources `.env`, so bcrypt hashes cannot be expanded as shell variables, and it validates nested FastAPI routes through the in-process schema.
 
 ## Recovery and release verification
 - Runtime change state is secret-free and guarded by a non-blocking single-change lock.

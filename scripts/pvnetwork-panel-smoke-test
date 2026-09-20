@@ -3,10 +3,19 @@ set -Eeuo pipefail
 
 cd /opt/pvnetwork-panel
 
-set -a
-. ./.env
-set +a
+read_env_value() {
+    local key="$1"
+    awk -F= -v wanted="$key" '
+        $1 == wanted {
+            value=substr($0,index($0,"=")+1)
+            gsub(/^[[:space:]"\047]+|[[:space:]"\047]+$/, "", value)
+            print value
+        }
+    ' .env | tail -1
+}
 
+PORT="$(read_env_value PORT)"
+URLPATH="$(read_env_value URLPATH)"
 PORT="${PORT:-19000}"
 URLPATH="${URLPATH:-hajsaman}"
 BASE="http://127.0.0.1:${PORT}"
@@ -126,7 +135,7 @@ echo "PVNETWORK_SMOKE_STAGE=ROUTES"
 
 .venv/bin/python - <<'PYROUTES'
 from backend.app import api
-paths = {getattr(route, "path", "") for route in api.routes}
+paths = set(api.openapi().get("paths", {}))
 required = {
     "/api/server/monitoring",
     "/api/security/",
