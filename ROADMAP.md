@@ -44,11 +44,12 @@
 ### v1.0.11
 - Live online-user truth correction: zero-client Node samples clear stale display state and orphan Common Names no longer inflate managed-user counts (`PVN-033`).
 
-## Release candidate
+## Production verified — publication gate
 
 ### v1.0.12
 - Authenticated runtime main-admin username/password and panel-path controls with re-authentication, generation-bound JWT rotation, five-minute old-path redirect, candidate canary and automatic rollback (`PVN-032`).
-- Automated/backend/browser/security gates are green; Production rollout, PID/config-hash isolation evidence and immutable GitHub Release verification remain pending.
+- Production verification is green: rollback backup, canary, public/local UI and authenticated API checks passed; normal OpenVPN PID/config hashes remained unchanged; Node healthcheck and smoke rollout guards were corrected and passed both explicit and timer-driven verification.
+- The live Production path was intentionally left unchanged because no new owner-selected target path was supplied. Final gate is immutable GitHub tag/asset publication plus post-download SHA256/private-material verification.
 
 ## Sequential patch queue
 
