@@ -131,7 +131,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 class ApiScopeMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         auth = request.headers.get("authorization", "")
-        if not auth.lower().startswith("bearer ovp_"):
+        if not auth.lower().startswith(("bearer pvn_", "bearer ovp_")):
             return await call_next(request)
         import hashlib
         import time as _time

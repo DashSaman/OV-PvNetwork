@@ -1,3 +1,11 @@
+## v1.0.10 — PVN-030 backward-compatible protocol alias migration
+
+- New API tokens use the PVNetwork-owned `pvn_` prefix while existing `ovp_` tokens remain valid.
+- Node integrations accept `X-PVNetwork-Node-Key` and the legacy `X-OV-Node-Key`; conflicting dual headers are rejected.
+- PVNetwork-injected Node helper aliases migrate from `_ov_*` to `_pvnetwork_*` during Node upgrade without requiring existing Nodes to upgrade immediately.
+- Upstream-owned `primeZdev/ov-node`, `/opt/ov-node` and `ov-node.service` identities are intentionally unchanged.
+- Normal OpenVPN listeners, profiles and credentials are not modified by this patch.
+
 ## v1.0.9 — PVN-029 Router / MikroTik OpenVPN compatibility
 
 - Adds an opt-in secondary OpenVPN listener per compatible Node; the normal certificate-only listener/profile remains unchanged.

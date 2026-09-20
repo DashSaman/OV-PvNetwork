@@ -18,7 +18,7 @@ def _resolve_actor(authorization: str) -> tuple[str, str]:
 
     raw = authorization.split(" ", 1)[1].strip()
 
-    if raw.startswith("ovp_"):
+    if raw.startswith(("pvn_", "ovp_")):
         digest = hashlib.sha256(raw.encode()).hexdigest()
         db = SessionLocal()
         try:

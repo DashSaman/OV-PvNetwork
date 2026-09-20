@@ -4,13 +4,19 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.9-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.10-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.10 vs v1.0.9
+
+**PVN-030 — backward-compatible migration of PVNetwork-owned protocol aliases.** New API tokens use `pvn_` while existing `ovp_` tokens remain valid. Node callbacks accept the new `X-PVNetwork-Node-Key` and the legacy `X-OV-Node-Key`; conflicting values are rejected. PVNetwork-injected Node helpers move to `_pvnetwork_*` during upgrade, while upstream `ov-node` paths/services and normal OpenVPN remain unchanged.
+
+Latest release line: **v1.0.10** — [release notes](./docs/RELEASE-NOTES-v1.0.10.md).
 
 ## What changed in v1.0.9 vs v1.0.8
 

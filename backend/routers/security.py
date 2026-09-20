@@ -49,7 +49,7 @@ async def disable(q:TotpCode,db:Session=Depends(get_db),u:dict=Depends(get_curre
 async def token(q:TokenIn,db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u)
  if not q.scopes or any(x not in SCOPES for x in q.scopes):raise HTTPException(422,'Invalid scopes')
- raw='ovp_'+secrets.token_urlsafe(36);x=ApiToken(name=q.name,token_prefix=raw[:12],token_hash=hashlib.sha256(raw.encode()).hexdigest(),scopes=json.dumps(q.scopes),expires_at=q.expires_at,created_at=int(time.time()),created_by=u['username']);db.add(x);db.commit();db.refresh(x);return ResponseModel(success=True,msg='Token created; copy it now',data={'id':x.id,'token':raw})
+ raw='pvn_'+secrets.token_urlsafe(36);x=ApiToken(name=q.name,token_prefix=raw[:12],token_hash=hashlib.sha256(raw.encode()).hexdigest(),scopes=json.dumps(q.scopes),expires_at=q.expires_at,created_at=int(time.time()),created_by=u['username']);db.add(x);db.commit();db.refresh(x);return ResponseModel(success=True,msg='Token created; copy it now',data={'id':x.id,'token':raw})
 @router.delete('/tokens/{token_id}',response_model=ResponseModel)
 async def revoke(token_id:int,db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u);x=db.query(ApiToken).filter_by(id=token_id).first()

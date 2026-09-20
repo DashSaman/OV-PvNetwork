@@ -4,11 +4,17 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.9-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.10-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.10 نسبت به v1.0.9
+
+**PVN-030 — مهاجرت backward-compatible نام‌های پروتکل متعلق به PVNetwork.** توکن‌های جدید با `pvn_` ساخته می‌شوند و `ovp_`های قبلی همچنان کار می‌کنند. Callbackهای Node هم Header جدید `X-PVNetwork-Node-Key` و هم `X-OV-Node-Key` قدیمی را می‌پذیرند و اگر هر دو با مقدار متفاوت فرستاده شوند درخواست رد می‌شود. Helperهای تزریق‌شده Node هنگام Upgrade به `_pvnetwork_*` منتقل می‌شوند، ولی نام‌های upstream مربوط به `ov-node` و OpenVPN عادی دست‌نخورده می‌مانند.
+
+خط انتشار فعلی: **v1.0.10** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.10.fa.md).
 
 ## تغییرات v1.0.9 نسبت به v1.0.8
 
