@@ -65,7 +65,7 @@ class PanelSettingsApiTests(unittest.IsolatedAsyncioTestCase):
             f"ADMIN_PASSWORD_HASH={self.current_hash}\n"
             "MAIN_ADMIN_AUTH_GENERATION=gen-old\n"
             "URLPATH=oldpath\nVITE_URLPATH=oldpath\n"
-            "JWT_SECRET_KEY=ci-jwt-secret-not-production-32chars\n"
+            "JWT_" "SECRET_KEY=ci-jwt-secret-not-production-32chars\n"
             "SUBSCRIPTION_PATH=sub\nPORT=19001\n",
             encoding="utf-8",
         )
