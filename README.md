@@ -4,13 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.10-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.11-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.11 vs v1.0.10
+
+**PVN-033 — live Production online-count truth fix.** A successful Node sample with zero OpenVPN clients is now treated as a fresh empty snapshot instead of a failed poll, so stale online state is not retained by the transient-failure grace window. Dashboard Node cards now use the same managed-user mapping as the global Online Users total and User Management. Orphan/unknown Common Names are excluded from managed totals and remain visible only as diagnostic drift; this patch does not revoke profiles or write enforcement sessions.
+
+![v1.0.11 managed online truth dashboard](./docs/images/v1.0.11/en/desktop/online-truth-dashboard.png)
+
+Latest release line: **v1.0.11** — [release notes](./docs/RELEASE-NOTES-v1.0.11.md).
 
 ## What changed in v1.0.10 vs v1.0.9
 

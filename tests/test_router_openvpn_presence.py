@@ -69,3 +69,31 @@ class RouterOpenVpnDirectFallbackTests(unittest.TestCase):
             }
             clients = _read_node_clients(spec)
         self.assertEqual(clients, {"alice-de1", "bob-de1"})
+
+    def test_successful_empty_usage_is_a_fresh_empty_snapshot(self):
+        from backend.operations.live_presence import _read_node_clients
+        spec = {
+            "address": "192.0.2.10", "port": 9090, "key": "k",
+            "tunnel_address": "192.0.2.10", "protocol": "udp",
+            "ovpn_port": 1194,
+        }
+        with patch("backend.operations.live_presence.NodeRequests") as requests:
+            inst = requests.return_value
+            inst.get_users_usage.return_value = None
+            inst.router_openvpn_status.return_value = {"ok": False, "data": None}
+            clients = _read_node_clients(spec)
+        self.assertEqual(clients, set())
+
+    def test_usage_transport_failure_remains_unknown(self):
+        from backend.operations.live_presence import _read_node_clients
+        spec = {
+            "address": "192.0.2.10", "port": 9090, "key": "k",
+            "tunnel_address": "192.0.2.10", "protocol": "udp",
+            "ovpn_port": 1194,
+        }
+        with patch("backend.operations.live_presence.NodeRequests") as requests:
+            inst = requests.return_value
+            inst.get_users_usage.return_value = False
+            inst.router_openvpn_status.return_value = {"ok": False, "data": None}
+            clients = _read_node_clients(spec)
+        self.assertIsNone(clients)

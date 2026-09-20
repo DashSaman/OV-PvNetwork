@@ -1295,7 +1295,16 @@ const ServerStats = () => {
         <FiServer />{t("ui.092505a4182e")}</h3>
 
       <div className="ov-node-grid">
-        {nodes.map(node => <NodeCard key={node.id} node={node} metric={nodeMetrics[node.id]} online={Number(nodeMetrics[node.id]?.online_count || 0)} />)}
+        {nodes.map(node => <NodeCard
+          key={node.id}
+          node={node}
+          metric={nodeMetrics[node.id]}
+          online={Number(
+            presence.managed_online_by_node?.[node.id]
+            ?? nodeMetrics[node.id]?.online_count
+            ?? 0
+          )}
+        />)}
       </div>
 
 

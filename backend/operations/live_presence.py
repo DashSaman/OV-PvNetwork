@@ -68,21 +68,28 @@ def merge_presence_snapshot(
         if str(uuid) in known_uuids and int(count) > 0
     }
     direct_nodes_by_uuid: dict[str, set[int]] = {}
+    managed_uuids_by_node: dict[int, set[str]] = {}
+    unmapped_by_node: dict[int, int] = {}
     unmapped_clients = 0
 
     for raw_node_id, value in node_clients.items():
         node_id = int(raw_node_id)
         node_name, clients = value
+        managed_uuids_by_node.setdefault(node_id, set())
+        unmapped_by_node.setdefault(node_id, 0)
         for client_name in clients:
             username = client_username(client_name, node_name)
             if not username:
                 unmapped_clients += 1
+                unmapped_by_node[node_id] += 1
                 continue
             user_uuid = by_name.get(username.casefold())
             if not user_uuid:
                 unmapped_clients += 1
+                unmapped_by_node[node_id] += 1
                 continue
             direct_nodes_by_uuid.setdefault(user_uuid, set()).add(node_id)
+            managed_uuids_by_node[node_id].add(user_uuid)
 
     direct_fallback_users = 0
     for user_uuid, node_ids in direct_nodes_by_uuid.items():
@@ -101,7 +108,12 @@ def merge_presence_snapshot(
             if str(uuid) in known_uuids and int(count) > 0
         ),
         "direct_fallback_users": direct_fallback_users,
+        "managed_online_by_node": {
+            node_id: len(user_uuids)
+            for node_id, user_uuids in managed_uuids_by_node.items()
+        },
         "unmapped_clients": unmapped_clients,
+        "unmapped_clients_by_node": unmapped_by_node,
     }
 
 
@@ -173,7 +185,11 @@ def _read_node_clients(spec: dict) -> set[str] | None:
                     str(item) for item in common_names if str(item or "").strip()
                 }
 
-    if not isinstance(data, dict) and not router_clients:
+    # Node `/sync/usage` returns data=null when it successfully sampled zero
+    # normal OpenVPN clients.  That is a fresh empty snapshot, not a poll
+    # failure.  Actual request/application failures are returned as False.
+    normal_snapshot_known = data is None or isinstance(data, dict)
+    if not normal_snapshot_known and not router_clients:
         return None
     return normal_clients | router_clients
 

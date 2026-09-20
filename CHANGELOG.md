@@ -1,3 +1,10 @@
+## v1.0.11 — PVN-033 live online-count truth regression fix
+
+- Treats a successful Node `/sync/usage` response with `data: null` as a fresh zero-client snapshot instead of a failed poll, preventing stale online clients from surviving the display grace window.
+- Adds managed per-Node online counts to the shared presence snapshot so Dashboard Node cards and the global/User Management totals use the same current PVNetwork-user truth.
+- Unknown/orphan OpenVPN Common Names remain excluded from managed-user totals and are reported separately as unmapped presence evidence; no profile, certificate or enforcement session is mutated by this patch.
+- Device-limit acquire/heartbeat/release semantics, normal OpenVPN listeners and Node services remain unchanged.
+
 ## v1.0.10 — PVN-030 backward-compatible protocol alias migration
 
 - New API tokens use the PVNetwork-owned `pvn_` prefix while existing `ovp_` tokens remain valid.
