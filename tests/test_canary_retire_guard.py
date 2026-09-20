@@ -104,14 +104,20 @@ class CanaryRetireGuardTests(unittest.TestCase):
             site = Path(tmp) / "panel.conf"
             site.write_text("proxy_pass http://127.0.0.1:19001;\n", encoding="utf-8")
             out = io.StringIO()
+            events = []
+            def fake_http(url):
+                events.append(url)
+                return 200
             with contextlib.redirect_stdout(out):
                 rc = guard.main(
                     ["--nginx-site", str(site), "--public-url", "https://panel.example/healthz"],
                     syntax_check=lambda: None,
-                    http_get=lambda url: 200,
+                    reload_nginx=lambda: events.append("reload"),
+                    http_get=fake_http,
                 )
         self.assertEqual(rc, 0)
         self.assertIn("CANARY_RETIRE_SAFE=YES", out.getvalue())
+        self.assertEqual(events[0], "reload")
 
     def test_cli_refuses_when_site_still_uses_canary(self):
         guard = load_guard()
@@ -120,14 +126,17 @@ class CanaryRetireGuardTests(unittest.TestCase):
             site = Path(tmp) / "panel.conf"
             site.write_text("proxy_pass http://127.0.0.1:19002;\n", encoding="utf-8")
             out = io.StringIO()
+            reloads = []
             with contextlib.redirect_stdout(out):
                 rc = guard.main(
                     ["--nginx-site", str(site), "--public-url", "https://panel.example/healthz"],
                     syntax_check=lambda: None,
+                    reload_nginx=lambda: reloads.append("reload"),
                     http_get=lambda url: 200,
                 )
         self.assertEqual(rc, 1)
         self.assertIn("CANARY_RETIRE_SAFE=NO", out.getvalue())
+        self.assertEqual(reloads, [])
 
     def test_runtime_installer_installs_canary_retire_guard(self):
         installer = (ROOT / "scripts/install-runtime-tools.sh").read_text(encoding="utf-8")
@@ -135,6 +144,33 @@ class CanaryRetireGuardTests(unittest.TestCase):
             'install -m 0755 "$ROOT/scripts/pvnetwork-canary-retire-guard.py" /usr/local/sbin/pvnetwork-canary-retire-guard',
             installer,
         )
+
+    def test_cli_requires_nginx_site_argument(self):
+        guard = load_guard()
+        with self.assertRaises(SystemExit) as ctx:
+            guard.main(
+                ["--public-url", "https://panel.example/healthz"],
+                syntax_check=lambda: None,
+                http_get=lambda url: 200,
+            )
+        self.assertEqual(ctx.exception.code, 2)
+
+    def test_cli_reload_failure_blocks_retirement(self):
+        guard = load_guard()
+        with tempfile.TemporaryDirectory() as tmp:
+            site = Path(tmp) / "panel.conf"
+            site.write_text("proxy_pass http://127.0.0.1:19001;\n", encoding="utf-8")
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = guard.main(
+                    ["--nginx-site", str(site), "--public-url", "https://panel.example/healthz"],
+                    syntax_check=lambda: None,
+                    reload_nginx=lambda: (_ for _ in ()).throw(RuntimeError("reload failed")),
+                    http_get=lambda url: 200,
+                )
+        self.assertEqual(rc, 1)
+        self.assertIn("CANARY_RETIRE_SAFE=NO", out.getvalue())
+        self.assertIn("reload failed", out.getvalue())
 
 
 if __name__ == "__main__":

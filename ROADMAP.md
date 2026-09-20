@@ -55,7 +55,7 @@
 ## Release candidate
 
 ### v1.0.13
-- Fail-closed Production canary-retirement procedure: canonical Nginx upstream, syntax check, local health and public health must all pass before canary shutdown (`PVN-894`).
+- Fail-closed Production canary-retirement procedure: canonical Nginx upstream, syntax check, successful Nginx reload, local health and public health must all pass before canary shutdown (`PVN-894`).
 - Direct regression guard for the brief v1.0.12 HTTP 502 caused by stopping the validated canary before Nginx had been cut back to canonical.
 
 ## Sequential patch queue

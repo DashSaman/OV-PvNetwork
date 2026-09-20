@@ -14,7 +14,7 @@
 
 ## What changed in v1.0.13 vs v1.0.12
 
-**PVN-894 — fail-closed Production canary retirement.** Release rollouts now include a dedicated guard that refuses to retire port `19002` until the active Nginx site points back to canonical `19001`, `nginx -t` passes, and both local canonical and public health endpoints return HTTP 200. It emits `CANARY_RETIRE_SAFE=YES/NO` for auditable automation.
+**PVN-894 — fail-closed Production canary retirement.** Release rollouts now include a dedicated guard that refuses to retire port `19002` until the explicit active Nginx site points back to canonical `19001`, `nginx -t` passes, Nginx is successfully reloaded, and both local canonical and public health endpoints return HTTP 200. It emits `CANARY_RETIRE_SAFE=YES/NO` for auditable automation.
 
 This directly prevents the v1.0.12 rollout failure mode that briefly produced HTTP 502 after a validated canary was stopped while Nginx was still proxying to it. OpenVPN, Nodes, Router compatibility, certificates, profiles and active VPN tunnels are outside this patch.
 

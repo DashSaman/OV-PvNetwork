@@ -190,10 +190,10 @@ Before implementation, record the task and target release here **and commit/push
   - Rollout incident: after validation, the canary was stopped while Nginx still referenced `19002`, causing a brief public HTTP 502. Root cause was ordering in the manual release cutback, not panel/OpenVPN failure. Nginx was restored to canonical `19001` with `nginx -t` + reload and public `/healthz`, panel root and `/users` all returned 200; no panel/Node/OpenVPN restart was required for the 502 repair. This is the direct regression input for `PVN-894` / v1.0.13.
 
 - `v1.0.13` — RELEASE CANDIDATE — `PVN-894` fail-closed Production canary retirement.
-  - Guard contract: refuse canary retirement while active Nginx site still references `19002`, canonical `19001` is missing, `nginx -t` fails, local canonical health is not 200, or public health is not 200.
+  - Guard contract: refuse canary retirement while active Nginx site still references `19002`, canonical `19001` is missing, `nginx -t` fails, the validated site cannot be reloaded into Nginx, local canonical health is not 200, or public health is not 200.
   - TDD: missing guard RED; proxy-target parser GREEN; health/nginx RED→GREEN; CLI RED→GREEN. Focused suite currently 10/10 PASS.
   - Live verification before merge: current Production returned `CANARY_RETIRE_SAFE=YES` with active proxy 19001 and both health checks 200; a copied config rewritten to 19002 returned `CANARY_RETIRE_SAFE=NO` and exit code 1.
-  - Safety boundary: guard never stops a process itself and does not restart panel/OpenVPN/Node. Canary termination remains an explicit operator action only after PASS.
+  - Safety boundary: guard may reload Nginx after validating the canonical site, but never stops the canary itself and does not restart panel/OpenVPN/Node. Canary termination remains an explicit operator action only after PASS.
 
 ## Current release baseline
 

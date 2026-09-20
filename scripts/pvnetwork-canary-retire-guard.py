@@ -46,6 +46,18 @@ def require_nginx_syntax_ok(run=subprocess.run) -> None:
         raise RuntimeError("nginx syntax check failed")
 
 
+def reload_nginx_service(run=subprocess.run) -> None:
+    result = run(
+        ["systemctl", "reload", "nginx"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if int(result.returncode) != 0:
+        raise RuntimeError("nginx reload failed")
+
+
 def guard_retirement(
     site_text: str,
     *,
@@ -65,9 +77,9 @@ def guard_retirement(
     return targets
 
 
-def main(argv=None, *, syntax_check=require_nginx_syntax_ok, http_get=http_status) -> int:
+def main(argv=None, *, syntax_check=require_nginx_syntax_ok, reload_nginx=reload_nginx_service, http_get=http_status) -> int:
     parser = argparse.ArgumentParser(description="Verify canonical panel traffic before retiring the canary")
-    parser.add_argument("--nginx-site", default="/etc/nginx/sites-enabled/open1.softarg.ir.conf")
+    parser.add_argument("--nginx-site", required=True)
     parser.add_argument("--canonical-port", type=int, default=19001)
     parser.add_argument("--canary-port", type=int, default=19002)
     parser.add_argument("--canonical-url")
@@ -77,6 +89,8 @@ def main(argv=None, *, syntax_check=require_nginx_syntax_ok, http_get=http_statu
     try:
         syntax_check()
         site_text = Path(args.nginx_site).read_text(encoding="utf-8")
+        validate_proxy_targets(site_text, args.canonical_port, args.canary_port)
+        reload_nginx()
         targets = guard_retirement(
             site_text,
             canonical_port=args.canonical_port,

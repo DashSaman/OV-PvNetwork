@@ -12,7 +12,7 @@
 
 ## تغییرات v1.0.13 نسبت به v1.0.12
 
-**PVN-894 — بستن امن و Fail-Closed کاناری Production.** از این نسخه، Canary پورت `19002` فقط وقتی اجازه Retire دارد که Nginx واقعاً به پورت اصلی `19001` برگشته باشد، `nginx -t` موفق باشد و هر دو Health Check محلی و عمومی HTTP 200 بدهند. Guard نتیجه را به‌صورت `CANARY_RETIRE_SAFE=YES/NO` ثبت می‌کند تا Rollout قابل Audit باشد.
+**PVN-894 — بستن امن و Fail-Closed کاناری Production.** از این نسخه، Canary پورت `19002` فقط وقتی اجازه Retire دارد که فایل فعال Nginx واقعاً به پورت اصلی `19001` برگشته باشد، `nginx -t` موفق باشد، Nginx با موفقیت Reload شود و هر دو Health Check محلی و عمومی HTTP 200 بدهند. Guard نتیجه را به‌صورت `CANARY_RETIRE_SAFE=YES/NO` ثبت می‌کند تا Rollout قابل Audit باشد.
 
 این Patch مستقیماً حالت خطایی را می‌بندد که در Rollout نسخه v1.0.12 باعث شد Canary در حالی بسته شود که Nginx هنوز به آن Proxy می‌کرد و برای مدت کوتاه HTTP 502 دیده شود. OpenVPN، Nodeها، Router compatibility، Certificateها، Profileها و Tunnelهای فعال تغییری نمی‌کنند.
 

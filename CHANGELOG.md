@@ -1,7 +1,7 @@
 ## v1.0.13 — PVN-894 safe Production canary retirement
 
 - Adds a fail-closed canary retirement guard that refuses retirement while the active Nginx site still points at canary port `19002` or does not point at canonical port `19001`.
-- Requires `nginx -t`, canonical local `/healthz` HTTP 200, and public `/healthz` HTTP 200 before an operator may retire the release canary.
+- Requires an explicit active Nginx site, `nginx -t`, a successful Nginx reload, canonical local `/healthz` HTTP 200, and public `/healthz` HTTP 200 before an operator may retire the release canary.
 - Emits machine-readable `CANARY_RETIRE_SAFE=YES/NO` evidence for release automation and manual rollout logs.
 - This patch is a direct regression guard for the v1.0.12 rollout incident where the canary was stopped before Nginx had been cut back to canonical, briefly producing public HTTP 502.
 - No OpenVPN, Router listener, Node, certificate, profile, routing, firewall or active VPN-session behavior is changed.
