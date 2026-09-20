@@ -48,6 +48,7 @@ class OnlineUserTruthTests(unittest.TestCase):
         )
         self.assertEqual(result["online_users"], 1)
         self.assertEqual(result["counts_by_uuid"]["uuid-a"], 2)
+        self.assertEqual(result["managed_online_by_node"], {3: 1, 5: 1})
 
     def test_central_session_count_is_not_double_counted_by_direct_presence(self):
         result = merge_presence_snapshot(
@@ -67,6 +68,8 @@ class OnlineUserTruthTests(unittest.TestCase):
         )
         self.assertEqual(result["online_users"], 0)
         self.assertEqual(result["unmapped_clients"], 1)
+        self.assertEqual(result["managed_online_by_node"], {4: 0})
+        self.assertEqual(result["unmapped_clients_by_node"], {4: 1})
 
     def test_wiring_uses_shared_presence_without_writing_active_sessions(self):
         users_router = (ROOT / "backend/routers/users.py").read_text()
@@ -81,6 +84,7 @@ class OnlineUserTruthTests(unittest.TestCase):
         self.assertIn('"presence": presence', dashboard_router)
         self.assertIn("payload.presence", dashboard)
         self.assertIn("presence.online_users", dashboard)
+        self.assertIn("presence.managed_online_by_node", dashboard)
         self.assertNotIn("db.add(ActiveSession", live_presence)
         self.assertNotIn("db.merge(ActiveSession", live_presence)
         self.assertIn("def get_users_usage(self, timeout=", requests_source)

@@ -1,7 +1,9 @@
 import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
 
 const baseUrl = (process.env.PV_UI_BASE_URL || 'http://127.0.0.1:4173/panel').replace(/\/$/, '');
 const failures = [];
+const screenshotDir = process.env.PV_SCREENSHOT_DIR || '';
 const widths = [390, 1440];
 const languages = ['en', 'fa'];
 const users = [
@@ -38,7 +40,11 @@ for (const language of languages) {
       else if (path === '/users/presence') payload = ok({ counts_by_uuid: { u1: 1, u2: 1, u3: 1 }, online_users: 3, sample_time: 1234567890 });
       else if (path === '/server/info') payload = ok({ cpu: 10, memory_total: 100, memory_used: 20, memory_percent: 20, disk_total: 100, disk_used: 20, disk_percent: 20, uptime: 1000 });
       else if (path === '/server/dashboard-live') payload = ok({
-        presence: { online_users: 3, central_online_users: 2, direct_fallback_users: 1 },
+        presence: {
+          online_users: 3, central_online_users: 2, direct_fallback_users: 1,
+          managed_online_by_node: { 1: 2, 2: 2 },
+          unmapped_clients_by_node: { 1: 1, 2: 0 },
+        },
         nodes: [
           { id: 1, available: true, rate_ready: true, rx_bytes: 1000, tx_bytes: 1000, download_bps: 1, upload_bps: 1, traffic_bytes: 2000, cpu_usage: 1, memory_usage: 1, uptime: 100, online_count: 3, online_sessions: 3 },
           { id: 2, available: true, rate_ready: true, rx_bytes: 1000, tx_bytes: 1000, download_bps: 1, upload_bps: 1, traffic_bytes: 2000, cpu_usage: 1, memory_usage: 1, uptime: 100, online_count: 2, online_sessions: 2 },
@@ -56,6 +62,15 @@ for (const language of languages) {
       await page.waitForTimeout(300);
       const dashboardValue = (await dashboardBox.locator('strong').textContent())?.trim();
       if (dashboardValue !== '3') failures.push(`${language} ${width}: dashboard=${dashboardValue}`);
+      const nodeOnlineValues = await page.locator('.ov-node-facts > div:first-child strong').allTextContents();
+      if (nodeOnlineValues.join(',') !== '2,2') {
+        failures.push(`${language} ${width}: node-online=${nodeOnlineValues.join(',')}`);
+      }
+      if (screenshotDir && width === 1440) {
+        const dir = `${screenshotDir}/${language}/desktop`;
+        await mkdir(dir, { recursive: true });
+        await page.screenshot({ path: `${dir}/online-truth-dashboard.png`, fullPage: true });
+      }
 
       await page.goto(`${baseUrl}/users`, { waitUntil: 'domcontentloaded', timeout: 10000 });
       const userCard = page.locator('.user-stat-card').filter({ has: page.locator('.user-stat-label').filter({ hasText: /Online Users|کاربران آنلاین/i }) }).first();
@@ -63,6 +78,11 @@ for (const language of languages) {
       const usersValue = (await userCard.locator('.user-stat-value').textContent())?.trim();
       if (usersValue !== '3') failures.push(`${language} ${width}: users=${usersValue}`);
       if (dashboardValue !== usersValue) failures.push(`${language} ${width}: mismatch dashboard=${dashboardValue} users=${usersValue}`);
+      if (screenshotDir && width === 390) {
+        const dir = `${screenshotDir}/${language}/mobile`;
+        await mkdir(dir, { recursive: true });
+        await page.screenshot({ path: `${dir}/online-truth-users.png`, fullPage: true });
+      }
     } catch (error) {
       failures.push(`${language} ${width}: ${error.message}`);
     } finally {

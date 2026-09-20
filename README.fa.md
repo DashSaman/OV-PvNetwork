@@ -4,11 +4,19 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.10-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.11-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.11 نسبت به v1.0.10
+
+**PVN-033 — اصلاح شمارش واقعی کاربران آنلاین در Production.** پاسخ موفق Node با `data: null` اکنون به‌معنی Snapshot تازه با صفر کاربر است، نه خطای Poll؛ بنابراین وضعیت آنلاین قدیمی دیگر به‌خاطر Grace Window خطای موقت باقی نمی‌ماند. Node Cardهای Dashboard نیز از همان Mapping کاربرهای واقعی PVNetwork استفاده می‌کنند که عدد کلی Online Users و صفحه User Management استفاده می‌کنند. Common Nameهای یتیم/ناشناخته در عدد کاربران مدیریت‌شده شمرده نمی‌شوند و فقط به‌عنوان Drift تشخیصی ثبت می‌شوند؛ این Patch هیچ Profile یا Certificate را revoke نمی‌کند و به Sessionهای اجرایی Device Limit نمی‌نویسد.
+
+![Dashboard شمارش مدیریت‌شده v1.0.11](./docs/images/v1.0.11/fa/desktop/online-truth-dashboard.png)
+
+خط انتشار فعلی: **v1.0.11** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.11.fa.md).
 
 ## تغییرات v1.0.10 نسبت به v1.0.9
 
