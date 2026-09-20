@@ -3,14 +3,15 @@ from fastapi import APIRouter,Depends,HTTPException,Request
 from pydantic import BaseModel,Field
 from sqlalchemy.orm import Session
 from backend.auth.auth import get_current_user
+from backend.auth.authorization import require_interactive_main_admin
 from backend.db.engine import get_db
 from backend.db.models import SecuritySettings,PrincipalSecurity,ApiToken
 from backend.schema.output import ResponseModel
 from backend.security_core import new_totp_secret,verify_totp,enc,dec
+from backend.security_middleware import client_ip
 router=APIRouter(prefix='/security',tags=['Security'])
 SCOPES={'users:read','users:write','nodes:read','nodes:write','settings:read','settings:write','audit:read'}
-def main(u):
- if u['type']!='main_admin':raise HTTPException(403,'Main administrator required')
+main = require_interactive_main_admin
 class SettingsIn(BaseModel):rate_limit_enabled:bool=True;rate_limit_per_minute:int=Field(120,ge=10,le=10000);ip_allowlist_enabled:bool=False;allowed_cidrs:list[str]=[]
 class TotpCode(BaseModel):code:str=Field(min_length=6,max_length=6)
 class TokenIn(BaseModel):name:str=Field(min_length=1,max_length=128);scopes:list[str];expires_at:int|None=None
@@ -25,8 +26,8 @@ async def put(q:SettingsIn,request:Request,db:Session=Depends(get_db),u:dict=Dep
  except ValueError as exc:raise HTTPException(422,f'Invalid CIDR: {exc}') from exc
  if q.ip_allowlist_enabled:
   if not nets:raise HTTPException(422,'Allowlist cannot be enabled without at least one CIDR')
-  forwarded=request.headers.get('x-forwarded-for','');client_ip=forwarded.split(',')[0].strip() if forwarded else (request.client.host if request.client else '')
-  try:included=any(ipaddress.ip_address(client_ip) in network for network in nets)
+  current_ip=client_ip(request)
+  try:included=any(ipaddress.ip_address(current_ip) in network for network in nets)
   except ValueError:included=False
   if not included:raise HTTPException(422,'Your current IP must be included before enabling the allowlist')
  r=db.query(SecuritySettings).filter_by(id=1).first();r.rate_limit_enabled=q.rate_limit_enabled;r.rate_limit_per_minute=q.rate_limit_per_minute;r.ip_allowlist_enabled=q.ip_allowlist_enabled;r.allowed_cidrs=json.dumps(q.allowed_cidrs);r.updated_at=int(time.time());db.commit();return ResponseModel(success=True,msg='Security settings saved',data=None)

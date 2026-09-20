@@ -107,6 +107,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         if username is None:
             raise credentials_exception
     except JWTError:
+        if not token.startswith(("pvn_", "ovp_")):
+            raise credentials_exception
         digest = hashlib.sha256(token.encode()).hexdigest()
         api_token = db.query(ApiToken).filter(ApiToken.token_hash == digest, ApiToken.revoked_at.is_(None)).first()
         now = int(time.time())

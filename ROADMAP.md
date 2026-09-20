@@ -54,7 +54,7 @@
 
 ## Production verified — publication gate
 
-### v1.0.13
+### v1.0.13 — RELEASED
 - Fail-closed Production canary-retirement procedure: canonical Nginx upstream, syntax check, successful Nginx reload, local health and public health must all pass before canary shutdown (`PVN-894`).
 - Direct regression guard for the brief v1.0.12 HTTP 502 caused by stopping the validated canary before Nginx had been cut back to canonical. Production rollout and post-canary public verification passed; immutable tag/assets and post-download SHA256 verification remain.
 
@@ -62,8 +62,9 @@
 
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
-- **v1.0.13 current:** `PVN-894` Production verified; release publication gate.
-- **v1.0.14 next:** security/pentest regression work from the open `PVN-500..599` security stream, selected after v1.0.13 is released.
+- **v1.0.13 released:** `PVN-894` fail-closed canary retirement; immutable artifact/re-download verification complete.
+- **v1.0.14 current candidate:** `PVN-585` security regression — four reproduced boundary defects fixed, permanent security regression/browser/probe gates added; Production rollout/release evidence remains before release.
+- **v1.0.15 next:** continue genuinely open security/operations items after v1.0.14 closes; no already-completed item is repeated.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 
