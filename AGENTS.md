@@ -189,10 +189,14 @@ Before implementation, record the task and target release here **and commit/push
   - Release completion: annotated tag `v1.0.12` resolves to final main `56119fc2301f960156b4b2b4f2d047bc53b62cda`; GitHub Release `392590682` published with source artifact + SHA256. Public re-download verification PASS; artifact SHA256 `f8bfc02b74ff1784dd18a81c7e3adf9d0e7bbb2ee255f4a36e36dbc916ef1465`, 524 archive entries.
   - Rollout incident: after validation, the canary was stopped while Nginx still referenced `19002`, causing a brief public HTTP 502. Root cause was ordering in the manual release cutback, not panel/OpenVPN failure. Nginx was restored to canonical `19001` with `nginx -t` + reload and public `/healthz`, panel root and `/users` all returned 200; no panel/Node/OpenVPN restart was required for the 502 repair. This is the direct regression input for `PVN-894` / v1.0.13.
 
-- `v1.0.13` — RELEASE CANDIDATE — `PVN-894` fail-closed Production canary retirement.
+- `v1.0.13` — PRODUCTION VERIFIED / RELEASE PUBLICATION GATE — `PVN-894` fail-closed Production canary retirement.
   - Guard contract: refuse canary retirement while active Nginx site still references `19002`, canonical `19001` is missing, `nginx -t` fails, the validated site cannot be reloaded into Nginx, local canonical health is not 200, or public health is not 200.
-  - TDD: missing guard RED; proxy-target parser GREEN; health/nginx RED→GREEN; CLI RED→GREEN. Focused suite currently 10/10 PASS.
-  - Live verification before merge: current Production returned `CANARY_RETIRE_SAFE=YES` with active proxy 19001 and both health checks 200; a copied config rewritten to 19002 returned `CANARY_RETIRE_SAFE=NO` and exit code 1.
+  - TDD/review: proxy parser, health, CLI, installer, explicit-site and Nginx-reload ordering were driven RED→GREEN. Final focused guard suite 13/13 PASS; full local Python/governance suite 195/195 PASS; exact PR CI and exact merged-main CI both PASS including security audit, real dual-auth OpenVPN handshake and browser matrix.
+  - Pre-merge live verification: Production returned `CANARY_RETIRE_SAFE=YES`; a copied Nginx site rewritten to 19002 returned `CANARY_RETIRE_SAFE=NO` with exit 1. Self-review then strengthened the guard so it requires an explicit site, validates canonical/no-canary state, performs the Nginx reload itself, and only then checks local/public health.
+  - Rollback point: `/var/backups/pvnetwork-panel/20260920-223158` passed source/DB/env SHA256 verification, native PostgreSQL restore-test and `pg_restore -l`; rollout evidence is under `/root/pvnetwork-deploy-backups/v1.0.13-pvn894-20260920-223158`.
+  - Production rollout: exact merged main `7923b88854afcae80cc68edae53081c095949f5f` was built and verified as a 19002 canary (`1.0.13`, UI/users/assets 200), public traffic was moved to that canary, canonical 19001 was updated and only `pvnetwork-panel.service` restarted.
+  - Canary retirement: Nginx site was returned to 19001; installed guard itself validated syntax/site, reloaded Nginx and returned `CANARY_RETIRE_SAFE=YES`, canonical/public HTTP 200. Only then was the exact canary PID stopped. After retirement, public `/healthz`, `/hajsaman` and `/hajsaman/users` all remained 200 with health version `1.0.13`.
+  - Isolation evidence: Node PID stayed `1306704`, normal OpenVPN PID stayed `1022714`; normal config SHA256 remained `4fe892bb014b2ce656c22dd65551f7946056ae2d23d0eed1b6b834a31653d708` and Router compatibility config SHA256 remained `17c4229f8ec8c81adc21c71706dd037768e06318c9411ca870391a42034034ad`. Final Production smoke PASS with 98 routes, DB/Alembic/timers PASS and 68 users / 4 nodes / 3 admins. Immutable tag/artifact publication + public re-download SHA verification remain the final gate.
   - Safety boundary: guard may reload Nginx after validating the canonical site, but never stops the canary itself and does not restart panel/OpenVPN/Node. Canary termination remains an explicit operator action only after PASS.
 
 ## Current release baseline
@@ -1131,7 +1135,7 @@ This section intentionally mirrors the complete permanent task registry so an ag
 - PVN-891 Release smoke on fresh install
 - PVN-892 Release smoke on upgrade
 - PVN-893 Release smoke on rollback
-- PVN-894 Production canary deploy procedure — release candidate v1.0.13; fail-closed retirement guard added after v1.0.12 502 incident.
+- PVN-894 Production canary deploy procedure — Production verified in v1.0.13; immutable release publication pending.
 - PVN-895 Production health observation window
 - PVN-896 Release incident rollback procedure
 - PVN-897 Release postmortem template
