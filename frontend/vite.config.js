@@ -9,11 +9,12 @@ const __dirname = import.meta.dirname;
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 const urlPath = process.env.URLPATH || 'panel'
+const outDir = process.env.PVNETWORK_BUILD_OUTDIR || 'dist'
 
 export default defineConfig({
   plugins: [react()],
   base: `/${urlPath}/`,
   build: {
-    outDir: 'dist',
+    outDir,
   },
 })

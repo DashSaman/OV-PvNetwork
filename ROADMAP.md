@@ -44,11 +44,17 @@
 ### v1.0.11
 - Live online-user truth correction: zero-client Node samples clear stale display state and orphan Common Names no longer inflate managed-user counts (`PVN-033`).
 
+## Release candidate
+
+### v1.0.12
+- Authenticated runtime main-admin username/password and panel-path controls with re-authentication, generation-bound JWT rotation, five-minute old-path redirect, candidate canary and automatic rollback (`PVN-032`).
+- Automated/backend/browser/security gates are green; Production rollout, PID/config-hash isolation evidence and immutable GitHub Release verification remain pending.
+
 ## Sequential patch queue
 
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
-- **v1.0.12 next:** `PVN-032`, authenticated UI controls for panel path and main-admin username/password with hashed-password storage and atomic path rollback.
+- **v1.0.13 next:** select the next genuinely open `PVN-xxx` item from `AGENTS.md` after v1.0.12 Production verification; completed items are not repeated.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 

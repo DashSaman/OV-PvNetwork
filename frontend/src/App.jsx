@@ -1,5 +1,5 @@
 import { t } from "./i18n";
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
@@ -11,7 +11,7 @@ import AdminManagement from './pages/AdminManagement';
 import ResellerNodes from './pages/ResellerNodes';
 import MonitoringSettings from './pages/MonitoringSettings';
 import FleetManagement from './pages/FleetManagement';
-import SecuritySettings from './pages/SecuritySettings';
+const SecuritySettings = lazy(() => import('./pages/SecuritySettings'));
 import OperationsCenter from './pages/OperationsCenter';
 import BandwidthControl from './pages/BandwidthControl';
 import favicon from './assets/fav.webp';
@@ -40,7 +40,7 @@ function App() {
         {userRole === 'main_admin' && <Route path="admins" element={<AdminManagement />} />}
         {userRole === 'main_admin' && <Route path="monitoring" element={<MonitoringSettings />} />}
         {userRole === 'main_admin' && <Route path="fleet" element={<FleetManagement />} />}
-        {userRole === 'main_admin' && <Route path="security" element={<SecuritySettings />} />}
+        {userRole === 'main_admin' && <Route path="security" element={<Suspense fallback={<div className="ov-page-loader">Loading...</div>}><SecuritySettings /></Suspense>} />}
         {userRole === 'main_admin' && <Route path="operations" element={<OperationsCenter />} />}
         {userRole === 'main_admin' && <Route path="bandwidth" element={<BandwidthControl />} />}
       </Route>

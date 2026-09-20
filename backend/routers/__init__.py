@@ -2,6 +2,7 @@ from backend.auth.auth import router as login_router
 from .operations import router as operations_router
 from .backups import router as backups_router
 from .security import router as security_router
+from .panel_settings import router as panel_settings_router
 from .fleet import router as fleet_router
 from .audit import router as audit_router
 from .users import router as user_router
@@ -17,6 +18,7 @@ all_routers = [
     backups_router,
     operations_router,
     security_router,
+    panel_settings_router,
     fleet_router,
     audit_router,
     login_router,

@@ -55,12 +55,14 @@ if [[ -z "$ADMIN_PASS" ]]; then
 fi
 JWT_SECRET="$(openssl rand -hex 48)"
 MIRZA_KEY="$(openssl rand -hex 32)"
+MAIN_ADMIN_AUTH_GENERATION="$(openssl rand -hex 24)"
 uv sync
 ADMIN_HASH="$(printf '%s\n' "$ADMIN_PASS" | .venv/bin/python -c 'import sys; from passlib.context import CryptContext; c=CryptContext(schemes=["bcrypt"], deprecated="auto"); print(c.hash(sys.stdin.readline().rstrip("\r\n")))')"
 
 cat > "$APP/.env" <<ENV
 ADMIN_USERNAME=${ADMIN_USER}
 ADMIN_PASSWORD_HASH=${ADMIN_HASH}
+MAIN_ADMIN_AUTH_GENERATION=${MAIN_ADMIN_AUTH_GENERATION}
 URLPATH=${PANEL_PATH}
 VITE_URLPATH=${PANEL_PATH}
 HOST=127.0.0.1

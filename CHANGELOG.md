@@ -1,3 +1,11 @@
+## v1.0.12 — PVN-032 runtime main-admin and panel-path settings
+
+- Adds authenticated Security Settings controls for the main-admin username, password and panel URL path; every mutation re-verifies the current password and stores only the password hash.
+- Main-admin JWTs are generation-bound so successful credential rotation invalidates older main-admin browser sessions while the initiating browser receives a guarded replacement-token handoff.
+- Path changes build and verify a candidate panel on `127.0.0.1:19002`, switch atomically, and roll back the panel environment/frontend if canonical verification fails.
+- The previous panel path returns HTTP 307 to the new path for exactly 300 seconds, preserving the suffix, then naturally returns 404.
+- OpenVPN listeners, Router compatibility listeners, `ov-node.service`, VPN profiles, certificates, routing and active user tunnels are outside the mutation path and are never restarted by PVN-032.
+
 ## v1.0.11 — PVN-033 live online-count truth regression fix
 
 - Treats a successful Node `/sync/usage` response with `data: null` as a fresh zero-client snapshot instead of a failed poll, preventing stale online clients from surviving the display grace window.

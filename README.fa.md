@@ -4,11 +4,19 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.11-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.12-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.12 نسبت به v1.0.11
+
+**PVN-032 — تنظیمات امن Runtime برای پنل و مدیر اصلی.** مدیر اصلی پس از ورود می‌تواند Path پنل و Username/Password خودش را از Security Settings تغییر دهد. قبل از هر تغییر رمز فعلی دوباره بررسی می‌شود، رمز جدید فقط به‌صورت Hash ذخیره می‌شود و تغییر Credential با Generation جدید JWTهای قدیمی مدیر اصلی را نامعتبر می‌کند؛ مرورگر آغازکننده با Handoff کنترل‌شده Session خود را حفظ می‌کند.
+
+تغییر Path ابتدا با Build و Canary روی `127.0.0.1:19002` بررسی می‌شود و فقط در صورت موفقیت به Panel اصلی سوییچ می‌شود. Path قبلی 300 ثانیه HTTP 307 می‌دهد و سپس 404 می‌شود. در شکست Verification، Environment و Frontend قبلی خودکار برمی‌گردند. OpenVPN عادی، Listener سازگاری Router، Nodeها، Profileها، Certificateها و Tunnelهای فعال کاربران توسط PVN-032 Restart یا Reconfigure نمی‌شوند.
+
+خط انتشار فعلی: **v1.0.12** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.12.fa.md).
 
 ## تغییرات v1.0.11 نسبت به v1.0.10
 

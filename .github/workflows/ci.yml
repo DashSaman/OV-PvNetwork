@@ -127,6 +127,7 @@ jobs:
           node tests/inline-quick-edit-smoke.mjs
           node tests/user-create-node-selector-smoke.mjs
           node tests/router-openvpn-smoke.mjs
+          node tests/panel-settings-smoke.mjs
           PV_PYTHON=python3 node tests/subscription-responsive-smoke.mjs
 
       - name: JSON syntax

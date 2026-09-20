@@ -43,10 +43,19 @@ def authenticate_user(db: Session, username: str, password: str):
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
+    if to_encode.get("type") == "main_admin" and "gen" not in to_encode:
+        to_encode["gen"] = config.MAIN_ADMIN_AUTH_GENERATION
     expire = datetime.now() + (expires_delta or timedelta(hours=24))
     to_encode.update({"exp": expire})
 
     return jwt.encode(to_encode, config.JWT_SECRET_KEY, algorithm=ALGORITHM)
+
+
+def mint_main_admin_token(username: str, generation: str) -> str:
+    return create_access_token(
+        {"sub": username, "type": "main_admin", "gen": generation},
+        expires_delta=timedelta(seconds=config.JWT_ACCESS_TOKEN_EXPIRES),
+    )
 
 
 @router.post("/login")
@@ -69,10 +78,15 @@ async def login(
             raise HTTPException(status_code=401, detail="TOTP code required or invalid")
 
     access_token_expires = timedelta(seconds=config.JWT_ACCESS_TOKEN_EXPIRES)
-    access_token = create_access_token(
-        data={"sub": admin["username"], "type": admin["type"]},
-        expires_delta=access_token_expires,
-    )
+    if admin["type"] == "main_admin":
+        access_token = mint_main_admin_token(
+            admin["username"], config.MAIN_ADMIN_AUTH_GENERATION
+        )
+    else:
+        access_token = create_access_token(
+            data={"sub": admin["username"], "type": admin["type"]},
+            expires_delta=access_token_expires,
+        )
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -101,10 +115,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         api_token.last_used_at = now
         db.commit()
         return {"username": api_token.created_by, "type": "main_admin", "auth_kind": "api_token", "scopes": json.loads(api_token.scopes)}
-    if user_type == "admin":
+    if user_type == "main_admin":
+        if username != config.ADMIN_USERNAME:
+            raise credentials_exception
+        if payload.get("gen") != config.MAIN_ADMIN_AUTH_GENERATION:
+            raise credentials_exception
+    elif user_type == "admin":
         admin = crud.get_admin_by_username(db, username)
         if not admin or not admin.is_active:
             raise credentials_exception
-    elif user_type != "main_admin":
+    elif user_type != "admin":
         raise credentials_exception
     return {"username": username, "type": user_type}

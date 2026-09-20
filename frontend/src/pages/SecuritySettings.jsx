@@ -1,9 +1,160 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import apiClient from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const scopes = ['users:read', 'users:write', 'nodes:read', 'nodes:write', 'settings:read', 'settings:write', 'audit:read'];
 const messageFrom = (error, fallback) => error.response?.data?.detail || error.response?.data?.msg || fallback;
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+const readChangeEnvelope = () => {
+  try {
+    const raw = sessionStorage.getItem('pvnPanelSettingsChange');
+    if (!raw) return null;
+    const value = JSON.parse(raw);
+    if (!value?.change_id || !value?.status_token || Number(value.expires_at || 0) <= Date.now()) {
+      sessionStorage.removeItem('pvnPanelSettingsChange');
+      sessionStorage.removeItem('pvnPendingAuthToken');
+      return null;
+    }
+    return value;
+  } catch {
+    sessionStorage.removeItem('pvnPanelSettingsChange');
+    sessionStorage.removeItem('pvnPendingAuthToken');
+    return null;
+  }
+};
+
+function PanelRuntimeCard() {
+  const { t } = useTranslation();
+  const { stageReplacementToken, promoteReplacementToken, discardReplacementToken } = useAuth();
+  const [info, setInfo] = useState(null);
+  const [form, setForm] = useState({ currentPassword: '', newUsername: '', newPassword: '', confirmPassword: '', newPath: '' });
+  const [confirming, setConfirming] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [progress, setProgress] = useState('');
+  const [panelError, setPanelError] = useState('');
+  const [panelMessage, setPanelMessage] = useState('');
+
+  const loadPanel = useCallback(async () => {
+    try {
+      const response = await apiClient.get('/security/panel-settings', { timeout: 12000 });
+      setInfo(response.data.data);
+    } catch (error) {
+      setPanelError(messageFrom(error, t('panelSettings.loadFailed')));
+    }
+  }, [t]);
+
+  const pollChange = useCallback(async envelope => {
+    setApplying(true);
+    const deadline = Date.now() + 45000;
+    while (Date.now() < deadline) {
+      try {
+        const response = await apiClient.get(`/security/panel-settings/jobs/${envelope.change_id}`, {
+          headers: { 'X-PVNetwork-Change-Token': envelope.status_token },
+          skipAuth: true,
+          skipUnauthorizedReload: true,
+          timeout: 4000,
+        });
+        const state = response.data.data || {};
+        setProgress(state.status || 'verifying');
+        if (state.status === 'complete') {
+          promoteReplacementToken();
+          sessionStorage.removeItem('pvnPanelSettingsChange');
+          setApplying(false);
+          setPanelMessage(t('panelSettings.complete'));
+          if (envelope.target_path && envelope.target_path !== envelope.previous_path) {
+            window.location.assign(`/${envelope.target_path}/security`);
+          } else {
+            await loadPanel();
+          }
+          return;
+        }
+        if (state.status === 'rolled_back') {
+          discardReplacementToken();
+          sessionStorage.removeItem('pvnPanelSettingsChange');
+          setApplying(false);
+          setPanelError(state.failure_reason || t('panelSettings.rollback'));
+          return;
+        }
+      } catch {
+        // The canonical panel may be briefly unavailable during its controlled restart.
+      }
+      await sleep(750);
+    }
+    setApplying(false);
+    setPanelError(t('panelSettings.pollTimeout'));
+  }, [discardReplacementToken, loadPanel, promoteReplacementToken, t]);
+
+  useEffect(() => { loadPanel(); }, [loadPanel]);
+  useEffect(() => {
+    const envelope = readChangeEnvelope();
+    if (envelope) pollChange(envelope);
+  }, [pollChange]);
+
+  const openConfirmation = () => {
+    setPanelError(''); setPanelMessage('');
+    if (!form.currentPassword) return setPanelError(t('panelSettings.currentRequired'));
+    if (form.newPassword && form.newPassword !== form.confirmPassword) return setPanelError(t('panelSettings.passwordMismatch'));
+    if (!form.newUsername.trim() && !form.newPassword && !form.newPath.trim()) return setPanelError(t('panelSettings.noChanges'));
+    setConfirming(true);
+  };
+
+  const applyChanges = async () => {
+    setConfirming(false); setApplying(true); setProgress('validating'); setPanelError('');
+    try {
+      const payload = { current_password: form.currentPassword };
+      if (form.newUsername.trim()) payload.new_username = form.newUsername.trim();
+      if (form.newPassword) payload.new_password = form.newPassword;
+      if (form.newPath.trim()) payload.new_path = form.newPath.trim();
+      const response = await apiClient.post('/security/panel-settings/apply', payload, { timeout: 15000 });
+      const data = response.data.data;
+      stageReplacementToken(data.pending_access_token || null);
+      const envelope = {
+        change_id: data.change_id,
+        status_token: data.status_token,
+        target_path: data.target_path,
+        previous_path: info?.panel_path || '',
+        started_at: Date.now(),
+        expires_at: Date.now() + 5 * 60 * 1000,
+      };
+      sessionStorage.setItem('pvnPanelSettingsChange', JSON.stringify(envelope));
+      setForm(current => ({ ...current, currentPassword: '', newPassword: '', confirmPassword: '' }));
+      await pollChange(envelope);
+    } catch (error) {
+      discardReplacementToken();
+      sessionStorage.removeItem('pvnPanelSettingsChange');
+      setApplying(false);
+      setPanelError(messageFrom(error, t('feature.loadFailed')));
+    }
+  };
+
+  return <section className="monitor-form" aria-labelledby="panel-runtime-title">
+    <h3 id="panel-runtime-title">{t('panelSettings.title')}</h3>
+    {panelError && <div className="error-message" role="alert">{panelError}</div>}
+    {panelMessage && <div className="success-message" role="status">{panelMessage}</div>}
+    {progress && <p role="status">{t('panelSettings.progress')}: <strong>{progress}</strong></p>}
+    {!info ? <p>{t('feature.loading')}</p> : <>
+      <p>{t('panelSettings.currentUsername')}: <span className="ltr-number">{info.username}</span></p>
+      <p>{t('panelSettings.currentPath')}: <span className="ltr-number">/{info.panel_path}</span></p>
+      <div className="monitor-grid">
+        <label htmlFor="pvn-new-username">{t('panelSettings.newUsername')}<input id="pvn-new-username" value={form.newUsername} onChange={e => setForm({...form, newUsername:e.target.value})}/></label>
+        <label htmlFor="pvn-new-path">{t('panelSettings.panelPath')}<input id="pvn-new-path" value={form.newPath} onChange={e => setForm({...form, newPath:e.target.value})}/></label>
+        <label htmlFor="pvn-new-password">{t('panelSettings.newPassword')}<input id="pvn-new-password" type="password" value={form.newPassword} onChange={e => setForm({...form, newPassword:e.target.value})}/></label>
+        <label htmlFor="pvn-confirm-password">{t('panelSettings.confirmPassword')}<input id="pvn-confirm-password" type="password" value={form.confirmPassword} onChange={e => setForm({...form, confirmPassword:e.target.value})}/></label>
+        <label htmlFor="pvn-current-password">{t('panelSettings.currentPassword')}<input id="pvn-current-password" type="password" autoComplete="current-password" value={form.currentPassword} onChange={e => setForm({...form, currentPassword:e.target.value})}/></label>
+      </div>
+      <div className="monitor-actions"><button type="button" className="btn" disabled={applying} onClick={openConfirmation}>{t('panelSettings.apply')}</button></div>
+    </>}
+    {confirming && <div className="modal-overlay"><div className="modal" role="dialog" aria-modal="true" aria-labelledby="panel-confirm-title">
+      <div className="modal-header"><h3 id="panel-confirm-title">{t('panelSettings.confirmTitle')}</h3></div>
+      <p>{t('panelSettings.summaryUser', { old: info?.username, next: form.newUsername || info?.username })}</p>
+      <p>{t('panelSettings.summaryPath', { old: info?.panel_path, next: form.newPath || info?.panel_path })}</p>
+      <div className="modal-footer"><button type="button" className="btn-secondary" onClick={() => setConfirming(false)}>{t('panelSettings.cancel')}</button><button type="button" className="btn" onClick={applyChanges}>{t('panelSettings.confirm')}</button></div>
+    </div></div>}
+  </section>;
+}
 
 export default function SecuritySettings() {
   const { t } = useTranslation();
@@ -94,6 +245,8 @@ export default function SecuritySettings() {
     <div className="view-header"><h2>{t('ui.dbb6d4f17351')}</h2></div>
     {error && <div className="error-message" role="alert">{error}</div>}
     {message && <div className="success-message" role="status">{message}</div>}
+
+    <PanelRuntimeCard />
 
     <section className="monitor-form">
       <label><input type="checkbox" checked={data.rate_limit_enabled} onChange={event => setData({...data, rate_limit_enabled: event.target.checked})}/>{t('ui.3ddc17b9f318')}</label>
