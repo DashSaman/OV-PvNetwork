@@ -11,6 +11,7 @@ install -m 0755 "$ROOT/scripts/pvnetwork-panel-backup" /usr/local/sbin/pvnetwork
 install -m 0755 "$ROOT/scripts/pvnetwork-panel-restore-job" /usr/local/sbin/pvnetwork-panel-restore-job
 install -m 0755 "$ROOT/scripts/pvnetwork-panel-settings-apply.py" /usr/local/sbin/pvnetwork-panel-settings-apply
 install -m 0755 "$ROOT/scripts/pvnetwork-panel-smoke-test" /usr/local/sbin/pvnetwork-panel-smoke-test
+install -m 0755 "$ROOT/scripts/pvnetwork-canary-retire-guard.py" /usr/local/sbin/pvnetwork-canary-retire-guard
 install -m 0755 "$ROOT/scripts/pvnetwork-usage-sync" /usr/local/sbin/pvnetwork-usage-sync
 install -m 0755 "$ROOT/scripts/pvnetwork-sub-push-sender.py" /usr/local/sbin/pvnetwork-sub-push-sender.py
 install -m 0755 "$ROOT/scripts/pvnetwork-node-user-reconcile.py" /usr/local/sbin/pvnetwork-node-user-reconcile.py

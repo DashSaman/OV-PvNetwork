@@ -4,13 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.12-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.13-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.13 vs v1.0.12
+
+**PVN-894 — fail-closed Production canary retirement.** Release rollouts now include a dedicated guard that refuses to retire port `19002` until the active Nginx site points back to canonical `19001`, `nginx -t` passes, and both local canonical and public health endpoints return HTTP 200. It emits `CANARY_RETIRE_SAFE=YES/NO` for auditable automation.
+
+This directly prevents the v1.0.12 rollout failure mode that briefly produced HTTP 502 after a validated canary was stopped while Nginx was still proxying to it. OpenVPN, Nodes, Router compatibility, certificates, profiles and active VPN tunnels are outside this patch.
+
+Latest release line: **v1.0.13** — [release notes](./docs/RELEASE-NOTES-v1.0.13.md).
 
 ## What changed in v1.0.12 vs v1.0.11
 

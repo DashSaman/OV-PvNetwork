@@ -178,7 +178,7 @@ Before implementation, record the task and target release here **and commit/push
   - Production deployment: Nginx was temporarily switched to the validated 19002 canary while canonical 19001 was updated, then returned to 19001 and canary retired. Exact release tree parity is 409/409. Only `pvnetwork-panel.service` restarted; normal OpenVPN PID/config and Node PID were unchanged during rollout.
   - Post-deploy evidence: local/public `/healthz` reports `1.0.11`; public UI/assets return 200; DB remains 68 users / 4 nodes / 264 assignments; Production presence sampled 7 managed online users with 1 unmapped/orphan client excluded and no failed Nodes.
 
-- `v1.0.12` — PRODUCTION VERIFIED / RELEASE PUBLICATION GATE — `PVN-032` guarded runtime main-admin/panel-path settings.
+- `v1.0.12` — RELEASED — `PVN-032` guarded runtime main-admin/panel-path settings.
   - Implementation: current-password re-authentication; hash-only password persistence; generation-bound main-admin JWT rotation; TOTP-preserving username migration; five-minute old-path 307; detached candidate build/canary on 19002; atomic switch and automatic rollback.
   - Isolation: the worker restart allowlist contains only `pvnetwork-panel.service`; OpenVPN, Router compatibility listeners, `ov-node.service`, Nginx, profiles/certificates/routing and active VPN tunnels are outside the mutation path.
   - Verification: 181/181 Python tests PASS after rollout-guard regressions; exact-head PR CI and merged-main CI both PASS, including dependency/static security audits, real Router OpenVPN dual-auth handshake, frontend build/budget, browser matrix and secret/private-material guard.
@@ -186,7 +186,14 @@ Before implementation, record the task and target release here **and commit/push
   - Production evidence: canonical `/healthz` reports `1.0.12`; local/public UI and assets return 200; authenticated Security and Panel Settings APIs return 200; DB remains 68 users / 4 nodes / 3 admins. The live path itself was not changed because no new owner-selected Production target path was supplied; the feature is available from authenticated Security Settings.
   - VPN isolation evidence: normal OpenVPN PID remained `1022714`; `/etc/openvpn/server/server.conf` SHA256 remained `4fe892bb014b2ce656c22dd65551f7946056ae2d23d0eed1b6b834a31653d708`; Router compatibility config SHA256 remained `17c4229f8ec8c81adc21c71706dd037768e06318c9411ca870391a42034034ad`.
   - Rollout guard: a pre-existing healthcheck used POST against the Node's GET-with-JSON `/sync/status` contract and caused false `ov-node.service` restarts. It now uses GET; the installed helper, an explicit healthcheck, and the next real timer run all returned success with Node PID stable at `1306704` and OpenVPN PID unchanged. The smoke checker also stopped sourcing secret-bearing `.env` and now validates 98 effective FastAPI routes via the in-process schema.
-  - Candidate 19002 matched merged main, passed health/UI/assets/auth checks, and was retired after canonical verification. Remaining gate: publish immutable `v1.0.12` tag/assets and re-download/verify the sanitized artifact plus SHA256.
+  - Release completion: annotated tag `v1.0.12` resolves to final main `56119fc2301f960156b4b2b4f2d047bc53b62cda`; GitHub Release `392590682` published with source artifact + SHA256. Public re-download verification PASS; artifact SHA256 `f8bfc02b74ff1784dd18a81c7e3adf9d0e7bbb2ee255f4a36e36dbc916ef1465`, 524 archive entries.
+  - Rollout incident: after validation, the canary was stopped while Nginx still referenced `19002`, causing a brief public HTTP 502. Root cause was ordering in the manual release cutback, not panel/OpenVPN failure. Nginx was restored to canonical `19001` with `nginx -t` + reload and public `/healthz`, panel root and `/users` all returned 200; no panel/Node/OpenVPN restart was required for the 502 repair. This is the direct regression input for `PVN-894` / v1.0.13.
+
+- `v1.0.13` — RELEASE CANDIDATE — `PVN-894` fail-closed Production canary retirement.
+  - Guard contract: refuse canary retirement while active Nginx site still references `19002`, canonical `19001` is missing, `nginx -t` fails, local canonical health is not 200, or public health is not 200.
+  - TDD: missing guard RED; proxy-target parser GREEN; health/nginx RED→GREEN; CLI RED→GREEN. Focused suite currently 10/10 PASS.
+  - Live verification before merge: current Production returned `CANARY_RETIRE_SAFE=YES` with active proxy 19001 and both health checks 200; a copied config rewritten to 19002 returned `CANARY_RETIRE_SAFE=NO` and exit code 1.
+  - Safety boundary: guard never stops a process itself and does not restart panel/OpenVPN/Node. Canary termination remains an explicit operator action only after PASS.
 
 ## Current release baseline
 
@@ -221,7 +228,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-029 [x] Router/OpenVPN compatibility for RouterOS and other username/password-oriented clients using an isolated compatibility listener/profile; certificate+password dual auth remains isolated and opt-in, and existing OpenVPN certificates/listener are not disturbed. Release: v1.0.9.
 - PVN-030 [x] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Release: v1.0.10.
 - PVN-031 [x] Synchronize Dashboard and User Management on one short-lived presence snapshot and lightweight live-presence polling so adjacent views do not race between samples. Release: v1.0.7.
-- PVN-032 [x] Allow the main administrator to change the panel URL path and main-admin username/password from the authenticated UI; password changes store only a strong hash, path changes build/canary/switch atomically with rollback, and the active admin session uses a guarded replacement-token handoff. Production verified for v1.0.12; immutable release publication is the final gate.
+- PVN-032 [x] Allow the main administrator to change the panel URL path and main-admin username/password from the authenticated UI; password changes store only a strong hash, path changes build/canary/switch atomically with rollback, and the active admin session uses a guarded replacement-token handoff. Release: v1.0.12.
 - PVN-033 [x] Reproduce and fix the remaining Production online-user count mismatch on the owner server using live-source evidence, preserving device-limit enforcement and the shared presence snapshot contract. Release: v1.0.11.
 
 ## UI/UX task ledger
@@ -1124,7 +1131,7 @@ This section intentionally mirrors the complete permanent task registry so an ag
 - PVN-891 Release smoke on fresh install
 - PVN-892 Release smoke on upgrade
 - PVN-893 Release smoke on rollback
-- PVN-894 Production canary deploy procedure
+- PVN-894 Production canary deploy procedure — release candidate v1.0.13; fail-closed retirement guard added after v1.0.12 502 incident.
 - PVN-895 Production health observation window
 - PVN-896 Release incident rollback procedure
 - PVN-897 Release postmortem template
