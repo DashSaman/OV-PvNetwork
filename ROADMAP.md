@@ -38,11 +38,15 @@
 ### v1.0.9
 - Opt-in Router/MikroTik OpenVPN compatibility on an isolated listener/profile with certificate + password dual authentication and no change to normal certificate-only users (`PVN-029`).
 
+### v1.0.10
+- Backward-compatible migration of PVNetwork-owned token/header/helper aliases while retaining legacy reads and leaving upstream `ov-node` identities plus normal OpenVPN untouched (`PVN-030`).
+
 ## Sequential patch queue
 
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
-- **v1.0.10 queued:** `PVN-030`, backward-compatible migration of remaining legacy internal protocol/token aliases to PVNetwork-owned names without cutting off existing Nodes or integrations.
+- **v1.0.11 next:** `PVN-033`, reproduce and fix the remaining live Production online-user count mismatch with node/direct/session evidence; do not change device-limit semantics.
+- **v1.0.12 queued:** `PVN-032`, authenticated UI controls for panel path and main-admin username/password with hashed-password storage and atomic path rollback.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 
