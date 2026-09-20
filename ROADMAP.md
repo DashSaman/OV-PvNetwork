@@ -52,17 +52,17 @@
 - The live Production path was intentionally left unchanged because no new owner-selected target path was supplied. Tag/assets were published and the public artifact was re-downloaded with SHA256 verification PASS.
 
 
-## Release candidate
+## Production verified — publication gate
 
 ### v1.0.13
 - Fail-closed Production canary-retirement procedure: canonical Nginx upstream, syntax check, successful Nginx reload, local health and public health must all pass before canary shutdown (`PVN-894`).
-- Direct regression guard for the brief v1.0.12 HTTP 502 caused by stopping the validated canary before Nginx had been cut back to canonical.
+- Direct regression guard for the brief v1.0.12 HTTP 502 caused by stopping the validated canary before Nginx had been cut back to canonical. Production rollout and post-canary public verification passed; immutable tag/assets and post-download SHA256 verification remain.
 
 ## Sequential patch queue
 
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
-- **v1.0.13 current:** `PVN-894` Production canary deploy/retirement procedure.
+- **v1.0.13 current:** `PVN-894` Production verified; release publication gate.
 - **v1.0.14 next:** security/pentest regression work from the open `PVN-500..599` security stream, selected after v1.0.13 is released.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
