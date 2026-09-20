@@ -170,6 +170,14 @@ Before implementation, record the task and target release here **and commit/push
   - Post-deploy evidence: local/public `/healthz` reports `1.0.10`; public UI and built asset return 200; deployed header compatibility matrix is 200/200/200/400; DB remains 68 users / 4 nodes / 264 assignments; `REAL_ERRORS=0`, `HTTP_5XX=0`, panel `NRestarts=0` and normal OpenVPN remains active.
   - Next Production priority is a fresh online-count regression task because the owner still observes an incorrect online total on the live server despite the earlier `PVN-027`/`PVN-031` work; that historical work remains closed and is not silently reopened.
 
+- `v1.0.11` — RELEASED — `PVN-033` live online-user truth correction.
+  - Root cause: a successful Node `/sync/usage` sample with zero clients returned `data=null`, which the display fallback misclassified as a failed poll and could preserve stale online state for the stale-grace window. A second mismatch came from raw Node client totals including orphan/unknown Common Names that no longer map to a managed panel user.
+  - Fix: successful zero-client samples are now treated as fresh empty snapshots; global/user counts remain unique managed PVNetwork users; per-Node Dashboard counts use `managed_online_by_node`; orphan clients are exposed only as diagnostics and do not inflate panel-user totals. Device-limit/session enforcement remains unchanged.
+  - Verification: exact main CI run `35498094722` PASS; focused online-truth tests PASS; Production canary on 19002 returned `1.0.11`, UI/assets 200, zero-client Nodes reported 0, and the orphan USA client was excluded from managed-user counts.
+  - Production rollback point: `/root/pvnetwork-deploy-backups/v1.0.11-pvn033-20260920-084307`; application archive plus native PostgreSQL dump/restore-list verification and Nginx/firewall snapshots passed before mutation.
+  - Production deployment: Nginx was temporarily switched to the validated 19002 canary while canonical 19001 was updated, then returned to 19001 and canary retired. Exact release tree parity is 409/409. Only `pvnetwork-panel.service` restarted; normal OpenVPN PID/config and Node PID were unchanged during rollout.
+  - Post-deploy evidence: local/public `/healthz` reports `1.0.11`; public UI/assets return 200; DB remains 68 users / 4 nodes / 264 assignments; Production presence sampled 7 managed online users with 1 unmapped/orphan client excluded and no failed Nodes.
+
 ## Current release baseline
 
 - PVN-001 [x] Stable public `v1.0.0` release.
@@ -204,7 +212,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-030 [x] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Release: v1.0.10.
 - PVN-031 [x] Synchronize Dashboard and User Management on one short-lived presence snapshot and lightweight live-presence polling so adjacent views do not race between samples. Release: v1.0.7.
 - PVN-032 [ ] Allow the main administrator to change the panel URL path and main-admin username/password from the authenticated UI; password changes must store only a strong hash, path changes must rebuild/switch frontend atomically with rollback and must never strand the active admin session. Target: v1.0.12.
-- PVN-033 [ ] Reproduce and fix the remaining Production online-user count mismatch on the owner server using live-source evidence, preserving device-limit enforcement and the shared presence snapshot contract. Target: v1.0.11.
+- PVN-033 [x] Reproduce and fix the remaining Production online-user count mismatch on the owner server using live-source evidence, preserving device-limit enforcement and the shared presence snapshot contract. Release: v1.0.11.
 
 ## UI/UX task ledger
 
