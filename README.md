@@ -4,13 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.11-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.12-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.12 vs v1.0.11
+
+**PVN-032 — guarded runtime panel/admin settings.** The authenticated main administrator can change the panel URL path, username and password from Security Settings. Every mutation re-verifies the current password, password changes persist only the hash, and credential rotation invalidates older main-admin browser JWTs through an auth-generation claim while preserving the initiating session with a guarded handoff.
+
+Panel-path changes are built and checked on a candidate instance at `127.0.0.1:19002`; only a verified candidate can switch the live panel. The previous path returns HTTP 307 for 300 seconds and then 404. A failed canonical verification restores the previous panel environment/frontend automatically. OpenVPN, Router compatibility listeners, Nodes, profiles, certificates and active VPN tunnels are not restarted or reconfigured by PVN-032.
+
+Latest release line: **v1.0.12** — [release notes](./docs/RELEASE-NOTES-v1.0.12.md).
 
 ## What changed in v1.0.11 vs v1.0.10
 

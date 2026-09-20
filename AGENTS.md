@@ -178,6 +178,12 @@ Before implementation, record the task and target release here **and commit/push
   - Production deployment: Nginx was temporarily switched to the validated 19002 canary while canonical 19001 was updated, then returned to 19001 and canary retired. Exact release tree parity is 409/409. Only `pvnetwork-panel.service` restarted; normal OpenVPN PID/config and Node PID were unchanged during rollout.
   - Post-deploy evidence: local/public `/healthz` reports `1.0.11`; public UI/assets return 200; DB remains 68 users / 4 nodes / 264 assignments; Production presence sampled 7 managed online users with 1 unmapped/orphan client excluded and no failed Nodes.
 
+- `v1.0.12` — RELEASE CANDIDATE — `PVN-032` guarded runtime main-admin/panel-path settings.
+  - Implementation: current-password re-authentication; hash-only password persistence; generation-bound main-admin JWT rotation; TOTP-preserving username migration; five-minute old-path 307; detached candidate build/canary on 19002; atomic switch and automatic rollback.
+  - Isolation: the worker restart allowlist contains only `pvnetwork-panel.service`; OpenVPN, Router compatibility listeners, `ov-node.service`, Nginx, profiles/certificates/routing and active VPN tunnels are outside the mutation path.
+  - Pre-Production verification: 177/177 Python tests PASS; panel-settings Playwright PASS; responsive matrix PASS (2 languages × 9 widths × 9 routes); largest JS 760748 <= 768000; pip-audit reports no known vulnerabilities; npm audit reports 0 vulnerabilities; Bandit release gate PASS; public candidate scan reports 425 files / 0 forbidden private files.
+  - Production deployment/rollback/PID/config-hash evidence and immutable GitHub Release verification are still pending and must be appended before changing this line to RELEASED.
+
 ## Current release baseline
 
 - PVN-001 [x] Stable public `v1.0.0` release.
@@ -211,7 +217,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-029 [x] Router/OpenVPN compatibility for RouterOS and other username/password-oriented clients using an isolated compatibility listener/profile; certificate+password dual auth remains isolated and opt-in, and existing OpenVPN certificates/listener are not disturbed. Release: v1.0.9.
 - PVN-030 [x] Migrate remaining legacy internal protocol/token aliases to PVNetwork-owned names with dual-read/backward-compatible rollout so existing Nodes/integrations are never cut off during the rename. Release: v1.0.10.
 - PVN-031 [x] Synchronize Dashboard and User Management on one short-lived presence snapshot and lightweight live-presence polling so adjacent views do not race between samples. Release: v1.0.7.
-- PVN-032 [ ] Allow the main administrator to change the panel URL path and main-admin username/password from the authenticated UI; password changes must store only a strong hash, path changes must rebuild/switch frontend atomically with rollback and must never strand the active admin session. Target: v1.0.12.
+- PVN-032 [x] Allow the main administrator to change the panel URL path and main-admin username/password from the authenticated UI; password changes store only a strong hash, path changes build/canary/switch atomically with rollback, and the active admin session uses a guarded replacement-token handoff. Release candidate: v1.0.12; Production closure evidence pending.
 - PVN-033 [x] Reproduce and fix the remaining Production online-user count mismatch on the owner server using live-source evidence, preserving device-limit enforcement and the shared presence snapshot contract. Release: v1.0.11.
 
 ## UI/UX task ledger

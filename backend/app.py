@@ -18,6 +18,7 @@ from backend.routers.anyconnect import (
     integration_router as anyconnect_integration_router,
 )
 from backend.version import __version__
+from backend.panel_redirect import PanelPathTransitionMiddleware
 from backend.operations.history import record_usage_history
 from backend.audit import AuditMiddleware
 from backend.security_middleware import (
@@ -36,7 +37,10 @@ api = FastAPI(
     openapi_url="/openapi.json" if config.DOC else None,
 )
 
-frontend_build_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+frontend_build_path = os.getenv(
+    "PVNETWORK_FRONTEND_DIST",
+    os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"),
+)
 
 api.mount(
     f"/{config.URLPATH}/assets",
@@ -47,6 +51,7 @@ api.mount(
 api.add_middleware(ApiScopeMiddleware)
 api.add_middleware(SecurityMiddleware)
 api.add_middleware(AuditMiddleware)
+api.add_middleware(PanelPathTransitionMiddleware)
 api.add_middleware(SecurityHeadersMiddleware)
 
 cors_origins = [

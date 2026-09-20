@@ -429,5 +429,27 @@
     }
   },
   "feature.nodeStatusAlerts": "Node online/offline alerts",
-  "feature.nodeStatusAlertsHelp": "Send Node DOWN/UP Telegram alerts only when node status changes."
+  "feature.nodeStatusAlertsHelp": "Send Node DOWN/UP Telegram alerts only when node status changes.",
+  "panelSettings.title": "Panel & Main Admin",
+  "panelSettings.currentUsername": "Current username",
+  "panelSettings.currentPath": "Current panel path",
+  "panelSettings.newUsername": "New username",
+  "panelSettings.panelPath": "Panel path",
+  "panelSettings.newPassword": "New password",
+  "panelSettings.confirmPassword": "Confirm new password",
+  "panelSettings.currentPassword": "Current password",
+  "panelSettings.apply": "Apply changes",
+  "panelSettings.confirmTitle": "Confirm panel changes",
+  "panelSettings.confirm": "Confirm",
+  "panelSettings.cancel": "Cancel",
+  "panelSettings.summaryUser": "Username: {{old}} → {{next}}",
+  "panelSettings.summaryPath": "Panel path: {{old}} → {{next}}",
+  "panelSettings.progress": "Change status",
+  "panelSettings.complete": "Panel settings updated.",
+  "panelSettings.rollback": "Changes rolled back.",
+  "panelSettings.passwordMismatch": "New password confirmation does not match.",
+  "panelSettings.currentRequired": "Current password is required.",
+  "panelSettings.noChanges": "Enter at least one new setting.",
+  "panelSettings.pollTimeout": "Still waiting for the panel to return. Reload this page to resume verification.",
+  "panelSettings.loadFailed": "Could not load panel settings."
 }

@@ -7,48 +7,53 @@ const apiClient = axios.create({
 
 let handlingUnauthorized = false;
 
-/*
- * Add JWT to every authenticated API request.
- */
+const hasActivePanelSettingsChange = () => {
+  try {
+    const raw = sessionStorage.getItem('pvnPanelSettingsChange');
+    if (!raw) return false;
+    const value = JSON.parse(raw);
+    if (!value?.change_id || !value?.status_token || Number(value.expires_at || 0) <= Date.now()) {
+      sessionStorage.removeItem('pvnPanelSettingsChange');
+      return false;
+    }
+    return true;
+  } catch {
+    sessionStorage.removeItem('pvnPanelSettingsChange');
+    return false;
+  }
+};
+
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
-
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers['Authorization'] = `Bearer ${token}`;
+    if (!config.skipAuth) {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
-
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-/*
- * If the JWT is expired/invalid, remove the stale session.
- *
- * Login itself is excluded so an incorrect username/password
- * can still display the normal login error.
- */
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
     const url = error?.config?.url || '';
+    const skipReload = Boolean(error?.config?.skipUnauthorizedReload);
 
     if (
       status === 401 &&
       url !== '/login' &&
+      !skipReload &&
+      !hasActivePanelSettingsChange() &&
       !handlingUnauthorized
     ) {
       handlingUnauthorized = true;
-
       localStorage.removeItem('authToken');
       localStorage.removeItem('userRole');
-
-      // Reload current SPA location.
-      // AuthContext will see that there is no valid token,
-      // then React Router will send the user to login.
       window.location.reload();
     }
 

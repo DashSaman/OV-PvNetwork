@@ -8,6 +8,7 @@ class Setting(BaseSettings):
     ADMIN_USERNAME: str
     ADMIN_PASSWORD_HASH: str
     ADMIN_PASSWORD: Optional[str] = None  # legacy input only; never used for authentication
+    MAIN_ADMIN_AUTH_GENERATION: str = "legacy"
     URLPATH: str = "dashboard"
     VITE_URLPATH: str = "dashboard"
     HOST: str = "127.0.0.1"

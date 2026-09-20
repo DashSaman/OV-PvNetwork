@@ -483,5 +483,27 @@
     "copyRouterOs": "کپی دستور RouterOS",
     "copyCommand": "دستور RouterOS را کپی کنید:",
     "noHealthyAssignedNode": "هیچ نود تخصیص‌داده‌شده‌ای Listener سالم سازگاری روتر ندارد."
-  }
+  },
+  "panelSettings.title": "پنل و مدیر اصلی",
+  "panelSettings.currentUsername": "نام کاربری فعلی",
+  "panelSettings.currentPath": "مسیر فعلی پنل",
+  "panelSettings.newUsername": "نام کاربری جدید",
+  "panelSettings.panelPath": "مسیر پنل",
+  "panelSettings.newPassword": "رمز عبور جدید",
+  "panelSettings.confirmPassword": "تکرار رمز عبور جدید",
+  "panelSettings.currentPassword": "رمز عبور فعلی",
+  "panelSettings.apply": "اعمال تغییرات",
+  "panelSettings.confirmTitle": "تأیید تغییرات پنل",
+  "panelSettings.confirm": "تأیید",
+  "panelSettings.cancel": "انصراف",
+  "panelSettings.summaryUser": "نام کاربری: {{old}} ← {{next}}",
+  "panelSettings.summaryPath": "مسیر پنل: {{old}} ← {{next}}",
+  "panelSettings.progress": "وضعیت تغییر",
+  "panelSettings.complete": "تنظیمات پنل با موفقیت به‌روزرسانی شد.",
+  "panelSettings.rollback": "تغییرات به حالت قبل برگشت.",
+  "panelSettings.passwordMismatch": "تکرار رمز عبور جدید مطابقت ندارد.",
+  "panelSettings.currentRequired": "وارد کردن رمز عبور فعلی الزامی است.",
+  "panelSettings.noChanges": "حداقل یک تنظیم جدید وارد کنید.",
+  "panelSettings.pollTimeout": "پنل هنوز برنگشته است. برای ادامه بررسی این صفحه را دوباره بارگذاری کنید.",
+  "panelSettings.loadFailed": "دریافت تنظیمات پنل ناموفق بود."
 }
