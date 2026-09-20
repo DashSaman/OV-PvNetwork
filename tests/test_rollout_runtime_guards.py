@@ -13,6 +13,11 @@ class RolloutRuntimeGuardTests(unittest.TestCase):
         self.assertIn('--data "$payload"', block)
         self.assertRegex(block, r"curl[\s\\\n\S]*?-X[ \t]+GET[\s\\\n\S]*?/sync/status")
 
+    def test_panel_smoke_discovers_included_routes_through_app_schema(self):
+        text = (ROOT / "scripts/pvnetwork-panel-smoke-test").read_text(encoding="utf-8")
+        self.assertIn("api.openapi()", text)
+        self.assertNotIn('getattr(route, "path", "") for route in api.routes', text)
+
     def test_panel_smoke_does_not_source_secret_bearing_env(self):
         text = (ROOT / "scripts/pvnetwork-panel-smoke-test").read_text(encoding="utf-8")
         self.assertNotRegex(text, r"(?m)^\s*(?:source|\.)\s+\.?/?\.env\s*$")

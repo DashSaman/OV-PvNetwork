@@ -135,7 +135,7 @@ echo "PVNETWORK_SMOKE_STAGE=ROUTES"
 
 .venv/bin/python - <<'PYROUTES'
 from backend.app import api
-paths = {getattr(route, "path", "") for route in api.routes}
+paths = set(api.openapi().get("paths", {}))
 required = {
     "/api/server/monitoring",
     "/api/security/",
