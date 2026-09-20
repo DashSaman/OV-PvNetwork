@@ -39,7 +39,7 @@ def cfg():
     return value
 
 
-def _client_ip(request) -> str:
+def client_ip(request) -> str:
     peer = request.client.host if request.client else ""
     forwarded = request.headers.get("x-forwarded-for", "")
     # The panel binds to loopback in Production. Nginx appends remote_addr to
@@ -96,7 +96,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         if request.method in {"OPTIONS", "HEAD"} or request.url.path.startswith(EXEMPT_PREFIXES):
             return await call_next(request)
 
-        ip = _client_ip(request)
+        ip = client_ip(request)
         now = time.time()
         if request.url.path == "/api/login" and _limited(
             _login_hits, ip, LOGIN_RATE_LIMIT_PER_MINUTE, now
@@ -128,6 +128,33 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
+
+
+def api_scope_area(path: str) -> str:
+    if (
+        path == "/api/users" or path.startswith("/api/users/")
+        or path.startswith("/api/anyconnect/users/")
+        or path.startswith("/api/router-openvpn/users/")
+    ):
+        return "users"
+    if path.startswith("/api/operations/users/"):
+        if path == "/api/operations/users/transfer":
+            return "nodes"
+        return "users"
+    if (
+        path == "/api/nodes" or path.startswith("/api/nodes/")
+        or path == "/api/fleet" or path.startswith("/api/fleet/")
+        or path.startswith("/api/router-openvpn/nodes/")
+        or path == "/api/operations/rebalance"
+    ):
+        return "nodes"
+    if (
+        path == "/api/audit" or path.startswith("/api/audit/")
+        or path == "/api/operations/audit"
+    ):
+        return "audit"
+    return "settings"
+
 class ApiScopeMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         auth = request.headers.get("authorization", "")
@@ -149,13 +176,7 @@ class ApiScopeMiddleware(BaseHTTPMiddleware):
             scopes = set(json.loads(row.scopes))
             path = request.url.path
             write = request.method not in {"GET", "HEAD", "OPTIONS"}
-            area = "settings"
-            if "/users" in path:
-                area = "users"
-            elif "/nodes" in path or "/fleet" in path:
-                area = "nodes"
-            elif "/audit" in path:
-                area = "audit"
+            area = api_scope_area(path)
             required = f'{area}:{"write" if write else "read"}'
             if required not in scopes:
                 return JSONResponse({"detail": f"Missing scope: {required}"}, 403)

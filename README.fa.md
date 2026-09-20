@@ -4,11 +4,19 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.13-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.14-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.14 نسبت به v1.0.13
+
+**PVN-585 — رگرسیون امنیتی.** چهار ایراد قابل‌بازتولید اصلاح شد: ناسازگاری تشخیص IP پشت Nginx برای Allowlist، عبور API Token به‌عنوان ادمین اصلی تعاملی در Security، پذیرش Prefix غیرمجاز در fallback توکن و طبقه‌بندی Scope با substring.
+
+تست‌های دائمی JWT/Admin/API Token/IDOR/SQL/CORS/CSRF/XSS/Redaction/Permission و یک Probe فقط‌خواندنی و بدون Credential برای Production اضافه شده‌اند. این نسخه معماری جدید SSO/RBAC/Passkey/OpenVPN/Node/Routing اضافه نمی‌کند.
+
+خط انتشار فعلی: **v1.0.14** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.14.fa.md).
 
 ## تغییرات v1.0.13 نسبت به v1.0.12
 

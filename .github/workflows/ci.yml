@@ -75,6 +75,15 @@ jobs:
       - name: Unit and governance tests
         run: python3 -m unittest discover -s tests -v
 
+      - name: Security regression suite
+        run: |
+          python3 -m unittest \
+            tests.test_security_proxy_ip \
+            tests.test_security_auth_regression \
+            tests.test_security_scope_regression \
+            tests.test_security_input_regression \
+            tests.test_security_readonly_probe -v
+
       - name: Router OpenVPN safety contracts
         run: |
           python3 -m unittest \
@@ -128,6 +137,7 @@ jobs:
           node tests/user-create-node-selector-smoke.mjs
           node tests/router-openvpn-smoke.mjs
           node tests/panel-settings-smoke.mjs
+          node tests/security-regression-smoke.mjs
           PV_PYTHON=python3 node tests/subscription-responsive-smoke.mjs
 
       - name: JSON syntax

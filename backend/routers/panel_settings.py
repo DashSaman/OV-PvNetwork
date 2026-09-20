@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from backend import panel_runtime_settings as runtime
 from backend.auth.auth import get_current_user, mint_main_admin_token
+from backend.auth.authorization import require_interactive_main_admin
 from backend.auth.hash import hash_password, verify_password
 from backend.config import config
 from backend.db.engine import get_db
@@ -27,11 +28,6 @@ class PanelSettingsApplyIn(BaseModel):
     new_username: str | None = None
     new_password: str | None = None
     new_path: str | None = None
-
-
-def require_interactive_main_admin(user: dict) -> None:
-    if user.get("type") != "main_admin" or user.get("auth_kind") == "api_token":
-        raise HTTPException(403, "Interactive main administrator required")
 
 
 def _parse_env(path: Path) -> dict[str, str]:

@@ -4,13 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.13-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.14-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.14 vs v1.0.13
+
+**PVN-585 — security regression release.** Four reproducible boundary defects were fixed: reverse-proxy client-IP inconsistency in allowlist self-lockout validation, API-token access to interactive Security administration, unsupported API-token prefix fallback, and substring-based scope classification.
+
+The release adds permanent JWT/admin/API-token/IDOR/SQL/CORS/CSRF/XSS/redaction/permission regression gates plus a credential-free GET-only Production security probe. No new SSO, RBAC, passkey, OpenVPN, Node or routing architecture is introduced.
+
+Latest release line: **v1.0.14** — [release notes](./docs/RELEASE-NOTES-v1.0.14.md).
 
 ## What changed in v1.0.13 vs v1.0.12
 

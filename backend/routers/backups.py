@@ -16,6 +16,7 @@ from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
 from backend.auth.auth import get_current_user
+from backend.auth.authorization import require_interactive_main_admin
 from backend.schema.output import ResponseModel
 
 
@@ -29,13 +30,6 @@ MAX_UPLOAD_BYTES = 240 * 1024 * 1024
 BACKUP_ID_RE = re.compile(r"^\d{8}-\d{6}$")
 JOB_ID_RE = re.compile(r"^[a-f0-9]{24}$")
 _backup_lock = asyncio.Lock()
-
-
-def _main_admin_only(user: dict) -> None:
-    if user.get("type") != "main_admin":
-        raise HTTPException(status_code=403, detail="Main administrator required")
-    if user.get("auth_kind") == "api_token":
-        raise HTTPException(status_code=403, detail="Interactive administrator login required")
 
 
 def _backup_directory(backup_id: str) -> Path:
@@ -160,7 +154,7 @@ def _write_status(job_directory: Path, payload: dict) -> None:
 
 @router.get("/", response_model=ResponseModel)
 async def list_backups(user: dict = Depends(get_current_user)):
-    _main_admin_only(user)
+    require_interactive_main_admin(user)
     rows = await asyncio.to_thread(
         lambda: [_backup_row(path) for path in _list_backup_directories()[:30]]
     )
@@ -169,7 +163,7 @@ async def list_backups(user: dict = Depends(get_current_user)):
 
 @router.post("/", response_model=ResponseModel)
 async def create_backup(user: dict = Depends(get_current_user)):
-    _main_admin_only(user)
+    require_interactive_main_admin(user)
     if not BACKUP_COMMAND.is_file():
         raise HTTPException(status_code=503, detail="Backup service is unavailable")
     if _backup_lock.locked():
@@ -216,7 +210,7 @@ async def create_backup(user: dict = Depends(get_current_user)):
 
 @router.get("/{backup_id}/download")
 async def download_backup(backup_id: str, user: dict = Depends(get_current_user)):
-    _main_admin_only(user)
+    require_interactive_main_admin(user)
     directory = _backup_directory(backup_id)
     if not await asyncio.to_thread(_is_verified, directory):
         raise HTTPException(status_code=409, detail="Backup is not verified")
@@ -253,7 +247,7 @@ async def restore_backup(
     confirmation: str = Form(...),
     user: dict = Depends(get_current_user),
 ):
-    _main_admin_only(user)
+    require_interactive_main_admin(user)
     if confirmation.strip() != "RESTORE":
         raise HTTPException(status_code=422, detail="Type RESTORE to confirm")
     if not RESTORE_COMMAND.is_file():
@@ -325,7 +319,7 @@ async def restore_backup(
 
 @router.get("/restore/{job_id}", response_model=ResponseModel)
 async def restore_status(job_id: str, user: dict = Depends(get_current_user)):
-    _main_admin_only(user)
+    require_interactive_main_admin(user)
     if not JOB_ID_RE.fullmatch(job_id):
         raise HTTPException(status_code=404, detail="Restore job not found")
     status_file = JOB_ROOT / job_id / "job.json"
