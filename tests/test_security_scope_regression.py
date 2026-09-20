@@ -112,6 +112,36 @@ class ScopeRegressionTests(unittest.IsolatedAsyncioTestCase):
         response = await self.scoped_request("GET", "/api/settings/users-report", raw)
         self.assertEqual(response.status_code, 200)
 
+    async def test_operations_routes_do_not_cross_scope_boundaries(self):
+        cases = [
+            ("GET", "/api/operations/users/user-1/history", "users:read", True),
+            ("GET", "/api/operations/users/user-1/history", "settings:read", False),
+            ("POST", "/api/operations/users/bulk", "users:write", True),
+            ("POST", "/api/operations/users/bulk", "settings:write", False),
+            ("POST", "/api/operations/users/transfer", "nodes:write", True),
+            ("POST", "/api/operations/users/transfer", "users:write", False),
+            ("GET", "/api/operations/audit", "audit:read", True),
+            ("GET", "/api/operations/audit", "settings:read", False),
+            ("POST", "/api/operations/rebalance", "nodes:write", True),
+            ("POST", "/api/operations/rebalance", "settings:write", False),
+            ("GET", "/api/anyconnect/users/user-1/password", "users:read", True),
+            ("GET", "/api/anyconnect/users/user-1/password", "settings:read", False),
+            ("POST", "/api/anyconnect/users/user-1/password", "users:write", True),
+            ("GET", "/api/router-openvpn/users/user-1/nodes/1", "users:read", True),
+            ("GET", "/api/router-openvpn/users/user-1/nodes/1", "settings:read", False),
+            ("PUT", "/api/router-openvpn/nodes/1", "nodes:write", True),
+            ("PUT", "/api/router-openvpn/nodes/1", "settings:write", False),
+        ]
+        for index, (method, path, scope, allowed) in enumerate(cases):
+            raw = f"pvn_operations-{index}"
+            self.add_token(raw, [scope])
+            response = await self.scoped_request(method, path, raw)
+            self.assertEqual(
+                response.status_code,
+                200 if allowed else 403,
+                f"{method} {path} with {scope}",
+            )
+
     async def test_scope_read_write_matrix(self):
         cases = [
             ("GET", "/api/users/", "users:read", True),

@@ -3,7 +3,7 @@
 - Adds permanent regression coverage for authentication, API-token scopes, IDOR/identifier handling, CORS/CSRF posture, XSS, SQL interpolation, route protection, output redaction and sensitive-file permissions.
 - Fixes the reproduced reverse-proxy IP inconsistency by sharing one trusted client-IP parser between middleware and Security Settings allowlist validation.
 - Prevents API tokens from acting as interactive main administrators for Security, panel runtime settings or backup administration.
-- Restricts database API-token fallback to supported `pvn_` / legacy `ovp_` prefixes and replaces substring scope classification with exact API-prefix classification.
+- Restricts database API-token fallback to supported `pvn_` / legacy `ovp_` prefixes and replaces substring scope classification with exact resource-prefix classification, including nested Operations/AnyConnect/Router-OpenVPN paths.
 - Adds a credential-free, GET-only Production security probe plus a mocked-browser XSS regression and explicit GitHub Actions security gate.
 - No SSO/RBAC/session architecture, OpenVPN listener, Node, firewall, routing or live VPN-session behavior is added by this patch.
 

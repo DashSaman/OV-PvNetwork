@@ -7,7 +7,7 @@
 - **Proxy/IP consistency:** Security Settings used the first `X-Forwarded-For` value for allowlist self-lockout validation while middleware used the trusted final value appended by loopback Nginx. Both now use one canonical client-IP helper.
 - **API-token privilege boundary:** Security administration previously treated an API-token principal with `type=main_admin` as an interactive main administrator. Security, panel-runtime settings and backup administration now share one interactive-main-admin guard that rejects API-token authentication.
 - **API-token prefix validation:** JWT fallback could accept a database token with an unrelated prefix if its hash existed. Only the supported `pvn_` and legacy `ovp_` prefixes now enter API-token lookup.
-- **Scope path classification:** Scope middleware used substring matching, so look-alike settings paths containing `/users` or `/nodes` could be classified into the wrong scope area. Classification now uses exact API prefixes.
+- **Scope path classification:** Scope middleware used substring matching, so look-alike settings paths containing `/users` or `/nodes` could be classified into the wrong scope area. Classification now uses exact API resource prefixes, including nested Operations, AnyConnect, and Router/OpenVPN user/node routes.
 
 ## Controls verified as already safe
 

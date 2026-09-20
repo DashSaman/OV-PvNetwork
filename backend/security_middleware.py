@@ -131,14 +131,27 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
 
 def api_scope_area(path: str) -> str:
-    if path == "/api/users" or path.startswith("/api/users/"):
+    if (
+        path == "/api/users" or path.startswith("/api/users/")
+        or path.startswith("/api/anyconnect/users/")
+        or path.startswith("/api/router-openvpn/users/")
+    ):
+        return "users"
+    if path.startswith("/api/operations/users/"):
+        if path == "/api/operations/users/transfer":
+            return "nodes"
         return "users"
     if (
         path == "/api/nodes" or path.startswith("/api/nodes/")
         or path == "/api/fleet" or path.startswith("/api/fleet/")
+        or path.startswith("/api/router-openvpn/nodes/")
+        or path == "/api/operations/rebalance"
     ):
         return "nodes"
-    if path == "/api/audit" or path.startswith("/api/audit/"):
+    if (
+        path == "/api/audit" or path.startswith("/api/audit/")
+        or path == "/api/operations/audit"
+    ):
         return "audit"
     return "settings"
 
