@@ -104,6 +104,28 @@ class NodeRequests:
             logger.error(f"Error creating user on node {self.address}: {e}")
             return False
 
+    def get_user_identity(self, name: str) -> dict:
+        api = f"http://{self.address}/sync/user/{name}/identity"
+        try:
+            response = requests.get(api, headers=self.headers, timeout=(2, 6))
+            response.raise_for_status()
+            payload = response.json()
+            if not payload.get("success") or not isinstance(payload.get("data"), dict):
+                return {}
+            raw = payload["data"]
+            return {
+                "exists": bool(raw.get("exists")),
+                "valid_certificate": bool(raw.get("valid_certificate")),
+                "profile_exists": bool(raw.get("profile_exists")),
+                "ccd_enabled": bool(raw.get("ccd_enabled")),
+                "connected": bool(raw.get("connected")),
+                "client_name": name if str(raw.get("client_name") or name) != name else str(raw.get("client_name") or name),
+                "capability_version": str(raw.get("capability_version") or ""),
+            }
+        except Exception as exc:
+            logger.error(f"Error inspecting user identity on node {self.address}: {exc}")
+            return {}
+
     def change_user_status(self, name, status):
         api = f"http://{self.address}/sync/user"
         try:
