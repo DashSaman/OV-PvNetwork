@@ -4,13 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.14-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.15-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.15 vs v1.0.14
+
+**PVN-376 / PVN-398 — per-user OpenVPN lifecycle preservation.** Enable, Disable and Delete operations are now designed to mutate only the target client: CCD state changes are per-CN, Disable/Delete terminate only that Common Name through the OpenVPN management socket, and routine user lifecycle no longer restarts the normal OpenVPN service.
+
+Existing Node upgrades now install the user-lifecycle patch as well as Router compatibility. Delete no longer depends on an optional interactive installer: it revokes the target certificate with EasyRSA, regenerates/publishes the CRL atomically, and removes only that client's stale PKI leaf artifacts after a successful revoke. No database migration is required.
+
+Current release line: **v1.0.15** — [release notes](./docs/RELEASE-NOTES-v1.0.15.md).
 
 ## What changed in v1.0.14 vs v1.0.13
 
