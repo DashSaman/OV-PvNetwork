@@ -565,6 +565,15 @@ async def profile(cn: str, api_key: str = Depends(check_api_key)):
 
 
 USER_LIFECYCLE_NO_RESTART = r'''# PVNETWORK_USER_LIFECYCLE_NO_RESTART_V1
+import os
+import re
+import subprocess
+
+
+def _pvnetwork_safe_name(name: str) -> bool:
+    return bool(re.fullmatch(r"[A-Za-z0-9_-]{1,64}", str(name or "")))
+
+
 _PVNETWORK_SERVER_CONF = os.getenv("PVNETWORK_OPENVPN_SERVER_CONF", "/etc/openvpn/server/server.conf")
 _PVNETWORK_EASYRSA_DIR = os.getenv("PVNETWORK_EASYRSA_DIR", "/etc/openvpn/server/easy-rsa")
 _PVNETWORK_MGMT_SOCKETS = (
@@ -747,7 +756,7 @@ def _pvnetwork_revoke_certificate(name: str) -> bool | str:
 
 def delete_user_on_server(name) -> bool | str:
     name = str(name or "").strip()
-    if not _safe_name(name):
+    if not _pvnetwork_safe_name(name):
         return False
     _pvnetwork_remove_ccd(name)
     _pvnetwork_disconnect(name)
@@ -765,7 +774,7 @@ def delete_user_on_server(name) -> bool | str:
 
 def change_user_status(name: str, status: str) -> bool:
     name = str(name or "").strip()
-    if not _safe_name(name):
+    if not _pvnetwork_safe_name(name):
         return False
     try:
         if status == "deactivate":

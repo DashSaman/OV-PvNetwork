@@ -54,6 +54,7 @@ class NodeUserLifecycleNoRestartTests(unittest.TestCase):
             self.assertIn("/run/openvpn/ov-management.sock", patched)
             self.assertIn("/var/run/openvpn-server/server.sock", patched)
             self.assertIn("_pvnetwork_disconnect(name)", patched)
+            self.assertIn("def _pvnetwork_safe_name", patched)
             self.assertIn('"revoke", name', patched)
             self.assertIn('"gen-crl"', patched)
             lifecycle = patched[patched.index("def delete_user_on_server"):patched.index("async def download_ovpn_file")]
@@ -108,7 +109,6 @@ class NodeUserLifecycleNoRestartTests(unittest.TestCase):
                 "re": re,
                 "subprocess": subprocess,
                 "logger": Logger(),
-                "_safe_name": lambda name: bool(re.fullmatch(r"[A-Za-z0-9_-]{1,64}", str(name or ""))),
             }
             with patch.dict(os.environ, env, clear=False):
                 exec(node_patch.USER_LIFECYCLE_NO_RESTART, ns)
@@ -170,7 +170,6 @@ class NodeUserLifecycleNoRestartTests(unittest.TestCase):
             }
             ns = {
                 "os": os, "re": re, "subprocess": subprocess, "logger": Logger(),
-                "_safe_name": lambda name: True,
             }
             with patch.dict(os.environ, env, clear=False):
                 exec(node_patch.USER_LIFECYCLE_NO_RESTART, ns)
@@ -197,7 +196,6 @@ class NodeUserLifecycleNoRestartTests(unittest.TestCase):
             env = {"PVNETWORK_EASYRSA_DIR": str(easy)}
             ns = {
                 "os": os, "re": re, "subprocess": subprocess, "logger": Logger(),
-                "_safe_name": lambda name: True,
             }
             with patch.dict(os.environ, env, clear=False):
                 exec(node_patch.USER_LIFECYCLE_NO_RESTART, ns)
