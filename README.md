@@ -4,13 +4,21 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.15-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.16-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## What changed in v1.0.16 vs v1.0.15
+
+**PVN-022 — safe multi-node username rename.** A user can now change username without delete/recreate: the same UUID, accounting history, quota, expiry, device limit, AnyConnect credential identity, Router/MikroTik UUID-based identity and explicit node assignments are preserved. The new OpenVPN identities are staged and verified on every assigned Node before the central cutover.
+
+After a successful cutover, old OpenVPN profiles are invalidated **immediately** with no grace period: old Common Names are disconnected, revoked and removed per user without restarting the normal OpenVPN service. Pre-commit failures roll back to the old identity; post-commit cleanup failures keep the new username authoritative in `cleanup_pending` until safe retry succeeds.
+
+Current release line: **v1.0.16** — [release notes](./docs/RELEASE-NOTES-v1.0.16.md).
 
 ## What changed in v1.0.15 vs v1.0.14
 
@@ -176,7 +184,7 @@ Detailed illustrated documentation:
 
 | Area | Included |
 |---|---|
-| Users | Create with per-node selection, full edit, inline quick edit, activate/deactivate, delete, renewal, usage reset, node assignment, profile/subscription delivery |
+| Users | Create with per-node selection, full edit, inline quick edit, safe multi-node username rename, activate/deactivate, delete, renewal, usage reset, node assignment, profile/subscription delivery |
 | Renewal | Expired-user renewal, unlimited renewal, finite preserve/reset/add-traffic modes |
 | AnyConnect | Per-user enable/disable, password generation/change, shared user identity |
 | Multi-node | Node CRUD, health view, user assignment, safe node lifecycle |
