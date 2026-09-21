@@ -164,5 +164,21 @@ class ScopeRegressionTests(unittest.IsolatedAsyncioTestCase):
             )
 
 
+    async def test_user_rename_routes_follow_users_read_write_scopes(self):
+        cases = [
+            ("POST", "/api/users/u-1/rename", "users:write", True),
+            ("POST", "/api/users/u-1/rename", "users:read", False),
+            ("GET", "/api/users/rename/active", "users:read", True),
+            ("GET", "/api/users/u-1/rename/j-1", "users:read", True),
+            ("POST", "/api/users/u-1/rename/j-1/retry", "users:write", True),
+            ("POST", "/api/users/u-1/rename/j-1/retry", "users:read", False),
+        ]
+        for index, (method, path, scope, allowed) in enumerate(cases):
+            raw = f"pvn_rename-{index}"
+            self.add_token(raw, [scope])
+            response = await self.scoped_request(method, path, raw)
+            self.assertEqual(response.status_code, 200 if allowed else 403, f"{method} {path} with {scope}")
+
+
 if __name__ == "__main__":
     unittest.main()

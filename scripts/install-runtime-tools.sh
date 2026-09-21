@@ -16,6 +16,7 @@ install -m 0755 "$ROOT/scripts/pvnetwork-security-readonly-probe.py" /usr/local/
 install -m 0755 "$ROOT/scripts/pvnetwork-usage-sync" /usr/local/sbin/pvnetwork-usage-sync
 install -m 0755 "$ROOT/scripts/pvnetwork-sub-push-sender.py" /usr/local/sbin/pvnetwork-sub-push-sender.py
 install -m 0755 "$ROOT/scripts/pvnetwork-node-user-reconcile.py" /usr/local/sbin/pvnetwork-node-user-reconcile.py
+install -m 0755 "$ROOT/scripts/pvnetwork-user-rename-worker.py" /usr/local/sbin/pvnetwork-user-rename-worker.py
 install -m 0755 "$ROOT/scripts/pvnetwork-firewall-hardening" /usr/local/sbin/pvnetwork-firewall-hardening
 install -m 0755 "$ROOT/scripts/pvnetwork-firewall-boot" /usr/local/sbin/pvnetwork-firewall-boot
 for unit in "$ROOT"/ops/systemd/pvnetwork-*.service "$ROOT"/ops/systemd/pvnetwork-*.timer; do

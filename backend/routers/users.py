@@ -11,7 +11,7 @@ from sqlalchemy import func
 
 from backend.operations.daily_checks import enforce_user_limits, reset_shared_user_usage
 from backend.schema.output import ResponseModel, Users
-from backend.schema._input import CreateUser, RenewUser, UpdateUser, UserNodeAssignmentUpdate
+from backend.schema._input import CreateUser, RenewUser, UpdateUser, UserNodeAssignmentUpdate, RenameUserRequest
 from backend.db.engine import get_db
 from backend.db.models import (
     ActiveSession,
@@ -20,6 +20,7 @@ from backend.db.models import (
     ResellerCreditTransaction,
     User,
     UserNode,
+    UserRenameJob,
     Node,
 )
 from backend.routers.anyconnect import provision_new_user_if_enabled
@@ -35,7 +36,13 @@ from backend.node.assignment import (
 from backend.db import crud
 from backend.auth.auth import get_current_user
 from backend.logger import logger
-from backend.user_rename.repository import LifecycleLocked, transient_user_mutation_lock
+from backend.user_rename.repository import (
+    LifecycleLocked, acquire_lifecycle_lock, create_rename_job,
+    transient_user_mutation_lock,
+)
+from backend.user_rename.contracts import (
+    RenameState, TERMINAL_RENAME_STATES, normalize_rename_username, serialize_rename_job,
+)
 from backend.node.task import (
     delete_user_on_all_nodes,
     revoke_router_credentials_snapshot,
@@ -310,6 +317,19 @@ async def get_user_presence(
     )
 
 
+@router.get("/rename/active", response_model=ResponseModel)
+async def get_active_rename_jobs(
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    query = db.query(UserRenameJob).filter(~UserRenameJob.state.in_(TERMINAL_RENAME_STATES))
+    if actor.get("type") == "admin":
+        allowed = db.query(User.uuid).filter(User.owner == actor.get("username"))
+        query = query.filter(UserRenameJob.user_uuid.in_(allowed))
+    rows = query.order_by(UserRenameJob.created_at.asc()).all()
+    return ResponseModel(success=True, msg="Active rename jobs", data=[serialize_rename_job(row) for row in rows])
+
+
 @router.get("/{uuid}", response_model=ResponseModel)
 @_serialize_user_mutation("reset")
 async def reset_user_usage(uuid: str, db: Session = Depends(get_db), actor: dict = Depends(get_current_user)):
@@ -482,6 +502,73 @@ async def create_user(
     return ResponseModel(
         success=True, msg="User created successfully", data=created.name
     )
+
+
+@router.post("/{uuid}/rename", response_model=ResponseModel, status_code=202)
+async def queue_user_rename(
+    uuid: str,
+    request: RenameUserRequest,
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    target = _owned_user_or_404(db, uuid, actor)
+    try:
+        new_name = normalize_rename_username(request.new_username)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if new_name == target.name:
+        raise HTTPException(status_code=422, detail="New username must differ from current username")
+    collision = crud.get_user_by_name(db, new_name)
+    if collision is not None and collision.uuid != target.uuid:
+        raise HTTPException(status_code=409, detail="Username already exists")
+    try:
+        job = create_rename_job(
+            db, user_uuid=target.uuid, old_name=target.name, new_name=new_name,
+            actor=str(actor.get("username") or ""), actor_type=str(actor.get("type") or ""),
+        )
+        acquire_lifecycle_lock(db, target.uuid, "rename", job.id, expires_at=None)
+        db.commit(); db.refresh(job)
+    except LifecycleLocked as exc:
+        db.rollback()
+        raise HTTPException(status_code=409, detail={
+            "operation": exc.operation or "locked", "job_id": exc.job_id,
+        }) from exc
+    except Exception:
+        db.rollback(); raise
+    return ResponseModel(success=True, msg="Username rename queued", data=serialize_rename_job(job))
+
+
+@router.get("/{uuid}/rename/{job_id}", response_model=ResponseModel)
+async def get_user_rename_status(
+    uuid: str, job_id: str,
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    _owned_user_or_404(db, uuid, actor)
+    job = db.query(UserRenameJob).filter(
+        UserRenameJob.id == job_id, UserRenameJob.user_uuid == uuid
+    ).first()
+    if job is None:
+        raise HTTPException(status_code=404, detail="Rename job not found")
+    return ResponseModel(success=True, msg="Rename job status", data=serialize_rename_job(job))
+
+
+@router.post("/{uuid}/rename/{job_id}/retry", response_model=ResponseModel, status_code=202)
+async def retry_user_rename(
+    uuid: str, job_id: str,
+    db: Session = Depends(get_db),
+    actor: dict = Depends(get_current_user),
+):
+    _owned_user_or_404(db, uuid, actor)
+    job = db.query(UserRenameJob).filter(
+        UserRenameJob.id == job_id, UserRenameJob.user_uuid == uuid
+    ).first()
+    if job is None:
+        raise HTTPException(status_code=404, detail="Rename job not found")
+    if job.state not in {RenameState.CLEANUP_PENDING.value, RenameState.ROLLING_BACK.value}:
+        raise HTTPException(status_code=409, detail="Rename job is not retryable")
+    job.updated_at = int(time.time()); db.commit(); db.refresh(job)
+    return ResponseModel(success=True, msg="Rename retry queued", data=serialize_rename_job(job))
 
 
 @router.put("/{uuid}", response_model=ResponseModel)

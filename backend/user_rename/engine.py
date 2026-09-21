@@ -347,11 +347,18 @@ async def run_rename_job(job_id: str, db=None) -> str:
             if job.state == RenameState.REVOKING_OLD.value:
                 return await _attempt_cleanup(job, db)
             if job.state == RenameState.CLEANUP_PENDING.value:
-                return job.state
+                return await _attempt_cleanup(job, db)
             raise RenameStageError(f"Unsupported rename state: {job.state}")
-    except RenameStageError:
-        db.refresh(job)
-        if job.state in {RenameState.ROLLED_BACK.value, RenameState.FAILED.value}:
+    except RenameStageError as exc:
+        db.rollback(); job = get_rename_job(db, job_id)
+        if job is not None and job.state in {RenameState.STAGING.value, RenameState.CUTOVER.value, RenameState.ROLLING_BACK.value}:
+            try:
+                await rollback_precommit(job, db)
+            except Exception:
+                _save(job, db, state=RenameState.FAILED.value, failure="Pre-commit rollback failed")
+        elif job is not None and job.state not in {RenameState.ROLLED_BACK.value, RenameState.FAILED.value, RenameState.CLEANUP_PENDING.value}:
+            _save(job, db, state=RenameState.FAILED.value, failure=str(exc)[:500])
+        if job is not None and job.state in {RenameState.ROLLED_BACK.value, RenameState.FAILED.value}:
             lock = get_active_lock(db, job.user_uuid)
             if lock is not None and lock.operation == "rename" and lock.job_id in {None, job.id}:
                 release_lifecycle_lock(db, job.user_uuid, lock.owner_token); db.commit()

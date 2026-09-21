@@ -36,6 +36,10 @@ class UserNodeAssignmentUpdate(BaseModel):
     node_ids: list[int] = Field(min_length=1, max_length=256)
 
 
+class RenameUserRequest(BaseModel):
+    new_username: str = Field(min_length=3, max_length=64)
+
+
 class NodeCreate(BaseModel):
     name: str = Field(max_length=64)
     address: str
