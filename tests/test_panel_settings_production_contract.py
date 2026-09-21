@@ -13,7 +13,7 @@ os.environ.setdefault("JWT_SECRET_KEY", "ci-jwt-secret-key-not-production-32char
 from backend import panel_runtime_settings as runtime
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_VERSION = "1.0.15"
+EXPECTED_VERSION = "1.0.16"
 
 
 class PanelSettingsProductionContractTests(unittest.TestCase):
@@ -71,9 +71,9 @@ class PanelSettingsProductionContractTests(unittest.TestCase):
             for needle in ["1.0.12", "pvn-032", "19002", "300", "openvpn", "node"]:
                 self.assertIn(needle, text)
 
-    def test_public_release_metadata_points_to_v1015_asset(self):
+    def test_public_release_metadata_points_to_v1016_asset(self):
         manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-        self.assertEqual(manifest.get("release_asset"), "pvnetwork-panel-v1.0.15.tar.gz")
+        self.assertEqual(manifest.get("release_asset"), "pvnetwork-panel-v1.0.16.tar.gz")
 
 
 if __name__ == "__main__":

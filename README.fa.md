@@ -4,11 +4,19 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.15-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.16-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.16 نسبت به v1.0.15
+
+**PVN-022 — تغییر امن نام کاربری روی چند نود.** تغییر Username دیگر نیاز به حذف و ساخت دوباره کاربر ندارد؛ UUID، سابقه مصرف، سهمیه، تاریخ انقضا، محدودیت دستگاه، هویت AnyConnect، هویت UUID-based مربوط به Router/MikroTik و Node Assignmentها بدون تغییر حفظ می‌شوند. ابتدا هویت OpenVPN جدید روی تمام نودهای تخصیص‌یافته ساخته و بررسی می‌شود و سپس Cutover مرکزی انجام می‌گیرد.
+
+پس از Cutover موفق، **پروفایل‌های OpenVPN قبلی فوراً باطل می‌شوند** و هیچ Grace Period وجود ندارد. CN قبلی فقط برای همان کاربر قطع، revoke و حذف می‌شود و سرویس اصلی OpenVPN restart نمی‌شود. خطای قبل از Commit به هویت قبلی rollback می‌شود؛ خطای پاک‌سازی بعد از Commit نام جدید را معتبر نگه می‌دارد و Job در `cleanup_pending` برای Retry امن باقی می‌ماند.
+
+خط انتشار فعلی: **v1.0.16** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.16.fa.md).
 
 ## تغییرات v1.0.15 نسبت به v1.0.14
 

@@ -1,3 +1,12 @@
+## v1.0.16 — PVN-022 safe multi-node username rename
+
+- Added durable job/lock orchestration for username rename with resumable staging, cutover, rollback and cleanup.
+- Preserves user UUID/accounting/assignments plus UUID-bound AnyConnect and Router/MikroTik identities.
+- Stages and verifies new per-node OpenVPN identities before cutover; old identities are disabled/disconnected then immediately revoked after commit with no grace period.
+- Blocks conflicting user mutations while rename owns the durable lifecycle lock.
+- Adds bilingual Rename Username UI, job recovery after refresh and dedicated worker/timer.
+- Normal OpenVPN is never restarted by the rename workflow.
+
 ## v1.0.15 — PVN-376 / PVN-398 per-user OpenVPN lifecycle preservation
 
 - Removes whole-service OpenVPN restarts from normal per-user Enable/Disable/Delete lifecycle.

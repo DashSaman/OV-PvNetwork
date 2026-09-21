@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from dataclasses import dataclass
 
 # PVNETWORK_FAILOPEN_EVENTLOOP_V1
 from typing import Optional
@@ -203,6 +204,25 @@ def user_can_access_node(
         return True
 
     return node_id in node_ids
+
+
+
+
+@dataclass(frozen=True)
+class AssignedRenameNode:
+    id: int
+    name: str
+
+
+def snapshot_assigned_nodes(db: Session, user_uuid: str) -> list[AssignedRenameNode]:
+    rows = (
+        db.query(Node.id, Node.name)
+        .join(UserNode, UserNode.node_id == Node.id)
+        .filter(UserNode.user_uuid == user_uuid)
+        .order_by(Node.id)
+        .all()
+    )
+    return [AssignedRenameNode(id=int(node_id), name=str(name)) for node_id, name in rows]
 
 
 def _node_request(node: Node) -> NodeRequests:

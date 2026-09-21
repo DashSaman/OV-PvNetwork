@@ -194,6 +194,8 @@ python3 -m py_compile /tmp/pvnetwork-node-router-patch.py
 python3 /tmp/pvnetwork-node-router-patch.py {node_root} --user-lifecycle-only
 python3 /tmp/pvnetwork-node-router-patch.py {node_root} --router-only
 python3 -m py_compile {node_root}/core/service/user_managment.py {router_py} {module_py}
+grep -q 'def get_user_identity_state' {node_root}/core/service/user_managment.py
+grep -q '/user/{{name}}/identity' {router_py}
 mv -f /usr/local/sbin/pvnetwork-router-openvpn.new /usr/local/sbin/pvnetwork-router-openvpn
 mv -f /usr/local/libexec/pvnetwork-router-auth.new /usr/local/libexec/pvnetwork-router-auth
 rm -f /tmp/pvnetwork-node-router-patch.py

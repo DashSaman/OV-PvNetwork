@@ -144,6 +144,10 @@ required = {
     "/api/operations/users/bulk",
     "/api/operations/users/transfer",
     "/api/operations/audit",
+    "/api/users/rename/active",
+    "/api/users/{uuid}/rename",
+    "/api/users/{uuid}/rename/{job_id}",
+    "/api/users/{uuid}/rename/{job_id}/retry",
 }
 missing = required - paths
 assert not missing, "MISSING_API_PATHS=" + ",".join(sorted(missing))
@@ -152,9 +156,16 @@ print(f"ROUTE_COUNT={len(paths)}")
 print("ROUTES=PASS")
 PYROUTES
 
+echo "PVNETWORK_SMOKE_STAGE=RENAME_WORKER"
+test -x /usr/local/sbin/pvnetwork-user-rename-worker.py || { echo "RENAME_WORKER_MISSING"; exit 34; }
+test -f /etc/systemd/system/pvnetwork-user-rename-worker.service || { echo "RENAME_WORKER_UNIT_MISSING"; exit 34; }
+test -f /etc/systemd/system/pvnetwork-user-rename-worker.timer || { echo "RENAME_TIMER_UNIT_MISSING"; exit 34; }
+echo "RENAME_WORKER=PASS"
+
 echo "PVNETWORK_SMOKE_STAGE=TIMERS"
 
 for timer in \
+    pvnetwork-user-rename-worker.timer \
     pvnetwork-panel-monitor.timer \
     pvnetwork-panel-smoke.timer \
     pvnetwork-panel-user-notifier.timer \

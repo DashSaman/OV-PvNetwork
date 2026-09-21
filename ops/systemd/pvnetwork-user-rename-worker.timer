@@ -1,0 +1,11 @@
+[Unit]
+Description=PVNetwork durable user rename worker timer
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=3s
+Persistent=true
+Unit=pvnetwork-user-rename-worker.service
+
+[Install]
+WantedBy=timers.target

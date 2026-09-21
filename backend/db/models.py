@@ -559,3 +559,44 @@ class RouterOpenVpnCredential(Base):
             "enabled",
         ),
     )
+
+
+# PVNETWORK_SAFE_USERNAME_RENAME_V1
+class UserRenameJob(Base):
+    __tablename__ = "user_rename_jobs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_uuid: Mapped[str] = mapped_column(
+        ForeignKey("users.uuid", ondelete="CASCADE"), nullable=False, index=True
+    )
+    old_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    new_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    state: Mapped[str] = mapped_column(String(32), nullable=False)
+    actor: Mapped[str] = mapped_column(String(128), nullable=False)
+    actor_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    snapshot_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    evidence_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    failure_reason: Mapped[str] = mapped_column(Text, nullable=True)
+    created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    completed_at: Mapped[int] = mapped_column(BigInteger, nullable=True)
+
+    __table_args__ = (
+        Index("ix_user_rename_jobs_user_state", "user_uuid", "state"),
+        Index("ix_user_rename_jobs_updated_at", "updated_at"),
+    )
+
+
+class UserLifecycleLock(Base):
+    __tablename__ = "user_lifecycle_locks"
+
+    user_uuid: Mapped[str] = mapped_column(
+        ForeignKey("users.uuid", ondelete="CASCADE"), primary_key=True
+    )
+    operation: Mapped[str] = mapped_column(String(32), nullable=False)
+    owner_token: Mapped[str] = mapped_column(String(64), nullable=False)
+    job_id: Mapped[str] = mapped_column(
+        ForeignKey("user_rename_jobs.id", ondelete="SET NULL"), nullable=True
+    )
+    acquired_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    expires_at: Mapped[int] = mapped_column(BigInteger, nullable=True)

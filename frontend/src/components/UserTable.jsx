@@ -23,7 +23,9 @@ const UserTable = ({
   getSubscriptionLink,
   availableNodes,
   userRole,
-  onQuickSave
+  onQuickSave,
+  onRename,
+  busyUserUuids = []
 }) => {
   const {
     t
@@ -166,7 +168,9 @@ const UserTable = ({
           }}>
                 {t('noUsersFound')}
               </td>
-            </tr> : users.map(user => <Fragment key={user.uuid || user.name}><tr>
+            </tr> : users.map(user => {
+              const renameBusy = busyUserUuids.includes(user.uuid);
+              return <Fragment key={user.uuid || user.name}><tr>
 
                 <td>
                   {user.name}
@@ -212,7 +216,7 @@ const UserTable = ({
                     <input
                       type="checkbox"
                       checked={Boolean(user.anyconnect_enabled)}
-                      disabled={anyConnectBusy === user.uuid}
+                      disabled={anyConnectBusy === user.uuid || renameBusy}
                       onChange={() => onToggleAnyConnect && onToggleAnyConnect(user)}
                       aria-label={`AnyConnect ${user.name}`}
                     />
@@ -262,14 +266,21 @@ const UserTable = ({
                   <ActionsDropdown actions={[{
               label: t('quickEditButton', 'Quick Edit'),
               onClick: () => setExpandedUserUuid(current => current === user.uuid ? '' : user.uuid),
+              className: 'secondary-action',
+              disabled: renameBusy
+            }, {
+              label: t('renameUsername', 'Rename Username'),
+              onClick: () => onRename && onRename(user),
               className: 'secondary-action'
             }, {
               label: t('editButton'),
-              onClick: () => onEdit(user)
+              onClick: () => onEdit(user),
+              disabled: renameBusy
             }, {
               label: t('renewButton', 'تمدید'),
               onClick: () => onRenew && onRenew(user),
-              className: 'secondary-action'
+              className: 'secondary-action',
+              disabled: renameBusy
             }, {
               label: t('downloadButton'),
               onClick: () => onDownload(user)
@@ -288,15 +299,18 @@ const UserTable = ({
             }] : []), {
               label: t('resetUsageButton', 'Reset Usage'),
               onClick: () => onResetUsage && onResetUsage(user),
-              className: 'secondary-action'
+              className: 'secondary-action',
+              disabled: renameBusy
             }, {
               label: user.is_active ? t('deactivateButton', 'Deactivate') : t('activateButton', 'Activate'),
               onClick: () => onToggleStatus(user),
-              className: user.is_active ? t("ui.4ee369b40527") : t("ui.4834323b9a96")
+              className: user.is_active ? t("ui.4ee369b40527") : t("ui.4834323b9a96"),
+              disabled: renameBusy
             }, ...((Number(user.total || 0) > 0 || canDeleteUnlimited) ? [{
               label: t('deleteButton'),
               onClick: () => onDelete(user.uuid, user.name),
-              className: 'danger-action'
+              className: 'danger-action',
+              disabled: renameBusy
             }] : [])]} />
 
 
@@ -332,7 +346,7 @@ const UserTable = ({
                 </td>
 
               </tr>
-              {expandedUserUuid === user.uuid && !compactQuickEdit && <tr className="user-quick-edit-row desktop-user-quick-edit-row">
+              {expandedUserUuid === user.uuid && !compactQuickEdit && !renameBusy && <tr className="user-quick-edit-row desktop-user-quick-edit-row">
                 <td colSpan="9">
                   <InlineUserQuickEdit
                     user={user}
@@ -343,7 +357,8 @@ const UserTable = ({
                   />
                 </td>
               </tr>}
-            </Fragment>)}
+            </Fragment>;
+            })}
 
         </tbody>
 

@@ -204,6 +204,7 @@ from core.service.user_managment import (
     delete_user_on_server,
     download_ovpn_file,
     get_users_usage,
+    get_user_identity_state,
 )
 from core.setting.core import change_config
 
@@ -357,6 +358,14 @@ async def create_user(user: User, api_key: str = Depends(check_api_key)):
     if success:
         return ResponseModel(success=True, msg="User created successfully", data={"client_name": user.name})
     return ResponseModel(success=False, msg="Failed to create user")
+
+
+
+
+@router.get("/user/{name}/identity", response_model=ResponseModel)
+async def get_user_identity(name: str, api_key: str = Depends(check_api_key)):
+    data = get_user_identity_state(name)
+    return ResponseModel(success=True, msg="User identity state", data=data)
 
 
 @router.delete("/user/{name}", response_model=ResponseModel)
@@ -580,6 +589,8 @@ _PVNETWORK_MGMT_SOCKETS = (
     os.getenv("PVNETWORK_OPENVPN_MANAGEMENT_SOCKET", "/run/openvpn/ov-management.sock"),
     "/var/run/openvpn-server/server.sock",
 )
+_PVNETWORK_STATUS_LOG = os.getenv("PVNETWORK_OPENVPN_STATUS_LOG", "/var/log/openvpn/status.log")
+_PVNETWORK_PROFILE_DIR = os.getenv("PVNETWORK_PROFILE_DIR", "/root")
 
 
 def _pvnetwork_ccd_dirs() -> list[str]:
@@ -669,6 +680,49 @@ def _pvnetwork_valid_cert_exists(name: str) -> bool:
     except OSError:
         return False
     return False
+
+
+def _pvnetwork_exact_cn_connected(name: str) -> bool:
+    paths = (_PVNETWORK_STATUS_LOG, "/var/log/openvpn-status.log")
+    seen: set[str] = set()
+    for path in paths:
+        if not path or path in seen or not os.path.isfile(path):
+            continue
+        seen.add(path)
+        try:
+            with open(path, "r", encoding="utf-8", errors="ignore") as handle:
+                for raw in handle:
+                    if not raw.startswith("CLIENT_LIST,"):
+                        continue
+                    parts = raw.rstrip("\r\n").split(",")
+                    if len(parts) >= 2 and parts[1] == name:
+                        return True
+        except OSError:
+            continue
+    return False
+
+
+def get_user_identity_state(name: str) -> dict:
+    name = str(name or "").strip()
+    if not _pvnetwork_safe_name(name):
+        return {
+            "exists": False, "valid_certificate": False, "profile_exists": False,
+            "ccd_enabled": False, "connected": False, "client_name": name,
+            "capability_version": "pvn-user-identity-v1",
+        }
+    valid_certificate = _pvnetwork_valid_cert_exists(name)
+    profile_exists = os.path.isfile(os.path.join(_PVNETWORK_PROFILE_DIR, f"{name}.ovpn"))
+    ccd_enabled = any(os.path.isfile(os.path.join(path, name)) for path in _pvnetwork_ccd_dirs())
+    connected = _pvnetwork_exact_cn_connected(name)
+    return {
+        "exists": bool(valid_certificate or profile_exists or ccd_enabled or connected),
+        "valid_certificate": bool(valid_certificate),
+        "profile_exists": bool(profile_exists),
+        "ccd_enabled": bool(ccd_enabled),
+        "connected": bool(connected),
+        "client_name": name,
+        "capability_version": "pvn-user-identity-v1",
+    }
 
 
 def _pvnetwork_remove_pki_artifacts(name: str) -> None:

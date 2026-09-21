@@ -1,0 +1,22 @@
+.rename-modal-backdrop { position: fixed; inset: 0; z-index: 1000000; display: grid; place-items: center; padding: 16px; background: rgba(2, 8, 23, .72); }
+.rename-modal { width: min(620px, 100%); max-height: min(86vh, 760px); overflow-y: auto; border: 1px solid rgba(0,229,255,.28); border-radius: 16px; background: #09182a; color: #e7f4ff; box-shadow: 0 22px 60px rgba(0,0,0,.45); }
+.rename-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 20px 8px; }
+.rename-modal-header h3 { margin: 0 0 6px; }
+.rename-modal-header p { margin: 0; overflow-wrap: anywhere; }
+.rename-modal-close { min-width: 44px; min-height: 44px; border: 0; border-radius: 10px; background: transparent; color: inherit; font-size: 28px; cursor: pointer; }
+.rename-modal-body { display: grid; gap: 16px; padding: 12px 20px 20px; }
+.rename-modal-body label:not(.rename-ack) { display: grid; gap: 7px; }
+.rename-modal-body input[type="text"], .rename-modal-body input:not([type]) { min-height: 44px; border-radius: 10px; border: 1px solid rgba(144,202,249,.45); background: #061220; color: #fff; padding: 0 12px; }
+.rename-node-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.rename-node-list strong { flex-basis: 100%; }
+.rename-node-list span { padding: 6px 9px; border-radius: 999px; background: rgba(144,202,249,.1); }
+.rename-warning { border: 1px solid rgba(245,158,11,.45); border-radius: 12px; padding: 10px 12px; background: rgba(245,158,11,.08); }
+.rename-warning p { margin: 5px 0; }
+.rename-ack { display: flex; align-items: flex-start; gap: 10px; }
+.rename-progress { display: flex; flex-wrap: wrap; gap: 7px; }
+.rename-progress span { padding: 5px 8px; border-radius: 8px; background: rgba(148,163,184,.12); }
+.rename-progress span.current { outline: 2px solid #22d3ee; }
+.rename-progress p { flex-basis: 100%; margin: 4px 0; }
+.rename-modal-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.rename-modal-actions .btn { min-height: 44px; }
+@media (max-width: 640px), (max-height: 620px) { .rename-modal-backdrop { padding: 8px; align-items: end; } .rename-modal { max-height: 94vh; border-radius: 14px 14px 0 0; } .rename-modal-header, .rename-modal-body { padding-left: 14px; padding-right: 14px; } .rename-modal-actions .btn { flex: 1 1 140px; } }

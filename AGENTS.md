@@ -215,6 +215,11 @@ Before implementation, record the task and target release here **and commit/push
   - Compatibility hardening: the injected legacy-Node lifecycle block is self-contained, idempotent and does not depend on a pre-existing `_safe_name` helper. PR #45 and legacy hotfix PR #46 both passed exact-head CI before merge; merged-main CI also passed before the Production retry.
   - Production verification: rollback source/DB/env checks passed; canonical panel reports `1.0.15`; the final lifecycle patch compiled and the Node service restarted without restarting normal OpenVPN; a unique synthetic CN completed Activate -> Disable -> Delete, CRL remained OpenSSL-valid, normal OpenVPN PID/config hash remained unchanged, and public panel health/root/users stayed HTTP 200 after canary retirement.
 
+- `v1.0.16` — [ ] RELEASE CANDIDATE — `PVN-022` safe multi-node username rename.
+  - Code contract: durable per-user job/lock, all-node staging, pre-commit rollback, atomic central name cutover, immediate old-CN revoke/delete, retryable `cleanup_pending`, and no normal OpenVPN restart.
+  - Identity contract: UUID/accounting/node assignments and UUID-bound AnyConnect + Router/MikroTik credentials remain stable; Quick Edit username remains read-only and Rename is a dedicated workflow.
+  - Production completion remains open until exact-head CI, backup/migration/canary, synthetic rename verification, OpenVPN PID/hash preservation, public smoke, artifact sanitization and public SHA re-download all pass.
+
 ## Current release baseline
 
 - PVN-001 [x] Stable public `v1.0.0` release.
