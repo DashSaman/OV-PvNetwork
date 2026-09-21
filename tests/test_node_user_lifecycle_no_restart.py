@@ -134,6 +134,53 @@ class NodeUserLifecycleNoRestartTests(unittest.TestCase):
                 self.assertFalse((pki / relative).exists(), relative)
             self.assertFalse(any(cmd[:2] == ["systemctl", "restart"] for cmd in command_words))
 
+    def test_repeated_delete_regenerates_crl_after_prior_revoke(self):
+        class Logger:
+            def info(self, *args, **kwargs): pass
+            def error(self, *args, **kwargs): pass
+        class Result:
+            returncode = 0
+            stdout = "ok"
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            easy = root / "easy-rsa"
+            pki = easy / "pki"
+            ccd = root / "ccd"
+            pki.mkdir(parents=True)
+            ccd.mkdir()
+            easyrsa = easy / "easyrsa"
+            easyrsa.write_text("#!/bin/sh\n", encoding="utf-8")
+            (pki / "index.txt").write_text(
+                "R\t351231000000Z\t260921000000Z\t01\tunknown\t/CN=alice\n",
+                encoding="utf-8",
+            )
+            (pki / "crl.pem").write_text("REFRESHED-CRL\n", encoding="utf-8")
+            target = root / "crl.pem"
+            target.write_text("STALE-CRL\n", encoding="utf-8")
+            conf = root / "server.conf"
+            conf.write_text(f"client-config-dir {ccd}\ncrl-verify {target}\n", encoding="utf-8")
+            calls = []
+            def fake_run(args, **kwargs):
+                calls.append(list(args))
+                return Result()
+            env = {
+                "PVNETWORK_OPENVPN_SERVER_CONF": str(conf),
+                "PVNETWORK_EASYRSA_DIR": str(easy),
+                "PVNETWORK_OPENVPN_MANAGEMENT_SOCKET": str(root / "missing.sock"),
+            }
+            ns = {
+                "os": os, "re": re, "subprocess": subprocess, "logger": Logger(),
+                "_safe_name": lambda name: True,
+            }
+            with patch.dict(os.environ, env, clear=False):
+                exec(node_patch.USER_LIFECYCLE_NO_RESTART, ns)
+            with patch.object(subprocess, "run", side_effect=fake_run):
+                result = ns["delete_user_on_server"]("alice")
+            self.assertEqual(result, "not_found")
+            self.assertFalse(any("revoke" in cmd for cmd in calls))
+            self.assertTrue(any("gen-crl" in cmd for cmd in calls))
+            self.assertEqual(target.read_text(encoding="utf-8"), "REFRESHED-CRL\n")
+
     def test_certificate_lookup_matches_exact_cn_only(self):
         class Logger:
             def info(self, *args, **kwargs): pass

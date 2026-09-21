@@ -709,8 +709,7 @@ def _pvnetwork_publish_crl() -> bool:
 
 
 def _pvnetwork_revoke_certificate(name: str) -> bool | str:
-    if not _pvnetwork_valid_cert_exists(name):
-        return "not_found"
+    had_valid_cert = _pvnetwork_valid_cert_exists(name)
     easyrsa = os.path.join(_PVNETWORK_EASYRSA_DIR, "easyrsa")
     if not os.path.isfile(easyrsa):
         logger.error("EasyRSA missing: %s", easyrsa)
@@ -718,10 +717,12 @@ def _pvnetwork_revoke_certificate(name: str) -> bool | str:
     env = os.environ.copy()
     env["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     env["EASYRSA_BATCH"] = "1"
-    for command in (
-        [easyrsa, "--batch", "revoke", name],
-        [easyrsa, "--batch", "gen-crl"],
-    ):
+    commands = []
+    if had_valid_cert:
+        commands.append([easyrsa, "--batch", "revoke", name])
+    # Always regenerate/publish CRL so a retry repairs a prior revoke whose CRL publish failed.
+    commands.append([easyrsa, "--batch", "gen-crl"])
+    for command in commands:
         try:
             result = subprocess.run(
                 command,
@@ -739,7 +740,9 @@ def _pvnetwork_revoke_certificate(name: str) -> bool | str:
         if result.returncode != 0:
             logger.error("EasyRSA operation failed for %s: %s", name, (result.stdout or "")[-1500:])
             return False
-    return True if _pvnetwork_publish_crl() else False
+    if not _pvnetwork_publish_crl():
+        return False
+    return True if had_valid_cert else "not_found"
 
 
 def delete_user_on_server(name) -> bool | str:
@@ -749,7 +752,7 @@ def delete_user_on_server(name) -> bool | str:
     _pvnetwork_remove_ccd(name)
     _pvnetwork_disconnect(name)
     result = _pvnetwork_revoke_certificate(name)
-    if result is True:
+    if result is not False:
         _pvnetwork_remove_pki_artifacts(name)
     try:
         profile = f"/root/{name}.ovpn"
