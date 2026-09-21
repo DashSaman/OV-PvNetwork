@@ -26,6 +26,13 @@
 
 ## مرز ایمنی Production
 
-تست‌های مخرب یا state-changing فقط روی محیط ایزوله/Canary اجرا می‌شوند. Probeهای Production فقط‌خواندنی و بدون Credential هستند. Node و OpenVPN اصلی در rollout ایزوله می‌مانند؛ Backup/Restore ابتدا verify می‌شود، Canary روی `19002` تست می‌شود، Nginx به `19001` برمی‌گردد و قبل از خاموش‌شدن Canary باید `CANARY_RETIRE_SAFE=YES` ثبت شود.
+تست‌های مخرب یا state-changing فقط روی محیط ایزوله/Canary اجرا می‌شوند. Probeهای Production فقط‌خواندنی و بدون Credential هستند. مسیر deployment نسخه 1.0.14 هیچ تغییر یا restart مستقیمی روی Node یا OpenVPN اصلی انجام نمی‌دهد؛ Backup/Restore ابتدا verify می‌شود، Canary روی `19002` تست می‌شود، Nginx به `19001` برمی‌گردد و قبل از خاموش‌شدن Canary باید `CANARY_RETIRE_SAFE=YES` ثبت شود.
+
+## شواهد Production
+
+- Backup قبل از تغییر با checksum و بررسی restore دیتابیس تأیید شد. Canary دقیق main روی `19002` نسخه 1.0.14 را سالم اجرا کرد و سپس canonical `19001` ارتقا یافت.
+- Guard رسمی قبل از خاموش‌کردن Canary مقدار `CANARY_RETIRE_SAFE=YES` داد؛ بعد از خاموش‌شدن Canary نیز health، صفحه اصلی پنل و Users همگی 200 ماندند و 502 جدید مشاهده نشد.
+- Probe فقط‌خواندنی امنیتی و smoke کامل Production PASS شدند؛ login-rate-limit با IP رزروشده تستی در limit=10 به 429 و `Retry-After: 60` رسید.
+- Node در کل rollout همان process باقی ماند و Hash هر دو تنظیم OpenVPN عادی/Router تغییر نکرد. در همان بازه، lifecycle دوره‌ای موجود هنگام auto-disable کردن یک کاربر، از مسیر قدیمی Node کل OpenVPN عادی را restart کرد. این رفتار به deployment نسخه 1.0.14 مربوط نبود و برای `PVN-376` / `PVN-398` به‌عنوان follow-up عملیاتی باقی می‌ماند.
 
 Release فقط بعد از CI نهایی main، تطبیق Tag، انتشار artifact پاک‌سازی‌شده، SHA256 و دانلود مجدد عمومی از GitHub کامل محسوب می‌شود.

@@ -26,6 +26,13 @@ No new Critical/High architectural finding was reproduced. Broader session-manag
 
 ## Production safety boundary
 
-Adversarial state-changing tests run only against isolated test state/canary. Production verification is read-only and credential-free. The rollout keeps Node and normal OpenVPN services/configuration isolated, uses verified backup/restore evidence, validates candidate `19002`, returns Nginx to canonical `19001`, and requires `CANARY_RETIRE_SAFE=YES` before retiring canary.
+Adversarial state-changing tests run only against isolated test state/canary. Production verification is read-only and credential-free. The v1.0.14 deployment path does not target Node or normal OpenVPN configuration/service; it uses verified backup/restore evidence, validates candidate `19002`, returns Nginx to canonical `19001`, and requires `CANARY_RETIRE_SAFE=YES` before retiring canary.
+
+## Production evidence
+
+- The pre-change backup passed checksum and PostgreSQL restore validation. The exact-main canary on `19002` served v1.0.14 successfully before canonical `19001` was upgraded.
+- The installed retirement guard returned `CANARY_RETIRE_SAFE=YES`; after canary termination, health, panel root and Users all remained HTTP 200 with no new 502 observed.
+- The credential-free security probe and full Production smoke passed; the reserved synthetic login-rate-limit check reached HTTP 429 at configured limit 10 with `Retry-After: 60`.
+- The Node process remained unchanged and both normal/Router OpenVPN configuration hashes remained unchanged. During the same window, the pre-existing periodic lifecycle independently auto-disabled an eligible user and its legacy Node status-change path restarted normal OpenVPN. Evidence attributes that restart to the existing lifecycle, not the v1.0.14 deployment; removing whole-service restarts is deferred to `PVN-376` / `PVN-398`.
 
 The immutable release is complete only after final main CI, exact tag resolution, sanitized artifact publication, SHA256 publication and public re-download verification.
