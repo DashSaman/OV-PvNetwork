@@ -13,7 +13,7 @@ class RenameFrontendContractTests(unittest.TestCase):
         path=ROOT/'frontend/src/components/RenameUserModal.jsx'
         self.assertTrue(path.exists(),'RenameUserModal missing')
         text=path.read_text()
-        for marker in ('new_username','/rename','preflight','staging','cutover','revoking_old','cleanup_pending','completed','old profiles','active sessions','setInterval','clearInterval'):
+        for marker in ('new_username','/rename','preflight','staging','cutover','revoking_old','cleanup_pending','completed','renameOldProfilesWarning','renameSessionsWarning','setInterval','clearInterval'):
             self.assertIn(marker,text,marker)
         self.assertIn('1000',text)
         self.assertIn('acknowledged',text)

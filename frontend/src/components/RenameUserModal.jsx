@@ -107,7 +107,7 @@ const RenameUserModal = ({
       <section className="rename-modal" role="dialog" aria-modal="true" aria-labelledby="rename-user-title">
         <header className="rename-modal-header">
           <div>
-            <h3 id="rename-user-title">{t('renameUsername', 'Rename Username')}</h3>
+            <h3 id="rename-user-title">{t('renameUsername')}</h3>
             <p><strong>{user.name}</strong>{newUsername ? ` → ${newUsername}` : ''}</p>
           </div>
           <button type="button" className="rename-modal-close" onClick={onClose} aria-label={t('cancelButton', 'Close')}>×</button>
@@ -115,38 +115,38 @@ const RenameUserModal = ({
 
         <form onSubmit={submit} className="rename-modal-body">
           <label>
-            <span>{t('renameNewUsername', 'New username')}</span>
+            <span>{t('renameNewUsername')}</span>
             <input value={newUsername} onChange={event => setNewUsername(event.target.value.trim())} disabled={busy || submitting} autoComplete="off" />
           </label>
 
           <div className="rename-node-list">
-            <strong>{t('renameAffectedNodes', 'Assigned nodes')}</strong>
+            <strong>{t('renameAffectedNodes')}</strong>
             {assignedNodes.map(node => <span key={node.id}>{node.name} <small>#{node.id}</small></span>)}
           </div>
 
           <div className="rename-warning" role="alert">
-            <p>{t('renameOldProfilesWarning', 'Old profiles stop working immediately after successful cutover; there is no grace period.')}</p>
-            <p>{t('renameSessionsWarning', 'Active sessions using the old username will be disconnected during cutover.')}</p>
+            <p>{t('renameOldProfilesWarning')}</p>
+            <p>{t('renameSessionsWarning')}</p>
           </div>
 
           {!job?.id && <label className="rename-ack">
             <input type="checkbox" checked={acknowledged} onChange={event => setAcknowledged(event.target.checked)} />
-            <span>{t('renameAcknowledge', 'I understand that old profiles and active sessions will stop working.')}</span>
+            <span>{t('renameAcknowledge')}</span>
           </label>}
 
           {job?.id && <div className="rename-progress" aria-live="polite">
             {progressStates.map(state => <span key={state} className={job.state === state ? 'current' : ''}>{t(`renameState.${state}`, state)}</span>)}
-            <p>{t('renameCurrentState', 'Current state')}: <strong>{job.state}</strong></p>
-            {job.state === 'cleanup_pending' && <p>{t('renameCleanupPending', 'The new username is active; cleanup of the old identity is pending and will never re-enable old access.')}</p>}
+            <p>{t('renameCurrentState')}: <strong>{job.state}</strong></p>
+            {job.state === 'cleanup_pending' && <p>{t('renameCleanupPending')}</p>}
           </div>}
 
           {error && <p className="error-message" role="alert">{String(error)}</p>}
           <footer className="rename-modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>{t('cancelButton', 'Close')}</button>
             {job?.state === 'cleanup_pending' ? (
-              <button type="button" className="btn" onClick={retryCleanup} disabled={submitting}>{t('renameRetryCleanup', 'Retry cleanup')}</button>
+              <button type="button" className="btn" onClick={retryCleanup} disabled={submitting}>{t('renameRetryCleanup')}</button>
             ) : !job?.id ? (
-              <button type="submit" className="btn" disabled={!valid || !acknowledged || submitting}>{submitting ? t('saving', 'Saving…') : t('renameStart', 'Start rename')}</button>
+              <button type="submit" className="btn" disabled={!valid || !acknowledged || submitting}>{submitting ? t('saving', 'Saving…') : t('renameStart')}</button>
             ) : null}
           </footer>
         </form>
