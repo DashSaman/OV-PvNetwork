@@ -1,8 +1,8 @@
 # PVN-022 / v1.0.16 — Safe Multi-Node Username Rename Design
 
-Status: proposed for owner review  
-Date: 2026-09-21  
-Release target: v1.0.16  
+Status: proposed for owner review
+Date: 2026-09-21
+Release target: v1.0.16
 Scope: PVN-022 only
 
 ## 1. Intent
