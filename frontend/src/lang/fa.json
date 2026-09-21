@@ -505,5 +505,23 @@
   "panelSettings.currentRequired": "وارد کردن رمز عبور فعلی الزامی است.",
   "panelSettings.noChanges": "حداقل یک تنظیم جدید وارد کنید.",
   "panelSettings.pollTimeout": "پنل هنوز برنگشته است. برای ادامه بررسی این صفحه را دوباره بارگذاری کنید.",
-  "panelSettings.loadFailed": "دریافت تنظیمات پنل ناموفق بود."
+  "panelSettings.loadFailed": "دریافت تنظیمات پنل ناموفق بود.",
+  "renameUsername": "تغییر نام کاربری",
+  "renameNewUsername": "نام کاربری جدید",
+  "renameAffectedNodes": "نودهای تخصیص‌یافته",
+  "renameOldProfilesWarning": "پس از تکمیل تغییر نام، پروفایل‌های OpenVPN قبلی فوراً از کار می‌افتند و دوره مهلت وجود ندارد.",
+  "renameSessionsWarning": "اتصال‌های فعال با نام کاربری قبلی هنگام جابه‌جایی قطع می‌شوند.",
+  "renameAcknowledge": "تأیید می‌کنم که پروفایل‌ها و اتصال‌های فعال قبلی از کار خواهند افتاد.",
+  "renameCurrentState": "مرحله فعلی",
+  "renameCleanupPending": "نام کاربری جدید فعال است؛ پاک‌سازی هویت قبلی در انتظار است و دسترسی قبلی دوباره فعال نمی‌شود.",
+  "renameRetryCleanup": "تلاش مجدد برای پاک‌سازی",
+  "renameStart": "شروع تغییر نام",
+  "renameState": {
+    "preflight": "بررسی اولیه",
+    "staging": "آماده‌سازی",
+    "cutover": "جابه‌جایی",
+    "revoking_old": "ابطال هویت قبلی",
+    "cleanup_pending": "پاک‌سازی در انتظار",
+    "completed": "تکمیل‌شده"
+  }
 }

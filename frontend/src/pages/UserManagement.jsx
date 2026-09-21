@@ -8,6 +8,7 @@ import AnyConnectUserModal from '../components/AnyConnectUserModal';
 import RouterOpenVpnUserModal from '../components/RouterOpenVpnUserModal';
 import SelectNodeForDownloadModal from '../components/SelectNodeForDownloadModal';
 import DomainHistoryModal from '../components/DomainHistoryModal';
+import RenameUserModal from '../components/RenameUserModal';
 import UserStatCard from '../components/UserStatCard';
 import Pagination from '../components/Pagination';
 import { FiSearch } from 'react-icons/fi';
@@ -39,6 +40,8 @@ const UserManagement = () => {
   const [isDomainHistoryOpen, setIsDomainHistoryOpen] = useState(false);
   const [isAnyConnectModalOpen, setIsAnyConnectModalOpen] = useState(false);
   const [isRouterOpenVpnModalOpen, setIsRouterOpenVpnModalOpen] = useState(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [busyRenameJobs, setBusyRenameJobs] = useState({});
   const [routerHealthyNodeIds, setRouterHealthyNodeIds] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const {
@@ -155,12 +158,25 @@ const UserManagement = () => {
       setError(errorText(exception));
     }
   };
+  const fetchActiveRenameJobs = async () => {
+    try {
+      const response = await apiClient.get('/users/rename/active');
+      const jobs = response.data?.success && Array.isArray(response.data?.data)
+        ? response.data.data
+        : [];
+      setBusyRenameJobs(Object.fromEntries(jobs.map(job => [job.user_uuid, job])));
+    } catch {
+      // Rename jobs continue durably on the server; keep the last good busy map.
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchNodes();
     fetchSubscriptionSettings();
     fetchAnyConnectSettings();
     refreshResellerProfile();
+    fetchActiveRenameJobs();
 
     fetchPresence();
     // Lightweight shared presence refresh keeps Dashboard and Users on the same snapshot.
@@ -499,6 +515,24 @@ const UserManagement = () => {
     setSelectedUser(user);
     setIsRouterOpenVpnModalOpen(true);
   };
+  const handleOpenRename = user => {
+    setSelectedUser(user);
+    setIsRenameModalOpen(true);
+  };
+  const handleRenameQueued = job => {
+    if (!job?.user_uuid) return;
+    setBusyRenameJobs(previous => ({ ...previous, [job.user_uuid]: job }));
+  };
+  const handleRenameCompleted = async job => {
+    if (job?.user_uuid) {
+      setBusyRenameJobs(previous => {
+        const next = { ...previous };
+        delete next[job.user_uuid];
+        return next;
+      });
+    }
+    await fetchUsers(false);
+  };
   const handleUserAdded = () => {
     setIsAddModalOpen(false);
     fetchUsers();
@@ -725,7 +759,7 @@ const UserManagement = () => {
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
 
-      <UserTable users={paginatedUsers} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onRouterOpenVpn={handleOpenRouterOpenVpn} routerOpenVpnNodeIds={routerHealthyNodeIds} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} availableNodes={nodes} userRole={userRole} onQuickSave={handleQuickSave} />
+      <UserTable users={paginatedUsers} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onRouterOpenVpn={handleOpenRouterOpenVpn} routerOpenVpnNodeIds={routerHealthyNodeIds} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} availableNodes={nodes} userRole={userRole} onQuickSave={handleQuickSave} onRename={handleOpenRename} busyUserUuids={Object.keys(busyRenameJobs)} />
       {isAddModalOpen && <AddUserModal onClose={() => setIsAddModalOpen(false)} onUserAdded={handleUserAdded} userRole={userRole} anyConnectDefaultEnabled={Boolean(anyConnectSettings.default_enabled)} nodes={nodes} />}
       {isEditModalOpen && <EditUserModal user={selectedUser} onClose={() => setIsEditModalOpen(false)} onUserUpdated={handleUserUpdated} userRole={userRole} />}
       {isRenewModalOpen && <RenewUserModal user={selectedUser} onClose={() => setIsRenewModalOpen(false)} onRenewed={handleUserRenewed} />}
@@ -738,6 +772,18 @@ const UserManagement = () => {
         setIsRouterOpenVpnModalOpen(false);
         setSelectedUser(null);
       }} />}
+      {isRenameModalOpen && selectedUser && <RenameUserModal
+        user={selectedUser}
+        nodes={nodes}
+        open={isRenameModalOpen}
+        initialJob={busyRenameJobs[selectedUser.uuid] || null}
+        onQueued={handleRenameQueued}
+        onCompleted={handleRenameCompleted}
+        onClose={() => {
+          setIsRenameModalOpen(false);
+          setSelectedUser(null);
+        }}
+      />}
       {isDomainHistoryOpen && selectedUser && <DomainHistoryModal user={selectedUser} onClose={() => {
       setIsDomainHistoryOpen(false);
       setSelectedUser(null);

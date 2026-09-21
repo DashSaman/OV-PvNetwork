@@ -125,7 +125,10 @@ const ActionsDropdown = ({ actions = [] }) => {
                 type="button"
                 role="menuitem"
                 className={`actions-dropdown-item ${action.className || ''}`}
+                disabled={Boolean(action.disabled)}
+                aria-disabled={Boolean(action.disabled)}
                 onClick={(e) => {
+                  if (action.disabled) return;
                   e.preventDefault();
                   e.stopPropagation();
                   setOpen(false);

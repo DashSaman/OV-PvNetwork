@@ -505,5 +505,23 @@
   "panelSettings.currentRequired": "Current password is required.",
   "panelSettings.noChanges": "Enter at least one new setting.",
   "panelSettings.pollTimeout": "Still waiting for the panel to return. Reload this page to resume verification.",
-  "panelSettings.loadFailed": "Could not load panel settings."
+  "panelSettings.loadFailed": "Could not load panel settings.",
+  "renameUsername": "Rename Username",
+  "renameNewUsername": "New username",
+  "renameAffectedNodes": "Assigned nodes",
+  "renameOldProfilesWarning": "Old profiles stop working immediately after successful cutover; there is no grace period.",
+  "renameSessionsWarning": "Active sessions using the old username will be disconnected during cutover.",
+  "renameAcknowledge": "I understand that old profiles and active sessions will stop working.",
+  "renameCurrentState": "Current state",
+  "renameCleanupPending": "The new username is active; cleanup of the old identity is pending. Old access will not be re-enabled.",
+  "renameRetryCleanup": "Retry cleanup",
+  "renameStart": "Start rename",
+  "renameState": {
+    "preflight": "Preflight",
+    "staging": "Staging",
+    "cutover": "Cutover",
+    "revoking_old": "Revoking old identity",
+    "cleanup_pending": "Cleanup pending",
+    "completed": "Completed"
+  }
 }
