@@ -66,6 +66,8 @@ class RenameNodeContractTests(unittest.TestCase):
 
     def test_router_only_upgrades_legacy_router_with_identity_contract_idempotently(self):
         legacy = node_patch.ROUTER.replace("    get_user_identity_state,\n", "")
+        # Production legacy OV-Node has no trailing comma on the last import.
+        legacy = legacy.replace("    get_users_usage,\n", "    get_users_usage\n")
         start = legacy.index('@router.get("/user/{name}/identity"')
         end = legacy.index('@router.delete("/user/{name}"', start)
         legacy = legacy[:start] + legacy[end:]
@@ -76,6 +78,10 @@ class RenameNodeContractTests(unittest.TestCase):
             (routers / "router.py").write_text(legacy)
             node_patch.install_router_openvpn_module(root)
             first = (routers / "router.py").read_text()
+            try:
+                compile(first, "router.py", "exec")
+            except SyntaxError as exc:
+                self.fail(f"patched legacy router must compile: {exc}")
             self.assertIn("get_user_identity_state", first)
             self.assertIn('"/user/{name}/identity"', first)
             node_patch.install_router_openvpn_module(root)

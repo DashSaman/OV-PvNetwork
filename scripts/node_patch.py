@@ -873,6 +873,9 @@ def _ensure_user_identity_route(source: str) -> str:
         end = source.find("\n)", start)
         if start < 0 or end < 0:
             raise SystemExit("USER_MANAGEMENT_IMPORT_NOT_FOUND")
+        if not source[:end].rstrip().endswith(","):
+            source = source[:end] + "," + source[end:]
+            end += 1
         source = source[:end] + "\n    get_user_identity_state," + source[end:]
     if '"/user/{name}/identity"' not in source:
         anchor = '@router.delete("/user/{name}", response_model=ResponseModel)'
