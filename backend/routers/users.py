@@ -1,5 +1,7 @@
 from calendar import monthrange
 from datetime import date, datetime, timedelta
+from functools import wraps
+import inspect
 import time
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -33,6 +35,7 @@ from backend.node.assignment import (
 from backend.db import crud
 from backend.auth.auth import get_current_user
 from backend.logger import logger
+from backend.user_rename.repository import LifecycleLocked, transient_user_mutation_lock
 from backend.node.task import (
     delete_user_on_all_nodes,
     revoke_router_credentials_snapshot,
@@ -59,6 +62,36 @@ def _owned_user_or_404(db: Session, uuid: str, actor: dict):
 
 def _finite_total(value):
     return int(value or 0)
+
+
+def _serialize_user_mutation(operation: str):
+    def decorate(func):
+        signature = inspect.signature(func)
+
+        @wraps(func)
+        async def wrapped(*args, **kwargs):
+            bound = signature.bind_partial(*args, **kwargs)
+            db = bound.arguments.get("db")
+            actor = bound.arguments.get("actor") or bound.arguments.get("user")
+            user_uuid = bound.arguments.get("uuid")
+            if db is None or actor is None or user_uuid is None:
+                return await func(*args, **kwargs)
+            # Authorization/visibility check happens before lock disclosure.
+            _owned_user_or_404(db, user_uuid, actor)
+            try:
+                with transient_user_mutation_lock(db, user_uuid, operation):
+                    return await func(*args, **kwargs)
+            except LifecycleLocked as exc:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "operation": exc.operation or "locked",
+                        "job_id": exc.job_id,
+                    },
+                ) from exc
+
+        return wrapped
+    return decorate
 
 
 def _add_calendar_months(start: date, months: int) -> date:
@@ -278,6 +311,7 @@ async def get_user_presence(
 
 
 @router.get("/{uuid}", response_model=ResponseModel)
+@_serialize_user_mutation("reset")
 async def reset_user_usage(uuid: str, db: Session = Depends(get_db), actor: dict = Depends(get_current_user)):
     # MULTINODE_RESET_ROUTE_V2
     # Unlimited accounts use Reset Usage as the start of a fresh 30-day cycle.
@@ -451,6 +485,7 @@ async def create_user(
 
 
 @router.put("/{uuid}", response_model=ResponseModel)
+@_serialize_user_mutation("edit")
 async def update_user(
     uuid: str,
     request: UpdateUser,
@@ -520,6 +555,7 @@ async def update_user(
 
 
 @router.post("/{uuid}/renew", response_model=ResponseModel)
+@_serialize_user_mutation("renew")
 async def renew_user(
     uuid: str,
     request: RenewUser,
@@ -592,6 +628,7 @@ async def renew_user(
 
 
 @router.put("/{uuid}/nodes", response_model=ResponseModel)
+@_serialize_user_mutation("nodes")
 async def update_user_nodes(
     uuid: str,
     request: UserNodeAssignmentUpdate,
@@ -622,6 +659,7 @@ async def update_user_nodes(
 
 
 @router.put("/{uuid}/status", response_model=ResponseModel)
+@_serialize_user_mutation("status")
 async def change_user_status(
     uuid: str,
     request: UpdateUser,
@@ -634,6 +672,7 @@ async def change_user_status(
 
 
 @router.delete("/{uuid}", response_model=ResponseModel)
+@_serialize_user_mutation("delete")
 async def delete_user(
     uuid: str, db: Session = Depends(get_db), user: dict = Depends(get_current_user)
 ):

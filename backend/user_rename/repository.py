@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import secrets
 import time
+from contextlib import contextmanager
 from uuid import uuid4
 
 from sqlalchemy.exc import IntegrityError
@@ -12,7 +13,11 @@ from backend.user_rename.contracts import RenameState, TERMINAL_RENAME_STATES, n
 
 
 class LifecycleLocked(RuntimeError):
-    pass
+    def __init__(self, message: str, *, operation: str | None = None, job_id: str | None = None, user_uuid: str | None = None):
+        super().__init__(message)
+        self.operation = operation
+        self.job_id = job_id
+        self.user_uuid = user_uuid
 
 
 def create_rename_job(
@@ -53,8 +58,12 @@ def acquire_lifecycle_lock(
     expires_at: int | None = None,
 ) -> UserLifecycleLock:
     token = secrets.token_urlsafe(24)
-    if get_active_lock(db, user_uuid) is not None:
-        raise LifecycleLocked(f"User lifecycle is already locked: {user_uuid}")
+    existing = get_active_lock(db, user_uuid)
+    if existing is not None:
+        raise LifecycleLocked(
+            f"User lifecycle is already locked: {user_uuid}",
+            operation=existing.operation, job_id=existing.job_id, user_uuid=user_uuid,
+        )
     row = UserLifecycleLock(
         user_uuid=user_uuid,
         operation=str(operation)[:32],
@@ -68,7 +77,12 @@ def acquire_lifecycle_lock(
             db.add(row)
             db.flush()
     except IntegrityError as exc:
-        raise LifecycleLocked(f"User lifecycle is already locked: {user_uuid}") from exc
+        existing = get_active_lock(db, user_uuid)
+        raise LifecycleLocked(
+            f"User lifecycle is already locked: {user_uuid}",
+            operation=getattr(existing, "operation", None),
+            job_id=getattr(existing, "job_id", None), user_uuid=user_uuid,
+        ) from exc
     return row
 
 
@@ -81,7 +95,10 @@ def release_lifecycle_lock(db, user_uuid: str, owner_token: str) -> bool:
     if row is None:
         return False
     if row.owner_token != owner_token:
-        raise LifecycleLocked("Lifecycle lock owner token mismatch")
+        raise LifecycleLocked(
+            "Lifecycle lock owner token mismatch", operation=row.operation,
+            job_id=row.job_id, user_uuid=user_uuid,
+        )
     db.delete(row)
     db.flush()
     return True
@@ -99,3 +116,33 @@ def claim_runnable_job(db) -> UserRenameJob | None:
 
 def get_rename_job(db, job_id: str) -> UserRenameJob | None:
     return db.query(UserRenameJob).filter(UserRenameJob.id == job_id).first()
+
+
+@contextmanager
+def transient_user_mutation_lock(db, user_uuid: str, operation: str, *, ttl_seconds: int = 120):
+    now = int(time.time())
+    existing = get_active_lock(db, user_uuid)
+    if existing is not None and existing.job_id is None and existing.expires_at is not None and int(existing.expires_at) <= now:
+        db.delete(existing)
+        db.commit()
+        existing = None
+    if existing is not None:
+        raise LifecycleLocked(
+            f"User lifecycle is already locked: {user_uuid}",
+            operation=existing.operation, job_id=existing.job_id, user_uuid=user_uuid,
+        )
+    lock = acquire_lifecycle_lock(
+        db, user_uuid, operation, None, expires_at=now + max(30, int(ttl_seconds))
+    )
+    db.commit()
+    token = lock.owner_token
+    try:
+        yield lock
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        current = get_active_lock(db, user_uuid)
+        if current is not None and current.owner_token == token and current.job_id is None:
+            db.delete(current)
+            db.commit()
