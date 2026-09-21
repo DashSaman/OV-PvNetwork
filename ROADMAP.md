@@ -63,8 +63,8 @@
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
 
 - **v1.0.13 released:** `PVN-894` fail-closed canary retirement; immutable artifact/re-download verification complete.
-- **v1.0.14 Production verified / publication gate:** `PVN-585` security regression — four reproduced boundary defects fixed; permanent Python/browser/read-only Production gates added; verified rollback + canary + `CANARY_RETIRE_SAFE=YES` + post-canary 200 checks passed. Final docs merge/main CI, immutable tag/assets and public SHA re-download remain.
-- **v1.0.15 next:** continue genuinely open security/operations items after v1.0.14 closes; no already-completed item is repeated.
+- **v1.0.14 released:** `PVN-585` security regression — four reproduced boundary defects fixed; permanent Python/browser/read-only Production gates added; immutable artifact and public SHA verification complete.
+- **v1.0.15 implementation/CI gate:** `PVN-376` / `PVN-398` per-user OpenVPN lifecycle preservation — Enable/Disable/Delete must never restart the whole normal OpenVPN service; existing Nodes receive the lifecycle patch during capability upgrade.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 

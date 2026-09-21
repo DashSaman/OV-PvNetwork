@@ -1,3 +1,12 @@
+## v1.0.15 — PVN-376 / PVN-398 per-user OpenVPN lifecycle preservation
+
+- Removes whole-service OpenVPN restarts from normal per-user Enable/Disable/Delete lifecycle.
+- Disable/Delete disconnect only the target Common Name through the normal-listener management socket while preserving other active sessions.
+- Existing Node capability upgrades now apply the user-lifecycle no-restart patch, closing the previous `--router-only` upgrade gap.
+- Delete uses direct EasyRSA revoke + CRL generation/publication and removes only target-client PKI leaf artifacts after successful revocation; it no longer depends on an optional interactive installer.
+- Adds idempotent Node patch and isolated behavior regression tests, including exact-CN matching and a no-`systemctl restart` contract.
+- No database migration and no intended normal OpenVPN listener/configuration change.
+
 ## v1.0.14 — PVN-585 security regression
 
 - Adds permanent regression coverage for authentication, API-token scopes, IDOR/identifier handling, CORS/CSRF posture, XSS, SQL interpolation, route protection, output redaction and sensitive-file permissions.

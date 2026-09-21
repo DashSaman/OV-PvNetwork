@@ -564,6 +564,243 @@ async def profile(cn: str, api_key: str = Depends(check_api_key)):
 '''
 
 
+USER_LIFECYCLE_NO_RESTART = r'''# PVNETWORK_USER_LIFECYCLE_NO_RESTART_V1
+_PVNETWORK_SERVER_CONF = os.getenv("PVNETWORK_OPENVPN_SERVER_CONF", "/etc/openvpn/server/server.conf")
+_PVNETWORK_EASYRSA_DIR = os.getenv("PVNETWORK_EASYRSA_DIR", "/etc/openvpn/server/easy-rsa")
+_PVNETWORK_MGMT_SOCKETS = (
+    os.getenv("PVNETWORK_OPENVPN_MANAGEMENT_SOCKET", "/run/openvpn/ov-management.sock"),
+    "/var/run/openvpn-server/server.sock",
+)
+
+
+def _pvnetwork_ccd_dirs() -> list[str]:
+    candidates: list[str] = []
+    try:
+        with open(_PVNETWORK_SERVER_CONF, "r", encoding="utf-8", errors="ignore") as handle:
+            for raw in handle:
+                parts = raw.strip().split()
+                if len(parts) >= 2 and parts[0] == "client-config-dir":
+                    value = parts[1]
+                    if not os.path.isabs(value):
+                        value = os.path.join(os.path.dirname(_PVNETWORK_SERVER_CONF), value)
+                    candidates.append(value)
+                    break
+    except OSError:
+        pass
+    candidates.extend(("/etc/openvpn/ccd", "/etc/openvpn/server/ccd"))
+    result: list[str] = []
+    for value in candidates:
+        if value and value not in result:
+            result.append(value)
+    return result
+
+
+def _pvnetwork_touch_ccd(name: str) -> None:
+    ccd_dir = _pvnetwork_ccd_dirs()[0]
+    os.makedirs(ccd_dir, exist_ok=True)
+    path = os.path.join(ccd_dir, name)
+    open(path, "a").close()
+    os.chmod(path, 0o644)
+
+
+def _pvnetwork_remove_ccd(name: str) -> None:
+    for ccd_dir in _pvnetwork_ccd_dirs():
+        path = os.path.join(ccd_dir, name)
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+        except OSError:
+            pass
+
+
+def _pvnetwork_disconnect(name: str) -> None:
+    for socket_path in _PVNETWORK_MGMT_SOCKETS:
+        if not socket_path or not os.path.exists(socket_path):
+            continue
+        try:
+            subprocess.run(
+                ["socat", "-", f"UNIX-CONNECT:{socket_path}"],
+                input=f"kill {name}\nquit\n",
+                text=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
+                check=False,
+            )
+        except Exception:
+            pass
+        return
+
+
+def _pvnetwork_crl_target() -> str:
+    try:
+        with open(_PVNETWORK_SERVER_CONF, "r", encoding="utf-8", errors="ignore") as handle:
+            for raw in handle:
+                parts = raw.strip().split()
+                if len(parts) >= 2 and parts[0] == "crl-verify":
+                    value = parts[1]
+                    if os.path.isabs(value):
+                        return value
+                    return os.path.join(os.path.dirname(_PVNETWORK_SERVER_CONF), value)
+    except OSError:
+        pass
+    return "/etc/openvpn/server/crl.pem"
+
+
+def _pvnetwork_valid_cert_exists(name: str) -> bool:
+    index = os.path.join(_PVNETWORK_EASYRSA_DIR, "pki", "index.txt")
+    cn_pattern = re.compile(r"(?:^|/)CN=" + re.escape(name) + r"(?:/|$)")
+    try:
+        with open(index, "r", encoding="utf-8", errors="ignore") as handle:
+            for raw in handle:
+                if raw.startswith("V\t"):
+                    subject = raw.rstrip("\r\n").split("\t")[-1]
+                    if cn_pattern.search(subject):
+                        return True
+    except OSError:
+        return False
+    return False
+
+
+def _pvnetwork_remove_pki_artifacts(name: str) -> None:
+    pki = os.path.join(_PVNETWORK_EASYRSA_DIR, "pki")
+    for relative in (
+        f"issued/{name}.crt",
+        f"private/{name}.key",
+        f"reqs/{name}.req",
+        f"inline/private/{name}.inline",
+    ):
+        path = os.path.join(pki, relative)
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+        except OSError:
+            pass
+
+
+def _pvnetwork_publish_crl() -> bool:
+    source = os.path.join(_PVNETWORK_EASYRSA_DIR, "pki", "crl.pem")
+    target = _pvnetwork_crl_target()
+    if not os.path.isfile(source):
+        return False
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    tmp = target + ".pvnetwork.tmp"
+    try:
+        old = os.stat(target) if os.path.exists(target) else None
+        with open(source, "rb") as src, open(tmp, "wb") as dst:
+            dst.write(src.read())
+        if old is not None:
+            os.chmod(tmp, old.st_mode & 0o777)
+            try:
+                os.chown(tmp, old.st_uid, old.st_gid)
+            except PermissionError:
+                pass
+        else:
+            os.chmod(tmp, 0o644)
+        os.replace(tmp, target)
+        return True
+    except OSError:
+        try:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+        except OSError:
+            pass
+        return False
+
+
+def _pvnetwork_revoke_certificate(name: str) -> bool | str:
+    if not _pvnetwork_valid_cert_exists(name):
+        return "not_found"
+    easyrsa = os.path.join(_PVNETWORK_EASYRSA_DIR, "easyrsa")
+    if not os.path.isfile(easyrsa):
+        logger.error("EasyRSA missing: %s", easyrsa)
+        return False
+    env = os.environ.copy()
+    env["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    env["EASYRSA_BATCH"] = "1"
+    for command in (
+        [easyrsa, "--batch", "revoke", name],
+        [easyrsa, "--batch", "gen-crl"],
+    ):
+        try:
+            result = subprocess.run(
+                command,
+                cwd=_PVNETWORK_EASYRSA_DIR,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=180,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            logger.error("EasyRSA operation failed for %s: %s", name, exc)
+            return False
+        if result.returncode != 0:
+            logger.error("EasyRSA operation failed for %s: %s", name, (result.stdout or "")[-1500:])
+            return False
+    return True if _pvnetwork_publish_crl() else False
+
+
+def delete_user_on_server(name) -> bool | str:
+    name = str(name or "").strip()
+    if not _safe_name(name):
+        return False
+    _pvnetwork_remove_ccd(name)
+    _pvnetwork_disconnect(name)
+    result = _pvnetwork_revoke_certificate(name)
+    if result is True:
+        _pvnetwork_remove_pki_artifacts(name)
+    try:
+        profile = f"/root/{name}.ovpn"
+        if os.path.exists(profile):
+            os.remove(profile)
+    except OSError:
+        pass
+    return result
+
+
+def change_user_status(name: str, status: str) -> bool:
+    name = str(name or "").strip()
+    if not _safe_name(name):
+        return False
+    try:
+        if status == "deactivate":
+            _pvnetwork_remove_ccd(name)
+            _pvnetwork_disconnect(name)
+            return True
+        if status == "activate":
+            _pvnetwork_touch_ccd(name)
+            return True
+        return False
+    except Exception as exc:
+        logger.error("Status change failed for %s: %s", name, exc)
+        return False
+
+
+def restart_openvpn_service() -> bool:
+    # Compatibility shim only. Per-user lifecycle must never restart the whole service.
+    logger.info("Per-user lifecycle uses CCD/management socket; OpenVPN restart skipped")
+    return True
+'''
+
+
+def install_user_lifecycle(root: Path) -> None:
+    user_file = root / "core/service/user_managment.py"
+    if not user_file.exists():
+        raise SystemExit("USER_MANAGEMENT_NOT_FOUND")
+    source = user_file.read_text(encoding="utf-8", errors="replace")
+    marker = "# PVNETWORK_USER_LIFECYCLE_NO_RESTART_V1"
+    start = source.find(marker)
+    if start < 0:
+        start = source.find("def delete_user_on_server")
+    end = source.find("async def download_ovpn_file", start)
+    if start < 0 or end < 0:
+        raise SystemExit("USER_LIFECYCLE_MARKERS_NOT_FOUND")
+    patched = source[:start] + USER_LIFECYCLE_NO_RESTART + "\n\n" + source[end:]
+    user_file.write_text(patched, encoding="utf-8")
+
+
 def install_router_openvpn_module(root: Path) -> None:
     router_file = root / "core/routers/router.py"
     module_file = root / "core/routers/router_openvpn.py"
@@ -594,12 +831,17 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("root", nargs="?", default="/opt/ov-node")
     ap.add_argument("--router-only", action="store_true")
+    ap.add_argument("--user-lifecycle-only", action="store_true")
     args = ap.parse_args()
     root = Path(args.root)
     user_file = root / "core/service/user_managment.py"
     router_file = root / "core/routers/router.py"
     if not router_file.exists():
         raise SystemExit("OV-Node source layout not found")
+    if args.user_lifecycle_only:
+        install_user_lifecycle(root)
+        print("PVNetwork user lifecycle no-restart patch applied")
+        return 0
     if args.router_only:
         install_router_openvpn_module(root)
         print("PVNetwork router OpenVPN capability patch applied")
@@ -607,6 +849,7 @@ def main() -> int:
     if not user_file.exists():
         raise SystemExit("OV-Node source layout not found")
     user_file.write_text(USER_MANAGEMENT, encoding="utf-8")
+    install_user_lifecycle(root)
     router_file.write_text(ROUTER, encoding="utf-8")
     install_router_openvpn_module(root)
 

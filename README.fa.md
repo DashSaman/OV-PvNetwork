@@ -4,11 +4,19 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.14-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.15-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## تغییرات v1.0.15 نسبت به v1.0.14
+
+**PVN-376 / PVN-398 — حفظ سرویس OpenVPN در چرخه هر کاربر.** عملیات Enable، Disable و Delete فقط روی همان Client اثر می‌گذارند: CCD به‌صورت per-CN تغییر می‌کند، در Disable/Delete فقط همان Common Name از Management Socket قطع می‌شود و دیگر برای یک کاربر کل OpenVPN عادی Restart نمی‌شود.
+
+Upgrade نودهای موجود اکنون Patch چرخه کاربر را نیز نصب می‌کند. Delete دیگر به Installer تعاملی اختیاری وابسته نیست؛ Certificate همان کاربر با EasyRSA revoke می‌شود، CRL به‌صورت اتمیک بازتولید/منتشر می‌شود و فقط artifactهای PKI همان Client پس از revoke موفق پاک می‌شوند. Migration دیتابیس لازم نیست.
+
+خط انتشار فعلی: **v1.0.15** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.15.fa.md).
 
 ## تغییرات v1.0.14 نسبت به v1.0.13
 
