@@ -10,7 +10,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from backend.db.engine import Base
-from backend.db.models import Node, User, UserNode
+from backend.db.models import (
+    ActiveSession, AnyConnectCredential, Node, RouterOpenVpnCredential,
+    User, UserNode, UserNodeUsage,
+)
 from backend.user_rename.repository import create_rename_job
 
 try:
@@ -143,6 +146,78 @@ class UserRenameStageTests(unittest.IsolatedAsyncioTestCase):
         for i, name in ((1,"A"),(2,"B"),(3,"C")):
             self.assertIn(f"new-{name}", self.fake[i].deleted)
         self.assertEqual(self.user.name, "old")
+
+
+class UserRenameCutoverTests(UserRenameStageTests):
+    def add_uuid_bound_state(self):
+        self.db.add_all([
+            UserNodeUsage(user_uuid="u-1", node_id=1, last_usage=1234),
+            AnyConnectCredential(user_uuid="u-1", password_hash="hash-keep", password_ciphertext=None, enabled=True, created_at=1, updated_at=2, password_changed_at=3),
+            RouterOpenVpnCredential(user_uuid="u-1", node_id=1, router_username="router_fixed", password_hash="router-hash", enabled=True, created_at=1, updated_at=2, password_changed_at=3),
+            ActiveSession(session_id="s-old", user_uuid="u-1", node_id=1, common_name="old-A", remote_addr="198.51.100.1", acquired_at=1, last_seen=2),
+        ])
+        self.db.commit()
+
+    async def test_atomic_cutover_preserves_uuid_keyed_state_and_removes_old_session(self):
+        import backend.user_rename.engine as impl
+        self.assertTrue(hasattr(impl, "commit_central_rename"), "commit_central_rename missing")
+        self.add_uuid_bound_state()
+        before = {
+            "uuid": self.user.uuid, "owner": self.user.owner, "total": self.user.total,
+            "used": self.user.used, "expiry": self.user.expiry_date, "limit": self.user.device_limit,
+            "nodes": [(x.user_uuid, x.node_id) for x in self.db.query(UserNode).order_by(UserNode.node_id)],
+            "usage": [(x.user_uuid, x.node_id, x.last_usage) for x in self.db.query(UserNodeUsage)],
+            "router": [(x.user_uuid, x.node_id, x.router_username, x.password_hash) for x in self.db.query(RouterOpenVpnCredential)],
+            "any": [(x.user_uuid, x.password_hash, x.enabled) for x in self.db.query(AnyConnectCredential)],
+        }
+        with self.patch_client():
+            await preflight_job(self.job, self.db)
+            await stage_new_identities(self.job, self.db)
+            await disable_old_identities(self.job, self.db)
+        impl.commit_central_rename(self.job.id, self.db)
+        self.db.expire_all(); after = self.db.query(User).filter_by(uuid="u-1").one()
+        self.assertEqual(after.name, "new")
+        self.assertEqual((after.uuid,after.owner,after.total,after.used,after.expiry_date,after.device_limit), (before["uuid"],before["owner"],before["total"],before["used"],before["expiry"],before["limit"]))
+        self.assertEqual([(x.user_uuid,x.node_id) for x in self.db.query(UserNode).order_by(UserNode.node_id)], before["nodes"])
+        self.assertEqual([(x.user_uuid,x.node_id,x.last_usage) for x in self.db.query(UserNodeUsage)], before["usage"])
+        self.assertEqual([(x.user_uuid,x.node_id,x.router_username,x.password_hash) for x in self.db.query(RouterOpenVpnCredential)], before["router"])
+        self.assertEqual([(x.user_uuid,x.password_hash,x.enabled) for x in self.db.query(AnyConnectCredential)], before["any"])
+        self.assertEqual(self.db.query(ActiveSession).filter_by(user_uuid="u-1").count(), 0)
+        self.assertIsNone(self.db.query(User).filter_by(name="old").first())
+        self.assertEqual(self.db.query(User).filter_by(name="new").one().uuid, "u-1")
+
+    async def test_cleanup_failure_keeps_new_name_then_retry_completes_without_reenable(self):
+        import backend.user_rename.engine as impl
+        self.assertTrue(hasattr(impl, "retry_cleanup"), "retry_cleanup missing")
+        self.add_uuid_bound_state()
+        with self.patch_client():
+            await preflight_job(self.job, self.db); await stage_new_identities(self.job, self.db); await disable_old_identities(self.job, self.db)
+        impl.commit_central_rename(self.job.id, self.db)
+        self.fake[2].delete_ok = False
+        with self.patch_client():
+            state = await impl.run_rename_job(self.job.id, self.db)
+        self.assertEqual(state, "cleanup_pending")
+        self.assertEqual(self.db.query(User).filter_by(uuid="u-1").one().name, "new")
+        self.assertNotIn(("old-B", True), self.fake[2].status_calls)
+        self.fake[2].delete_ok = True
+        with self.patch_client():
+            state = await impl.retry_cleanup(self.job.id, self.db)
+        self.assertEqual(state, "completed")
+        self.assertEqual(self.db.query(User).filter_by(uuid="u-1").one().name, "new")
+
+    async def test_rolling_back_resume_only_compensates(self):
+        import backend.user_rename.engine as impl
+        self.assertTrue(hasattr(impl, "run_rename_job"), "run_rename_job missing")
+        with self.patch_client():
+            await preflight_job(self.job, self.db); await stage_new_identities(self.job, self.db)
+        evidence = json.loads(self.job.evidence_json); evidence["disabled_old_node_ids"]=[1]
+        self.job.evidence_json=json.dumps(evidence); self.job.state="rolling_back"; self.db.commit()
+        with self.patch_client():
+            state = await impl.run_rename_job(self.job.id, self.db)
+        self.assertEqual(state, "rolled_back")
+        self.assertEqual(self.db.query(User).filter_by(uuid="u-1").one().name, "old")
+        self.assertIn(("old-A", True), self.fake[1].status_calls)
+
 
 
 if __name__ == "__main__": unittest.main()

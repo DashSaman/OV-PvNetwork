@@ -5,9 +5,13 @@ import json
 import time
 from dataclasses import asdict
 
-from backend.db.models import Node, User
+from backend.db.models import ActiveSession, Node, User, UserRenameJob
 from backend.node.assignment import _node_request, snapshot_assigned_nodes
-from backend.user_rename.contracts import RenameState
+from backend.user_rename.contracts import RenameState, TERMINAL_RENAME_STATES
+from backend.user_rename.repository import (
+    LifecycleLocked, acquire_lifecycle_lock, get_active_lock,
+    get_rename_job, release_lifecycle_lock,
+)
 
 
 class RenameStageError(RuntimeError):
@@ -199,11 +203,156 @@ async def revoke_old_identities(job, db) -> tuple[bool, list[int]]:
         if node_id in revoked:
             continue
         node = _node_by_id(db, node_id)
-        ok = await asyncio.to_thread(_node_request(node).delete_user, _cn(job.old_name, node.name))
-        if ok:
+        request = _node_request(node)
+        old_cn = _cn(job.old_name, node.name)
+        ok = await asyncio.to_thread(request.delete_user, old_cn)
+        state = await asyncio.to_thread(request.get_user_identity, old_cn) if ok else {}
+        verified = bool(ok and state and not state.get("valid_certificate") and not state.get("profile_exists") and not state.get("connected"))
+        if verified:
             revoked.append(node_id)
             evidence["revoked_old_node_ids"] = revoked
             _save(job, db, evidence=evidence)
         else:
             failed.append(node_id)
+    evidence["cleanup_failed_node_ids"] = sorted(failed)
+    _save(job, db, evidence=evidence)
     return not failed, failed
+
+
+def commit_central_rename(job_id: str, db) -> None:
+    job = db.query(UserRenameJob).filter(UserRenameJob.id == job_id).with_for_update().first()
+    if job is None:
+        raise RenameStageError("Rename job not found")
+    user = db.query(User).filter(User.uuid == job.user_uuid).with_for_update().first()
+    if user is None:
+        raise RenameStageError("User not found during rename cutover")
+    if user.name == job.new_name:
+        if job.state not in {RenameState.REVOKING_OLD.value, RenameState.CLEANUP_PENDING.value, RenameState.COMPLETED.value}:
+            job.state = RenameState.REVOKING_OLD.value
+            job.updated_at = int(time.time())
+            db.commit()
+        return
+    if user.name != job.old_name:
+        raise RenameStageError("Central username changed outside rename job")
+    collision = db.query(User).filter(User.name == job.new_name, User.uuid != job.user_uuid).first()
+    if collision is not None:
+        raise RenameStageError("Target username already exists")
+    snapshot = _load_json(job.snapshot_json)
+    old_cns = [_cn(job.old_name, str(item.get("name"))) for item in snapshot.get("nodes", []) if isinstance(item, dict) and item.get("name")]
+    if old_cns:
+        db.query(ActiveSession).filter(
+            ActiveSession.user_uuid == job.user_uuid,
+            ActiveSession.common_name.in_(old_cns),
+        ).delete(synchronize_session=False)
+    now = int(time.time())
+    user.name = job.new_name
+    evidence = _load_json(job.evidence_json)
+    evidence["audit"] = {
+        "old_name": job.old_name, "new_name": job.new_name,
+        "actor": job.actor, "actor_type": job.actor_type, "job_id": job.id,
+        "cutover_at": now,
+    }
+    job.evidence_json = json.dumps(evidence, sort_keys=True, separators=(",", ":"))
+    job.state = RenameState.REVOKING_OLD.value
+    job.updated_at = now
+    job.failure_reason = None
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+
+def _ensure_job_lock(job, db):
+    lock = get_active_lock(db, job.user_uuid)
+    if lock is None:
+        lock = acquire_lifecycle_lock(db, job.user_uuid, "rename", job.id)
+        db.commit()
+    elif lock.operation != "rename" or lock.job_id not in {None, job.id}:
+        raise LifecycleLocked(f"Conflicting lifecycle lock for {job.user_uuid}")
+    return lock
+
+
+def _complete_job(job, db) -> str:
+    now = int(time.time())
+    evidence = _load_json(job.evidence_json)
+    audit = evidence.setdefault("audit", {})
+    audit["terminal_at"] = now
+    job.evidence_json = json.dumps(evidence, sort_keys=True, separators=(",", ":"))
+    job.state = RenameState.COMPLETED.value
+    job.completed_at = now
+    job.updated_at = now
+    job.failure_reason = None
+    lock = get_active_lock(db, job.user_uuid)
+    if lock is not None and lock.operation == "rename" and lock.job_id in {None, job.id}:
+        release_lifecycle_lock(db, job.user_uuid, lock.owner_token)
+    db.commit()
+    return job.state
+
+
+async def _attempt_cleanup(job, db) -> str:
+    ok, failed = await revoke_old_identities(job, db)
+    if not ok:
+        evidence = _load_json(job.evidence_json)
+        evidence["cleanup_failed_node_ids"] = sorted(set(int(x) for x in failed))
+        _save(job, db, state=RenameState.CLEANUP_PENDING.value, evidence=evidence, failure="Old identity cleanup pending")
+        return job.state
+    return _complete_job(job, db)
+
+
+async def retry_cleanup(job_id: str, db=None) -> str:
+    if db is None:
+        from backend.db.engine import db_session
+        with db_session() as session:
+            return await retry_cleanup(job_id, session)
+    job = get_rename_job(db, job_id)
+    if job is None:
+        raise RenameStageError("Rename job not found")
+    if job.state != RenameState.CLEANUP_PENDING.value:
+        raise RenameStageError("Cleanup retry is allowed only for cleanup_pending jobs")
+    _ensure_job_lock(job, db)
+    return await _attempt_cleanup(job, db)
+
+
+async def run_rename_job(job_id: str, db=None) -> str:
+    if db is None:
+        from backend.db.engine import db_session
+        with db_session() as session:
+            return await run_rename_job(job_id, session)
+    job = get_rename_job(db, job_id)
+    if job is None:
+        raise RenameStageError("Rename job not found")
+    if job.state in TERMINAL_RENAME_STATES:
+        return job.state
+    _ensure_job_lock(job, db)
+    try:
+        while True:
+            db.refresh(job)
+            if job.state in TERMINAL_RENAME_STATES:
+                lock = get_active_lock(db, job.user_uuid)
+                if lock is not None and lock.operation == "rename" and lock.job_id in {None, job.id}:
+                    release_lifecycle_lock(db, job.user_uuid, lock.owner_token); db.commit()
+                return job.state
+            if job.state == RenameState.QUEUED.value:
+                await preflight_job(job, db); continue
+            if job.state == RenameState.PREFLIGHT.value:
+                await stage_new_identities(job, db); continue
+            if job.state == RenameState.STAGING.value:
+                await stage_new_identities(job, db)
+                await disable_old_identities(job, db); continue
+            if job.state == RenameState.ROLLING_BACK.value:
+                await rollback_precommit(job, db); continue
+            if job.state == RenameState.CUTOVER.value:
+                commit_central_rename(job.id, db); continue
+            if job.state == RenameState.REVOKING_OLD.value:
+                return await _attempt_cleanup(job, db)
+            if job.state == RenameState.CLEANUP_PENDING.value:
+                return job.state
+            raise RenameStageError(f"Unsupported rename state: {job.state}")
+    except RenameStageError:
+        db.refresh(job)
+        if job.state in {RenameState.ROLLED_BACK.value, RenameState.FAILED.value}:
+            lock = get_active_lock(db, job.user_uuid)
+            if lock is not None and lock.operation == "rename" and lock.job_id in {None, job.id}:
+                release_lifecycle_lock(db, job.user_uuid, lock.owner_token); db.commit()
+        raise

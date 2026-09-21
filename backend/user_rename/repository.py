@@ -95,3 +95,7 @@ def claim_runnable_job(db) -> UserRenameJob | None:
         .with_for_update(skip_locked=True)
         .first()
     )
+
+
+def get_rename_job(db, job_id: str) -> UserRenameJob | None:
+    return db.query(UserRenameJob).filter(UserRenameJob.id == job_id).first()
