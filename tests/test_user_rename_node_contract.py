@@ -64,6 +64,24 @@ class RenameNodeContractTests(unittest.TestCase):
             self.assertTrue(state["valid_certificate"])
             self.assertFalse(state["connected"])
 
+    def test_router_only_upgrades_legacy_router_with_identity_contract_idempotently(self):
+        legacy = node_patch.ROUTER.replace("    get_user_identity_state,\n", "")
+        start = legacy.index('@router.get("/user/{name}/identity"')
+        end = legacy.index('@router.delete("/user/{name}"', start)
+        legacy = legacy[:start] + legacy[end:]
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            routers = root / "core" / "routers"
+            routers.mkdir(parents=True)
+            (routers / "router.py").write_text(legacy)
+            node_patch.install_router_openvpn_module(root)
+            first = (routers / "router.py").read_text()
+            self.assertIn("get_user_identity_state", first)
+            self.assertIn('"/user/{name}/identity"', first)
+            node_patch.install_router_openvpn_module(root)
+            second = (routers / "router.py").read_text()
+            self.assertEqual(first, second)
+
     def test_lifecycle_patch_contains_no_real_openvpn_restart(self):
         body = node_patch.USER_LIFECYCLE_NO_RESTART.lower()
         self.assertNotIn("systemctl restart openvpn", body)

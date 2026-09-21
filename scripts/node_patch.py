@@ -867,6 +867,22 @@ def install_user_lifecycle(root: Path) -> None:
     user_file.write_text(patched, encoding="utf-8")
 
 
+def _ensure_user_identity_route(source: str) -> str:
+    if "get_user_identity_state" not in source:
+        start = source.find("from core.service.user_managment import (")
+        end = source.find("\n)", start)
+        if start < 0 or end < 0:
+            raise SystemExit("USER_MANAGEMENT_IMPORT_NOT_FOUND")
+        source = source[:end] + "\n    get_user_identity_state," + source[end:]
+    if '"/user/{name}/identity"' not in source:
+        anchor = '@router.delete("/user/{name}", response_model=ResponseModel)'
+        if anchor not in source:
+            raise SystemExit("USER_DELETE_ROUTE_NOT_FOUND")
+        block = '@router.get("/user/{name}/identity", response_model=ResponseModel)\nasync def get_user_identity(name: str, api_key: str = Depends(check_api_key)):\n    data = get_user_identity_state(name)\n    return ResponseModel(success=True, msg="User identity state", data=data)\n\n\n'
+        source = source.replace(anchor, block + anchor, 1)
+    return source
+
+
 def install_router_openvpn_module(root: Path) -> None:
     router_file = root / "core/routers/router.py"
     module_file = root / "core/routers/router_openvpn.py"
@@ -874,6 +890,8 @@ def install_router_openvpn_module(root: Path) -> None:
         raise SystemExit("ROUTER_NOT_FOUND")
     module_file.write_text(ROUTER_OPENVPN_MODULE, encoding="utf-8")
     source = router_file.read_text(encoding="utf-8", errors="replace")
+    source = _ensure_user_identity_route(source)
+    router_file.write_text(source, encoding="utf-8")
     if "/router-openvpn/status" in source or "PVNETWORK_ROUTER_OPENVPN_INCLUDE_V1" in source:
         return
     source = source.rstrip() + '''
