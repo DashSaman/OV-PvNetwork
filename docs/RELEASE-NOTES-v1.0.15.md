@@ -13,3 +13,12 @@ The patch does not alter the normal OpenVPN listener/server configuration, routi
 
 ## Verification gate
 Focused lifecycle tests must prove exact-CN behavior and absence of `systemctl restart`. Full CI must pass before Production. Production rollout requires a verified rollback copy, compile/API health, and evidence that the normal OpenVPN PID and configuration hash remain unchanged while synthetic per-user lifecycle probes execute.
+## Production verification
+- Exact-head PR CI, legacy-Node hotfix CI and merged-main CI passed before the final Production patch.
+- A verified rollback point covered source, database and runtime environment.
+- A unique synthetic CN completed Activate -> Disable -> Delete on the deployed Node.
+- The normal OpenVPN PID and server-config hash remained unchanged throughout the lifecycle probe.
+- CRL regeneration completed and the published CRL remained OpenSSL-valid.
+- Canonical panel health reported `1.0.15`, and public health/panel/users remained HTTP 200 after canary retirement.
+
+The Production probe also caught and fixed a legacy-Node compatibility gap before release: the injected lifecycle block is now self-contained and does not depend on a pre-existing `_safe_name` helper.
