@@ -36,7 +36,7 @@ def threshold_alert_active(
     elif was_active:
         high = 0
         clear_at = max(0.0, limit - float(clear_margin))
-        if value <= clear_at:
+        if value < clear_at:
             clear += 1
         else:
             clear = 0
