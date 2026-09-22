@@ -4,6 +4,7 @@ import unittest
 from backend.operations.alert_transitions import (
     build_node_status_alerts,
     build_transition_messages,
+    threshold_alert_active,
 )
 
 
@@ -27,6 +28,31 @@ class NodeStatusAlertTests(unittest.TestCase):
         old = {"n:7:down": "🔴 Node DOWN: Demo-DE"}
         current = {"n:7:down": "🔴 Node DOWN: Demo-DE"}
         self.assertEqual(build_transition_messages(old, current), [])
+
+    def test_cpu_alert_requires_two_consecutive_high_samples(self):
+        counters = {}
+        key = "n:7:cpu"
+        self.assertFalse(threshold_alert_active(key, 100.0, 85.0, False, counters))
+        self.assertEqual(counters[key]["high"], 1)
+        self.assertTrue(threshold_alert_active(key, 100.0, 85.0, False, counters))
+        self.assertEqual(counters[key]["high"], 2)
+
+    def test_cpu_alert_requires_two_clear_samples_and_hysteresis(self):
+        counters = {"n:7:cpu": {"high": 2, "clear": 0}}
+        key = "n:7:cpu"
+        self.assertTrue(threshold_alert_active(key, 80.0, 85.0, True, counters))
+        self.assertEqual(counters[key]["clear"], 0)
+        self.assertTrue(threshold_alert_active(key, 70.0, 85.0, True, counters))
+        self.assertEqual(counters[key]["clear"], 1)
+        self.assertFalse(threshold_alert_active(key, 70.0, 85.0, True, counters))
+        self.assertEqual(counters[key]["clear"], 2)
+
+    def test_monitor_persists_cpu_debounce_state_and_keeps_alert_text_stable(self):
+        source = (Path(__file__).resolve().parents[1] / "backend/operations/telegram_monitor.py").read_text()
+        self.assertIn("threshold_alert_active", source)
+        self.assertIn("threshold_counters", source)
+        self.assertIn("old.get(key) or", source)
+        self.assertIn("'threshold_counters': threshold_counters", source)
 
     def test_monitoring_ui_exposes_node_status_toggle(self):
         source = (Path(__file__).resolve().parents[1] / "frontend/src/pages/MonitoringSettings.jsx").read_text()
