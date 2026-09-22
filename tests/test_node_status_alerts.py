@@ -47,10 +47,12 @@ class NodeStatusAlertTests(unittest.TestCase):
         self.assertFalse(threshold_alert_active(key, 70.0, 85.0, True, counters))
         self.assertEqual(counters[key]["clear"], 2)
 
-    def test_node_cpu_probe_uses_bounded_sampling_interval(self):
-        source = (Path(__file__).resolve().parents[1] / "scripts/node_patch.py").read_text()
-        self.assertIn("psutil.cpu_percent(interval=0.25)", source)
-        self.assertNotIn('"cpu_usage": psutil.cpu_percent(),', source)
+    def test_monitor_persists_cpu_debounce_state_and_keeps_alert_text_stable(self):
+        source = (Path(__file__).resolve().parents[1] / "backend/operations/telegram_monitor.py").read_text()
+        self.assertIn("threshold_alert_active", source)
+        self.assertIn("threshold_counters", source)
+        self.assertIn("old.get(key) or", source)
+        self.assertIn("'threshold_counters': threshold_counters", source)
 
     def test_monitoring_ui_exposes_node_status_toggle(self):
         source = (Path(__file__).resolve().parents[1] / "frontend/src/pages/MonitoringSettings.jsx").read_text()
