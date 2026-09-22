@@ -14,6 +14,7 @@ from backend.node.health import build_nodes_health
 from backend.operations.alert_transitions import (
     build_node_status_alerts,
     build_transition_messages,
+    threshold_alert_active,
 )
 
 STATE = Path('/var/lib/pvnetwork-panel/monitor-state.json')
@@ -40,6 +41,13 @@ def ssl_days(host, port):
     return int((expires_at - time.time()) / 86400)
 
 
+def _load_state():
+    try:
+        value = json.loads(STATE.read_text())
+        return value if isinstance(value, dict) else {}
+    except Exception:
+        return {}
+
 
 async def main():
     db = SessionLocal()
@@ -62,22 +70,48 @@ async def main():
     finally:
         db.close()
 
+    state = _load_state()
+    old = state.get('alerts', {})
+    if not isinstance(old, dict):
+        old = {}
+    threshold_counters = state.get('threshold_counters', {})
+    if not isinstance(threshold_counters, dict):
+        threshold_counters = {}
+
     alerts = build_node_status_alerts(nodes, enabled=node_status_alerts_enabled)
     stat = os.statvfs('/')
     used = round(100 * (1 - stat.f_bavail / stat.f_blocks), 1)
     if used >= disk:
         alerts['panel:disk'] = f'⚠️ PVNetwork Panel disk usage: {used}%'
 
+    live_cpu_keys = set()
     for node in nodes:
         node_id = node.get('id')
         name = node.get('name') or f'Node {node_id}'
         reasons = node.get('health_reason') or []
-        if node.get('cpu_usage') is not None and float(node['cpu_usage']) >= cpu:
-            alerts[f'n:{node_id}:cpu'] = f'⚠️ High CPU: {name} — {float(node["cpu_usage"]):.1f}%'
+        if node.get('cpu_usage') is not None:
+            key = f'n:{node_id}:cpu'
+            live_cpu_keys.add(key)
+            value = float(node['cpu_usage'])
+            if threshold_alert_active(
+                key,
+                value,
+                cpu,
+                key in old,
+                threshold_counters,
+                raise_samples=2,
+                clear_samples=2,
+                clear_margin=5.0,
+            ):
+                alerts[key] = old.get(key) or f'⚠️ High CPU: {name} — {value:.1f}%'
         if node.get('memory_usage') is not None and float(node['memory_usage']) >= ram:
             alerts[f'n:{node_id}:ram'] = f'⚠️ High RAM: {name} — {float(node["memory_usage"]):.1f}%'
         if 'node_api_unreachable' in reasons:
             alerts[f'n:{node_id}:sync'] = f'🔴 Sync unavailable: {name}'
+
+    for key in list(threshold_counters):
+        if key.endswith(':cpu') and key not in live_cpu_keys and key not in old:
+            threshold_counters.pop(key, None)
 
     if host:
         try:
@@ -87,17 +121,19 @@ async def main():
         except Exception as exc:
             alerts['ssl'] = f'🔴 SSL check failed for {host}: {type(exc).__name__}'
 
-    try:
-        old = json.loads(STATE.read_text()).get('alerts', {})
-    except Exception:
-        old = {}
-
     for message in build_transition_messages(old, alerts):
         send(token, chat, message)
 
     tmp = STATE.with_suffix('.tmp')
     tmp.write_text(
-        json.dumps({'checked_at': int(time.time()), 'alerts': alerts}, ensure_ascii=False)
+        json.dumps(
+            {
+                'checked_at': int(time.time()),
+                'alerts': alerts,
+                'threshold_counters': threshold_counters,
+            },
+            ensure_ascii=False,
+        )
     )
     tmp.replace(STATE)
 
