@@ -226,6 +226,8 @@ Before implementation, record the task and target release here **and commit/push
 - `v1.0.25` — RELEASED — `PVN-1011` Router readiness probe + actionable credential errors.
   - Diagnosis of the owner report: `node_router_openvpn` was empty — Router capability never enabled on any node — so every on-create credential request failed 409 and no username/password appeared.
   - Fix: checkbox-tick live probe of selected nodes with inline ready-count or red enable instructions; 409 details translated to actionable messages; 13-language strings; `tests/test_router_readiness_probe.py`; operator enable steps documented in the release notes.
+  - Release completion: exact-head CI PASS on `70e08ea`; immutable tag `v1.0.25` pushed; GitHub Release `395927850` published with artifact + SHA256; public re-download verification PASS (`cb3f06eada20cb78bc17fd94c7ee8e10573091c22a3c2b480edd99a4c8e795a6`).
+  - Production deployment (owner-authorized): 19-file metadata delta + admin frontend dist (atomic switch); one `pvnetwork-panel.service` restart (template refresh only). Post-deploy: `/healthz` 200 `1.0.25`; live bundle `index-Cmj7K8qW.js` contains the probe/error-translation code; 0 Traceback/CRITICAL; `paqet`/`x-ui`/nginx untouched. Remaining owner action: enable Router capability on at least one node (Nodes → Router/MikroTik → Preflight → Enable) to see real credentials.
 
 - `v1.0.24` — RELEASED — `PVN-1009` subscription runtime revived + MikroTik on-create panel fixed.
   - Defect 1: since v1.0.8 the strict CSP blocked every inline script on /sub (renewal countdown stuck, no language/theme, dead QR overlay); nginx served the QR library as octet-stream (types{} override), making it unexecutable under nosniff.
