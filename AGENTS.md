@@ -62,6 +62,7 @@ Core UI must remain usable at **360, 375, 390, 430, 768, 1024, 1366, 1440 and 19
 - `PVN-700..799` — protocols, Xray/WireGuard/Sing-box, subscription formats
 - `PVN-800..899` — install, update, backup, rollback, CI/CD, HA, DR
 - `PVN-900..999` — migrations, ecosystem compatibility, approved experiments
+- `PVN-1000..1099` — post-registry hotfixes: live-Production regression fixes and governance corrections for already-released capabilities (the permanent 001–999 registry is fully allocated; new IDs continue sequentially, never renumbered or reused)
 
 ## Sequential patch-release policy
 
@@ -215,10 +216,19 @@ Before implementation, record the task and target release here **and commit/push
   - Compatibility hardening: the injected legacy-Node lifecycle block is self-contained, idempotent and does not depend on a pre-existing `_safe_name` helper. PR #45 and legacy hotfix PR #46 both passed exact-head CI before merge; merged-main CI also passed before the Production retry.
   - Production verification: rollback source/DB/env checks passed; canonical panel reports `1.0.15`; the final lifecycle patch compiled and the Node service restarted without restarting normal OpenVPN; a unique synthetic CN completed Activate -> Disable -> Delete, CRL remained OpenSSL-valid, normal OpenVPN PID/config hash remained unchanged, and public panel health/root/users stayed HTTP 200 after canary retirement.
 
-- `v1.0.16` — [ ] RELEASE CANDIDATE — `PVN-022` safe multi-node username rename.
+- `v1.0.16` — RELEASED — `PVN-022` safe multi-node username rename.
   - Code contract: durable per-user job/lock, all-node staging, pre-commit rollback, atomic central name cutover, immediate old-CN revoke/delete, retryable `cleanup_pending`, and no normal OpenVPN restart.
   - Identity contract: UUID/accounting/node assignments and UUID-bound AnyConnect + Router/MikroTik credentials remain stable; Quick Edit username remains read-only and Rename is a dedicated workflow.
-  - Production completion remains open until exact-head CI, backup/migration/canary, synthetic rename verification, OpenVPN PID/hash preservation, public smoke, artifact sanitization and public SHA re-download all pass.
+  - Hotfixes during candidate hardening: legacy Node upgrade with rename identity route and legacy Node import without trailing comma (both CI-verified before merge).
+  - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
+  - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
+
+- `v1.0.17` — RELEASED — `PVN-1000` debounced CPU threshold alerts.
+  - Defect: live-Production CPU threshold alerts flapped on transient spikes (single-sample fire/clear), producing Telegram alert/resolve storms and monitoring churn exactly while other services were busy.
+  - Fix contract: High CPU requires 2 consecutive at-threshold samples; Resolved requires 2 consecutive below-threshold samples with a strict 5.0-point recovery margin; active alert text is reused from persisted state; `alerts` + `threshold_counters` persist across monitor restarts; offline-node CPU counters are dropped when neither live nor active.
+  - RAM/disk/sync/SSL and Node DOWN/UP transition semantics unchanged; no OpenVPN/Node/Router listener/profile/session mutation; only `pvnetwork-panel.service` is restarted by the deployment.
+  - Governance correction riding with this release: registers `PVN-1000` and the `PVN-1000..1099` post-registry hotfix range (the permanent 001–999 registry is fully allocated), repoints README/installer pins to the current release, and closes stale v1.0.0-era planning issues.
+  - Verification evidence: recorded in the ledger below after Production deployment (backup, migration, health, logs, rollback readiness).
 
 ## Current release baseline
 
@@ -243,7 +253,7 @@ Before implementation, record the task and target release here **and commit/push
 - PVN-019 [x] Align active Roadmap/release policy with the sequential `1.0.x` release model.
 - PVN-020 [x] Every release README starts with a clear “what changed vs previous release” block in English and Persian.
 - PVN-021 [x] Parallelize independent research/tests/docs when safe; never run concurrent Production mutations or restarts.
-- PVN-022 [ ] Safe multi-node username rename with profile migration, rollback and no silent certificate breakage.
+- PVN-022 [x] Safe multi-node username rename with profile migration, rollback and no silent certificate breakage. Released in v1.0.16.
 - PVN-023 [ ] Remove duplicate Push test route / duplicate OpenAPI Operation ID warning.
 - PVN-024 [x] Enforce owner-authorized live Production deployment after verification; forbid GitHub-only completion for Production-visible work.
 - PVN-025 [x] Remove every former upstream panel identifier from tracked source and migrate runtime naming to PVNetwork-owned paths/services. Release: v1.0.4.

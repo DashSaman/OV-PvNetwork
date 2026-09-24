@@ -959,6 +959,12 @@
 - PVN-998 Ecosystem release audit
 - PVN-999 Ecosystem release sign-off
 
+## PVN-1000..1099 — post-registry hotfixes and live-Production regression corrections
+
+The permanent 001–999 registry above is fully allocated. New hotfix/regression IDs continue sequentially in this range and follow the same one-Production-visible-task-per-patch-release rule.
+
+- PVN-1000 [x] Debounced CPU threshold alerts: two consecutive at-threshold samples to fire, strict-margin two-sample recovery to clear, persisted threshold counters across monitor restarts, stale offline-node counters dropped. Released in v1.0.17.
+
 ## Rule
 
 Every applicable capability discovered later receives an unused stable ID in the correct range. Never recycle an ID from a completed, rejected, deferred or superseded item. Competitor-derived tasks remain research inputs until Product fit and Production safety are confirmed.

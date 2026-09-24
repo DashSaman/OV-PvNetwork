@@ -1,3 +1,10 @@
+## v1.0.17 — PVN-1000 debounced CPU threshold alerts
+
+- CPU threshold alerts now require two consecutive at-threshold samples before firing and two consecutive recovered samples (with a 5-point recovery margin) before sending Resolved, eliminating transient CPU alert flapping.
+- Threshold alert state and per-key consecutive-sample counters are persisted in the monitor state file, so a monitor restart cannot re-fire an already-active alert.
+- Offline nodes no longer keep stale CPU threshold counters alive; counters for keys that are neither live nor active are dropped.
+- RAM, disk, sync-availability and SSL alerts keep their existing transition semantics; no OpenVPN, Node, Router listener, profile or session behavior is changed.
+
 ## v1.0.16 — PVN-022 safe multi-node username rename
 
 - Added durable job/lock orchestration for username rename with resumable staging, cutover, rollback and cleanup.
