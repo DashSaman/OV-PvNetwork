@@ -143,12 +143,15 @@ def rotate_router_credential(
 ) -> dict:
     """Compatibility helper for callers that can persist before remote sync."""
     prepared = prepare_router_credential(user_uuid=user_uuid, node_id=node_id)
+    from backend.monitoring_crypto import encrypt_secret
     persist_router_credential(
         db,
         user_uuid=user_uuid,
         node_id=node_id,
         router_username=prepared["router_username"],
         password_hash=prepared["password_hash"],
+        # PVN-1012: keep a reversible ciphertext for admin display.
+        password_ciphertext=encrypt_secret(prepared["password"]),
         enabled=True,
     )
     return {
