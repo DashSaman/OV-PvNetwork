@@ -18,7 +18,8 @@ class SubscriptionQrTests(unittest.TestCase):
         source = lib.read_text(encoding='utf-8')
         self.assertIn('Kazuhiko Arase', source)
         # No CDN: the library is served same-origin only.
-        self.assertIn('<script src="/sub-clients/qr/qrcode.js"></script>', self.tpl)
+                # PVN-1009: the library moved to the backend-served path with a correct MIME.
+        self.assertIn('<script src="/sub-assets/qr/qrcode.js"></script>', self.tpl)
         self.assertNotIn('cdn.jsdelivr', self.tpl)
         self.assertNotIn('unpkg.com', self.tpl)
 
