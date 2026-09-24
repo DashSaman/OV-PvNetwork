@@ -120,8 +120,9 @@ class RouterOpenVpnUserLifecycleTests(unittest.IsolatedAsyncioTestCase):
         status = await get_user_router_openvpn_status(
             self.user.uuid, 1, db=self.db, actor=self.actor
         )
-        self.assertFalse(status["data"]["password_available"])
-        self.assertNotIn("password", status["data"])
+        # PVN-1012: the stored ciphertext is revealed to authenticated admins.
+        self.assertTrue(status["data"]["password_available"])
+        self.assertEqual(status["data"]["password"], data["password"])
 
     async def test_node_push_failure_leaves_no_central_credential(self):
         from backend.routers.router_openvpn import rotate_user_router_openvpn_credential

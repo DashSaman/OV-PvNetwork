@@ -25,7 +25,8 @@ class RouterOpenVpnSchemaContractTests(unittest.TestCase):
         credential_columns = {column.name for column in RouterOpenVpnCredential.__table__.columns}
         self.assertIn("password_hash", credential_columns)
         self.assertNotIn("password", credential_columns)
-        self.assertNotIn("password_ciphertext", credential_columns)
+        # PVN-1012: reversible ciphertext is allowed; a plaintext column is not.
+        self.assertIn("password_ciphertext", credential_columns)
         self.assertTrue({"user_uuid", "node_id", "router_username"}.issubset(credential_columns))
 
     def test_normal_node_openvpn_columns_are_unchanged(self):

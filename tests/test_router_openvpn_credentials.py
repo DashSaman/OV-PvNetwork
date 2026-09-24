@@ -80,7 +80,12 @@ class RouterOpenVpnCredentialTests(unittest.TestCase):
             self.assertNotEqual(result["password"], row.password_hash)
             self.assertNotIn(result["password"], row.password_hash)
             self.assertFalse(hasattr(row, "password"))
-            self.assertFalse(hasattr(row, "password_ciphertext"))
+            # PVN-1012: a Fernet ciphertext is stored for admin display; it must
+            # never equal the plaintext and must decrypt with the panel key.
+            from backend.monitoring_crypto import decrypt_secret
+            self.assertIsNotNone(row.password_ciphertext)
+            self.assertNotEqual(row.password_ciphertext, result["password"])
+            self.assertEqual(decrypt_secret(row.password_ciphertext), result["password"])
 
 
 if __name__ == "__main__":
