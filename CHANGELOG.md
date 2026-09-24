@@ -1,3 +1,9 @@
+## v1.0.25 — PVN-1011 Router readiness probe + actionable credential errors
+
+- Root cause of the missing username/password report: Router/MikroTik capability was never enabled on any node (the capability table was empty), so every on-create credential request failed with a bare 409 and the results panel showed no credentials.
+- The Add User Router checkbox now probes the live Router status of every selected node when ticked and shows the verdict inline: ready-node count, or a red enable instruction (Nodes → Router/MikroTik → Preflight → Enable) when none are ready — before anything is submitted.
+- Credential failures in the results panel translate into actionable messages (capability not enabled, listener unhealthy, node needs upgrade) instead of raw 409 details; all strings are translated in the 13 shipped languages.
+
 ## v1.0.24 — PVN-1009 subscription runtime revived + MikroTik on-create panel fixed
 
 - Root-caused and fixed the dead subscription-page runtime: the strict CSP shipped in v1.0.8 (script-src 'self' without unsafe-inline) silently blocked every inline script on the public /sub page — language/theme switching, the renewal countdown (stuck on "در حال محاسبه زمان باقی‌مانده..."), copy buttons and the QR overlay all never executed. The subscription page now serves a dedicated CSP allowing inline scripts on that path only; the admin panel keeps the strict policy. Migrating the template to nonces is registered as the follow-up.

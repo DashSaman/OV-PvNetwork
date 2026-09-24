@@ -223,6 +223,10 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.25` — RELEASED — `PVN-1011` Router readiness probe + actionable credential errors.
+  - Diagnosis of the owner report: `node_router_openvpn` was empty — Router capability never enabled on any node — so every on-create credential request failed 409 and no username/password appeared.
+  - Fix: checkbox-tick live probe of selected nodes with inline ready-count or red enable instructions; 409 details translated to actionable messages; 13-language strings; `tests/test_router_readiness_probe.py`; operator enable steps documented in the release notes.
+
 - `v1.0.24` — RELEASED — `PVN-1009` subscription runtime revived + MikroTik on-create panel fixed.
   - Defect 1: since v1.0.8 the strict CSP blocked every inline script on /sub (renewal countdown stuck, no language/theme, dead QR overlay); nginx served the QR library as octet-stream (types{} override), making it unexecutable under nosniff.
   - Fix 1: path-scoped `SUBSCRIPTION_INLINE_CSP` adds 'unsafe-inline' for scripts on /sub only (BASE_CSP unchanged elsewhere); QR library now backend-served at /sub-assets/qr/ with a proper MIME; nonce migration registered as PVN-1010.

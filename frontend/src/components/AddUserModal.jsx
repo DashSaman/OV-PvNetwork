@@ -26,6 +26,8 @@ const AddUserModal = ({
     Boolean(anyConnectDefaultEnabled)
   );
   const [routerDevicesEnabled, setRouterDevicesEnabled] = useState(false);
+  // PVN-1011: live Router-capability probe for the selected nodes.
+  const [routerReadiness, setRouterReadiness] = useState({ checking: false, ready: [], failed: [] });
   const [routerResults, setRouterResults] = useState(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState([]);
   const [error, setError] = useState('');
@@ -220,6 +222,47 @@ const AddUserModal = ({
 
   const monthOptions = Array.from({ length: 6 }, (_, index) => index + 1);
 
+  // PVN-1011: probe each selected node for a healthy Router listener so the
+  // operator knows before submitting whether credentials can be generated.
+  const probeRouterReadiness = async () => {
+    if (!selectedNodeIds.length) return;
+    setRouterReadiness({ checking: true, ready: [], failed: [] });
+    const checks = await Promise.all(selectedNodeIds.map(async nodeId => {
+      try {
+        const r = await apiClient.get(`/router-openvpn/nodes/${nodeId}`, { timeout: 15000 });
+        const d = r.data?.data || {};
+        return { nodeId, ok: Boolean(d.enabled && d.healthy), upgrade: Boolean(d.upgrade_required) };
+      } catch {
+        return { nodeId, ok: false, upgrade: false };
+      }
+    }));
+    setRouterReadiness({
+      checking: false,
+      ready: checks.filter(c => c.ok).map(c => c.nodeId),
+      failed: checks.filter(c => !c.ok),
+    });
+  };
+
+  const handleRouterToggle = event => {
+    setRouterDevicesEnabled(event.target.checked);
+    if (event.target.checked) probeRouterReadiness();
+  };
+
+  // PVN-1011: translate common credential failures into actionable text.
+  const routerFriendlyError = detail => {
+    const text = String(detail || '');
+    if (text.includes('not enabled on this node')) {
+      return t('routerErrNotEnabled', 'قابلیت Router روی این نود فعال نیست — از صفحه نودها → Router/MikroTik فعالش کن.');
+    }
+    if (text.includes('not healthy on this node')) {
+      return t('routerErrNotHealthy', 'Listener روتر روی این نود سالم نیست — وضعیتش را در صفحه نودها بررسی کن.');
+    }
+    if (text.includes('upgrade')) {
+      return t('routerErrUpgrade', 'این نود باید اول ارتقا پیدا کند تا Router پشتیبانی شود.');
+    }
+    return text.slice(0, 200);
+  };
+
   // PVN-1009: authenticated Router profile download for the results panel.
   const downloadRouterProfile = async nodeId => {
     try {
@@ -267,7 +310,7 @@ const AddUserModal = ({
           ))}
           {failedResults.map(item => (
             <div key={item.nodeId} className="error-message" style={{ marginBottom: 8 }}>
-              {t('createUserRouterNodeFailed', 'تولید اعتبارنامه ناموفق:')} {item.nodeName} — {String(item.detail).slice(0, 160)}
+              {t('createUserRouterNodeFailed', 'تولید اعتبارنامه ناموفق:')} {item.nodeName} — {routerFriendlyError(item.detail)}
             </div>
           ))}
           <details style={{ marginTop: 10 }}>
@@ -398,13 +441,26 @@ const AddUserModal = ({
             <input
               type="checkbox"
               checked={routerDevicesEnabled}
-              onChange={event => setRouterDevicesEnabled(event.target.checked)}
+              onChange={handleRouterToggle}
             />
             <span>{t('createUserRouterToggle', 'دستگاه‌های Router / MikroTik (نام کاربری و رمز)')}</span>
           </label>
           <small>
             {t('createUserRouterHelp', 'پس از ساخت کاربر، برای هر نود انتخابی دارای Listener سازگاری Router، نام کاربری و رمز یک‌بارمصرف ساخته و نمایش داده می‌شود. پروفایل عادی OpenVPN بدون تغییر و بدون رمز باقی می‌ماند.')}
           </small>
+          {routerDevicesEnabled && routerReadiness.checking && (
+            <small>{t('routerStatusChecking', 'در حال بررسی وضعیت Router نودهای انتخابی…')}</small>
+          )}
+          {routerDevicesEnabled && !routerReadiness.checking && routerReadiness.failed.length > 0 && (
+            <small style={{ color: '#ff596d', display: 'block', marginTop: 4 }}>
+              {t('routerStatusNone', 'قابلیت Router/MikroTik هنوز روی هیچ‌کدام از نودهای انتخابی فعال نیست؛ نام کاربری و رمز ساخته نمی‌شود. برای فعال‌سازی: صفحه «نودها» → روی نود دلخواه → Router / MikroTik → اجرای Preflight و Enable.')}
+            </small>
+          )}
+          {routerDevicesEnabled && !routerReadiness.checking && routerReadiness.failed.length === 0 && routerReadiness.ready.length > 0 && (
+            <small style={{ color: '#24dc8b', display: 'block', marginTop: 4 }}>
+              {t('routerStatusReady', 'نودهای آماده Router:')} {routerReadiness.ready.length}/{selectedNodeIds.length}
+            </small>
+          )}
         </div>
 
         <div className="modal-footer">

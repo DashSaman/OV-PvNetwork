@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "空欄で自動検出します。パネルがSSH接続とは異なるアドレス（NATやプロキシ背後など）からノードへアクセスする場合のみ入力してください。",
   "routerPanelDownloadProfile": "Routerプロファイルをダウンロード",
   "routerPanelGuideTitle": "MikroTik / RouterOS 接続ガイド",
-  "routerPanelGuide": "1. RouterOSでPPPを開きAdd → OVPN Clientを選択。\n2. Connectに上記のサーバーアドレスを設定。ポート/プロトコルはRouterプロファイルに従います。\n3. 上のUserとPasswordを入力し、ModeをIPに。\n4. Routerプロファイルをダウンロードし、証明書をSystem → Certificatesでインポート。\n5. 必要ならUse Peer DNSを有効にしてOK。"
+  "routerPanelGuide": "1. RouterOSでPPPを開きAdd → OVPN Clientを選択。\n2. Connectに上記のサーバーアドレスを設定。ポート/プロトコルはRouterプロファイルに従います。\n3. 上のUserとPasswordを入力し、ModeをIPに。\n4. Routerプロファイルをダウンロードし、証明書をSystem → Certificatesでインポート。\n5. 必要ならUse Peer DNSを有効にしてOK。",
+  "routerStatusChecking": "選択ノードのRouter準備状況を確認中…",
+  "routerStatusNone": "選択したノードではRouter/MikroTik互換がまだ有効になっていません。ユーザー名/パスワードは生成されません。有効化するには：ノードページ → 対象ノード → Router / MikroTik → Preflightを実行してEnable。",
+  "routerStatusReady": "Router利用可能なノード:",
+  "routerErrNotEnabled": "このノードではRouter互換が有効ではありません — ノード → Router/MikroTik から有効化してください。",
+  "routerErrNotHealthy": "このノードのRouterリスナーが不正です — ノードページで状態を確認してください。",
+  "routerErrUpgrade": "このノードはRouter対応前にアップグレードが必要です。"
 }

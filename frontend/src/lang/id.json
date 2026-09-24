@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "Biarkan kosong untuk deteksi otomatis. Isi hanya jika panel mengakses node dari alamat yang berbeda dari koneksi SSH (misal di belakang NAT atau proksi).",
   "routerPanelDownloadProfile": "Unduh profil Router",
   "routerPanelGuideTitle": "Tutorial koneksi MikroTik / RouterOS",
-  "routerPanelGuide": "1. Di RouterOS buka PPP lalu pilih Add → OVPN Client.\n2. Atur Connect ke alamat server di atas; port/protokol mengikuti profil Router.\n3. Masukkan User dan Password di atas, set Mode ke IP.\n4. Unduh profil Router dan impor sertifikatnya di System → Certificates.\n5. Aktifkan Use Peer DNS bila perlu lalu tekan OK."
+  "routerPanelGuide": "1. Di RouterOS buka PPP lalu pilih Add → OVPN Client.\n2. Atur Connect ke alamat server di atas; port/protokol mengikuti profil Router.\n3. Masukkan User dan Password di atas, set Mode ke IP.\n4. Unduh profil Router dan impor sertifikatnya di System → Certificates.\n5. Aktifkan Use Peer DNS bila perlu lalu tekan OK.",
+  "routerStatusChecking": "Memeriksa kesiapan Router node terpilih…",
+  "routerStatusNone": "Kemampuan Router/MikroTik belum diaktifkan di node terpilih mana pun; nama pengguna/kata sandi tidak akan dibuat. Untuk mengaktifkan: halaman Node → node pilihan → Router / MikroTik → jalankan Preflight lalu Enable.",
+  "routerStatusReady": "Node yang siap Router:",
+  "routerErrNotEnabled": "Kemampuan Router tidak aktif pada node ini — aktifkan dari Node → Router/MikroTik.",
+  "routerErrNotHealthy": "Listener Router pada node ini tidak sehat — periksa statusnya di halaman Node.",
+  "routerErrUpgrade": "Node ini harus ditingkatkan dahulu agar mendukung Router."
 }

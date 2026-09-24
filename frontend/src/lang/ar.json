@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "اتركه فارغًا للكشف التلقائي. املأه فقط عندما تصل اللوحة إلى العقدة من عنوان مختلف عن اتصال SSH (خلف NAT أو وكيل مثلًا).",
   "routerPanelDownloadProfile": "تنزيل ملف Router التعريفي",
   "routerPanelGuideTitle": "شرح اتصال MikroTik / RouterOS",
-  "routerPanelGuide": "1. في RouterOS افتح PPP واختر Add → OVPN Client.\n2. اضبط Connect على عنوان الخادم الظاهر أعلاه؛ المنفذ/البروتوكول يتبعان ملف Router.\n3. أدخل User وPassword أعلاه واضبط Mode على IP.\n4. نزّل ملف Router واستورد شهادته في System → Certificates.\n5. فعّل Use Peer DNS عند الحاجة واضغط OK."
+  "routerPanelGuide": "1. في RouterOS افتح PPP واختر Add → OVPN Client.\n2. اضبط Connect على عنوان الخادم الظاهر أعلاه؛ المنفذ/البروتوكول يتبعان ملف Router.\n3. أدخل User وPassword أعلاه واضبط Mode على IP.\n4. نزّل ملف Router واستورد شهادته في System → Certificates.\n5. فعّل Use Peer DNS عند الحاجة واضغط OK.",
+  "routerStatusChecking": "جارٍ فحص جاهزية Router للعقد المختارة…",
+  "routerStatusNone": "قدرة Router/MikroTik غير مفعّلة على أي من العقد المختارة بعد؛ لن يُنشأ اسم مستخدم/كلمة مرور. للتمكين: صفحة العقد → العقدة المطلوبة → Router / MikroTik → شغّل Preflight ثم Enable.",
+  "routerStatusReady": "العقد الجاهزة لـ Router:",
+  "routerErrNotEnabled": "قدرة Router غير مفعّلة على هذه العقدة — فعّلها من العقد → Router/MikroTik.",
+  "routerErrNotHealthy": "مستمع Router على هذه العقدة ليس سليمًا — تحقق من حالته في صفحة العقد.",
+  "routerErrUpgrade": "يجب ترقية هذه العقدة أولًا لدعم Router."
 }

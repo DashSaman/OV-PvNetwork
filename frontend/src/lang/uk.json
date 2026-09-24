@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "Залиште порожнім для автовизначення. Заповнюйте лише якщо панель звертається до вузла з адреси, відмінної від SSH-зʼєднання (наприклад за NAT або проксі).",
   "routerPanelDownloadProfile": "Завантажити профіль Router",
   "routerPanelGuideTitle": "Інструкція підключення MikroTik / RouterOS",
-  "routerPanelGuide": "1. У RouterOS відкрийте PPP і оберіть Add → OVPN Client.\n2. Вкажіть у Connect адресу сервера вище; порт/протокол — із профілю Router.\n3. Введіть User і Password вище та встановіть Mode у IP.\n4. Завантажте профіль Router та імпортуйте його сертифікат у System → Certificates.\n5. За потреби увімкніть Use Peer DNS і натисніть OK."
+  "routerPanelGuide": "1. У RouterOS відкрийте PPP і оберіть Add → OVPN Client.\n2. Вкажіть у Connect адресу сервера вище; порт/протокол — із профілю Router.\n3. Введіть User і Password вище та встановіть Mode у IP.\n4. Завантажте профіль Router та імпортуйте його сертифікат у System → Certificates.\n5. За потреби увімкніть Use Peer DNS і натисніть OK.",
+  "routerStatusChecking": "Перевірка готовності Router обраних вузлів…",
+  "routerStatusNone": "Сумісність Router/MikroTik ще не увімкнена на жодному з обраних вузлів; імʼя користувача/пароль не будуть створені. Щоб увімкнути: сторінка «Вузли» → потрібний вузол → Router / MikroTik → запустіть Preflight і Enable.",
+  "routerStatusReady": "Вузли, готові для Router:",
+  "routerErrNotEnabled": "Сумісність Router на цьому вузлі не увімкнена — увімкніть її у Вузли → Router/MikroTik.",
+  "routerErrNotHealthy": "Слухач Router на цьому вузлі несправний — перевірте його стан на сторінці Вузли.",
+  "routerErrUpgrade": "Цей вузол спершу потрібно оновити для підтримки Router."
 }

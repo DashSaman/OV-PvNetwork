@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "Leave empty to auto-detect. Fill only when the panel reaches the node from a different address than the SSH connection (for example behind a NAT or proxy).",
   "routerPanelDownloadProfile": "Download Router profile",
   "routerPanelGuideTitle": "MikroTik / RouterOS connection tutorial",
-  "routerPanelGuide": "1. In RouterOS open PPP and choose Add → OVPN Client.\n2. Set Connect to the server address shown above; port/protocol follow the Router profile.\n3. Enter the User and Password above and set Mode to IP.\n4. Download the Router profile and import its certificate under System → Certificates.\n5. Enable Use Peer DNS if needed and press OK."
+  "routerPanelGuide": "1. In RouterOS open PPP and choose Add → OVPN Client.\n2. Set Connect to the server address shown above; port/protocol follow the Router profile.\n3. Enter the User and Password above and set Mode to IP.\n4. Download the Router profile and import its certificate under System → Certificates.\n5. Enable Use Peer DNS if needed and press OK.",
+  "routerStatusChecking": "Checking Router readiness of the selected nodes…",
+  "routerStatusNone": "Router/MikroTik capability is not enabled on any of the selected nodes yet; no username/password will be generated. To enable: Nodes page → the node → Router / MikroTik → run Preflight and Enable.",
+  "routerStatusReady": "Router-ready nodes:",
+  "routerErrNotEnabled": "Router capability is not enabled on this node — enable it from Nodes → Router/MikroTik.",
+  "routerErrNotHealthy": "The Router listener on this node is not healthy — check its status on the Nodes page.",
+  "routerErrUpgrade": "This node must be upgraded before Router is supported."
 }

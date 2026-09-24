@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.24-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.25-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,17 @@
 
 </div>
 
+## What changed in v1.0.25 vs v1.0.24
+
+**PVN-1011 — Router readiness probe + actionable credential errors.** The missing username/password was root-caused to Router capability never being enabled on any node. The Add User Router checkbox now live-probes the selected nodes when ticked (ready count, or a red step-by-step enable instruction when none are ready), and credential failures translate into actionable messages in 13 languages.
+
+Current release line: **v1.0.25** — [release notes](./docs/RELEASE-NOTES-v1.0.25.md).
+
 ## What changed in v1.0.24 vs v1.0.23
 
 **PVN-1009 — subscription runtime revived + MikroTik on-create panel fixed.** The strict CSP from v1.0.8 had silently disabled every script on the public subscription page (renewal countdown stuck, no language/theme switching); that page now allows inline scripts while the admin panel keeps the strict policy. The QR library is backend-served with a proper MIME (nginx was returning octet-stream). The Router/MikroTik on-create panel now reliably appears and shows each node's server address, one-time credentials, a Router-profile download button and a built-in RouterOS tutorial.
 
-Current release line: **v1.0.24** — [release notes](./docs/RELEASE-NOTES-v1.0.24.md).
+Previous release: **v1.0.24** — [release notes](./docs/RELEASE-NOTES-v1.0.24.md).
 
 ## What changed in v1.0.23 vs v1.0.22
 
@@ -256,7 +262,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.24/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.25/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

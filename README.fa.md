@@ -4,17 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.24-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.25-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## تغییرات v1.0.25 نسبت به v1.0.24
+
+**PVN-1011 — بررسی آمادگی Router + خطاهای قابل‌اقدام اعتبارنامه.** نبودِ نام کاربری/رمز به این ریشه‌یابی شد که قابلیت Router هرگز روی هیچ نودی فعال نشده بود. تیک Router در ساخت کاربر حالا وضعیت زنده نودهای انتخابی را موقع تیک‌خوردن بررسی می‌کند (تعداد آماده، یا راهنمای قرمز گام‌به‌گام فعال‌سازی وقتی هیچ‌کدام آماده نیستند) و خطاهای اعتبارنامه به پیام‌های قابل‌اقدام در ۱۳ زبان ترجمه می‌شوند.
+
+خط انتشار فعلی: **v1.0.25** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.25.fa.md).
+
 ## تغییرات v1.0.24 نسبت به v1.0.23
 
 **PVN-1009 — احیای ران‌تایم صفحه اشتراک + رفع پنل MikroTik هنگام ساخت.** CSP سخت‌گیرانه v1.0.8 همه اسکریپت‌های صفحه اشتراک عمومی را بی‌صدا بلاک کرده بود (شمارنده تمدید گیر، تغییر زبان/تم کار نمی‌کرد)؛ آن صفحه حالا اجازه اسکریپت inline دارد و پنل ادمین سیاست سخت می‌ماند. کتابخانه QR از بک‌اند با MIME درست سرو می‌شود (nginx قبلاً octet-stream می‌داد). پنل Router/MikroTik هنگام ساخت حالا مطمئن ظاهر می‌شود و آدرس سرور هر نود، اعتبارنامه یک‌بارمصرف، دکمه دانلود پروفایل Router و آموزش گام‌به‌گام RouterOS را نشان می‌دهد.
 
-خط انتشار فعلی: **v1.0.24** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.24.fa.md).
+انتشار قبلی: **v1.0.24** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.24.fa.md).
 
 ## تغییرات v1.0.23 نسبت به v1.0.22
 
@@ -254,7 +260,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.24/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.25/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

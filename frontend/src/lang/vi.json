@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "Để trống để tự động phát hiện. Chỉ điền khi panel truy cập node từ địa chỉ khác với kết nối SSH (ví dụ sau NAT hoặc proxy).",
   "routerPanelDownloadProfile": "Tải hồ sơ Router",
   "routerPanelGuideTitle": "Hướng dẫn kết nối MikroTik / RouterOS",
-  "routerPanelGuide": "1. Trong RouterOS mở PPP và chọn Add → OVPN Client.\n2. Đặt Connect thành địa chỉ server ở trên; cổng/giao thức theo hồ sơ Router.\n3. Nhập User và Password ở trên, đặt Mode thành IP.\n4. Tải hồ sơ Router và nhập chứng chỉ tại System → Certificates.\n5. Bật Use Peer DNS nếu cần rồi nhấn OK."
+  "routerPanelGuide": "1. Trong RouterOS mở PPP và chọn Add → OVPN Client.\n2. Đặt Connect thành địa chỉ server ở trên; cổng/giao thức theo hồ sơ Router.\n3. Nhập User và Password ở trên, đặt Mode thành IP.\n4. Tải hồ sơ Router và nhập chứng chỉ tại System → Certificates.\n5. Bật Use Peer DNS nếu cần rồi nhấn OK.",
+  "routerStatusChecking": "Đang kiểm tra mức sẵn sàng Router của các node đã chọn…",
+  "routerStatusNone": "Khả năng Router/MikroTik chưa được bật trên bất kỳ node đã chọn nào; sẽ không tạo tên người dùng/mật khẩu. Để bật: trang Node → node mong muốn → Router / MikroTik → chạy Preflight rồi Enable.",
+  "routerStatusReady": "Node sẵn sàng Router:",
+  "routerErrNotEnabled": "Khả năng Router chưa bật trên node này — bật từ Node → Router/MikroTik.",
+  "routerErrNotHealthy": "Listener Router trên node này không khỏe — kiểm tra trạng thái ở trang Node.",
+  "routerErrUpgrade": "Node này phải được nâng cấp trước khi hỗ trợ Router."
 }

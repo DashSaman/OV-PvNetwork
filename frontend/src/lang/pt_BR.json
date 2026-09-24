@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "Deixe vazio para detecção automática. Preencha apenas quando o painel alcançar o nó por um endereço diferente da conexão SSH (por exemplo atrás de NAT ou proxy).",
   "routerPanelDownloadProfile": "Baixar perfil Router",
   "routerPanelGuideTitle": "Tutorial de conexão MikroTik / RouterOS",
-  "routerPanelGuide": "1. No RouterOS abra PPP e escolha Add → OVPN Client.\n2. Ajuste Connect para o endereço do servidor acima; porta/protocolo seguem o perfil Router.\n3. Digite o User e Password acima e defina Mode como IP.\n4. Baixe o perfil Router e importe o certificado em System → Certificates.\n5. Ative Use Peer DNS se precisar e pressione OK."
+  "routerPanelGuide": "1. No RouterOS abra PPP e escolha Add → OVPN Client.\n2. Ajuste Connect para o endereço do servidor acima; porta/protocolo seguem o perfil Router.\n3. Digite o User e Password acima e defina Mode como IP.\n4. Baixe o perfil Router e importe o certificado em System → Certificates.\n5. Ative Use Peer DNS se precisar e pressione OK.",
+  "routerStatusChecking": "Verificando a preparação Router dos nós selecionados…",
+  "routerStatusNone": "A compatibilidade Router/MikroTik ainda não está ativada em nenhum dos nós selecionados; nenhum usuário/senha será gerado. Para ativar: página Nós → o nó → Router / MikroTik → execute Preflight e Enable.",
+  "routerStatusReady": "Nós prontos para Router:",
+  "routerErrNotEnabled": "A compatibilidade Router não está ativada neste nó — ative em Nós → Router/MikroTik.",
+  "routerErrNotHealthy": "O listener Router deste nó não está saudável — verifique o status na página Nós.",
+  "routerErrUpgrade": "Este nó precisa ser atualizado antes de suportar Router."
 }

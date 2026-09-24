@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "留空即自动检测。仅当面板通过不同于 SSH 连接的地址访问节点（例如位于 NAT 或代理后）时填写。",
   "routerPanelDownloadProfile": "下载 Router 配置文件",
   "routerPanelGuideTitle": "MikroTik / RouterOS 连接教程",
-  "routerPanelGuide": "1. 在 RouterOS 打开 PPP 并选择 Add → OVPN Client。\n2. 将 Connect 设为上方显示的服务器地址；端口/协议以 Router 配置文件为准。\n3. 输入上方的 User 和 Password，Mode 设为 IP。\n4. 下载 Router 配置文件并在 System → Certificates 导入证书。\n5. 按需启用 Use Peer DNS 后点 OK。"
+  "routerPanelGuide": "1. 在 RouterOS 打开 PPP 并选择 Add → OVPN Client。\n2. 将 Connect 设为上方显示的服务器地址；端口/协议以 Router 配置文件为准。\n3. 输入上方的 User 和 Password，Mode 设为 IP。\n4. 下载 Router 配置文件并在 System → Certificates 导入证书。\n5. 按需启用 Use Peer DNS 后点 OK。",
+  "routerStatusChecking": "正在检查所选节点的 Router 就绪状态…",
+  "routerStatusNone": "所选节点均未启用 Router/MikroTik 兼容；不会生成用户名/密码。启用方法：节点页面 → 目标节点 → Router / MikroTik → 运行 Preflight 并 Enable。",
+  "routerStatusReady": "Router 就绪节点：",
+  "routerErrNotEnabled": "此节点未启用 Router 兼容 — 请在 节点 → Router/MikroTik 中启用。",
+  "routerErrNotHealthy": "此节点的 Router 监听器不健康 — 请在节点页面检查状态。",
+  "routerErrUpgrade": "此节点需要先升级才能支持 Router。"
 }

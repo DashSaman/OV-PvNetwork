@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "Otomatik algılama için boş bırakın. Yalnızca panel NAT veya vekil arkasından SSH bağlantısından farklı bir adresten düğüme erişiyorsa doldurun.",
   "routerPanelDownloadProfile": "Router profilini indir",
   "routerPanelGuideTitle": "MikroTik / RouterOS bağlantı eğitimi",
-  "routerPanelGuide": "1. RouterOS’ta PPP’yi aç ve Add → OVPN Client’ı seç.\n2. Connect’i yukarıdaki sunucu adresine ayarla; port/protokol Router profilini izler.\n3. Yukarıdaki User ve Password’ü gir, Mode’u IP yap.\n4. Router profilini indir ve sertifikasını System → Certificates’ten içe aktar.\n5. Gerekirse Use Peer DNS’i etkinleştir ve OK’e bas."
+  "routerPanelGuide": "1. RouterOS’ta PPP’yi aç ve Add → OVPN Client’ı seç.\n2. Connect’i yukarıdaki sunucu adresine ayarla; port/protokol Router profilini izler.\n3. Yukarıdaki User ve Password’ü gir, Mode’u IP yap.\n4. Router profilini indir ve sertifikasını System → Certificates’ten içe aktar.\n5. Gerekirse Use Peer DNS’i etkinleştir ve OK’e bas.",
+  "routerStatusChecking": "Seçili düğümlerin Router hazırlığı denetleniyor…",
+  "routerStatusNone": "Router/MikroTik uyumluluğu seçili düğümlerin hiçbirinde henüz etkin değil; kullanıcı adı/parola üretilmeyecek. Etkinleştirmek için: Düğümler sayfası → düğüm → Router / MikroTik → Preflight çalıştırıp Enable yapın.",
+  "routerStatusReady": "Router hazır düğümler:",
+  "routerErrNotEnabled": "Bu düğümde Router uyumluluğu etkin değil — Düğümler → Router/MikroTik üzerinden etkinleştirin.",
+  "routerErrNotHealthy": "Bu düğümdeki Router dinleyicisi sağlıklı değil — durumunu Düğümler sayfasından kontrol edin.",
+  "routerErrUpgrade": "Bu düğüm Router desteklenmeden önce yükseltilmelidir."
 }

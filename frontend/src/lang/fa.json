@@ -678,5 +678,11 @@
   "addNodePanelIpHelp": "خالی بگذارید تا خودکار تشخیص داده شود. فقط وقتی پر کنید که پنل از آدرسی غیر از اتصال SSH به نود دسترسی دارد (مثلاً پشت NAT یا پراکسی).",
   "routerPanelDownloadProfile": "دانلود پروفایل Router",
   "routerPanelGuideTitle": "آموزش اتصال MikroTik / RouterOS",
-  "routerPanelGuide": "۱. در RouterOS به بخش PPP برو و Add → OVPN Client را انتخاب کن.\n۲. Connect to را روی آدرس سرور بالا تنظیم کن؛ Port و Protocol از پروفایل Router پیروی می‌کند.\n۳. User و Password بالا را وارد کن و Mode را روی IP بگذار.\n۴. پروفایل Router را دانلود کن و Certificate آن را در System → Certificates ایمپورت کن.\n۵. در صورت نیاز Use Peer DNS را فعال کن و OK بزن."
+  "routerPanelGuide": "۱. در RouterOS به بخش PPP برو و Add → OVPN Client را انتخاب کن.\n۲. Connect to را روی آدرس سرور بالا تنظیم کن؛ Port و Protocol از پروفایل Router پیروی می‌کند.\n۳. User و Password بالا را وارد کن و Mode را روی IP بگذار.\n۴. پروفایل Router را دانلود کن و Certificate آن را در System → Certificates ایمپورت کن.\n۵. در صورت نیاز Use Peer DNS را فعال کن و OK بزن.",
+  "routerStatusChecking": "در حال بررسی وضعیت Router نودهای انتخابی…",
+  "routerStatusNone": "قابلیت Router/MikroTik هنوز روی هیچ‌کدام از نودهای انتخابی فعال نیست؛ نام کاربری و رمز ساخته نمی‌شود. برای فعال‌سازی: صفحه «نودها» → روی نود دلخواه → Router / MikroTik → اجرای Preflight و Enable.",
+  "routerStatusReady": "نودهای آماده Router:",
+  "routerErrNotEnabled": "قابلیت Router روی این نود فعال نیست — از صفحه نودها → Router/MikroTik فعالش کن.",
+  "routerErrNotHealthy": "Listener روتر روی این نود سالم نیست — وضعیتش را در صفحه نودها بررسی کن.",
+  "routerErrUpgrade": "این نود باید اول ارتقا پیدا کند تا Router پشتیبانی شود."
 }
