@@ -9,6 +9,8 @@ The v1.0.18 frontend bundle deployed to Production embedded the asset base path 
 - Production was restored first: a correctly built bundle was deployed and the pre-incident hashed assets were restored alongside it so even browsers with a cached old index kept working.
 - The release/build contract now states explicitly that `URLPATH` must be set to the deployed panel path for any production bundle.
 
+The frontend bundle budget gate rises from 775000 to 820000 bytes: completing the 11 secondary language catalogs adds ~46 kB of translation strings to the main chunk (814.6 kB largest chunk). A follow-up task (`PVN-1004`) registers on-demand language loading to shrink the chunk again.
+
 ## Hardening
 - The backend now serves the SPA `index.html` with `Cache-Control: no-cache`. Browsers may cache the shell but must always revalidate, so a future atomic asset/index switch can never strand clients on an old index referencing deleted hashed assets. Focused contract test added.
 

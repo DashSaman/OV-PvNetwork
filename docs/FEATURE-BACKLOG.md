@@ -967,6 +967,7 @@ The permanent 001–999 registry above is fully allocated. New hotfix/regression
 - PVN-1001 [ ] Firewall-hardening SSH unit detection: the boot-time host firewall hardening requires `ssh.service` and fails closed (with rollback) on hosts whose SSH daemon unit has a different name; accept the active SSH unit (`ssh.service`/`sshd.service`/socket-activated) before applying rules. Discovered on live Production 2026-09-24; firewall state intentionally left untouched.
 - PVN-1002 [x] Panel release-version badge next to the Dashboard LIVE · REALTIME indicator, sourced at runtime from public `/healthz` with silent omission on failure. Released in v1.0.18.
 - PVN-1003 [x] White-screen regression fix and release hardening: production bundles must be built with `URLPATH` matching the deployed panel path (Vite reads `URLPATH`, not `VITE_URLPATH`); SPA index served with `Cache-Control: no-cache` so atomic asset switches cannot strand cached browsers; 35 missing UI keys translated in all 11 secondary languages; Production database/login role rebranded to `pvnetwork_panel` backup-first with the legacy database retained as rollback. Released in v1.0.19.
+- PVN-1004 [ ] On-demand (lazy) loading of secondary language catalogs so the 11 non-primary languages leave the main JS chunk; enables shrinking the bundle budget back toward the pre-i18n-completion size.
 
 ## Rule
 
