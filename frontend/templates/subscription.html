@@ -1752,7 +1752,10 @@ html[data-theme="light"] .pn-notify-test{
   <section class="section">
     <div class="section-head">
       <div class="section-title"><span class="sicon">◈</span><span data-i18n="servers">سرورها و کانفیگ‌ها</span></div>
-      <div class="section-note" data-i18n="serverNote">بهترین سرور به‌صورت خودکار مشخص شده</div>
+      <div class="section-note-wrap">
+        <div class="section-note" data-i18n="serverNote">بهترین سرور به‌صورت خودکار مشخص شده</div>
+        <button type="button" class="qr-page-btn" id="pageQrBtn">📱 <span data-i18n="qrScan">نمایش QR صفحه</span></button>
+      </div>
     </div>
     <div class="node-list">
       {% if node_health %}
@@ -1780,7 +1783,7 @@ html[data-theme="light"] .pn-notify-test{
           <div class="bar"><div class="fill" style="width:{{ item.load }}%"></div></div>
           <div class="node-bottom">
             <span>{% if item.online %}<span data-i18n="liveLoad">بار لحظه‌ای شبکه</span> · {{ item.mbps }} Mbps{% else %}<span data-i18n="offlineHint">موقتاً خارج از دسترس</span>{% endif %}</span>
-            {% if link %}<span class="download" data-i18n="downloadConfig">دانلود کانفیگ ↓</span>{% endif %}
+            {% if link %}<span class="download" data-i18n="downloadConfig">دانلود کانفیگ ↓</span><span class="node-qr" role="button" tabindex="0" onclick="event.preventDefault();event.stopPropagation();PNQR.show('{{ link }}','{{ node_name }}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();PNQR.show('{{ link }}','{{ node_name }}')}" data-i18n-attr="qrTag">QR</span>{% endif %}
           </div>
         {% if link %}</a>{% else %}</div>{% endif %}
       {% endfor %}
@@ -1861,11 +1864,50 @@ html[data-theme="light"] .pn-notify-test{
       <b>۳.</b> فایل <b>.ovpn</b> را داخل برنامه Import کن و Connect را بزن.<br>
       <b>نکته:</b> سروری که علامت «پیشنهاد هوشمند» دارد در لحظه خلوت‌تر است.
     </div>
+    <div class="device-grid">
+      <div class="device-card"><div class="device-name">⊞ Windows</div><div class="device-steps" data-i18n-html="devWin"></div></div>
+      <div class="device-card"><div class="device-name"> macOS</div><div class="device-steps" data-i18n-html="devMac"></div></div>
+      <div class="device-card"><div class="device-name"> iPhone / iPad</div><div class="device-steps" data-i18n-html="devIos"></div></div>
+      <div class="device-card"><div class="device-name">🤖 Android</div><div class="device-steps" data-i18n-html="devAndroid"></div></div>
+      <div class="device-card"><div class="device-name">🐧 Linux</div><div class="device-steps" data-i18n-html="devLinux"></div></div>
+      <div class="device-card"><div class="device-name">⚙ MikroTik / Router</div><div class="device-steps" data-i18n-html="devRouter"></div></div>
+    </div>
   </section>
+
+  <div class="qr-overlay" id="qrOverlay" hidden>
+    <div class="qr-box" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+      <div class="qr-title" id="qrTitle"></div>
+      <div class="qr-holder" id="qrHolder"></div>
+      <div class="qr-caption" id="qrCaption" dir="ltr"></div>
+      <div class="qr-hint" data-i18n="qrHint">با دوربین گوشی اسکن کن؛ کانفیگ مستقیم روی دستگاهت باز می‌شود.</div>
+      <button type="button" class="qr-close" id="qrClose" data-i18n="qrClose">بستن</button>
+    </div>
+  </div>
+
+  <style>
+  .section-note-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .qr-page-btn{cursor:pointer;border:1px solid var(--border,#2a3a55);background:rgba(56,189,248,.08);color:var(--gold,#f5c451);font:inherit;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px}
+  .node-qr{cursor:pointer;user-select:none;border:1px solid rgba(245,196,81,.45);color:var(--gold,#f5c451);font-size:11px;font-weight:800;border-radius:8px;padding:2px 8px;margin-inline-start:8px}
+  .node-qr:hover,.qr-page-btn:hover{filter:brightness(1.15)}
+  .device-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px}
+  .device-card{border:1px solid rgba(148,163,184,.18);border-radius:14px;padding:14px;background:rgba(15,23,42,.35)}
+  .device-name{font-weight:800;margin-bottom:8px;color:var(--gold,#f5c451)}
+  .device-steps{font-size:12.5px;line-height:1.9;opacity:.92}
+  .qr-overlay{position:fixed;inset:0;z-index:1000;background:rgba(2,6,16,.82);display:grid;place-items:center;padding:18px}
+  .qr-overlay[hidden]{display:none}
+  .qr-box{background:var(--card,#101a2e);border:1px solid rgba(148,163,184,.25);border-radius:18px;padding:22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+  .qr-title{font-weight:800;margin-bottom:12px}
+  .qr-holder{display:grid;place-items:center;background:#fff;border-radius:12px;padding:12px}
+  .qr-holder svg{width:230px;height:230px;max-width:100%}
+  .qr-caption{font-size:11px;opacity:.75;margin-top:10px;word-break:break-all;font-family:monospace}
+  .qr-hint{font-size:12px;margin-top:8px;opacity:.9}
+  .qr-close{margin-top:14px;cursor:pointer;border:0;border-radius:10px;padding:9px 22px;font:inherit;font-weight:700;background:linear-gradient(135deg,#22d3ee,#3b82f6);color:#04101f}
+  </style>
 
   <div class="footer">PRIVATE NETWORK · Secure OpenVPN Access</div>
 </div>
 
+<script src="/sub-clients/qr/qrcode.js"></script>
 <script>
 const TOTAL={{ total or 0 }};
 const USED={{ used or 0 }};
@@ -1879,8 +1921,8 @@ function traffic(){
   document.getElementById("remainValue").textContent=unlimited?"∞":Math.max(0,(TOTAL-USED)/GB).toFixed(2)+" GB";
 }
 const I18N={
- fa:{brandSub:"اشتراک امن و اختصاصی شما",title:"اطلاعات اشتراک شما",active:"فعال",inactive:"غیرفعال",used:"مصرف شده",usedTraffic:"ترافیک مصرفی",remainingTraffic:"باقی‌مانده",expiry:"تاریخ انقضا",devices:"اتصال هم‌زمان",servers:"سرورها و کانفیگ‌ها",serverNote:"بهترین سرور به‌صورت خودکار مشخص شده",recommended:"★ پیشنهاد هوشمند",liveLoad:"بار لحظه‌ای شبکه",offlineHint:"موقتاً خارج از دسترس",downloadConfig:"دانلود کانفیگ ↓",noServers:"در حال حاضر سرور فعالی برای این اشتراک وجود ندارد.",clients:"دانلود نرم‌افزار اتصال",localFiles:"فایل‌های نصب مستقیم از Private Network؛ iOS از App Store رسمی",downloadInstall:"دانلود و نصب ↓",linuxText:"در Ubuntu / Debian از مخزن سیستم نصب کنید.",anyconnect:"اتصال AnyConnect",ready:"آماده اتصال",server:"سرور",username:"نام کاربری",password:"رمز عبور",copy:"کپی",guideTitle:"راهنمای سریع اتصال",low:"خلوت",normal:"نیمه‌خلوت",busy:"شلوغ",offline:"آفلاین",guide:'<b>۱.</b> نرم‌افزار مناسب دستگاهت را نصب کن.<br><b>۲.</b> از بخش سرورها یک کانفیگ را دانلود کن.<br><b>۳.</b> فایل <b>.ovpn</b> را داخل برنامه Import کن و Connect را بزن.<br><b>نکته:</b> سروری که علامت «پیشنهاد هوشمند» دارد در لحظه خلوت‌تر است.'},
- en:{brandSub:"Your secure private subscription",title:"Your Subscription",active:"Active",inactive:"Inactive",used:"Used",usedTraffic:"Traffic used",remainingTraffic:"Remaining",expiry:"Expiry date",devices:"Concurrent devices",servers:"Servers & Configs",serverNote:"Best server is selected automatically",recommended:"★ Smart recommendation",liveLoad:"Live network load",offlineHint:"Temporarily unavailable",downloadConfig:"Download config ↓",noServers:"No active server is currently available for this subscription.",clients:"Connection Apps",localFiles:"Installers are served by Private Network; iOS uses the official App Store",downloadInstall:"Download & install ↓",linuxText:"Install from your system repository on Ubuntu / Debian.",anyconnect:"AnyConnect",ready:"Ready",server:"Server",username:"Username",password:"Password",copy:"Copy",guideTitle:"Quick connection guide",low:"Low",normal:"Moderate",busy:"Busy",offline:"Offline",guide:'<b>1.</b> Install the app for your device.<br><b>2.</b> Download a configuration from Servers.<br><b>3.</b> Import the <b>.ovpn</b> file and connect.<br><b>Tip:</b> The Smart recommendation is currently the least-loaded server.'}
+ fa:{brandSub:"اشتراک امن و اختصاصی شما",title:"اطلاعات اشتراک شما",active:"فعال",inactive:"غیرفعال",used:"مصرف شده",usedTraffic:"ترافیک مصرفی",remainingTraffic:"باقی‌مانده",expiry:"تاریخ انقضا",devices:"اتصال هم‌زمان",servers:"سرورها و کانفیگ‌ها",serverNote:"بهترین سرور به‌صورت خودکار مشخص شده",recommended:"★ پیشنهاد هوشمند",liveLoad:"بار لحظه‌ای شبکه",offlineHint:"موقتاً خارج از دسترس",downloadConfig:"دانلود کانفیگ ↓",noServers:"در حال حاضر سرور فعالی برای این اشتراک وجود ندارد.",clients:"دانلود نرم‌افزار اتصال",localFiles:"فایل‌های نصب مستقیم از Private Network؛ iOS از App Store رسمی",downloadInstall:"دانلود و نصب ↓",linuxText:"در Ubuntu / Debian از مخزن سیستم نصب کنید.",anyconnect:"اتصال AnyConnect",ready:"آماده اتصال",server:"سرور",username:"نام کاربری",password:"رمز عبور",copy:"کپی",guideTitle:"راهنمای سریع اتصال",low:"خلوت",normal:"نیمه‌خلوت",busy:"شلوغ",offline:"آفلاین",guide:'<b>۱.</b> نرم‌افزار مناسب دستگاهت را نصب کن.<br><b>۲.</b> از بخش سرورها یک کانفیگ را دانلود کن.<br><b>۳.</b> فایل <b>.ovpn</b> را داخل برنامه Import کن و Connect را بزن.<br><b>نکته:</b> سروری که علامت «پیشنهاد هوشمند» دارد در لحظه خلوت‌تر است.',qrScan:"نمایش QR صفحه",qrError:"ساخت QR ناموفق بود.",qrPage:"این صفحه اشتراک روی دستگاه دیگر",qrConfig:"کانفیگ {name}",qrHint:"با دوربین گوشی اسکن کن؛ کانفیگ مستقیم روی دستگاهت باز می‌شود.",qrClose:"بستن",devWin:'<b>۱.</b> از بخش «نرم‌افزار اتصال» نسخه Windows را نصب کن.<br><b>۲.</b> کانفیگ <b>.ovpn</b> را دانلود و روی فایل دابل‌کلیک کن (Import).<br><b>۳.</b> در OpenVPN Connect دکمه Connect را بزن.',devMac:'<b>۱.</b> Tunnelblick را از بخش «نرم‌افزار اتصال» نصب کن.<br><b>۲.</b> کانفیگ <b>.ovpn</b> را دانلود و روی آیکون Tunnelblick در نوار منو بکش.<br><b>۳.</b> Connect را بزن.',devIos:'<b>۱.</b> OpenVPN Connect را از App Store نصب کن.<br><b>۲.</b> با دکمه QR کنار هر سرور، کانفیگ را با دوربین بگیر.<br><b>۳.</b> در برنامه Open in OpenVPN را تأیید و Connect کن.',devAndroid:'<b>۱.</b> برنامه OpenVPN for Android را نصب کن (APK در بخش نرم‌افزار).<br><b>۲.</b> با دکمه QR کنار سرور، کانفیگ را اسکن کن یا فایل را باز کن.<br><b>۳.</b> پروفایل را انتخاب و Connect بزن.',devLinux:'<b>۱.</b> <code>sudo apt install -y openvpn</code><br><b>۲.</b> <code>sudo openvpn --config FILE.ovpn</code><br><b>۳.</b> برای اجرای خودکار، فایل را در <code>/etc/openvpn/client/</code> بگذار.',devRouter:'<b>۱.</b> در پنل، برای کاربر «اعتبارنامه Router/MikroTik» بگیر (نام کاربری/رمز یک‌بارمصرف).<br><b>۲.</b> در RouterOS بخش PPP → Add → OVPN Client مقادیر را وارد کن.<br><b>۳.</b> پروفایل مخصوص Router را از بخش سرورها دانلود کن.'},
+ en:{brandSub:"Your secure private subscription",title:"Your Subscription",active:"Active",inactive:"Inactive",used:"Used",usedTraffic:"Traffic used",remainingTraffic:"Remaining",expiry:"Expiry date",devices:"Concurrent devices",servers:"Servers & Configs",serverNote:"Best server is selected automatically",recommended:"★ Smart recommendation",liveLoad:"Live network load",offlineHint:"Temporarily unavailable",downloadConfig:"Download config ↓",noServers:"No active server is currently available for this subscription.",clients:"Connection Apps",localFiles:"Installers are served by Private Network; iOS uses the official App Store",downloadInstall:"Download & install ↓",linuxText:"Install from your system repository on Ubuntu / Debian.",anyconnect:"AnyConnect",ready:"Ready",server:"Server",username:"Username",password:"Password",copy:"Copy",guideTitle:"Quick connection guide",low:"Low",normal:"Moderate",busy:"Busy",offline:"Offline",guide:'<b>1.</b> Install the app for your device.<br><b>2.</b> Download a configuration from Servers.<br><b>3.</b> Import the <b>.ovpn</b> file and connect.<br><b>Tip:</b> The Smart recommendation is currently the least-loaded server.',qrScan:"Show page QR",qrError:"Could not render the QR code.",qrPage:"This subscription page on another device",qrConfig:"{name} config",qrHint:"Scan with your phone camera; the config opens right on your device.",qrClose:"Close",devWin:'<b>1.</b> Install the Windows app from “Connection Apps”.<br><b>2.</b> Download the <b>.ovpn</b> file and double-click it to import.<br><b>3.</b> Press Connect in OpenVPN Connect.',devMac:'<b>1.</b> Install Tunnelblick from “Connection Apps”.<br><b>2.</b> Download the <b>.ovpn</b> file and drop it on the Tunnelblick menu-bar icon.<br><b>3.</b> Click Connect.',devIos:'<b>1.</b> Install OpenVPN Connect from the App Store.<br><b>2.</b> Use the QR button next to a server to grab the config with your camera.<br><b>3.</b> Confirm “Open in OpenVPN” and connect.',devAndroid:'<b>1.</b> Install OpenVPN for Android (APK in Connection Apps).<br><b>2.</b> Scan a server’s QR or open the downloaded file.<br><b>3.</b> Select the profile and tap Connect.',devLinux:'<b>1.</b> <code>sudo apt install -y openvpn</code><br><b>2.</b> <code>sudo openvpn --config FILE.ovpn</code><br><b>3.</b> For autostart, place the file under <code>/etc/openvpn/client/</code>.',devRouter:'<b>1.</b> In the panel, generate “Router/MikroTik credentials” for the user (one-time username/password).<br><b>2.</b> In RouterOS open PPP → Add → OVPN Client and enter them.<br><b>3.</b> Download the Router profile from the Servers section.'}
 };
 function setLang(lang){
  const d=I18N[lang]||I18N.fa;
@@ -1903,6 +1945,32 @@ document.querySelectorAll("[data-copy]").forEach(btn=>btn.onclick=async()=>{
 });
 const theme=localStorage.getItem("pn_theme")||"dark";document.documentElement.dataset.theme=theme;document.getElementById("themeBtn").textContent=theme==="dark"?"☾":"☀";
 traffic();setLang(localStorage.getItem("pn_lang")||"fa");
+/* PVNETWORK_SUB_QR_V1 */
+window.PNQR=(function(){
+ const overlay=document.getElementById("qrOverlay"),holder=document.getElementById("qrHolder"),
+       title=document.getElementById("qrTitle"),caption=document.getElementById("qrCaption");
+ function show(url,name){
+  const L=localStorage.getItem("pn_lang")||"fa",d=I18N[L]||I18N.fa;
+  try{
+   const qr=window.qrcode(0,"M");qr.addData(url);qr.make();
+   holder.innerHTML=qr.createSvgTag({cellSize:4,margin:2,scalable:true});
+   title.textContent=name?String(d.qrConfig||"{name}").replace("{name}",name):(d.qrPage||"");
+   caption.textContent=url;
+   overlay.hidden=false;
+  }catch(e){
+   title.textContent=d.qrPage||"";holder.innerHTML="";caption.textContent=(d.qrError||"QR error");
+   overlay.hidden=false;
+  }
+ }
+ overlay.addEventListener("click",function(e){if(e.target===overlay)overlay.hidden=true});
+ document.getElementById("qrClose").onclick=function(){overlay.hidden=true};
+ document.addEventListener("keydown",function(e){if(e.key==="Escape")overlay.hidden=true});
+ return {show:show};
+})();
+(function(){
+ var btn=document.getElementById("pageQrBtn");
+ if(btn){btn.onclick=function(){PNQR.show(location.origin+location.pathname,"");};}
+})();
 </script>
 
 

@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.22-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.23-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,17 @@
 
 </div>
 
+## What changed in v1.0.23 vs v1.0.22
+
+**PVN-211 — smart subscription page: QR codes and per-device guides.** The public subscription page now shows a QR for the whole page (open the subscription on another device) and a per-server QR button that renders that config's download URL for phone-camera scanning; QR codes are generated client-side by a vendored MIT library served same-origin (no CDN, CSP-safe). A per-device quick-connect guide (Windows/macOS/iPhone/Android/Linux/MikroTik) was added in Persian and English. No API, auth, OpenVPN or session changes.
+
+Current release line: **v1.0.23** — [release notes](./docs/RELEASE-NOTES-v1.0.23.md).
+
 ## What changed in v1.0.22 vs v1.0.21
 
 **PVN-1008 — reliable automatic node deployment.** Fixes the most common Add-Node auto-install failures: the panel-source IP is now optional and auto-detected on the node from the SSH session itself (the old hostname prefill aborted deployment behind proxied domains, and a wrong manual IP firewalled the panel out after a full install); firewall allow rules no longer fail on empty INPUT chains; IPv6 panel sources get a proper ip6tables allow; and post-install verification failures now explain what to check. Manual registration and existing nodes are unchanged.
 
-Current release line: **v1.0.22** — [release notes](./docs/RELEASE-NOTES-v1.0.22.md).
+Previous release: **v1.0.22** — [release notes](./docs/RELEASE-NOTES-v1.0.22.md).
 
 ## What changed in v1.0.21 vs v1.0.20
 
@@ -244,7 +250,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.22/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.23/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

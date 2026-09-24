@@ -223,6 +223,11 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.23` — RELEASE CANDIDATE — `PVN-211` smart subscription page (QR + per-device guides).
+  - Owner approved the five-release priority track recorded in `ROADMAP.md` (subscription QR → self-service portal → Telegram bot → import/export + groups → renewal notifications → WireGuard bridge), with explicit non-goals.
+  - Contract: the public subscription page gains a QR for the subscription URL and per-server config-download URLs (rendered client-side by a vendored MIT `qrcode-generator` served same-origin from `/sub-clients/`, CSP-safe, no CDN), and per-device quick-connect steps (Windows/macOS/iOS/Android/Linux/Router) in the page's existing fa/en catalog.
+  - Scope: template + one static asset only; no API, auth, OpenVPN, Node or session changes; deployment restarts only `pvnetwork-panel.service`.
+
 - `v1.0.22` — RELEASED — `PVN-1008` reliable automatic node deployment.
   - Defect 1: the Add-Node form prefilled `panel_ip` with `window.location.hostname`; behind a proxied domain this is not an IP, so strict `ipaddress()` validation aborted the deployment with a raw error, and a wrong manual IP completed the install but firewall-blocked the panel so `_verify_node_from_panel` failed at the end.
   - Fix 1: `panel_ip` is optional end-to-end; empty/hostname values fall back to node-side auto-detection from the SSH session (`$SSH_CLIENT`/`$SSH_CONNECTION` — `PVNETWORK_PANEL_SOURCE_AUTODETECT_V1`) which is guaranteed to be the panel's real source address; the explicit/auto decision is logged and an unresolvable source fails fast with `PANEL_SOURCE_IP_UNRESOLVED`.

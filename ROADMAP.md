@@ -58,6 +58,19 @@
 - Fail-closed Production canary-retirement procedure: canonical Nginx upstream, syntax check, successful Nginx reload, local health and public health must all pass before canary shutdown (`PVN-894`).
 - Direct regression guard for the brief v1.0.12 HTTP 502 caused by stopping the validated canary before Nginx had been cut back to canonical. Production rollout and post-canary public verification passed; immutable tag/assets and post-download SHA256 verification remain.
 
+## Owner-approved priority track (2026-09-24)
+
+The owner approved the following five-release track plus a protocol bridge. Each item keeps the full test → CI → release → safe-deploy cycle and must never disturb unrelated services on the production host.
+
+1. **v1.0.23 — `PVN-211` Smart subscription page: QR codes + per-device guides.** QR for the subscription page and per-server config downloads, plus device-specific quick-connect steps (Windows/macOS/iOS/Android/Linux/Router). Highest impact per effort; builds on the existing subscription page.
+2. **`PVN-204` Self-service user portal.** Users see traffic/expiry/devices and request renewal; resellers get notified. Removes most support tickets.
+3. **`PVN-607..609` Telegram management bot.** Admin and reseller levels (quick user ops, quota reports) on top of the existing one-way monitor.
+4. **`PVN-214/216` + `PVN-221/222` Import/export and user groups.** Marzban/CSV migration path and plan-level policies for scale.
+5. **`PVN-202/203` + `PVN-428/430` Renewal-aware notifications.** Multi-stage expiry/traffic alerts through Telegram plus optional email/webhook.
+6. **Bridge to v2.0 — `PVN-700` WireGuard.** Single clean protocol alongside OpenVPN before any Xray/Reality work (deferred to the v2.0 line per issue #12).
+
+Explicit non-goals (recorded to protect focus): SSO/SAML/LDAP, public status page, control-plane HA and new admin dashboards — none of them advance the sales/user experience where the competitors are actually ahead.
+
 ## Sequential patch queue
 
 PVNetwork advances **one Production-visible task per patch release**. Exact execution status is recorded in `AGENTS.md`.
@@ -72,6 +85,7 @@ PVNetwork advances **one Production-visible task per patch release**. Exact exec
 - **v1.0.20 released:** `PVN-1005` uniform language switching — all 463 used translation keys resolve in every one of the 13 shipped languages, Router/MikroTik modal direction follows the active language, and a permanent catalog-parity CI gate blocks future mixed-language regressions.
 - **v1.0.21 released:** `PVN-1006` + `PVN-1007` (owner-directed combined patch) — full language uniformity (28 Persian-valued keys replaced across non-Persian catalogs, ~100 hardcoded Persian strings in Backup/AnyConnect/reseller UIs moved into the translation system, permanent value-purity CI gates) and Router/MikroTik one-time username/password credentials generated at user creation.
 - **v1.0.22 released:** `PVN-1008` reliable automatic node deployment — the node-side allowlist source auto-detects from the SSH session (optional field), firewall rule insertion survives empty INPUT chains, IPv6 panels get a proper allow branch, and post-install verification failures are actionable.
+- **v1.0.23 released:** `PVN-211` smart subscription page — page-level and per-server QR codes rendered client-side by a vendored MIT library (same-origin, CSP-safe) plus per-device quick-connect guides (Windows/macOS/iOS/Android/Linux/MikroTik) in fa/en.
 - Following patches continue genuinely open `PVN-xxx` items; already-completed items are never repeated.
 - Each release refreshes applicable Persian/English documentation, changelog/release notes, sanitized artifact and SHA256.
 

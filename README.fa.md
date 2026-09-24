@@ -4,17 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.22-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.23-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## تغییرات v1.0.23 نسبت به v1.0.22
+
+**PVN-211 — صفحه اشتراک هوشمند: کد QR و راهنمای هر دستگاه.** صفحه اشتراک عمومی حالا QR کل صفحه (بازکردن اشتراک روی دستگاه دیگر) و دکمه QR برای هر سرور که URL دانلود همان کانفیگ را برای اسکن با دوربین گوشی رندر می‌کند؛ QRها سمت کلاینت با کتابخانه MIT به‌صورت same-origin ساخته می‌شوند (بدون CDN، سازگار با CSP). راهنمای اتصال سریع هر دستگاه (ویندوز/مک/آیفون/اندروید/لینوکس/MikroTik) فارسی و انگلیسی اضافه شد. بدون هیچ تغییری در API، احراز هویت، OpenVPN یا Session.
+
+خط انتشار فعلی: **v1.0.23** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.23.fa.md).
+
 ## تغییرات v1.0.22 نسبت به v1.0.21
 
 **PVN-1008 — نصب خودکار قابل‌اتکای نود.** رایج‌ترین خرابی‌های نصب خودکار افزودن نود رفع شد: IP مبدأ پنل اختیاری شد و روی خود نود از نشست SSH تشخیص داده می‌شود (پیش‌پر hostname پشت دامنه‌های پراکسی، دیپلوی را قطع می‌کرد و IP دستی اشتباه، پنل را بعد از نصب کامل پشت فایروال نود می‌انداخت)؛ قواعد allow فایروال دیگر روی زنجیره‌های INPUT خالی خطا نمی‌دهند؛ منابع IPv6 شاخه ip6tables درست دارند؛ و خطاهای وریفای پس از نصب مشخص می‌گویند چه چیزی را بررسی کنید. ثبت دستی و نودهای موجود بدون تغییرند.
 
-خط انتشار فعلی: **v1.0.22** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.22.fa.md).
+انتشار قبلی: **v1.0.22** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.22.fa.md).
 
 ## تغییرات v1.0.21 نسبت به v1.0.20
 
@@ -242,7 +248,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.22/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.23/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

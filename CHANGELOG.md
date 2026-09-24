@@ -1,3 +1,11 @@
+## v1.0.23 — PVN-211 smart subscription page (QR + per-device guides)
+
+- The public subscription page gains a page-level QR (open the subscription on another device) and a per-server QR button that renders that config's download URL for phone-camera scanning.
+- QR codes are generated client-side by the vendored MIT `qrcode-generator` (Kazuhiko Arase), served same-origin from `/sub-clients/qr/` — no CDN and CSP-safe; attribution added to `NOTICE.md`.
+- A per-device quick-connect guide (Windows, macOS, iPhone/iPad, Android, Linux, MikroTik/Router) was added to the subscription page in Persian and English, including the Router credential flow from v1.0.21.
+- First item of the owner-approved five-release track recorded in `ROADMAP.md` (subscription QR → self-service portal → Telegram bot → import/export + groups → renewal notifications → WireGuard bridge).
+- No API, authentication, OpenVPN, Node, Router listener or session changes.
+
 ## v1.0.22 — PVN-1008 reliable automatic node deployment
 
 - Fixes the most common Add-Node auto-install failure: the "Panel public IP" field defaulted to the browser hostname, which is not an IP when the panel runs behind a domain/proxy — deployment aborted with a raw validation error, and a manually-typed wrong IP made the node firewall block the panel so verification failed after a full install. The field is now optional and, when empty or not a literal IP, the node derives the true panel source address from the SSH session itself (always the path the panel API will use), with the decision logged in the deployment terminal.
