@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "Эта опция удаляет пользователей из панели и узлов и не может быть отменена.",
   "adminDelete.cancel": "Отмена",
   "adminDelete.working": "Выполняется...",
-  "adminDelete.confirm": "Подтвердить удаление реселлера"
+  "adminDelete.confirm": "Подтвердить удаление реселлера",
+  "addNodeSshPort": "Порт SSH",
+  "addNodeSshUsername": "Пользователь SSH",
+  "addNodeSshPassword": "Пароль SSH",
+  "addNodeSshFingerprint": "Отпечаток SSH-хоста (SHA256; первое подключение)",
+  "addNodePanelIp": "IP-адрес источника панели (необязательно)",
+  "addNodePanelIpPlaceholder": "Определяется автоматически из SSH-соединения",
+  "addNodePanelIpHelp": "Оставьте пустым для автоопределения. Заполняйте только если панель обращается к узлу с адреса, отличного от SSH-соединения (например за NAT или прокси)."
 }

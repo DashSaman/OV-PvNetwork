@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "Bu seçenek kullanıcıları panelden ve düğümlerden kaldırır ve geri alınamaz.",
   "adminDelete.cancel": "Vazgeç",
   "adminDelete.working": "Yapılıyor...",
-  "adminDelete.confirm": "Bayi silmeyi onayla"
+  "adminDelete.confirm": "Bayi silmeyi onayla",
+  "addNodeSshPort": "SSH Portu",
+  "addNodeSshUsername": "SSH Kullanıcı Adı",
+  "addNodeSshPassword": "SSH Parolası",
+  "addNodeSshFingerprint": "SSH sunucu parmak izi (SHA256; ilk bağlantı)",
+  "addNodePanelIp": "Panel kaynak IP (isteğe bağlı)",
+  "addNodePanelIpPlaceholder": "SSH bağlantısından otomatik algılanır",
+  "addNodePanelIpHelp": "Otomatik algılama için boş bırakın. Yalnızca panel NAT veya vekil arkasından SSH bağlantısından farklı bir adresten düğüme erişiyorsa doldurun."
 }

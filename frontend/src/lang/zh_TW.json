@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "This option removes the users from the panel and nodes and cannot be undone.",
   "adminDelete.cancel": "取消",
   "adminDelete.working": "處理中...",
-  "adminDelete.confirm": "Confirm reseller deletion"
+  "adminDelete.confirm": "Confirm reseller deletion",
+  "addNodeSshPort": "SSH 連接埠",
+  "addNodeSshUsername": "SSH 使用者名稱",
+  "addNodeSshPassword": "SSH 密碼",
+  "addNodeSshFingerprint": "SSH 主機指紋（SHA256；首次連線）",
+  "addNodePanelIp": "面板來源 IP（選填）",
+  "addNodePanelIpPlaceholder": "將從 SSH 連線自動偵測",
+  "addNodePanelIpHelp": "留空即自動偵測。僅當面板透過與 SSH 連線不同的位址存取節點（例如位於 NAT 或代理後）時填寫。"
 }

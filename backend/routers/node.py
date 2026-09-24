@@ -360,7 +360,10 @@ class AutoNodeDeployRequest(BaseModel):
     ssh_username: str = Field(default="root", min_length=1, max_length=64)
     ssh_password: str = Field(min_length=1, max_length=512)
     ssh_fingerprint: Optional[str] = Field(default=None, max_length=160)
-    panel_ip: str
+    # Optional node-side allowlist source. Empty, hostname (panel behind a
+    # proxy/CDN) or malformed values fall back to auto-detection from the
+    # SSH session on the node itself.
+    panel_ip: Optional[str] = Field(default=None, max_length=64)
     protocol: str = "udp"
     ovpn_port: int = Field(default=1194, ge=1, le=65535)
     node_port: int = Field(default=9090, ge=1, le=65535)
@@ -535,16 +538,23 @@ def _run_deploy_job(job, request_data: dict) -> None:
         # Drop the password reference as soon as SSH work is complete.
         request_data["ssh_password"] = ""
         update_job(job, 96, "panel_health", "Verifying /sync/status from the panel")
-        _verify_node_from_panel(
-            address=result.address,
-            port=result.api_port,
-            api_key=result.api_key,
-            tunnel_address=(
-                request_data.get("tunnel_address") or result.address
-            ),
-            protocol=result.protocol,
-            ovpn_port=result.ovpn_port,
-        )
+        try:
+            _verify_node_from_panel(
+                address=result.address,
+                port=result.api_port,
+                api_key=result.api_key,
+                tunnel_address=(
+                    request_data.get("tunnel_address") or result.address
+                ),
+                protocol=result.protocol,
+                ovpn_port=result.ovpn_port,
+            )
+        except Exception as verify_exc:
+            raise RuntimeError(
+                "Installation finished but the panel could not reach the node API "
+                f"({verify_exc}). Check that the node firewall allows this panel's "
+                "source address and that the node API port is open between them."
+            ) from verify_exc
 
         update_job(job, 98, "database", "Registering verified node")
         node_request = NodeCreate(

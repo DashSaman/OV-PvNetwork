@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "This option removes the users from the panel and nodes and cannot be undone.",
   "adminDelete.cancel": "Hủy",
   "adminDelete.working": "Đang xử lý...",
-  "adminDelete.confirm": "Confirm reseller deletion"
+  "adminDelete.confirm": "Confirm reseller deletion",
+  "addNodeSshPort": "Cổng SSH",
+  "addNodeSshUsername": "Tên người dùng SSH",
+  "addNodeSshPassword": "Mật khẩu SSH",
+  "addNodeSshFingerprint": "Dấu vân tay host SSH (SHA256; kết nối đầu tiên)",
+  "addNodePanelIp": "IP nguồn của panel (tùy chọn)",
+  "addNodePanelIpPlaceholder": "Tự động phát hiện từ kết nối SSH",
+  "addNodePanelIpHelp": "Để trống để tự động phát hiện. Chỉ điền khi panel truy cập node từ địa chỉ khác với kết nối SSH (ví dụ sau NAT hoặc proxy)."
 }

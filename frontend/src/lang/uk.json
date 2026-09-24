@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "Ця опція видаляє користувачів із панелі та вузлів і не може бути скасована.",
   "adminDelete.cancel": "Скасувати",
   "adminDelete.working": "Виконується...",
-  "adminDelete.confirm": "Підтвердити видалення реселлера"
+  "adminDelete.confirm": "Підтвердити видалення реселлера",
+  "addNodeSshPort": "Порт SSH",
+  "addNodeSshUsername": "Користувач SSH",
+  "addNodeSshPassword": "Пароль SSH",
+  "addNodeSshFingerprint": "Відбиток SSH-хоста (SHA256; перше зʼєднання)",
+  "addNodePanelIp": "IP-джерела панелі (необовʼязково)",
+  "addNodePanelIpPlaceholder": "Визначається автоматично з SSH-зʼєднання",
+  "addNodePanelIpHelp": "Залиште порожнім для автовизначення. Заповнюйте лише якщо панель звертається до вузла з адреси, відмінної від SSH-зʼєднання (наприклад за NAT або проксі)."
 }

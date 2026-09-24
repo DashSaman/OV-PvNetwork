@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "This option removes the users from the panel and nodes and cannot be undone.",
   "adminDelete.cancel": "Cancel",
   "adminDelete.working": "Working...",
-  "adminDelete.confirm": "Confirm reseller deletion"
+  "adminDelete.confirm": "Confirm reseller deletion",
+  "addNodeSshPort": "SSH Port",
+  "addNodeSshUsername": "SSH Username",
+  "addNodeSshPassword": "SSH Password",
+  "addNodeSshFingerprint": "SSH Host Fingerprint (SHA256; first connection)",
+  "addNodePanelIp": "Panel source IP (optional)",
+  "addNodePanelIpPlaceholder": "Auto-detected from the SSH connection",
+  "addNodePanelIpHelp": "Leave empty to auto-detect. Fill only when the panel reaches the node from a different address than the SSH connection (for example behind a NAT or proxy)."
 }

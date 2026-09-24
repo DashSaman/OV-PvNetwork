@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "This option removes the users from the panel and nodes and cannot be undone.",
   "adminDelete.cancel": "キャンセル",
   "adminDelete.working": "実行中...",
-  "adminDelete.confirm": "Confirm reseller deletion"
+  "adminDelete.confirm": "Confirm reseller deletion",
+  "addNodeSshPort": "SSHポート",
+  "addNodeSshUsername": "SSHユーザー名",
+  "addNodeSshPassword": "SSHパスワード",
+  "addNodeSshFingerprint": "SSHホスト鍵フィンガープリント（SHA256、初回接続時）",
+  "addNodePanelIp": "パネル送信元IP（任意）",
+  "addNodePanelIpPlaceholder": "SSH接続から自動検出されます",
+  "addNodePanelIpHelp": "空欄で自動検出します。パネルがSSH接続とは異なるアドレス（NATやプロキシ背後など）からノードへアクセスする場合のみ入力してください。"
 }

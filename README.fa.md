@@ -4,17 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.21-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.22-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## تغییرات v1.0.22 نسبت به v1.0.21
+
+**PVN-1008 — نصب خودکار قابل‌اتکای نود.** رایج‌ترین خرابی‌های نصب خودکار افزودن نود رفع شد: IP مبدأ پنل اختیاری شد و روی خود نود از نشست SSH تشخیص داده می‌شود (پیش‌پر hostname پشت دامنه‌های پراکسی، دیپلوی را قطع می‌کرد و IP دستی اشتباه، پنل را بعد از نصب کامل پشت فایروال نود می‌انداخت)؛ قواعد allow فایروال دیگر روی زنجیره‌های INPUT خالی خطا نمی‌دهند؛ منابع IPv6 شاخه ip6tables درست دارند؛ و خطاهای وریفای پس از نصب مشخص می‌گویند چه چیزی را بررسی کنید. ثبت دستی و نودهای موجود بدون تغییرند.
+
+خط انتشار فعلی: **v1.0.22** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.22.fa.md).
+
 ## تغییرات v1.0.21 نسبت به v1.0.20
 
 **PVN-1006 + PVN-1007 — یکدستی کامل زبان و اعتبارنامه Router هنگام ساخت کاربر (پچ ترکیبی به درخواست مالک).** باقی اختلاط زبان رفع شد: ۲۸ کلید کاتالوگ زیر انگلیسی و همه زبان‌های غیر فارسی مقدار فارسی داشتند و پنل بکاپ/بازیابی، مودال AnyConnect و دیالوگ‌های حذف نماینده کاملاً فارسی hard-code بودند — همه اکنون در ۱۳ زبان ترجمه شده‌اند با گیت‌های خلوص دائمی CI. به‌علاوه فرم ساخت کاربر گزینه Router / MikroTik می‌گیرد که پس از ساخت، نام کاربری/رمز یک‌بارمصرف برای هر نود دارای قابلیت Router تولید و نمایش می‌دهد؛ پروفایل OpenVPN عادی بدون رمز و بدون تغییر باقی می‌ماند.
 
-خط انتشار فعلی: **v1.0.21** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.21.fa.md).
+انتشار قبلی: **v1.0.21** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.21.fa.md).
 
 ## تغییرات v1.0.20 نسبت به v1.0.19
 
@@ -236,7 +242,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.21/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.22/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

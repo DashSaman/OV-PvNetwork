@@ -971,6 +971,7 @@ The permanent 001–999 registry above is fully allocated. New hotfix/regression
 - PVN-1005 [x] Uniform language switching: every `t()` key used in the frontend resolves in all 13 shipped languages (45 previously-missing keys translated), Router/MikroTik modal direction follows the active language, last hardcoded download-flow errors cataloged, and a permanent catalog-parity CI gate added. Released in v1.0.20.
 - PVN-1006 [x] Full language uniformity: 28 Persian-valued catalog keys replaced with real translations in all non-Persian catalogs; ~100 hardcoded Persian strings across 7 components (Backup/Restore panel, AnyConnect modal, reseller-deletion dialogs, form hints) moved into the translation system; Backup panel direction/locale follow the active language; permanent value-purity and no-raw-Persian CI gates. Released in v1.0.21.
 - PVN-1007 [x] Router / MikroTik credentials at user creation: Add User checkbox generates and displays one-time per-node username/password credentials via the existing Router credential API after creation; normal OpenVPN profile unchanged. Released in v1.0.21 (owner-directed combined patch with PVN-1006).
+- PVN-1008 [x] Reliable automatic node deployment: optional auto-detected panel source IP (derived on the node from the SSH session instead of the broken hostname prefill), position-1 firewall rule insertion that survives empty INPUT chains, IPv6 allowlist branch, actionable post-install verification errors, and translated Add-Node SSH field labels. Released in v1.0.22.
 
 ## Rule
 

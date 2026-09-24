@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "يحذف هذا الخيار المستخدمين من اللوحة والعقد ولا يمكن التراجع عنه.",
   "adminDelete.cancel": "إلغاء",
   "adminDelete.working": "جارٍ التنفيذ...",
-  "adminDelete.confirm": "تأكيد حذف الموزع"
+  "adminDelete.confirm": "تأكيد حذف الموزع",
+  "addNodeSshPort": "منفذ SSH",
+  "addNodeSshUsername": "اسم مستخدم SSH",
+  "addNodeSshPassword": "كلمة مرور SSH",
+  "addNodeSshFingerprint": "بصمة مفتاح SSH للمضيف (SHA256؛ الاتصال الأول)",
+  "addNodePanelIp": "عنوان IP المصدر للوحة (اختياري)",
+  "addNodePanelIpPlaceholder": "يُكتشف تلقائيًا من اتصال SSH",
+  "addNodePanelIpHelp": "اتركه فارغًا للكشف التلقائي. املأه فقط عندما تصل اللوحة إلى العقدة من عنوان مختلف عن اتصال SSH (خلف NAT أو وكيل مثلًا)."
 }

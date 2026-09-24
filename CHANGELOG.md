@@ -1,3 +1,10 @@
+## v1.0.22 — PVN-1008 reliable automatic node deployment
+
+- Fixes the most common Add-Node auto-install failure: the "Panel public IP" field defaulted to the browser hostname, which is not an IP when the panel runs behind a domain/proxy — deployment aborted with a raw validation error, and a manually-typed wrong IP made the node firewall block the panel so verification failed after a full install. The field is now optional and, when empty or not a literal IP, the node derives the true panel source address from the SSH session itself (always the path the panel API will use), with the decision logged in the deployment terminal.
+- Fixes an intermittent firewall-stage failure: allow rules were inserted at INPUT position 2, which errors on servers with fewer existing rules; rules are now inserted at position 1 with existence guards and the DROP rule appended at the end. IPv6 panel sources get a matching ip6tables allow branch instead of the previous blanket IPv6 drop that could lock out IPv6 panels.
+- Verification failures after installation now produce an actionable message (node API unreachable — check the firewall between panel and node) instead of a bare timeout.
+- Add-Node SSH field labels moved into the translation catalogs (13 languages); focused contract tests added for the auto-detect mode, firewall-rule shape, IPv6 branch, optional schema and modal behavior.
+
 ## v1.0.21 — PVN-1006 full language uniformity (values and raw strings)
 
 - Fixes the remaining mixed-language UI: 28 catalog keys carried Persian values inside the English catalog and the other 11 non-Persian catalogs (backup/security/transfer/2FA labels showed Persian under every non-Persian language); the Backup/Restore panel, AnyConnect user modal, reseller-deletion dialogs and parts of the user/renewal forms were entirely hardcoded Persian with no translation calls at all.

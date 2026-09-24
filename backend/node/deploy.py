@@ -203,8 +203,27 @@ rm -f /tmp/pvnetwork-node-router-patch.py
 '''
 
 
+def _panel_firewall_mode(panel_ip: str | None) -> tuple[str, str]:
+    """Classify the requested node-side allowlist source.
+
+    Returns ("explicit", "<ip>") for a valid IP literal and ("auto", "") when
+    the caller supplied nothing usable (empty, hostname behind a proxy/CDN, or
+    malformed input). Auto mode derives the true panel source IP on the node
+    from the SSH session itself, which always matches the path the panel API
+    calls will take.
+    """
+    value = str(panel_ip or "").strip()
+    if value:
+        try:
+            return "explicit", str(ipaddress.ip_address(value))
+        except ValueError:
+            pass
+    return "auto", ""
+
+
 def _stage_script(api_port: int, ovpn_port: int, protocol: str,
-                  api_key: str, panel_ip: str) -> str:
+                  api_key: str, panel_ip: str | None) -> str:
+    panel_mode, panel_literal = _panel_firewall_mode(panel_ip)
     proto_choice = "1" if protocol == "udp" else "2"
     domain_module = _domain_payload(
         "/opt/ov-node/core/routers/domain_history.py"
@@ -463,12 +482,27 @@ systemctl enable ov-node
 systemctl reset-failed ov-node || true
 systemctl restart ov-node
 stage 84 firewall "Applying persistent IPv4 and IPv6 firewall rules"
-iptables -C INPUT -i lo -p tcp --dport {api_port} -j ACCEPT 2>/dev/null || iptables -I INPUT 1 -i lo -p tcp --dport {api_port} -j ACCEPT
-iptables -C INPUT -p tcp -s {panel_ip} --dport {api_port} -j ACCEPT 2>/dev/null || iptables -I INPUT 2 -p tcp -s {panel_ip} --dport {api_port} -j ACCEPT
-iptables -C INPUT -p tcp --dport {api_port} -j DROP 2>/dev/null || iptables -A INPUT -p tcp --dport {api_port} -j DROP
-if command -v ip6tables >/dev/null; then
+# PVNETWORK_PANEL_SOURCE_AUTODETECT_V1 — when the panel did not supply a valid
+# IP literal (e.g. it was reached through a proxy/CDN hostname), derive the
+# allowlist source from this very SSH session: it is the panel's true address.
+if [[ "{panel_mode}" == "explicit" ]]; then
+  PANEL_SOURCE_IP="{panel_literal}"
+else
+  PANEL_SOURCE_IP="${{SSH_CLIENT%% *}}"
+  [[ -n "$PANEL_SOURCE_IP" ]] || PANEL_SOURCE_IP="${{SSH_CONNECTION%% *}}"
+fi
+if [[ -z "$PANEL_SOURCE_IP" ]]; then
+  echo "PANEL_SOURCE_IP_UNRESOLVED"
+  exit 28
+fi
+if [[ "$PANEL_SOURCE_IP" == *:* ]]; then
   ip6tables -C INPUT -i lo -p tcp --dport {api_port} -j ACCEPT 2>/dev/null || ip6tables -I INPUT 1 -i lo -p tcp --dport {api_port} -j ACCEPT
+  ip6tables -C INPUT -p tcp -s "$PANEL_SOURCE_IP" --dport {api_port} -j ACCEPT 2>/dev/null || ip6tables -I INPUT 1 -p tcp -s "$PANEL_SOURCE_IP" --dport {api_port} -j ACCEPT
   ip6tables -C INPUT -p tcp --dport {api_port} -j DROP 2>/dev/null || ip6tables -A INPUT -p tcp --dport {api_port} -j DROP
+else
+  iptables -C INPUT -i lo -p tcp --dport {api_port} -j ACCEPT 2>/dev/null || iptables -I INPUT 1 -i lo -p tcp --dport {api_port} -j ACCEPT
+  iptables -C INPUT -p tcp -s "$PANEL_SOURCE_IP" --dport {api_port} -j ACCEPT 2>/dev/null || iptables -I INPUT 1 -p tcp -s "$PANEL_SOURCE_IP" --dport {api_port} -j ACCEPT
+  iptables -C INPUT -p tcp --dport {api_port} -j DROP 2>/dev/null || iptables -A INPUT -p tcp --dport {api_port} -j DROP
 fi
 netfilter-persistent save
 stage 90 local_health "Waiting for local API health"
@@ -489,11 +523,12 @@ echo DEPLOY_OK
 
 
 def deploy_node(*, host: str, ssh_port: int, username: str, password: str,
-                api_port: int, ovpn_port: int, protocol: str, panel_ip: str,
+                api_port: int, ovpn_port: int, protocol: str,
+                panel_ip: str | None,
                 expected_fingerprint: str | None = None,
                 reporter: Callable[[int, str, str, str], None] | None = None) -> DeployResult:
     host = _valid_host(host)
-    panel_ip = str(ipaddress.ip_address(panel_ip.strip()))
+    panel_mode, panel_literal = _panel_firewall_mode(panel_ip)
     if not all(1 <= p <= 65535 for p in (ssh_port, api_port, ovpn_port)):
         raise ValueError("Invalid port")
     if protocol not in {"tcp", "udp"}:
@@ -503,6 +538,10 @@ def deploy_node(*, host: str, ssh_port: int, username: str, password: str,
     if not password:
         raise ValueError("SSH password is required")
     report = reporter or (lambda *_: None)
+    if panel_mode == "explicit":
+        report(3, "preflight", f"Node API allowlist will use the provided panel IP {panel_literal}", "info")
+    else:
+        report(3, "preflight", "Panel IP not provided or not a literal IP; it will be auto-detected from the SSH connection on the node", "info")
     api_key = secrets.token_urlsafe(30)
     client = paramiko.SSHClient()
     configure_ssh_client(

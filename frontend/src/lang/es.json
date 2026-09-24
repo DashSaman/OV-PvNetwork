@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "Esta opción elimina los usuarios del panel y los nodos y no se puede deshacer.",
   "adminDelete.cancel": "Cancelar",
   "adminDelete.working": "Trabajando...",
-  "adminDelete.confirm": "Confirmar eliminación del revendedor"
+  "adminDelete.confirm": "Confirmar eliminación del revendedor",
+  "addNodeSshPort": "Puerto SSH",
+  "addNodeSshUsername": "Usuario SSH",
+  "addNodeSshPassword": "Contraseña SSH",
+  "addNodeSshFingerprint": "Huella de host SSH (SHA256; primera conexión)",
+  "addNodePanelIp": "IP de origen del panel (opcional)",
+  "addNodePanelIpPlaceholder": "Detectada automáticamente desde la conexión SSH",
+  "addNodePanelIpHelp": "Déjalo vacío para detectarla automáticamente. Rellénalo solo cuando el panel llegue al nodo desde una dirección distinta a la conexión SSH (por ejemplo detrás de NAT o proxy)."
 }

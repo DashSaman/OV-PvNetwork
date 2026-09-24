@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "This option removes the users from the panel and nodes and cannot be undone.",
   "adminDelete.cancel": "Batal",
   "adminDelete.working": "Memproses...",
-  "adminDelete.confirm": "Confirm reseller deletion"
+  "adminDelete.confirm": "Confirm reseller deletion",
+  "addNodeSshPort": "Port SSH",
+  "addNodeSshUsername": "Nama Pengguna SSH",
+  "addNodeSshPassword": "Kata Sandi SSH",
+  "addNodeSshFingerprint": "Fingerprint host SSH (SHA256; koneksi pertama)",
+  "addNodePanelIp": "IP sumber panel (opsional)",
+  "addNodePanelIpPlaceholder": "Terdeteksi otomatis dari koneksi SSH",
+  "addNodePanelIpHelp": "Biarkan kosong untuk deteksi otomatis. Isi hanya jika panel mengakses node dari alamat yang berbeda dari koneksi SSH (misal di belakang NAT atau proksi)."
 }

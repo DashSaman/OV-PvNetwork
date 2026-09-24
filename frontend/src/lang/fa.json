@@ -668,5 +668,12 @@
   "adminDelete.optionDeleteAllHelp": "این گزینه کاربران را از پنل و نودها حذف می‌کند و قابل بازگشت نیست.",
   "adminDelete.cancel": "انصراف",
   "adminDelete.working": "در حال انجام...",
-  "adminDelete.confirm": "تأیید حذف نماینده"
+  "adminDelete.confirm": "تأیید حذف نماینده",
+  "addNodeSshPort": "پورت SSH",
+  "addNodeSshUsername": "نام کاربری SSH",
+  "addNodeSshPassword": "رمز SSH",
+  "addNodeSshFingerprint": "اثر انگشت هاست SSH (SHA256؛ اولین اتصال)",
+  "addNodePanelIp": "IP مبدأ پنل (اختیاری)",
+  "addNodePanelIpPlaceholder": "به‌صورت خودکار از اتصال SSH تشخیص داده می‌شود",
+  "addNodePanelIpHelp": "خالی بگذارید تا خودکار تشخیص داده شود. فقط وقتی پر کنید که پنل از آدرسی غیر از اتصال SSH به نود دسترسی دارد (مثلاً پشت NAT یا پراکسی)."
 }

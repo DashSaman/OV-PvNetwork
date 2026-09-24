@@ -24,7 +24,7 @@ const AddNodeModal = ({
     ssh_username: 'root',
     ssh_password: '',
     ssh_fingerprint: '',
-    panel_ip: window.location.hostname || ''
+    panel_ip: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -145,7 +145,7 @@ const AddNodeModal = ({
           ssh_username: formData.ssh_username,
           ssh_password: formData.ssh_password,
           ssh_fingerprint: formData.ssh_fingerprint || null,
-          panel_ip: formData.panel_ip
+          panel_ip: formData.panel_ip && formData.panel_ip.trim() ? formData.panel_ip.trim() : null
         };
       }
       const response = await apiClient.post(url, payload);
@@ -244,7 +244,7 @@ const AddNodeModal = ({
       overflowY: 'auto'
     }}><div className="modal-header"><h3>{t("ui.1ade58681172")}</h3><button onClick={onClose} className="close-modal-btn">&times;</button></div><form onSubmit={handleSubmit}>
     <div className="input-group"><label>{t("ui.4831706c082f")}</label><select value={automatic ? t("ui.0d612c12d2ac") : t("ui.b363713a938a")} onChange={e => setAutomatic(e.target.value === 'auto')}><option value="auto">{t("ui.fabb8b43a5e0")}</option><option value="manual">{t("ui.99356529b772")}</option></select></div>
-    {field('name', t('nodeName'))}{field('address', t('th_address'))}{automatic && <>{field('ssh_port', 'SSH Port', 'number')}{field('ssh_username', 'SSH Username')}{field('ssh_password', 'SSH Password', 'password')}{field('ssh_fingerprint', 'SSH Host Fingerprint (SHA256; first connection)', 'text', false)}{field('panel_ip', 'Panel public IP')}</>}{field('port', t('nodePort'), 'number')}
+    {field('name', t('nodeName'))}{field('address', t('th_address'))}{automatic && <>{field('ssh_port', t('addNodeSshPort', 'SSH Port'), 'number')}{field('ssh_username', t('addNodeSshUsername', 'SSH Username'))}{field('ssh_password', t('addNodeSshPassword', 'SSH Password'), 'password')}{field('ssh_fingerprint', t('addNodeSshFingerprint', 'SSH Host Fingerprint (SHA256; first connection)'), 'text', false)}<div className="input-group"><label htmlFor="panel_ip">{t('addNodePanelIp', 'Panel source IP (optional)')}</label><input id="panel_ip" name="panel_ip" type="text" value={formData.panel_ip} onChange={handleChange} required={false} placeholder={t('addNodePanelIpPlaceholder', 'Auto-detected from the SSH connection')} /><small>{t('addNodePanelIpHelp', 'Leave empty to auto-detect. Fill only when the panel reaches the node from a different address than the SSH connection (for example behind a NAT or proxy).')}</small></div></>}{field('port', t('nodePort'), 'number')}
     <div className="input-group"><label>{t('th_protocol')}</label><select name="protocol" value={formData.protocol} onChange={handleChange}><option value="udp">{t("ui.e9a6f622e340")}</option><option value="tcp">{t("ui.f544fb304c83")}</option></select></div>
     {field('ovpn_port', t('ovpnPort'), 'number')}{field('tunnel_address', t('tunnelAddress'), 'text', false)}{!automatic && field('key', t('key'))}
     <div className="modal-footer"><button type="button" onClick={onClose} className="btn btn-secondary">{t('cancelButton')}</button><LoadingButton isLoading={isLoading} type="submit" className="btn">{automatic ? t("ui.cb888a7010c5") : t("ui.1ade58681172")}</LoadingButton></div>

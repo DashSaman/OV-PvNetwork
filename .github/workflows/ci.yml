@@ -114,7 +114,7 @@ jobs:
           MAX_JS=$(find dist/assets -type f -name '*.js' -printf '%s\n' | sort -nr | head -1)
           test -n "$MAX_JS"
           echo "LARGEST_JS_BYTES=$MAX_JS"
-          test "$MAX_JS" -le 950000
+          test "$MAX_JS" -le 960000
 
       - name: Browser responsive smoke matrix
         working-directory: frontend

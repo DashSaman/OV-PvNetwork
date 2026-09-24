@@ -223,6 +223,13 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.22` — RELEASED — `PVN-1008` reliable automatic node deployment.
+  - Defect 1: the Add-Node form prefilled `panel_ip` with `window.location.hostname`; behind a proxied domain this is not an IP, so strict `ipaddress()` validation aborted the deployment with a raw error, and a wrong manual IP completed the install but firewall-blocked the panel so `_verify_node_from_panel` failed at the end.
+  - Fix 1: `panel_ip` is optional end-to-end; empty/hostname values fall back to node-side auto-detection from the SSH session (`$SSH_CLIENT`/`$SSH_CONNECTION` — `PVNETWORK_PANEL_SOURCE_AUTODETECT_V1`) which is guaranteed to be the panel's real source address; the explicit/auto decision is logged and an unresolvable source fails fast with `PANEL_SOURCE_IP_UNRESOLVED`.
+  - Defect 2: firewall allow rules inserted at `INPUT` position 2 fail on servers with empty INPUT chains; the blanket IPv6 DROP could lock out IPv6-reachable panels.
+  - Fix 2: existence-guarded position-1 inserts with trailing DROP append; IPv6 sources get a matching `ip6tables` allow branch.
+  - Also: post-install verification failures wrap into an actionable message; Add-Node SSH field labels translated in all 13 languages; focused contract tests in `tests/test_node_deploy_fixes.py`.
+
 - `v1.0.21` — RELEASED — `PVN-1006` full language uniformity + `PVN-1007` Router credentials at user creation (owner-directed combined patch; the owner requested both changes together in a single instruction).
   - PVN-1006 defect: 28 catalog keys carried Persian values inside `en.json` and the other 11 non-Persian catalogs (backup/security save labels, transfer dialogs, 2FA prompts, quota labels); the Backup/Restore panel, AnyConnect user modal, reseller-deletion dialogs and several form hints were entirely hardcoded Persian with no `t()` calls.
   - PVN-1006 fix: real translations for the 28 keys in all 12 non-Persian catalogs; ~100 previously hardcoded strings across 7 components now use translation keys; Backup panel direction/timestamp locale follow the active language; 563 used keys resolve in all 13 languages.
