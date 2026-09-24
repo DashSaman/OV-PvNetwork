@@ -1,3 +1,11 @@
+## v1.0.19 — PVN-1003 white-screen regression fix, index no-cache and i18n completion
+
+- Fixes the live white-screen introduced by the v1.0.18 frontend deployment: a locally built bundle embedded the wrong asset base path (`/panel/` instead of the deployed panel path), so the SPA shell loaded but its JS/CSS 404'd. The release build contract now documents that `URLPATH` (the variable Vite actually reads) must match the deployed panel path.
+- The SPA `index.html` is now served with `Cache-Control: no-cache`, so an atomic asset/index switch can never again strand browsers on a cached old index whose hashed assets no longer exist.
+- Completes 35 missing UI translation keys (Quick Edit, node selector, Router/MikroTik, username rename) in all 11 secondary languages; every shipped language file now covers the full 407-key catalog.
+- Production database and login role renamed from the legacy pre-rebrand identifier to `pvnetwork_panel` with a verified backup-first migration (31 tables / 71 users / 4 nodes parity, Alembic head preserved, old database retained as rollback).
+- No OpenVPN, Node, Router listener, profile or session behavior changes.
+
 ## v1.0.18 — PVN-1002 panel release-version badge
 
 - The Dashboard header now shows the running panel release version (for example `v1.0.18`) directly next to the LIVE · REALTIME indicator.

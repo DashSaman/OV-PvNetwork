@@ -4,17 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.18-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.19-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## تغییرات v1.0.19 نسبت به v1.0.18
+
+**PVN-1003 — رفع رگرسیون صفحه سفید و سخت‌سازی.** صفحه خالی زنده‌ای که با دیپلوی فرانت‌اند v1.0.18 وارد شد تعمیر شد (باندل محلی مسیر پایه asset اشتباه داشت چون Vite متغیر `URLPATH` را می‌خواند نه `VITE_URLPATH`). ایندکس SPA اکنون با `Cache-Control: no-cache` سرو می‌شود تا تعویض اتمیک asset هرگز مرورگر کش‌شده را گیر نیندازد. هر ۱۱ زبان دوم اکنون کل کاتالوگ ۴۰۷ کلیدی UI را پوشش می‌دهند و دیتابیس/نقش لاگین Production با مهاجرت بکاپ-اول به `pvnetwork_panel` تکمیل شد (دیتابیس قبلی به‌عنوان رول‌بک نگه داشته شد). بدون هیچ تغییری در OpenVPN/نود/Router/Session.
+
+خط انتشار فعلی: **v1.0.19** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.19.fa.md).
+
 ## تغییرات v1.0.18 نسبت به v1.0.17
 
 **PVN-1002 — نشان نسخه ریلیز در پنل.** هدر داشبورد اکنون نسخه در حال اجرای پنل (مثلاً `v1.0.18`) را کنار نشان `LIVE · REALTIME` نمایش می‌دهد. مقدار در زمان اجرا از اندپوینت عمومی `/healthz` خوانده می‌شود تا همیشه با ریلیز واقعاً مستقرشده مطابقت داشته باشد؛ خطای خواندن به‌صورت بی‌صدا نشان را حذف می‌کند. فقط نمایشی — بدون هیچ تغییری در API، احراز هویت، OpenVPN، نود، Listener Router یا Session.
 
-خط انتشار فعلی: **v1.0.18** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.18.fa.md).
+انتشار قبلی: **v1.0.18** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.18.fa.md).
 
 ## تغییرات v1.0.17 نسبت به v1.0.16
 
@@ -218,7 +224,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.18/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.19/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

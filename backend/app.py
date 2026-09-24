@@ -109,4 +109,10 @@ async def healthz():
 @api.get(f"/{config.URLPATH}")
 async def serve_react():
     index_path = os.path.join(frontend_build_path, "index.html")
-    return FileResponse(index_path)
+    # PVNETWORK_INDEX_NO_CACHE_V1 — the SPA shell must always revalidate so an
+    # atomic asset/index switch cannot strand browsers on a cached old index
+    # whose hashed assets no longer exist (live white-screen, 2026-09-24).
+    return FileResponse(
+        index_path,
+        headers={"Cache-Control": "no-cache"},
+    )
