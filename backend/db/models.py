@@ -524,7 +524,8 @@ class NodeRouterOpenVpnConfig(Base):
 
 
 class RouterOpenVpnCredential(Base):
-    """Per-user/per-node router credential metadata; no plaintext secret."""
+    """Per-user/per-node router credential; password kept as one-way hash plus
+    an optional reversible ciphertext (PVN-1012) for admin-panel display."""
 
     __tablename__ = "router_openvpn_credentials"
 
@@ -538,6 +539,8 @@ class RouterOpenVpnCredential(Base):
     )
     router_username: Mapped[str] = mapped_column(String(27), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(512), nullable=False)
+    # Fernet ciphertext keyed from the panel secret; NULL for legacy rows.
+    password_ciphertext: Mapped[str] = mapped_column(Text, nullable=True)
     enabled: Mapped[bool] = mapped_column(
         default=False,
         server_default="false",
