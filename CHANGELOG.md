@@ -1,3 +1,9 @@
+## v1.0.26 — PVN-1012 Router password viewable in the admin panel
+
+- Router/MikroTik credentials now store a reversible Fernet ciphertext (keyed from the panel secret, same pattern as AnyConnect) so the password is viewable afterwards in the admin panel: the user Router/MikroTik dialog shows the current password under the username, with a hint to rotate once for credentials created before this release.
+- The on-create one-time warning now states that the password also remains viewable in the admin panel (13 languages).
+- Alembic migration adds the nullable password_ciphertext column; legacy rows stay one-time-only until rotated. No OpenVPN, Node or Router listener behavior changes.
+
 ## v1.0.25 — PVN-1011 Router readiness probe + actionable credential errors
 
 - Root cause of the missing username/password report: Router/MikroTik capability was never enabled on any node (the capability table was empty), so every on-create credential request failed with a bare 409 and the results panel showed no credentials.

@@ -18,6 +18,7 @@ from backend.db.models import (
     UserNode,
 )
 from backend.node.requests import NodeRequests
+from backend.monitoring_crypto import decrypt_secret, encrypt_secret
 from backend.router_openvpn.credentials import (
     persist_router_credential,
     prepare_router_credential,
@@ -423,7 +424,8 @@ async def get_user_router_openvpn_status(
             "configured": row is not None,
             "enabled": bool(row.enabled) if row else False,
             "username": str(row.router_username) if row else None,
-            "password_available": False,
+            "password_available": bool(row.password_ciphertext) if row else False,
+            "password": decrypt_secret(row.password_ciphertext) if row and row.password_ciphertext else None,
             "password_changed_at": row.password_changed_at if row else None,
             "last_authenticated_at": row.last_authenticated_at if row else None,
             "listener_enabled": bool(config.enabled) if config else False,
@@ -462,6 +464,9 @@ async def rotate_user_router_openvpn_credential(
             node_id=int(node.id),
             router_username=prepared["router_username"],
             password_hash=prepared["password_hash"],
+            # PVN-1012: keep a reversible ciphertext so the admin panel can
+            # display this password later; legacy rows stay one-time only.
+            password_ciphertext=encrypt_secret(prepared["password"]),
             enabled=True,
         )
         db.commit()

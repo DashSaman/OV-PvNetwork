@@ -478,11 +478,13 @@
     "rotate": "Rotate credentials",
     "downloadProfile": "Download Router profile",
     "disableCredential": "Disable credential",
-    "oneTimeWarning": "Save this password now. It will not be shown again.",
+    "oneTimeWarning": "Save this password now; it also remains viewable in the admin panel (user → Router/MikroTik).",
     "routerOsCommand": "RouterOS import command",
     "copyRouterOs": "Copy RouterOS command",
     "copyCommand": "Copy RouterOS command:",
-    "noHealthyAssignedNode": "No assigned node has a healthy Router compatibility listener."
+    "noHealthyAssignedNode": "No assigned node has a healthy Router compatibility listener.",
+    "currentPassword": "Current Router password (viewable in the admin panel)",
+    "storedPasswordHint": "This credential predates stored-password view; rotate once to make the password viewable here."
   },
   "panelSettings.title": "Panel & Main Admin",
   "panelSettings.currentUsername": "Current username",

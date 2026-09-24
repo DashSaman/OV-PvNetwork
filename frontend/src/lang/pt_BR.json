@@ -500,11 +500,13 @@
     "rotate": "Rotacionar credenciais",
     "downloadProfile": "Baixar perfil Router",
     "disableCredential": "Desativar credencial",
-    "oneTimeWarning": "Salve esta senha agora. Ela não será exibida novamente.",
+    "oneTimeWarning": "Salve esta senha agora; ela também permanece visível no painel de administração (usuário → Router/MikroTik).",
     "routerOsCommand": "Comando de importação RouterOS",
     "copyRouterOs": "Copiar comando RouterOS",
     "copyCommand": "Copiar comando RouterOS:",
-    "noHealthyAssignedNode": "Nenhum nó atribuído possui um listener de compatibilidade Router saudável."
+    "noHealthyAssignedNode": "Nenhum nó atribuído possui um listener de compatibilidade Router saudável.",
+    "currentPassword": "Senha Router atual (visível no painel de administração)",
+    "storedPasswordHint": "Esta credencial é anterior à exibição de senha armazenada; faça Rotate uma vez para torná-la visível aqui."
   },
   "renameUsername": "Renomear usuário",
   "renameNewUsername": "Novo nome de usuário",

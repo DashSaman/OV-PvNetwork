@@ -104,6 +104,7 @@ def persist_router_credential(
     node_id: int,
     router_username: str,
     password_hash: str,
+    password_ciphertext: str | None = None,
     enabled: bool = True,
 ) -> RouterOpenVpnCredential:
     now = int(time.time())
@@ -115,6 +116,7 @@ def persist_router_credential(
             node_id=int(node_id),
             router_username=str(router_username),
             password_hash=str(password_hash),
+            password_ciphertext=password_ciphertext,
             enabled=bool(enabled),
             created_at=now,
             updated_at=now,
@@ -125,6 +127,7 @@ def persist_router_credential(
     else:
         row.router_username = str(router_username)
         row.password_hash = str(password_hash)
+        row.password_ciphertext = password_ciphertext
         row.enabled = bool(enabled)
         row.updated_at = now
         row.password_changed_at = now

@@ -124,6 +124,14 @@ const RouterOpenVpnUserModal = ({ user, nodes = [], healthyNodeIds = [], onClose
           <input readOnly dir="ltr" value={status.username} />
         </div>}
 
+        {status?.configured && status?.password && <div className="input-group">
+          <label>{t('routerOpenVpn.currentPassword', 'رمز فعلی Router (قابل مشاهده در پنل ادمین)')}</label>
+          <input readOnly dir="ltr" value={status.password} />
+        </div>}
+        {status?.configured && !status?.password && <small style={{ display: 'block', marginTop: 2 }}>
+          {t('routerOpenVpn.storedPasswordHint', 'این اعتبارنامه قبل از قابلیت نمایش رمز ساخته شده؛ برای دیدن رمز ذخیره‌شده یک‌بار Rotate بزن.')}
+        </small>}
+
         <div className="modal-footer" style={{ flexWrap: 'wrap' }}>
           <button type="button" className="btn" disabled={busy} onClick={rotate}>
             {status?.configured ? t('routerOpenVpn.rotate', 'Rotate credentials') : t('routerOpenVpn.generate', 'Generate credentials')}
@@ -135,7 +143,7 @@ const RouterOpenVpnUserModal = ({ user, nodes = [], healthyNodeIds = [], onClose
         </div>
 
         {secret && <div className="router-openvpn-one-time-secret">
-          <p><strong>{t('routerOpenVpn.oneTimeWarning', 'Save this password now. It will not be shown again.')}</strong></p>
+          <p><strong>{t('routerOpenVpn.oneTimeWarning', 'Save this password now; it also remains viewable in the admin panel (user → Router/MikroTik).')}</strong></p>
           <div className="input-group">
             <label>{t('routerOpenVpn.username', 'Router username')}</label>
             <input readOnly dir="ltr" value={secret.username} />

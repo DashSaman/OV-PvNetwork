@@ -500,11 +500,13 @@
     "rotate": "تدوير البيانات",
     "downloadProfile": "تنزيل ملف Router التعريفي",
     "disableCredential": "تعطيل البيانات",
-    "oneTimeWarning": "احفظ كلمة المرور الآن. لن تظهر مرة أخرى.",
+    "oneTimeWarning": "احفظ كلمة المرور الآن؛ وتبقى أيضًا قابلة للعرض في لوحة الإدارة (المستخدم → Router/MikroTik).",
     "routerOsCommand": "أمر استيراد RouterOS",
     "copyRouterOs": "نسخ أمر RouterOS",
     "copyCommand": "نسخ أمر RouterOS:",
-    "noHealthyAssignedNode": "لا توجد عقدة معينة بمستمع توافق Router سليم."
+    "noHealthyAssignedNode": "لا توجد عقدة معينة بمستمع توافق Router سليم.",
+    "currentPassword": "كلمة مرور Router الحالية (قابلة للعرض في لوحة الإدارة)",
+    "storedPasswordHint": "أُنشئت هذه البيانات قبل إتاحة عرض كلمة المرور؛ نفّذ Rotate مرة واحدة لتصبح كلمة المرور قابلة للعرض هنا."
   },
   "renameUsername": "إعادة تسمية المستخدم",
   "renameNewUsername": "اسم المستخدم الجديد",

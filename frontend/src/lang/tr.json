@@ -500,11 +500,13 @@
     "rotate": "Kimliği döndür",
     "downloadProfile": "Router profilini indir",
     "disableCredential": "Kimliği devre dışı bırak",
-    "oneTimeWarning": "Bu parolayı şimdi kaydedin. Bir daha gösterilmeyecek.",
+    "oneTimeWarning": "Bu parolayı şimdi kaydedin; ayrıca yönetim panelinde de (kullanıcı → Router/MikroTik) görünür kalır.",
     "routerOsCommand": "RouterOS içe aktarma komutu",
     "copyRouterOs": "RouterOS komutunu kopyala",
     "copyCommand": "RouterOS komutunu kopyala:",
-    "noHealthyAssignedNode": "Atanan hiçbir düğümde sağlıklı bir Router uyumluluk dinleyicisi yok."
+    "noHealthyAssignedNode": "Atanan hiçbir düğümde sağlıklı bir Router uyumluluk dinleyicisi yok.",
+    "currentPassword": "Mevcut Router parolası (yönetim panelinde görülebilir)",
+    "storedPasswordHint": "Bu kimlik, kayıtlı parola görünümünden önce oluşturuldu; burada görülebilmesi için bir kez Rotate yapın."
   },
   "renameUsername": "Kullanıcı Adını Değiştir",
   "renameNewUsername": "Yeni kullanıcı adı",

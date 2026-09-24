@@ -500,11 +500,13 @@
     "rotate": "Rotasi kredensial",
     "downloadProfile": "Unduh profil Router",
     "disableCredential": "Nonaktifkan kredensial",
-    "oneTimeWarning": "Simpan kata sandi ini sekarang. Tidak akan ditampilkan lagi.",
+    "oneTimeWarning": "Simpan kata sandi ini sekarang; tetap dapat dilihat di panel admin (pengguna → Router/MikroTik).",
     "routerOsCommand": "Perintah impor RouterOS",
     "copyRouterOs": "Salin perintah RouterOS",
     "copyCommand": "Salin perintah RouterOS:",
-    "noHealthyAssignedNode": "Tidak ada node yang ditugaskan memiliki listener kompatibilitas Router yang sehat."
+    "noHealthyAssignedNode": "Tidak ada node yang ditugaskan memiliki listener kompatibilitas Router yang sehat.",
+    "currentPassword": "Kata sandi Router saat ini (dapat dilihat di panel admin)",
+    "storedPasswordHint": "Kredensial ini dibuat sebelum fitur lihat-kata-sandi; lakukan Rotate sekali agar kata sandi dapat dilihat di sini."
   },
   "renameUsername": "Ganti Nama Pengguna",
   "renameNewUsername": "Nama pengguna baru",

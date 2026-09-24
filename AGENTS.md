@@ -223,6 +223,10 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.26` — RELEASED — `PVN-1012` Router password viewable in the admin panel.
+  - Contract: `password_ciphertext` (nullable Fernet ciphertext via `encrypt_secret`, keyed from the panel secret — same pattern as AnyConnect) is persisted on generate/rotate; the user Router status endpoint reveals the decrypted password; the admin modal displays it with a legacy-rotate hint; the on-create warning no longer claims the password is shown only once.
+  - Migration `f8a9b0c1d2e3` adds the column; legacy rows remain one-time until rotated. Display is limited to authenticated admin/reseller routes.
+
 - `v1.0.25` — RELEASED — `PVN-1011` Router readiness probe + actionable credential errors.
   - Diagnosis of the owner report: `node_router_openvpn` was empty — Router capability never enabled on any node — so every on-create credential request failed 409 and no username/password appeared.
   - Fix: checkbox-tick live probe of selected nodes with inline ready-count or red enable instructions; 409 details translated to actionable messages; 13-language strings; `tests/test_router_readiness_probe.py`; operator enable steps documented in the release notes.

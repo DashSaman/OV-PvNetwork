@@ -478,11 +478,13 @@
     "rotate": "ساخت اطلاعات جدید",
     "downloadProfile": "دانلود پروفایل روتر",
     "disableCredential": "غیرفعال‌کردن دسترسی",
-    "oneTimeWarning": "این رمز را همین حالا ذخیره کنید؛ دوباره نمایش داده نمی‌شود.",
+    "oneTimeWarning": "این رمز را همین حالا ذخیره کن؛ همچنین بعداً در پنل ادمین (کاربر → Router/MikroTik) قابل مشاهده می‌ماند.",
     "routerOsCommand": "دستور import در RouterOS",
     "copyRouterOs": "کپی دستور RouterOS",
     "copyCommand": "دستور RouterOS را کپی کنید:",
-    "noHealthyAssignedNode": "هیچ نود تخصیص‌داده‌شده‌ای Listener سالم سازگاری روتر ندارد."
+    "noHealthyAssignedNode": "هیچ نود تخصیص‌داده‌شده‌ای Listener سالم سازگاری روتر ندارد.",
+    "currentPassword": "رمز فعلی Router (قابل مشاهده در پنل ادمین)",
+    "storedPasswordHint": "این اعتبارنامه قبل از قابلیت نمایش رمز ساخته شده؛ برای دیدن رمز ذخیره‌شده یک‌بار Rotate بزن."
   },
   "panelSettings.title": "پنل و مدیر اصلی",
   "panelSettings.currentUsername": "نام کاربری فعلی",

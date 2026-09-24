@@ -500,11 +500,13 @@
     "rotate": "Ротувати облікові дані",
     "downloadProfile": "Завантажити профіль Router",
     "disableCredential": "Вимкнути облікові дані",
-    "oneTimeWarning": "Збережіть цей пароль зараз. Він більше не показуватиметься.",
+    "oneTimeWarning": "Збережіть пароль зараз; він також залишається видимим у панелі адміністратора (користувач → Router/MikroTik).",
     "routerOsCommand": "Команда імпорту RouterOS",
     "copyRouterOs": "Копіювати команду RouterOS",
     "copyCommand": "Копіювати команду RouterOS:",
-    "noHealthyAssignedNode": "Жоден призначений вузол не має працездатного слухача сумісності Router."
+    "noHealthyAssignedNode": "Жоден призначений вузол не має працездатного слухача сумісності Router.",
+    "currentPassword": "Поточний пароль Router (видимий у панелі адміністратора)",
+    "storedPasswordHint": "Ці облікові дані створено до появи показу пароля; виконайте Rotate один раз, щоб пароль став видимим."
   },
   "renameUsername": "Перейменувати користувача",
   "renameNewUsername": "Нове ім'я користувача",

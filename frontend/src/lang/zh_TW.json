@@ -500,11 +500,13 @@
     "rotate": "輪換認證",
     "downloadProfile": "下載 Router 設定檔",
     "disableCredential": "停用認證",
-    "oneTimeWarning": "請立即保存此密碼，之後不會再顯示。",
+    "oneTimeWarning": "請立即儲存此密碼；之後也可在管理面板（使用者 → Router/MikroTik）檢視。",
     "routerOsCommand": "RouterOS 匯入命令",
     "copyRouterOs": "複製 RouterOS 命令",
     "copyCommand": "複製 RouterOS 命令：",
-    "noHealthyAssignedNode": "沒有已指派節點擁有健康的 Router 相容監聽器。"
+    "noHealthyAssignedNode": "沒有已指派節點擁有健康的 Router 相容監聽器。",
+    "currentPassword": "目前 Router 密碼（可在管理面板查看）",
+    "storedPasswordHint": "此憑證早於密碼檢視功能；執行一次 Rotate 即可在此檢視密碼。"
   },
   "renameUsername": "重新命名使用者",
   "renameNewUsername": "新使用者名稱",

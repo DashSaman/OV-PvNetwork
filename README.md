@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.25-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.26-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,17 @@
 
 </div>
 
+## What changed in v1.0.26 vs v1.0.25
+
+**PVN-1012 — Router password viewable in the admin panel.** Router/MikroTik passwords are now stored as reversible Fernet ciphertext (the AnyConnect pattern) and shown in the user Router/MikroTik dialog; the on-create warning notes the password stays viewable. Legacy credentials need one rotate to become viewable.
+
+Current release line: **v1.0.26** — [release notes](./docs/RELEASE-NOTES-v1.0.26.md).
+
 ## What changed in v1.0.25 vs v1.0.24
 
 **PVN-1011 — Router readiness probe + actionable credential errors.** The missing username/password was root-caused to Router capability never being enabled on any node. The Add User Router checkbox now live-probes the selected nodes when ticked (ready count, or a red step-by-step enable instruction when none are ready), and credential failures translate into actionable messages in 13 languages.
 
-Current release line: **v1.0.25** — [release notes](./docs/RELEASE-NOTES-v1.0.25.md).
+Previous release: **v1.0.25** — [release notes](./docs/RELEASE-NOTES-v1.0.25.md).
 
 ## What changed in v1.0.24 vs v1.0.23
 
@@ -262,7 +268,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.25/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.26/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

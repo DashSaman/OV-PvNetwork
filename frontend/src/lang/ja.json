@@ -500,11 +500,13 @@
     "rotate": "資格情報をローテーション",
     "downloadProfile": "Routerプロファイルをダウンロード",
     "disableCredential": "資格情報を無効化",
-    "oneTimeWarning": "このパスワードは今すぐ保存してください。再表示されません。",
+    "oneTimeWarning": "このパスワードは今保存してください。管理パネル（ユーザー → Router/MikroTik）でも後から閲覧できます。",
     "routerOsCommand": "RouterOSインポートコマンド",
     "copyRouterOs": "RouterOSコマンドをコピー",
     "copyCommand": "RouterOSコマンドをコピー:",
-    "noHealthyAssignedNode": "割り当てノードに正常なRouter互換リスナーがありません。"
+    "noHealthyAssignedNode": "割り当てノードに正常なRouter互換リスナーがありません。",
+    "currentPassword": "現在のRouterパスワード（管理パネルで閲覧可能）",
+    "storedPasswordHint": "この資格情報はパスワード閲覧機能より前に作成されました。ここで表示するには一度Rotateしてください。"
   },
   "renameUsername": "ユーザー名変更",
   "renameNewUsername": "新しいユーザー名",

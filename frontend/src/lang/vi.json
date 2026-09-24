@@ -500,11 +500,13 @@
     "rotate": "Xoay vòng thông tin",
     "downloadProfile": "Tải hồ sơ Router",
     "disableCredential": "Tắt thông tin",
-    "oneTimeWarning": "Lưu mật khẩu này ngay. Sẽ không hiển thị lại.",
+    "oneTimeWarning": "Hãy lưu mật khẩu này ngay; nó cũng vẫn xem được trong bảng quản trị (người dùng → Router/MikroTik).",
     "routerOsCommand": "Lệnh nhập RouterOS",
     "copyRouterOs": "Sao chép lệnh RouterOS",
     "copyCommand": "Sao chép lệnh RouterOS:",
-    "noHealthyAssignedNode": "Không node nào được gán có listener tương thích Router hoạt động tốt."
+    "noHealthyAssignedNode": "Không node nào được gán có listener tương thích Router hoạt động tốt.",
+    "currentPassword": "Mật khẩu Router hiện tại (xem được trong bảng quản trị)",
+    "storedPasswordHint": "Thông tin này được tạo trước khi có tính năng xem mật khẩu; thực hiện Rotate một lần để xem được mật khẩu tại đây."
   },
   "renameUsername": "Đổi tên người dùng",
   "renameNewUsername": "Tên người dùng mới",
