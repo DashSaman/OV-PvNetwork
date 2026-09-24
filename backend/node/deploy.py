@@ -524,7 +524,7 @@ echo DEPLOY_OK
 
 def deploy_node(*, host: str, ssh_port: int, username: str, password: str,
                 api_port: int, ovpn_port: int, protocol: str,
-                panel_ip: str | None,
+                panel_ip: str | None = None,
                 expected_fingerprint: str | None = None,
                 reporter: Callable[[int, str, str, str], None] | None = None) -> DeployResult:
     host = _valid_host(host)

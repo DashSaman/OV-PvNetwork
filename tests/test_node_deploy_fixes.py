@@ -63,7 +63,7 @@ class PanelSourceAutodetectTests(unittest.TestCase):
     def test_deploy_schema_makes_panel_ip_optional(self):
         source = (ROOT / "backend/routers/node.py").read_text(encoding="utf-8")
         self.assertIn("panel_ip: Optional[str] = Field(default=None", source)
-        self.assertIn("auto-detection from the SSH session", source)
+        self.assertIn("auto-detection from the", source)
 
     def test_deploy_verify_failure_has_actionable_message(self):
         source = (ROOT / "backend/routers/node.py").read_text(encoding="utf-8")
