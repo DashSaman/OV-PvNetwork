@@ -9,19 +9,12 @@ import {
   FiUploadCloud,
 } from 'react-icons/fi';
 import apiClient from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 
 const delay = (milliseconds) => new Promise((resolve) => {
   window.setTimeout(resolve, milliseconds);
 });
-
-
-const errorText = (error) => (
-  error?.response?.data?.detail
-  || error?.response?.data?.msg
-  || error?.message
-  || 'عملیات انجام نشد. دوباره تلاش کنید.'
-);
 
 
 const formatBytes = (value) => {
@@ -36,19 +29,8 @@ const formatBytes = (value) => {
 };
 
 
-const formatDate = (value) => {
-  try {
-    return new Intl.DateTimeFormat('fa-IR', {
-      dateStyle: 'medium',
-      timeStyle: 'medium',
-    }).format(new Date(value));
-  } catch {
-    return value || '-';
-  }
-};
-
-
 export default function BackupRestorePanel() {
+  const { t, i18n } = useTranslation();
   const [backups, setBackups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -60,6 +42,25 @@ export default function BackupRestorePanel() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const alive = useRef(true);
+
+  const errorText = (exception) => (
+    exception?.response?.data?.detail
+    || exception?.response?.data?.msg
+    || exception?.message
+    || t('backup.opFailed', 'عملیات انجام نشد. دوباره تلاش کنید.')
+  );
+
+  const formatDate = (value) => {
+    try {
+      const locale = i18n.language === 'fa' ? 'fa-IR' : i18n.language.replace('_', '-');
+      return new Intl.DateTimeFormat(locale, {
+        dateStyle: 'medium',
+        timeStyle: 'medium',
+      }).format(new Date(value));
+    } catch {
+      return value || '-';
+    }
+  };
 
   useEffect(() => {
     alive.current = true;
@@ -81,7 +82,8 @@ export default function BackupRestorePanel() {
     } finally {
       if (alive.current && !quiet) setLoading(false);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language]);
 
   useEffect(() => {
     loadBackups();
@@ -94,7 +96,7 @@ export default function BackupRestorePanel() {
     try {
       const response = await apiClient.post('/backups/', null, { timeout: 900000 });
       if (alive.current) {
-        setMessage(response.data?.msg || 'بکاپ با موفقیت ساخته شد.');
+        setMessage(response.data?.msg || t('backup.createdOk', 'بکاپ با موفقیت ساخته شد.'));
       }
       await loadBackups(true);
     } catch (exception) {
@@ -121,7 +123,7 @@ export default function BackupRestorePanel() {
       anchor.click();
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(href), 1000);
-      if (alive.current) setMessage('فایل بکاپ دانلود شد. آن را محرمانه نگه دارید.');
+      if (alive.current) setMessage(t('backup.downloadOk', 'فایل بکاپ دانلود شد. آن را محرمانه نگه دارید.'));
     } catch (exception) {
       if (alive.current) setError(errorText(exception));
     } finally {
@@ -143,12 +145,12 @@ export default function BackupRestorePanel() {
         const next = response.data?.data;
         if (next) setJob(next);
         if (next?.state === 'succeeded') {
-          setMessage('اطلاعات و تنظیمات پنل با موفقیت بازیابی شد.');
+          setMessage(t('backup.restoreOk', 'اطلاعات و تنظیمات پنل با موفقیت بازیابی شد.'));
           await loadBackups(true);
           return;
         }
         if (next?.state === 'failed') {
-          const terminalError = new Error(next.message || 'بازیابی ناموفق بود.');
+          const terminalError = new Error(next.message || t('backup.restoreFailed', 'بازیابی ناموفق بود.'));
           terminalError.restoreTerminal = true;
           throw terminalError;
         }
@@ -159,20 +161,20 @@ export default function BackupRestorePanel() {
         if (temporaryFailures >= 25) throw exception;
       }
     }
-    throw new Error('زمان انتظار بازیابی تمام شد؛ وضعیت سرویس را بررسی کنید.');
+    throw new Error(t('backup.restoreTimeout', 'زمان انتظار بازیابی تمام شد؛ وضعیت سرویس را بررسی کنید.'));
   };
 
   const restoreBackup = async () => {
     if (!selectedFile) {
-      setError('ابتدا فایل بکاپ را انتخاب کنید.');
+      setError(t('backup.fileRequired', 'ابتدا فایل بکاپ را انتخاب کنید.'));
       return;
     }
     if (confirmation.trim() !== 'RESTORE') {
-      setError('برای تأیید، عبارت RESTORE را دقیق وارد کنید.');
+      setError(t('backup.confirmRequired', 'برای تأیید، عبارت RESTORE را دقیق وارد کنید.'));
       return;
     }
     const approved = window.confirm(
-      'اطلاعات فعلی کاربران، نودها و تنظیمات با محتوای این بکاپ جایگزین می‌شود. ادامه می‌دهید؟',
+      t('backup.restoreWarning', 'اطلاعات فعلی کاربران، نودها و تنظیمات با محتوای این بکاپ جایگزین می‌شود. ادامه می‌دهید؟'),
     );
     if (!approved) return;
 
@@ -188,7 +190,7 @@ export default function BackupRestorePanel() {
         timeout: 300000,
       });
       const started = response.data?.data;
-      if (!started?.job_id) throw new Error('شناسه عملیات بازیابی دریافت نشد.');
+      if (!started?.job_id) throw new Error(t('backup.jobIdMissing', 'شناسه عملیات بازیابی دریافت نشد.'));
       setJob(started);
       await pollRestore(started.job_id);
       if (alive.current) {
@@ -213,7 +215,6 @@ export default function BackupRestorePanel() {
           --backup-border: rgba(148,163,184,.16);
           --backup-text: #e5eefb;
           --backup-muted: #94a3b8;
-          direction: rtl;
           margin-top: 22px;
           padding: 22px;
           color: var(--backup-text);
@@ -280,7 +281,7 @@ export default function BackupRestorePanel() {
         .ov-backup-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#22d3ee,#3b82f6); transition: width .3s ease; }
         .ov-backup-table-wrap { margin-top: 18px; overflow-x: auto; border: 1px solid var(--backup-border); border-radius: 15px; }
         .ov-backup-table { width: 100%; min-width: 650px; border-collapse: collapse; }
-        .ov-backup-table th, .ov-backup-table td { padding: 12px 14px; text-align: right; border-bottom: 1px solid var(--backup-border); font-size: 12px; }
+        .ov-backup-table th, .ov-backup-table td { padding: 12px 14px; text-align: start; border-bottom: 1px solid var(--backup-border); font-size: 12px; }
         .ov-backup-table tr:last-child td { border-bottom: 0; }
         .ov-backup-table th { color: var(--backup-muted); font-weight: 700; background: rgba(148,163,184,.05); }
         .ov-backup-ok { display: inline-flex; align-items: center; gap: 5px; color: #34d399; }
@@ -297,8 +298,8 @@ export default function BackupRestorePanel() {
         <div className="ov-backup-title">
           <div className="ov-backup-icon"><FiDatabase size={23} /></div>
           <div>
-            <h2 id="ov-backup-title">بکاپ و بازیابی دستی</h2>
-            <p>مدیریت نسخه‌های پشتیبان PVNetwork Panel از صفحه اصلی</p>
+            <h2 id="ov-backup-title">{t('backup.title', 'بکاپ و بازیابی دستی')}</h2>
+            <p>{t('backup.subtitle', 'مدیریت نسخه‌های پشتیبان PVNetwork Panel از صفحه اصلی')}</p>
           </div>
         </div>
         <div className="ov-backup-actions">
@@ -308,7 +309,7 @@ export default function BackupRestorePanel() {
             disabled={loading || creating || restoring}
             onClick={() => loadBackups()}
           >
-            <FiRefreshCw /> بروزرسانی
+            <FiRefreshCw /> {t('backup.refresh', 'بروزرسانی')}
           </button>
           <button
             type="button"
@@ -316,24 +317,24 @@ export default function BackupRestorePanel() {
             disabled={creating || restoring}
             onClick={createBackup}
           >
-            <FiArchive /> {creating ? 'در حال ساخت…' : 'ساخت بکاپ جدید'}
+            <FiArchive /> {creating ? t('backup.creating', 'در حال ساخت…') : t('backup.create', 'ساخت بکاپ جدید')}
           </button>
         </div>
       </div>
 
       <div className="ov-backup-grid">
         <div className="ov-backup-card">
-          <h3>دانلود بکاپ</h3>
-          <p>بکاپ جدید ابتدا ساخته و آزمایش می‌شود؛ سپس از جدول پایین قابل دانلود است.</p>
+          <h3>{t('backup.downloadTitle', 'دانلود بکاپ')}</h3>
+          <p>{t('backup.downloadHelp', 'بکاپ جدید ابتدا ساخته و آزمایش می‌شود؛ سپس از جدول پایین قابل دانلود است.')}</p>
           <div className="ov-backup-notice">
             <FiAlertTriangle size={18} />
-            فایل دانلودی شامل اطلاعات کاربران و تنظیمات محرمانه پنل است.
+            {t('backup.sensitiveNotice', 'فایل دانلودی شامل اطلاعات کاربران و تنظیمات محرمانه پنل است.')}
           </div>
         </div>
 
         <div className="ov-backup-card">
-          <h3>بازیابی از فایل</h3>
-          <p>دیتابیس و تنظیمات به زمان بکاپ برمی‌گردند؛ نسخه برنامه و کدهای فعلی حفظ می‌شوند.</p>
+          <h3>{t('backup.restoreTitle', 'بازیابی از فایل')}</h3>
+          <p>{t('backup.restoreHelp', 'دیتابیس و تنظیمات به زمان بکاپ برمی‌گردند؛ نسخه برنامه و کدهای فعلی حفظ می‌شوند.')}</p>
           <input
             className="ov-backup-input"
             type="file"
@@ -346,7 +347,7 @@ export default function BackupRestorePanel() {
             type="text"
             dir="ltr"
             autoComplete="off"
-            placeholder="برای تأیید بنویسید: RESTORE"
+            placeholder={t('backup.restorePlaceholder', 'برای تأیید بنویسید: RESTORE')}
             value={confirmation}
             disabled={restoring}
             onChange={(event) => setConfirmation(event.target.value)}
@@ -357,7 +358,7 @@ export default function BackupRestorePanel() {
             disabled={restoring || !selectedFile || confirmation.trim() !== 'RESTORE'}
             onClick={restoreBackup}
           >
-            <FiUploadCloud /> {restoring ? 'در حال بازیابی…' : 'شروع بازیابی'}
+            <FiUploadCloud /> {restoring ? t('backup.restoring', 'در حال بازیابی…') : t('backup.restoreStart', 'شروع بازیابی')}
           </button>
 
           {job && (
@@ -377,18 +378,18 @@ export default function BackupRestorePanel() {
 
       <div className="ov-backup-table-wrap">
         {loading ? (
-          <div className="ov-backup-empty">در حال دریافت فهرست بکاپ‌ها…</div>
+          <div className="ov-backup-empty">{t('backup.loadingList', 'در حال دریافت فهرست بکاپ‌ها…')}</div>
         ) : backups.length === 0 ? (
-          <div className="ov-backup-empty">هنوز بکاپ معتبری وجود ندارد.</div>
+          <div className="ov-backup-empty">{t('backup.emptyList', 'هنوز بکاپ معتبری وجود ندارد.')}</div>
         ) : (
           <table className="ov-backup-table">
             <thead>
               <tr>
-                <th>زمان ایجاد</th>
-                <th>شناسه</th>
-                <th>حجم کامل</th>
-                <th>وضعیت</th>
-                <th>عملیات</th>
+                <th>{t('backup.colCreated', 'زمان ایجاد')}</th>
+                <th>{t('backup.colId', 'شناسه')}</th>
+                <th>{t('backup.colSize', 'حجم کامل')}</th>
+                <th>{t('backup.colStatus', 'وضعیت')}</th>
+                <th>{t('backup.colActions', 'عملیات')}</th>
               </tr>
             </thead>
             <tbody>
@@ -399,9 +400,9 @@ export default function BackupRestorePanel() {
                   <td dir="ltr">{formatBytes(backup.size_bytes)}</td>
                   <td>
                     {backup.verified ? (
-                      <span className="ov-backup-ok"><FiCheckCircle /> تأییدشده</span>
+                      <span className="ov-backup-ok"><FiCheckCircle /> {t('backup.verified', 'تأییدشده')}</span>
                     ) : (
-                      <span className="ov-backup-error">نامعتبر</span>
+                      <span className="ov-backup-error">{t('backup.invalid', 'نامعتبر')}</span>
                     )}
                   </td>
                   <td>
@@ -413,7 +414,7 @@ export default function BackupRestorePanel() {
                         onClick={() => downloadBackup(backup)}
                       >
                         <FiDownloadCloud />
-                        {downloading === backup.id ? 'در حال دانلود…' : 'دانلود'}
+                        {downloading === backup.id ? t('backup.downloading', 'در حال دانلود…') : t('backup.download', 'دانلود')}
                       </button>
                     </div>
                   </td>

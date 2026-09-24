@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 // PVNETWORK_ANYCONNECT_USER_TOGGLE_V1
 const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
+  const { t } = useTranslation();
   const [status, setStatus] = useState(null);
   const [customPassword, setCustomPassword] = useState('');
   const [shownPassword, setShownPassword] = useState('');
@@ -14,7 +16,7 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
     exception?.response?.data?.detail ||
     exception?.response?.data?.msg ||
     exception?.message ||
-    'خطا در انجام عملیات AnyConnect';
+    t('anyConnect.opFailed', 'خطا در انجام عملیات AnyConnect');
 
   const loadStatus = async () => {
     setIsLoading(true);
@@ -110,9 +112,9 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
     if (!shownPassword) return;
     try {
       await navigator.clipboard.writeText(shownPassword);
-      window.alert('رمز AnyConnect کپی شد.');
+      window.alert(t('anyConnect.passwordCopied', 'رمز AnyConnect کپی شد.'));
     } catch {
-      window.prompt('رمز را کپی کنید:', shownPassword);
+      window.prompt(t('anyConnect.copyPasswordPrompt', 'رمز را کپی کنید:'), shownPassword);
     }
   };
 
@@ -125,9 +127,9 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
     ].join('\n');
     try {
       await navigator.clipboard.writeText(value);
-      window.alert('اطلاعات اتصال کپی شد.');
+      window.alert(t('anyConnect.detailsCopied', 'اطلاعات اتصال کپی شد.'));
     } catch {
-      window.prompt('اطلاعات اتصال را کپی کنید:', value);
+      window.prompt(t('anyConnect.copyDetailsPrompt', 'اطلاعات اتصال را کپی کنید:'), value);
     }
   };
 
@@ -140,20 +142,20 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
         <button onClick={onClose} className="close-modal-btn">&times;</button>
       </div>
 
-      {isLoading ? <p>در حال دریافت وضعیت...</p> : <>
+      {isLoading ? <p>{t('anyConnect.loadingStatus', 'در حال دریافت وضعیت...')}</p> : <>
         <div className="input-group">
-          <label>وضعیت حساب AnyConnect</label>
+          <label>{t('anyConnect.accountStatus', 'وضعیت حساب AnyConnect')}</label>
           <input
             type="text"
             disabled
             value={status?.configured
-              ? (status?.enabled ? 'فعال' : 'غیرفعال')
-              : 'هنوز رمز ساخته نشده'}
+              ? (status?.enabled ? t('anyConnect.stateEnabled', 'فعال') : t('anyConnect.stateDisabled', 'غیرفعال'))
+              : t('anyConnect.noPasswordYet', 'هنوز رمز ساخته نشده')}
           />
         </div>
 
         <div className="input-group">
-          <label>آدرس سرور</label>
+          <label>{t('anyConnect.serverAddress', 'آدرس سرور')}</label>
           <input
             type="text"
             readOnly
@@ -163,19 +165,19 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
         </div>
 
         <div className="input-group">
-          <label>وضعیت درگاه فنلاند</label>
+          <label>{t('anyConnect.finlandGatewayStatus', 'وضعیت درگاه فنلاند')}</label>
           <input
             type="text"
             disabled
             value={status?.gateway_ready
-              ? 'درگاه آماده اتصال است'
-              : 'درگاه عمومی هنوز در مرحله تست است'}
+              ? t('anyConnect.gatewayReady', 'درگاه آماده اتصال است')
+              : t('anyConnect.gatewayTesting', 'درگاه عمومی هنوز در مرحله تست است')}
           />
         </div>
 
         <div className="input-group">
           <label htmlFor="anyconnect-custom-password">
-            رمز دلخواه (اختیاری)
+            {t('anyConnect.customPasswordOptional', 'رمز دلخواه (اختیاری)')}
           </label>
           <input
             id="anyconnect-custom-password"
@@ -185,9 +187,9 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
             autoComplete="new-password"
             value={customPassword}
             onChange={event => setCustomPassword(event.target.value)}
-            placeholder="خالی بماند تا رمز قوی خودکار ساخته شود"
+            placeholder={t('anyConnect.customPasswordPlaceholder', 'خالی بماند تا رمز قوی خودکار ساخته شود')}
           />
-          <small>رمز باید ۱۲ تا ۶۴ کاراکتر باشد.</small>
+          <small>{t('anyConnect.passwordLengthHint', 'رمز باید ۱۲ تا ۶۴ کاراکتر باشد.')}</small>
         </div>
 
         <div className="modal-footer" style={{ flexWrap: 'wrap' }}>
@@ -197,7 +199,7 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
             disabled={isSaving}
             onClick={rotatePassword}
           >
-            {status?.configured ? 'تغییر رمز AnyConnect' : 'ساخت رمز AnyConnect'}
+            {status?.configured ? t('anyConnect.changePassword', 'تغییر رمز AnyConnect') : t('anyConnect.generatePassword', 'ساخت رمز AnyConnect')}
           </button>
 
           <button
@@ -206,7 +208,7 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
             disabled={isSaving}
             onClick={toggleStatus}
           >
-            {status?.enabled ? 'غیرفعال‌کردن' : 'فعال‌کردن'}
+            {status?.enabled ? t('anyConnect.disableAction', 'غیرفعال‌کردن') : t('anyConnect.enableAction', 'فعال‌کردن')}
           </button>
 
           <button
@@ -215,12 +217,12 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
             disabled={isSaving || !status?.password_available}
             onClick={revealPassword}
           >
-            نمایش رمز فعلی
+            {t('anyConnect.showCurrentPassword', 'نمایش رمز فعلی')}
           </button>
         </div>
 
         {shownPassword && <div className="input-group" style={{ marginTop: 18 }}>
-          <label>رمز فعلی AnyConnect</label>
+          <label>{t('anyConnect.currentPassword', 'رمز فعلی AnyConnect')}</label>
           <input type="text" readOnly value={shownPassword} dir="ltr" />
           <div className="modal-footer" style={{ flexWrap: 'wrap' }}>
             <button
@@ -228,14 +230,14 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
               className="btn btn-secondary"
               onClick={copyPassword}
             >
-              کپی رمز
+              {t('anyConnect.copyPassword', 'کپی رمز')}
             </button>
             <button
               type="button"
               className="btn btn-secondary"
               onClick={copyConnection}
             >
-              کپی اطلاعات اتصال
+              {t('anyConnect.copyDetails', 'کپی اطلاعات اتصال')}
             </button>
           </div>
         </div>}
@@ -245,7 +247,7 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
 
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" onClick={onClose}>
-          بستن
+          {t('close', 'بستن')}
         </button>
       </div>
     </div>

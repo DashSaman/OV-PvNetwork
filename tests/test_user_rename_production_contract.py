@@ -7,10 +7,10 @@ ROOT=Path(__file__).resolve().parents[1]
 
 class RenameProductionContractTests(unittest.TestCase):
     def test_release_version_is_current(self):
-        self.assertEqual((ROOT/'VERSION').read_text().strip(),'1.0.20')
-        self.assertEqual(json.loads((ROOT/'frontend/package.json').read_text())['version'],'1.0.20')
+        self.assertEqual((ROOT/'VERSION').read_text().strip(),'1.0.21')
+        self.assertEqual(json.loads((ROOT/'frontend/package.json').read_text())['version'],'1.0.21')
         lock=json.loads((ROOT/'frontend/package-lock.json').read_text())
-        self.assertEqual(lock['version'],'1.0.20'); self.assertEqual(lock['packages']['']['version'],'1.0.20')
+        self.assertEqual(lock['version'],'1.0.21'); self.assertEqual(lock['packages']['']['version'],'1.0.21')
 
     def test_installer_and_smoke_require_worker_and_timer(self):
         install=(ROOT/'scripts/install-runtime-tools.sh').read_text()

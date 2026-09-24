@@ -99,8 +99,8 @@ const AdminManagement = () => {
             }
             const count = Number(response.data?.data?.affected_users || 0);
             alert(deleteMode === 'transfer_users'
-                ? `نماینده حذف شد و ${count} کاربر به Owner منتقل شد.`
-                : `نماینده و ${count} کاربر متعلق به او حذف شدند.`);
+                ? t('adminDelete.transferred', { count: count, defaultValue: 'نماینده حذف شد و {{count}} کاربر به Owner منتقل شد.' })
+                : t('adminDelete.deletedWithUsers', { count: count, defaultValue: 'نماینده و {{count}} کاربر متعلق به او حذف شدند.' }));
             setDeleteAdminTarget(null);
             fetchAdmins();
         } catch (exception) {
@@ -149,35 +149,35 @@ const AdminManagement = () => {
                 <div className="modal-overlay">
                     <div className="modal" style={{ maxWidth: '560px' }}>
                         <div className="modal-header">
-                            <h3>حذف نماینده {deleteAdminTarget.username}</h3>
+                            <h3>{t('adminDelete.title', 'حذف نماینده')} {deleteAdminTarget.username}</h3>
                             <button className="close-modal-btn" disabled={isDeleting}
                                 onClick={() => setDeleteAdminTarget(null)}>&times;</button>
                         </div>
                         <div className="input-group">
                             <p style={{ marginTop: 0 }}>
-                                این نماینده {Number(deleteAdminTarget.users_count || 0)} کاربر دارد. نحوه تعیین تکلیف کاربران را انتخاب کنید:
+                                {t('adminDelete.hasUsers', { count: Number(deleteAdminTarget.users_count || 0), defaultValue: 'این نماینده {{count}} کاربر دارد. نحوه تعیین تکلیف کاربران را انتخاب کنید:' })}
                             </p>
                             <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', cursor: 'pointer', marginBottom: '14px' }}>
                                 <input type="radio" name="admin-delete-mode" value="transfer_users"
                                     checked={deleteMode === 'transfer_users'}
                                     onChange={() => setDeleteMode('transfer_users')} disabled={isDeleting} />
-                                <span><strong>حذف نماینده و انتقال کاربران به Owner</strong><br />
-                                    <small>حجم، مصرف، تاریخ، وضعیت، تعداد اتصال و نودهای کاربران بدون تغییر باقی می‌ماند.</small></span>
+                                <span><strong>{t('adminDelete.optionTransfer', 'حذف نماینده و انتقال کاربران به Owner')}</strong><br />
+                                    <small>{t('adminDelete.optionTransferHelp', 'حجم، مصرف، تاریخ، وضعیت، تعداد اتصال و نودهای کاربران بدون تغییر باقی می‌ماند.')}</small></span>
                             </label>
                             <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', cursor: 'pointer' }}>
                                 <input type="radio" name="admin-delete-mode" value="delete_users"
                                     checked={deleteMode === 'delete_users'}
                                     onChange={() => setDeleteMode('delete_users')} disabled={isDeleting} />
-                                <span><strong>حذف نماینده و تمام کاربران او</strong><br />
-                                    <small style={{ color: '#ff9b9b' }}>این گزینه کاربران را از پنل و نودها حذف می‌کند و قابل بازگشت نیست.</small></span>
+                                <span><strong>{t('adminDelete.optionDeleteAll', 'حذف نماینده و تمام کاربران او')}</strong><br />
+                                    <small style={{ color: '#ff9b9b' }}>{t('adminDelete.optionDeleteAllHelp', 'این گزینه کاربران را از پنل و نودها حذف می‌کند و قابل بازگشت نیست.')}</small></span>
                             </label>
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" disabled={isDeleting}
-                                onClick={() => setDeleteAdminTarget(null)}>انصراف</button>
+                                onClick={() => setDeleteAdminTarget(null)}>{t('adminDelete.cancel', 'انصراف')}</button>
                             <button type="button" className="btn" disabled={isDeleting}
                                 onClick={handleConfirmDelete}>
-                                {isDeleting ? 'در حال انجام...' : 'تأیید حذف نماینده'}
+                                {isDeleting ? t('adminDelete.working', 'در حال انجام...') : t('adminDelete.confirm', 'تأیید حذف نماینده')}
                             </button>
                         </div>
                     </div>

@@ -114,15 +114,15 @@ const EditUserModal = ({ user, onClose, onUserUpdated, userRole }) => {
         </div> : <div className="input-group">
           <label htmlFor="edit-user-expiry">{t('modal_expiryDate', 'تاریخ انقضا')}</label>
           {isUnlimited ? <>
-            <input type="text" value="اکانت نامحدود: دوره ثابت ۳۰ روزه" disabled />
-            <small>تاریخ دوره نامحدود با ویرایش عادی تمدید نمی‌شود.</small>
+            <input type="text" value={t('renewUnlimitedFixed30', 'اکانت نامحدود: دوره ثابت ۳۰ روزه')} disabled />
+            <small>{t('renewUnlimitedNoEdit', 'تاریخ دوره نامحدود با ویرایش عادی تمدید نمی‌شود.')}</small>
           </> : <input type="date" id="edit-user-expiry" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} required />}
         </div>}
 
         <div className="input-group">
           <label htmlFor="edit-user-device-limit">{t('modal_deviceLimit', 'تعداد اتصال همزمان')}</label>
           <input type="number" id="edit-user-device-limit" value={isResellerUnlimited ? '1' : deviceLimit} onChange={e => setDeviceLimit(e.target.value)} min={isResellerUnlimited ? '1' : '0'} step="1" required disabled={isResellerUnlimited} />
-          <small>{isResellerUnlimited ? 'اکانت نامحدود نماینده فقط تک‌کاربره است.' : '۰ = بدون محدودیت اتصال، ۱ = تک‌کاربره'}</small>
+          <small>{isResellerUnlimited ? t('deviceLimitUnlimitedReseller', 'اکانت نامحدود نماینده فقط تک‌کاربره است.') : t('deviceLimitHint', '۰ = بدون محدودیت اتصال، ۱ = تک‌کاربره')}</small>
         </div>
 
         <div className="modal-footer">

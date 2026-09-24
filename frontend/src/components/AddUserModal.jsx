@@ -25,6 +25,8 @@ const AddUserModal = ({
   const [anyConnectEnabled, setAnyConnectEnabled] = useState(
     Boolean(anyConnectDefaultEnabled)
   );
+  const [routerDevicesEnabled, setRouterDevicesEnabled] = useState(false);
+  const [routerResults, setRouterResults] = useState(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +43,36 @@ const AddUserModal = ({
         .map(node => Number(node.id))
     );
   }, [nodes]);
+
+  // PVNETWORK_CREATE_USER_ROUTER_CREDENTIALS_V1
+  const provisionRouterCredentials = async (userUuid, nodeNameById) => {
+    const results = [];
+    for (const nodeId of selectedNodeIds) {
+      try {
+        const response = await apiClient.post(
+          `/router-openvpn/users/${userUuid}/nodes/${nodeId}/credential`,
+          null,
+          { timeout: 60000 }
+        );
+        const data = response.data?.data || null;
+        results.push({
+          nodeId,
+          nodeName: data?.node_name || nodeNameById[nodeId] || `Node ${nodeId}`,
+          ok: true,
+          username: data?.username || '',
+          password: data?.password || '',
+        });
+      } catch (err) {
+        results.push({
+          nodeId,
+          nodeName: nodeNameById[nodeId] || `Node ${nodeId}`,
+          ok: false,
+          detail: err?.response?.data?.detail || err?.response?.data?.msg || err.message || '',
+        });
+      }
+    }
+    return results;
+  };
 
   const sortedNodes = [...(nodes || [])].sort((a, b) =>
     String(a.name || '').localeCompare(String(b.name || ''))
@@ -150,8 +182,21 @@ const AddUserModal = ({
         node_ids: selectedNodeIds
       });
       if (response.data.success) {
-        alert(t('userCreated', 'کاربر با موفقیت ساخته شد.'));
-        onUserAdded();
+        if (!routerDevicesEnabled) {
+          alert(t('userCreated', 'کاربر با موفقیت ساخته شد.'));
+          onUserAdded();
+          return;
+        }
+        const userUuid = response.data?.data?.uuid || response.data?.data?.user?.uuid || '';
+        if (!userUuid) {
+          alert(t('userCreated', 'کاربر با موفقیت ساخته شد.'));
+          onUserAdded();
+          return;
+        }
+        const nodeNameById = {};
+        (nodes || []).forEach(node => { nodeNameById[Number(node.id)] = node.name; });
+        const results = await provisionRouterCredentials(userUuid, nodeNameById);
+        setRouterResults({ username: name, results });
       } else {
         setError(response.data.msg || t('createUserFailed', 'ساخت کاربر انجام نشد.'));
       }
@@ -163,6 +208,39 @@ const AddUserModal = ({
   };
 
   const monthOptions = Array.from({ length: 6 }, (_, index) => index + 1);
+
+  if (routerResults) {
+    const okResults = routerResults.results.filter(item => item.ok);
+    const failedResults = routerResults.results.filter(item => !item.ok);
+    return <div className="modal-overlay">
+      <div className="modal">
+        <div className="modal-header">
+          <h3>{t('createUserRouterGenerated', 'کاربر ساخته شد — اعتبارنامه Router')}</h3>
+          <button onClick={onClose} className="close-modal-btn">&times;</button>
+        </div>
+        <div className="input-group">
+          <p style={{ fontWeight: 700 }}>{t('createUserRouterOnceWarning', 'این رمزها فقط یک بار نمایش داده می‌شوند؛ همین حالا ذخیره کنید.')}</p>
+          {okResults.map(item => (
+            <div key={item.nodeId} style={{ border: '1px solid rgba(148,163,184,.3)', borderRadius: 10, padding: 10, marginBottom: 8 }}>
+              <strong>{item.nodeName}</strong>
+              <div dir="ltr" style={{ fontFamily: 'monospace' }}>user: {item.username}</div>
+              <div dir="ltr" style={{ fontFamily: 'monospace' }}>pass: {item.password}</div>
+            </div>
+          ))}
+          {failedResults.map(item => (
+            <div key={item.nodeId} className="error-message" style={{ marginBottom: 8 }}>
+              {t('createUserRouterNodeFailed', 'تولید اعتبارنامه ناموفق:')} {item.nodeName} — {String(item.detail).slice(0, 160)}
+            </div>
+          ))}
+        </div>
+        <div className="modal-footer">
+          <button type="button" className="btn btn-secondary" onClick={() => { setRouterResults(null); onUserAdded(); }}>
+            {t('close', 'بستن')}
+          </button>
+        </div>
+      </div>
+    </div>;
+  }
 
   return <div className="modal-overlay">
     <div className="modal">
@@ -179,31 +257,31 @@ const AddUserModal = ({
 
         <div className="input-group">
           <label htmlFor="new-user-total">{t('modal_totalTraffic', 'کل ترافیک (گیگابایت)')}</label>
-          <input type="number" id="new-user-total" value={totalTraffic} onChange={e => setTotalTraffic(e.target.value)} min="0" step="0.01" placeholder="0 = نامحدود" />
+          <input type="number" id="new-user-total" value={totalTraffic} onChange={e => setTotalTraffic(e.target.value)} min="0" step="0.01" placeholder={t('quickEditUnlimitedHint', '0 = نامحدود')} />
         </div>
 
         <div className="input-group">
           <label>{t('accountDuration', 'مدت اعتبار حساب')}</label>
 
           {isUnlimited ? <>
-            <select value="30" disabled aria-label="مدت اکانت نامحدود">
-              <option value="30">۱ ماه (۳۰ روز)</option>
+            <select value="30" disabled aria-label={t('unlimitedDurationLabel', 'مدت اکانت نامحدود')}>
+              <option value="30">{t('oneMonth30Days', '۱ ماه (۳۰ روز)')}</option>
             </select>
             <small>{t('unlimitedFixedDuration', 'اکانت نامحدود فقط با اعتبار ۳۰ روز ساخته می‌شود.')}</small>
           </> : isReseller ? <>
             <select id="new-user-duration-months" value={durationMonths} onChange={e => setDurationMonths(e.target.value)} required>
-              {monthOptions.map(month => <option key={month} value={month}>{month} ماه</option>)}
+              {monthOptions.map(month => <option key={month} value={month}>{month} {t('renewUnitMonths', 'ماه')}</option>)}
             </select>
             <small>{t('resellerMonthSelectHelp', 'نماینده فقط مدت را انتخاب می‌کند؛ تاریخ به‌صورت خودکار محاسبه می‌شود.')}</small>
           </> : <>
             <select value={expiryMode} onChange={e => setExpiryMode(e.target.value)}>
-              <option value="date">انتخاب تاریخ دقیق</option>
-              <option value="days">تعداد روز از امروز</option>
+              <option value="date">{t('expiryModeDate', 'انتخاب تاریخ دقیق')}</option>
+              <option value="days">{t('expiryModeDays', 'تعداد روز از امروز')}</option>
             </select>
             {expiryMode === 'date'
               ? <input type="date" id="new-user-expiry" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} required />
-              : <input type="number" id="new-user-duration-days" value={durationDays} onChange={e => setDurationDays(e.target.value)} min="1" max="3650" step="1" required placeholder="مثلاً 30 یا 60" />}
-            <small>{expiryMode === 'date' ? 'تاریخ دقیق را انتخاب کنید.' : 'مثلاً ۳۰، ۶۰ یا هر تعداد روز دلخواه.'}</small>
+              : <input type="number" id="new-user-duration-days" value={durationDays} onChange={e => setDurationDays(e.target.value)} min="1" max="3650" step="1" required placeholder={t('durationDaysPlaceholder', 'مثلاً 30 یا 60')} />}
+            <small>{expiryMode === 'date' ? t('expiryDateHint', 'تاریخ دقیق را انتخاب کنید.') : t('expiryDaysHint', 'مثلاً ۳۰، ۶۰ یا هر تعداد روز دلخواه.')}</small>
           </>}
         </div>
 
@@ -211,7 +289,7 @@ const AddUserModal = ({
           <label htmlFor="new-user-device-limit">{t('modal_deviceLimit', 'تعداد اتصال همزمان')}</label>
           <input type="number" id="new-user-device-limit" value={isResellerUnlimited ? '1' : deviceLimit} onChange={e => setDeviceLimit(e.target.value)} min={isResellerUnlimited ? '1' : '0'} step="1" required disabled={isResellerUnlimited} />
           <small className="device-limit-help">
-            {isResellerUnlimited ? 'اکانت نامحدود نماینده فقط تک‌کاربره است.' : '۰ = بدون محدودیت اتصال، ۱ = تک‌کاربره'}
+            {isResellerUnlimited ? t('deviceLimitUnlimitedReseller', 'اکانت نامحدود نماینده فقط تک‌کاربره است.') : t('deviceLimitHint', '۰ = بدون محدودیت اتصال، ۱ = تک‌کاربره')}
           </small>
         </div>
 
@@ -261,10 +339,29 @@ const AddUserModal = ({
               checked={anyConnectEnabled}
               onChange={event => setAnyConnectEnabled(event.target.checked)}
             />
-            <span>فعال‌سازی AnyConnect برای این کاربر</span>
+            <span>{t('createUserAnyConnectToggle', 'فعال‌سازی AnyConnect برای این کاربر')}</span>
           </label>
           <small>
-            در صورت فعال‌بودن، همان نام کاربری OpenVPN با یک رمز تصادفی امن استفاده می‌شود.
+            {t('createUserAnyConnectHelp', 'در صورت فعال‌بودن، همان نام کاربری OpenVPN با یک رمز تصادفی امن استفاده می‌شود.')}
+          </small>
+        </div>
+
+        <div className="input-group">
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer'
+          }}>
+            <input
+              type="checkbox"
+              checked={routerDevicesEnabled}
+              onChange={event => setRouterDevicesEnabled(event.target.checked)}
+            />
+            <span>{t('createUserRouterToggle', 'دستگاه‌های Router / MikroTik (نام کاربری و رمز)')}</span>
+          </label>
+          <small>
+            {t('createUserRouterHelp', 'پس از ساخت کاربر، برای هر نود انتخابی دارای Listener سازگاری Router، نام کاربری و رمز یک‌بارمصرف ساخته و نمایش داده می‌شود. پروفایل عادی OpenVPN بدون تغییر و بدون رمز باقی می‌ماند.')}
           </small>
         </div>
 

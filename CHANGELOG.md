@@ -1,3 +1,10 @@
+## v1.0.21 — PVN-1006 full language uniformity (values and raw strings)
+
+- Fixes the remaining mixed-language UI: 28 catalog keys carried Persian values inside the English catalog and the other 11 non-Persian catalogs (backup/security/transfer/2FA labels showed Persian under every non-Persian language); the Backup/Restore panel, AnyConnect user modal, reseller-deletion dialogs and parts of the user/renewal forms were entirely hardcoded Persian with no translation calls at all.
+- Every catalog now carries real translations for those keys, and ~100 previously hardcoded strings across 7 components now go through the translation system (563 used keys resolve in all 13 languages).
+- The Backup panel direction now follows the active language (previously forced RTL) and its timestamps format in the active locale.
+- Permanent CI gates extended: non-Persian catalogs must contain zero Arabic-script values, the Arabic catalog must contain zero Persian-only characters, and no component may contain raw Persian text outside translation calls.
+
 ## v1.0.20 — PVN-1005 uniform language switching
 
 - Fixes mixed-language UI: 45 keys (reseller/unlimited-account labels, renewal modal, sort menu, action buttons, copy feedback, navigation labels and more) were missing from every language catalog and rendered their hardcoded Persian or English defaults regardless of the selected language. All keys now exist and are translated in all 13 shipped languages.

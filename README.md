@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.20-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.21-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,17 @@
 
 </div>
 
+## What changed in v1.0.21 vs v1.0.20
+
+**PVN-1006 + PVN-1007 — full language uniformity and Router credentials at user creation (owner-directed combined patch).** Fixes the remaining mixed-language UI: 28 catalog keys carried Persian values under English and every other non-Persian language, and the Backup/Restore panel, AnyConnect modal and reseller-deletion dialogs were entirely hardcoded Persian — all now translated across the 13 languages with permanent CI purity gates. The Add User dialog additionally gains a Router / MikroTik option that generates and displays one-time username/password credentials for every selected router-capable node after creation; the normal password-free OpenVPN profile is unchanged.
+
+Current release line: **v1.0.21** — [release notes](./docs/RELEASE-NOTES-v1.0.21.md).
+
 ## What changed in v1.0.20 vs v1.0.19
 
 **PVN-1005 — uniform language switching.** Fixes the mixed-language UI: 45 keys that were missing from every language catalog (reseller/unlimited labels, renewal modal, validations, navigation, action buttons, copy feedback, sort menu) rendered hardcoded Persian or English defaults regardless of the selected language. All keys are now translated in all 13 languages, the Router/MikroTik modal follows the active language direction, and a permanent CI gate requires every used translation key to resolve in every shipped language.
 
-Current release line: **v1.0.20** — [release notes](./docs/RELEASE-NOTES-v1.0.20.md).
+Previous release: **v1.0.20** — [release notes](./docs/RELEASE-NOTES-v1.0.20.md).
 
 ## What changed in v1.0.19 vs v1.0.18
 
@@ -232,7 +238,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.20/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.21/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

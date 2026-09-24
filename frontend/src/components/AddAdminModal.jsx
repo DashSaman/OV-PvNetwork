@@ -5,7 +5,7 @@ import LoadingButton from './LoadingButton';
 
 
 // PVNETWORK_ADD_ADMIN_ERROR_FIX_V2
-const formatApiError = (error, fallback) => {
+const formatApiError = (error, fallback, t) => {
   const payload = error?.response?.data;
   const detail = payload?.detail;
 
@@ -27,7 +27,7 @@ const formatApiError = (error, fallback) => {
         const message =
           typeof item?.msg === 'string'
             ? item.msg
-            : 'مقدار واردشده معتبر نیست.';
+            : (t ? t('invalidValue', 'مقدار واردشده معتبر نیست.') : 'مقدار واردشده معتبر نیست.');
 
         return field ? `${field}: ${message}` : message;
       })
@@ -92,12 +92,12 @@ const AddAdminModal = ({
     const username = formData.username.trim();
 
     if (username.length < 3 || username.length > 10) {
-      setError('نام کاربری نماینده باید بین ۳ تا ۱۰ کاراکتر باشد.');
+      setError(t('adminNameLength', 'نام کاربری نماینده باید بین ۳ تا ۱۰ کاراکتر باشد.'));
       return;
     }
 
     if (formData.password.length < 6 || formData.password.length > 20) {
-      setError('رمز عبور نماینده باید بین ۶ تا ۲۰ کاراکتر باشد.');
+      setError(t('adminPasswordLength', 'رمز عبور نماینده باید بین ۶ تا ۲۰ کاراکتر باشد.'));
       return;
     }
 
@@ -132,7 +132,7 @@ const AddAdminModal = ({
         setError(response.data.msg || t('unableToCreateAdmin'));
       }
     } catch (err) {
-      setError(formatApiError(err, t('errorCreatingAdmin')));
+      setError(formatApiError(err, t('errorCreatingAdmin'), t));
     } finally {
       setIsLoading(false);
     }

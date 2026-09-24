@@ -66,21 +66,21 @@ const RenewUserModal = ({ user, onClose, onRenewed }) => {
           <select value={options.includes(Number(durationDays)) ? durationDays : 'custom'} onChange={e => {
             if (e.target.value !== 'custom') setDurationDays(e.target.value);
           }}>
-            {options.map(value => <option key={value} value={value}>{value} روز</option>)}
-            <option value="custom">دلخواه</option>
+            {options.map(value => <option key={value} value={value}>{value} {t('renewUnitDays', 'روز')}</option>)}
+            <option value="custom">{t('renewCustom', 'دلخواه')}</option>
           </select>
           <input type="number" min="1" max="3650" step="1" value={durationDays} onChange={e => setDurationDays(e.target.value)} />
         </div>
 
         {unlimited ? <div className="input-group">
           <label>{t('renewTraffic', 'حجم')}</label>
-          <input type="text" value="نامحدود — بدون تغییر" disabled />
+          <input type="text" value={t('renewUnlimitedNoChange', 'نامحدود — بدون تغییر')} disabled />
         </div> : <div className="input-group">
           <label>{t('renewTrafficAction', 'رفتار حجم')}</label>
           <select value={trafficAction} onChange={e => setTrafficAction(e.target.value)}>
-            {!exhausted && <option value="preserve">حفظ مصرف و حجم فعلی</option>}
-            <option value="reset">ریست مصرف و شروع دوره جدید</option>
-            <option value="add">افزودن حجم</option>
+            {!exhausted && <option value="preserve">{t('renewPreserveUsage', 'حفظ مصرف و حجم فعلی')}</option>}
+            <option value="reset">{t('renewResetUsage', 'ریست مصرف و شروع دوره جدید')}</option>
+            <option value="add">{t('renewAddTraffic', 'افزودن حجم')}</option>
           </select>
           {trafficAction === 'add' && <input type="number" min="0.01" step="0.01" value={addTrafficGb} onChange={e => setAddTrafficGb(e.target.value)} placeholder="GB" />}
         </div>}
