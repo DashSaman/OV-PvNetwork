@@ -223,6 +223,11 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.20` — RELEASED — `PVN-1005` uniform language switching.
+  - Defect: 45 keys used via `t()` existed in no language catalog, so i18next rendered their hardcoded inline defaults — Persian defaults under English and English defaults under the other 12 languages; the Router/MikroTik modal was fixed RTL everywhere through `t('direction','rtl')`.
+  - Fix: full 463-key usage surface now resolves in all 13 catalogs (45 keys added × 13 languages); per-language `direction` values (`rtl` only for fa/ar); the last two hardcoded download-flow error strings cataloged (`downloadUsernameRequired`, `downloadNodesFailed`).
+  - Permanent gate: `tests/test_i18n_catalog_parity.py` — every used `t('key')` must resolve (flat or nested) in every shipped language, plus direction-value verification; regressions fail CI instead of shipping mixed languages.
+
 - `v1.0.19` — RELEASED — `PVN-1003` white-screen regression fix, index no-cache, i18n completion and Production database rebrand.
   - Incident and repair: the v1.0.18 Production frontend bundle embedded asset base `/panel/` because the local build set only `VITE_URLPATH` while Vite reads `URLPATH` (CI sets both). Live impact: SPA shell loaded but JS/CSS 404'd (blank page). Production was restored within minutes with a correctly built bundle plus restoration of the pre-incident hashed assets so cached old indexes kept working.
   - Hardening: the SPA index is served with `Cache-Control: no-cache` (`PVNETWORK_INDEX_NO_CACHE_V1`), so future atomic asset/index switches cannot strand cached browsers; focused contract test `tests/test_index_cache_control.py`.

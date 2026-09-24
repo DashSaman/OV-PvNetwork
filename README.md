@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.19-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.20-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,17 @@
 
 </div>
 
+## What changed in v1.0.20 vs v1.0.19
+
+**PVN-1005 — uniform language switching.** Fixes the mixed-language UI: 45 keys that were missing from every language catalog (reseller/unlimited labels, renewal modal, validations, navigation, action buttons, copy feedback, sort menu) rendered hardcoded Persian or English defaults regardless of the selected language. All keys are now translated in all 13 languages, the Router/MikroTik modal follows the active language direction, and a permanent CI gate requires every used translation key to resolve in every shipped language.
+
+Current release line: **v1.0.20** — [release notes](./docs/RELEASE-NOTES-v1.0.20.md).
+
 ## What changed in v1.0.19 vs v1.0.18
 
 **PVN-1003 — white-screen regression fix and hardening.** Repairs the live blank page introduced by the v1.0.18 frontend deployment (a locally built bundle embedded the wrong asset base path because Vite reads `URLPATH`, not `VITE_URLPATH`). The SPA index is now served with `Cache-Control: no-cache` so an atomic asset switch can never strand cached browsers. All 11 secondary languages now cover the full 407-key UI catalog, and the Production database/login role completed the rebrand to `pvnetwork_panel` with a verified backup-first migration (old database retained as rollback). No OpenVPN/Node/Router/session changes.
 
-Current release line: **v1.0.19** — [release notes](./docs/RELEASE-NOTES-v1.0.19.md).
+Previous release: **v1.0.19** — [release notes](./docs/RELEASE-NOTES-v1.0.19.md).
 
 ## What changed in v1.0.18 vs v1.0.17
 
@@ -226,7 +232,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.19/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.20/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

@@ -24,7 +24,7 @@ const SelectNodeForDownloadModal = ({
           if (available.length > 0) setSelectedNodeAddress(available[0].address);
         }
       } catch {
-        setError('Failed to load available nodes.');
+        setError(t('downloadNodesFailed', 'Failed to load available nodes.'));
       } finally {
         setIsLoadingNodes(false);
       }

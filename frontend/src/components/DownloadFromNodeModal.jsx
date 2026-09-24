@@ -12,7 +12,7 @@ const DownloadFromNodeModal = ({ node, onClose }) => {
   const handleDownload = async (e) => {
     e.preventDefault();
     if (!username) {
-      setError('Please enter a username.');
+      setError(t('downloadUsernameRequired', 'Please enter a username.'));
       return;
     }
     setError('');

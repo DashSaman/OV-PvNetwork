@@ -1,3 +1,11 @@
+## v1.0.20 — PVN-1005 uniform language switching
+
+- Fixes mixed-language UI: 45 keys (reseller/unlimited-account labels, renewal modal, sort menu, action buttons, copy feedback, navigation labels and more) were missing from every language catalog and rendered their hardcoded Persian or English defaults regardless of the selected language. All keys now exist and are translated in all 13 shipped languages.
+- The Router/MikroTik modal direction now follows the active language (`direction` key: RTL for Persian/Arabic, LTR otherwise) instead of being fixed RTL.
+- Two remaining hardcoded English error messages (download-from-node flows) now go through the translation catalog.
+- Adds a permanent catalog-parity gate: every `t()` key used anywhere in the frontend must resolve in every shipped language, blocking future regressions.
+- No API, authentication, OpenVPN, Node, Router listener or session behavior changes.
+
 ## v1.0.19 — PVN-1003 white-screen regression fix, index no-cache and i18n completion
 
 - Fixes the live white-screen introduced by the v1.0.18 frontend deployment: a locally built bundle embedded the wrong asset base path (`/panel/` instead of the deployed panel path), so the SPA shell loaded but its JS/CSS 404'd. The release build contract now documents that `URLPATH` (the variable Vite actually reads) must match the deployed panel path.
