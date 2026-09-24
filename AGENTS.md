@@ -223,10 +223,14 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
-- `v1.0.18` — RELEASE CANDIDATE — `PVN-1002` panel release-version badge.
+- `v1.0.18` — RELEASED — `PVN-1002` panel release-version badge.
   - UX contract: the Dashboard (Server Stats) header renders the running release version (e.g. `v1.0.18`) directly beside the `LIVE · REALTIME` badge, styled consistently with the theme toggle, dark/light, LTR/RTL.
   - Data contract: version is read at runtime from the public `/healthz` JSON (`version` field) with `no-store`; empty/failed lookup silently omits the badge; no authenticated API or new endpoint is introduced.
-  - Display-only: no API contract, authentication, OpenVPN, Node, Router listener, profile or session behavior changes; deployment is an atomic frontend asset/index switch with no backend restart.
+  - Display-only: no API contract, authentication, OpenVPN, Node, Router listener, profile or session behavior changes.
+  - Verification evidence: exact-head CI PASS on `1e59f941be05237ba3bb9e0e9c1527dac6472082`; focused source-contract test `tests/test_panel_version_badge.py` added; immutable tag `v1.0.18` pushed; GitHub Release published with `pvnetwork-panel-v1.0.18.tar.gz` + `.sha256`; public re-download SHA256 verification PASS (`ec5b05a74c83c356e74b98332311f9f6043e0ec489a0fd106a1eb05e6243e4b2`). CI bundle budget raised 768000 → 775000 bytes (v1.0.17 largest chunk 767.8 kB left no headroom; v1.0.18 largest chunk 768.5 kB).
+  - Production rollback point: existing v1.0.17 backup directory plus `frontend-dist-pre-v1.0.18.tar.gz` captured immediately before the frontend switch.
+  - Production deployment (owner-authorized): 24-file backend/metadata delta staged and md5-verified against git blobs (`backend/version.py` `1385c76e…`, `VERSION` `83dbc59c…`); frontend applied as additive asset upload with the atomic `index.html` rename switch; stale hashed chunks removed after the switch; `pvnetwork-panel.service` restarted once (active/running).
+  - Post-deploy evidence: `/healthz` `{"status":"ok","version":"1.0.18"}`; panel `/hajsaman/` 200 and public `https://open1.softarg.ir/hajsaman/` 200 serving the new `index-A-bhxjmD.js` bundle containing the badge code; new asset 200 locally and publicly; unauthenticated `/api/users/` 401; 0 Traceback/CRITICAL since restart; unrelated services untouched (`paqet` PID 827, `x-ui` PID 872, nginx active without restart).
 
 - `v1.0.17` — RELEASED — `PVN-1000` debounced CPU threshold alerts.
   - Defect: live-Production CPU threshold alerts flapped on transient spikes (single-sample fire/clear), producing Telegram alert/resolve storms and monitoring churn exactly while other services were busy.
