@@ -678,5 +678,5 @@
   "addNodePanelIpHelp": "اتركه فارغًا للكشف التلقائي. املأه فقط عندما تصل اللوحة إلى العقدة من عنوان مختلف عن اتصال SSH (خلف NAT أو وكيل مثلًا).",
   "routerPanelDownloadProfile": "تنزيل ملف Router التعريفي",
   "routerPanelGuideTitle": "شرح اتصال MikroTik / RouterOS",
-  "routerPanelGuide": "<b>1.</b> في RouterOS افتح <b>PPP</b> واختر <b>Add → OVPN Client</b>.<br><b>2.</b> اضبط Connect على عنوان الخادم الظاهر أعلاه؛ المنفذ/البروتوكول يتبعان ملف Router.<br><b>3.</b> أدخل <b>User</b> و<b>Password</b> أعلاه واضبط Mode على <b>IP</b>.<br><b>4.</b> نزّل ملف Router واستورد شهادته في <b>System → Certificates</b>.<br><b>5.</b> فعّل <b>Use Peer DNS</b> عند الحاجة واضغط OK."
+  "routerPanelGuide": "1. في RouterOS افتح PPP واختر Add → OVPN Client.\n2. اضبط Connect على عنوان الخادم الظاهر أعلاه؛ المنفذ/البروتوكول يتبعان ملف Router.\n3. أدخل User وPassword أعلاه واضبط Mode على IP.\n4. نزّل ملف Router واستورد شهادته في System → Certificates.\n5. فعّل Use Peer DNS عند الحاجة واضغط OK."
 }

@@ -272,7 +272,7 @@ const AddUserModal = ({
           ))}
           <details style={{ marginTop: 10 }}>
             <summary style={{ cursor: 'pointer', fontWeight: 700 }}>{t('routerPanelGuideTitle', 'آموزش اتصال MikroTik / RouterOS')}</summary>
-            <div style={{ fontSize: 12.5, lineHeight: 1.9, marginTop: 8 }} dangerouslySetInnerHTML={{ __html: t('routerPanelGuide', "<b>۱.</b> در RouterOS به بخش <b>PPP</b> برو و <b>Add → OVPN Client</b> را انتخاب کن.<br><b>۲.</b> Connect to را روی آدرس سرور بالا تنظیم کن؛ Port و Protocol از پروفایل Router پیروی می‌کند.<br><b>۳.</b> <b>User</b> و <b>Password</b> بالا را وارد کن و Mode را روی <b>IP</b> بگذار.<br><b>۴.</b> پروفایل Router را دانلود کن و Certificate آن را در <b>System → Certificates</b> ایمپورت کن.<br><b>۵.</b> در صورت نیاز <b>Use Peer DNS</b> را فعال کن و OK بزن.") }} />
+            <div style={{ fontSize: 12.5, lineHeight: 1.9, marginTop: 8, whiteSpace: 'pre-line' }}>{t('routerPanelGuide', "RouterOS → PPP → Add → OVPN Client: Connect to را روی آدرس سرور بالا بگذار؛ User/Password بالا را وارد کن؛ Mode: IP؛ پروفایل Router را دانلود و Certificate آن را import کن؛ Use Peer DNS در صورت نیاز.")}</div>
           </details>
         </div>
         <div className="modal-footer">

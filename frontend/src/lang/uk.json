@@ -678,5 +678,5 @@
   "addNodePanelIpHelp": "Залиште порожнім для автовизначення. Заповнюйте лише якщо панель звертається до вузла з адреси, відмінної від SSH-зʼєднання (наприклад за NAT або проксі).",
   "routerPanelDownloadProfile": "Завантажити профіль Router",
   "routerPanelGuideTitle": "Інструкція підключення MikroTik / RouterOS",
-  "routerPanelGuide": "<b>1.</b> У RouterOS відкрийте <b>PPP</b> і оберіть <b>Add → OVPN Client</b>.<br><b>2.</b> Вкажіть у Connect адресу сервера вище; порт/протокол — із профілю Router.<br><b>3.</b> Введіть <b>User</b> і <b>Password</b> вище та встановіть Mode у <b>IP</b>.<br><b>4.</b> Завантажте профіль Router та імпортуйте його сертифікат у <b>System → Certificates</b>.<br><b>5.</b> За потреби увімкніть <b>Use Peer DNS</b> і натисніть OK."
+  "routerPanelGuide": "1. У RouterOS відкрийте PPP і оберіть Add → OVPN Client.\n2. Вкажіть у Connect адресу сервера вище; порт/протокол — із профілю Router.\n3. Введіть User і Password вище та встановіть Mode у IP.\n4. Завантажте профіль Router та імпортуйте його сертифікат у System → Certificates.\n5. За потреби увімкніть Use Peer DNS і натисніть OK."
 }

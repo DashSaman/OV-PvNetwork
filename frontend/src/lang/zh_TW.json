@@ -678,5 +678,5 @@
   "addNodePanelIpHelp": "留空即自動偵測。僅當面板透過與 SSH 連線不同的位址存取節點（例如位於 NAT 或代理後）時填寫。",
   "routerPanelDownloadProfile": "下載 Router 設定檔",
   "routerPanelGuideTitle": "MikroTik / RouterOS 連線教學",
-  "routerPanelGuide": "<b>1.</b> 在 RouterOS 開啟 <b>PPP</b> 並選擇 <b>Add → OVPN Client</b>。<br><b>2.</b> 將 Connect 設為上方顯示的伺服器位址；連接埠/通訊協定依 Router 設定檔。<br><b>3.</b> 輸入上方的 <b>User</b> 與 <b>Password</b>，Mode 設為 <b>IP</b>。<br><b>4.</b> 下載 Router 設定檔並在 <b>System → Certificates</b> 匯入憑證。<br><b>5.</b> 視需要啟用 <b>Use Peer DNS</b> 後按 OK。"
+  "routerPanelGuide": "1. 在 RouterOS 開啟 PPP 並選擇 Add → OVPN Client。\n2. 將 Connect 設為上方顯示的伺服器位址；連接埠/通訊協定依 Router 設定檔。\n3. 輸入上方的 User 與 Password，Mode 設為 IP。\n4. 下載 Router 設定檔並在 System → Certificates 匯入憑證。\n5. 視需要啟用 Use Peer DNS 後按 OK。"
 }

@@ -678,5 +678,5 @@
   "addNodePanelIpHelp": "Leave empty to auto-detect. Fill only when the panel reaches the node from a different address than the SSH connection (for example behind a NAT or proxy).",
   "routerPanelDownloadProfile": "Download Router profile",
   "routerPanelGuideTitle": "MikroTik / RouterOS connection tutorial",
-  "routerPanelGuide": "<b>1.</b> In RouterOS open <b>PPP</b> and choose <b>Add → OVPN Client</b>.<br><b>2.</b> Set Connect to the server address shown above; port/protocol follow the Router profile.<br><b>3.</b> Enter the <b>User</b> and <b>Password</b> above and set Mode to <b>IP</b>.<br><b>4.</b> Download the Router profile and import its certificate under <b>System → Certificates</b>.<br><b>5.</b> Enable <b>Use Peer DNS</b> if needed and press OK."
+  "routerPanelGuide": "1. In RouterOS open PPP and choose Add → OVPN Client.\n2. Set Connect to the server address shown above; port/protocol follow the Router profile.\n3. Enter the User and Password above and set Mode to IP.\n4. Download the Router profile and import its certificate under System → Certificates.\n5. Enable Use Peer DNS if needed and press OK."
 }

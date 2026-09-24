@@ -678,5 +678,5 @@
   "addNodePanelIpHelp": "Otomatik algılama için boş bırakın. Yalnızca panel NAT veya vekil arkasından SSH bağlantısından farklı bir adresten düğüme erişiyorsa doldurun.",
   "routerPanelDownloadProfile": "Router profilini indir",
   "routerPanelGuideTitle": "MikroTik / RouterOS bağlantı eğitimi",
-  "routerPanelGuide": "<b>1.</b> RouterOS’ta <b>PPP</b>’yi aç ve <b>Add → OVPN Client</b>’ı seç.<br><b>2.</b> Connect’i yukarıdaki sunucu adresine ayarla; port/protokol Router profilini izler.<br><b>3.</b> Yukarıdaki <b>User</b> ve <b>Password</b>’ü gir, Mode’u <b>IP</b> yap.<br><b>4.</b> Router profilini indir ve sertifikasını <b>System → Certificates</b>’ten içe aktar.<br><b>5.</b> Gerekirse <b>Use Peer DNS</b>’i etkinleştir ve OK’e bas."
+  "routerPanelGuide": "1. RouterOS’ta PPP’yi aç ve Add → OVPN Client’ı seç.\n2. Connect’i yukarıdaki sunucu adresine ayarla; port/protokol Router profilini izler.\n3. Yukarıdaki User ve Password’ü gir, Mode’u IP yap.\n4. Router profilini indir ve sertifikasını System → Certificates’ten içe aktar.\n5. Gerekirse Use Peer DNS’i etkinleştir ve OK’e bas."
 }
