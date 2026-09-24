@@ -1,3 +1,9 @@
+## v1.0.24 — PVN-1009 subscription runtime revived + MikroTik on-create panel fixed
+
+- Root-caused and fixed the dead subscription-page runtime: the strict CSP shipped in v1.0.8 (script-src 'self' without unsafe-inline) silently blocked every inline script on the public /sub page — language/theme switching, the renewal countdown (stuck on "در حال محاسبه زمان باقی‌مانده..."), copy buttons and the QR overlay all never executed. The subscription page now serves a dedicated CSP allowing inline scripts on that path only; the admin panel keeps the strict policy. Migrating the template to nonces is registered as the follow-up.
+- The vendored QR library is now served by the backend at /sub-assets/qr/ with a correct JavaScript MIME type; the nginx /sub-clients/ location overrides its types{} map and was handing the file out as application/octet-stream, which browsers refuse to execute under nosniff.
+- Fixed the Router/MikroTik on-create panel: POST /users/ now returns {name, uuid} (the bare name made the results panel unreachable), the results panel shows each node's server address next to its credentials, gains a per-node Router-profile download button and a built-in MikroTik/RouterOS step-by-step tutorial; legacy backends fall back to a name-based uuid lookup.
+
 ## v1.0.23 — PVN-211 smart subscription page (QR + per-device guides)
 
 - The public subscription page gains a page-level QR (open the subscription on another device) and a per-server QR button that renders that config's download URL for phone-camera scanning.

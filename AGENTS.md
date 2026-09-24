@@ -223,6 +223,12 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.24` — RELEASED — `PVN-1009` subscription runtime revived + MikroTik on-create panel fixed.
+  - Defect 1: since v1.0.8 the strict CSP blocked every inline script on /sub (renewal countdown stuck, no language/theme, dead QR overlay); nginx served the QR library as octet-stream (types{} override), making it unexecutable under nosniff.
+  - Fix 1: path-scoped `SUBSCRIPTION_INLINE_CSP` adds 'unsafe-inline' for scripts on /sub only (BASE_CSP unchanged elsewhere); QR library now backend-served at /sub-assets/qr/ with a proper MIME; nonce migration registered as PVN-1010.
+  - Defect 2: POST /users/ returned only the name, so the Router on-create results panel was unreachable.
+  - Fix 2: response is {name, uuid} (single consumer; legacy fallback by name lookup); results panel shows node server address, per-node Router profile download and a built-in MikroTik/RouterOS tutorial in 13 languages.
+
 - `v1.0.23` — RELEASED — `PVN-211` smart subscription page (QR + per-device guides).
   - Owner approved the five-release priority track recorded in `ROADMAP.md` (subscription QR → self-service portal → Telegram bot → import/export + groups → renewal notifications → WireGuard bridge), with explicit non-goals.
   - Contract: the public subscription page gains a QR for the subscription URL and per-server config-download URLs (rendered client-side by a vendored MIT `qrcode-generator` served same-origin from `/sub-clients/`, CSP-safe, no CDN), and per-device quick-connect steps (Windows/macOS/iOS/Android/Linux/Router) in the page's existing fa/en catalog.

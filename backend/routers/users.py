@@ -457,7 +457,12 @@ async def create_user(
                 f"User '{created.name}' saved with desired node assignments; "
                 "remote provisioning will be retried by reconciliation"
             )
-        return ResponseModel(success=True, msg="User created successfully", data=created.name)
+        return ResponseModel(
+        success=True,
+        msg="User created successfully",
+        # PVN-1009: the Router/MikroTik on-create flow needs the new uuid.
+        data={"name": created.name, "uuid": str(created.uuid)},
+    )
 
     if user["type"] == "main_admin":
         # Main admin finite account: exact date OR relative days/months.

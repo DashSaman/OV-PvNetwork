@@ -58,6 +58,7 @@ const AddUserModal = ({
         results.push({
           nodeId,
           nodeName: data?.node_name || nodeNameById[nodeId] || `Node ${nodeId}`,
+          nodeAddress: String(nodeNameById['address_' + nodeId] || ''),
           ok: true,
           username: data?.username || '',
           password: data?.password || '',
@@ -66,6 +67,7 @@ const AddUserModal = ({
         results.push({
           nodeId,
           nodeName: nodeNameById[nodeId] || `Node ${nodeId}`,
+          nodeAddress: String(nodeNameById['address_' + nodeId] || ''),
           ok: false,
           detail: err?.response?.data?.detail || err?.response?.data?.msg || err.message || '',
         });
@@ -187,7 +189,16 @@ const AddUserModal = ({
           onUserAdded();
           return;
         }
-        const userUuid = response.data?.data?.uuid || response.data?.data?.user?.uuid || '';
+        // PVN-1009: create returns {name, uuid}; older backends returned the
+        // bare name — fall back to a name-based lookup before giving up.
+        let userUuid = response.data?.data?.uuid || response.data?.data?.user?.uuid || '';
+        if (!userUuid && typeof response.data?.data === 'string') {
+          try {
+            const listed = await apiClient.get('/users/', { timeout: 30000 });
+            const found = (listed.data?.data || []).find(item => item && item.name === response.data.data);
+            userUuid = found?.uuid || '';
+          } catch { userUuid = ''; }
+        }
         if (!userUuid) {
           alert(t('userCreated', 'کاربر با موفقیت ساخته شد.'));
           onUserAdded();
@@ -196,7 +207,7 @@ const AddUserModal = ({
         const nodeNameById = {};
         (nodes || []).forEach(node => { nodeNameById[Number(node.id)] = node.name; });
         const results = await provisionRouterCredentials(userUuid, nodeNameById);
-        setRouterResults({ username: name, results });
+        setRouterResults({ username: name, userUuid, results });
       } else {
         setError(response.data.msg || t('createUserFailed', 'ساخت کاربر انجام نشد.'));
       }
@@ -209,6 +220,25 @@ const AddUserModal = ({
 
   const monthOptions = Array.from({ length: 6 }, (_, index) => index + 1);
 
+  // PVN-1009: authenticated Router profile download for the results panel.
+  const downloadRouterProfile = async nodeId => {
+    try {
+      const response = await apiClient.get(
+        `/router-openvpn/users/${routerResults.userUuid}/nodes/${nodeId}/profile`,
+        { responseType: 'blob', timeout: 60000 }
+      );
+      const href = URL.createObjectURL(response.data);
+      const anchor = document.createElement('a');
+      anchor.href = href;
+      anchor.download = `router-${routerResults.username}-${nodeId}.ovpn`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(href), 1000);
+    } catch (err) {
+      setError(String(err?.response?.data?.detail || err?.response?.data?.msg || err.message || 'Download failed'));
+    }
+  };
   if (routerResults) {
     const okResults = routerResults.results.filter(item => item.ok);
     const failedResults = routerResults.results.filter(item => !item.ok);
@@ -222,9 +252,17 @@ const AddUserModal = ({
           <p style={{ fontWeight: 700 }}>{t('createUserRouterOnceWarning', 'این رمزها فقط یک بار نمایش داده می‌شوند؛ همین حالا ذخیره کنید.')}</p>
           {okResults.map(item => (
             <div key={item.nodeId} style={{ border: '1px solid rgba(148,163,184,.3)', borderRadius: 10, padding: 10, marginBottom: 8 }}>
-              <strong>{item.nodeName}</strong>
+              <strong>{item.nodeName}{item.nodeAddress ? ' · ' + item.nodeAddress : ''}</strong>
               <div dir="ltr" style={{ fontFamily: 'monospace' }}>user: {item.username}</div>
               <div dir="ltr" style={{ fontFamily: 'monospace' }}>pass: {item.password}</div>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ marginTop: 6 }}
+                onClick={() => downloadRouterProfile(item.nodeId)}
+              >
+                {t('routerPanelDownloadProfile', 'دانلود پروفایل Router')}
+              </button>
             </div>
           ))}
           {failedResults.map(item => (
@@ -232,6 +270,10 @@ const AddUserModal = ({
               {t('createUserRouterNodeFailed', 'تولید اعتبارنامه ناموفق:')} {item.nodeName} — {String(item.detail).slice(0, 160)}
             </div>
           ))}
+          <details style={{ marginTop: 10 }}>
+            <summary style={{ cursor: 'pointer', fontWeight: 700 }}>{t('routerPanelGuideTitle', 'آموزش اتصال MikroTik / RouterOS')}</summary>
+            <div style={{ fontSize: 12.5, lineHeight: 1.9, marginTop: 8 }} dangerouslySetInnerHTML={{ __html: t('routerPanelGuide', "<b>۱.</b> در RouterOS به بخش <b>PPP</b> برو و <b>Add → OVPN Client</b> را انتخاب کن.<br><b>۲.</b> Connect to را روی آدرس سرور بالا تنظیم کن؛ Port و Protocol از پروفایل Router پیروی می‌کند.<br><b>۳.</b> <b>User</b> و <b>Password</b> بالا را وارد کن و Mode را روی <b>IP</b> بگذار.<br><b>۴.</b> پروفایل Router را دانلود کن و Certificate آن را در <b>System → Certificates</b> ایمپورت کن.<br><b>۵.</b> در صورت نیاز <b>Use Peer DNS</b> را فعال کن و OK بزن.") }} />
+          </details>
         </div>
         <div className="modal-footer">
           <button type="button" className="btn btn-secondary" onClick={() => { setRouterResults(null); onUserAdded(); }}>

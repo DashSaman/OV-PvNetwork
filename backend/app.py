@@ -42,6 +42,16 @@ frontend_build_path = os.getenv(
     os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"),
 )
 
+# PVN-1009: the subscription-page QR library is served by the backend with a
+# correct JavaScript MIME type. The nginx /sub-clients/ location overrides its
+# types{} map and would hand the file out as application/octet-stream, which
+# browsers refuse to execute under nosniff.
+api.mount(
+    "/sub-assets/qr",
+    StaticFiles(directory=os.path.join(frontend_build_path, "..", "sub_clients", "qr")),
+    name="subscription-qr-assets",
+)
+
 api.mount(
     f"/{config.URLPATH}/assets",
     StaticFiles(directory=os.path.join(frontend_build_path, "assets")),

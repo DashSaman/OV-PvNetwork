@@ -675,5 +675,8 @@
   "addNodeSshFingerprint": "Impressão digital do host SSH (SHA256; primeira conexão)",
   "addNodePanelIp": "IP de origem do painel (opcional)",
   "addNodePanelIpPlaceholder": "Detectado automaticamente pela conexão SSH",
-  "addNodePanelIpHelp": "Deixe vazio para detecção automática. Preencha apenas quando o painel alcançar o nó por um endereço diferente da conexão SSH (por exemplo atrás de NAT ou proxy)."
+  "addNodePanelIpHelp": "Deixe vazio para detecção automática. Preencha apenas quando o painel alcançar o nó por um endereço diferente da conexão SSH (por exemplo atrás de NAT ou proxy).",
+  "routerPanelDownloadProfile": "Baixar perfil Router",
+  "routerPanelGuideTitle": "Tutorial de conexão MikroTik / RouterOS",
+  "routerPanelGuide": "<b>1.</b> No RouterOS abra <b>PPP</b> e escolha <b>Add → OVPN Client</b>.<br><b>2.</b> Ajuste Connect para o endereço do servidor acima; porta/protocolo seguem o perfil Router.<br><b>3.</b> Digite o <b>User</b> e <b>Password</b> acima e defina Mode como <b>IP</b>.<br><b>4.</b> Baixe o perfil Router e importe o certificado em <b>System → Certificates</b>.<br><b>5.</b> Ative <b>Use Peer DNS</b> se precisar e pressione OK."
 }

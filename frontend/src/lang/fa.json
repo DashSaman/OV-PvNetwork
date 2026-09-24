@@ -675,5 +675,8 @@
   "addNodeSshFingerprint": "اثر انگشت هاست SSH (SHA256؛ اولین اتصال)",
   "addNodePanelIp": "IP مبدأ پنل (اختیاری)",
   "addNodePanelIpPlaceholder": "به‌صورت خودکار از اتصال SSH تشخیص داده می‌شود",
-  "addNodePanelIpHelp": "خالی بگذارید تا خودکار تشخیص داده شود. فقط وقتی پر کنید که پنل از آدرسی غیر از اتصال SSH به نود دسترسی دارد (مثلاً پشت NAT یا پراکسی)."
+  "addNodePanelIpHelp": "خالی بگذارید تا خودکار تشخیص داده شود. فقط وقتی پر کنید که پنل از آدرسی غیر از اتصال SSH به نود دسترسی دارد (مثلاً پشت NAT یا پراکسی).",
+  "routerPanelDownloadProfile": "دانلود پروفایل Router",
+  "routerPanelGuideTitle": "آموزش اتصال MikroTik / RouterOS",
+  "routerPanelGuide": "<b>۱.</b> در RouterOS به بخش <b>PPP</b> برو و <b>Add → OVPN Client</b> را انتخاب کن.<br><b>۲.</b> Connect to را روی آدرس سرور بالا تنظیم کن؛ Port و Protocol از پروفایل Router پیروی می‌کند.<br><b>۳.</b> <b>User</b> و <b>Password</b> بالا را وارد کن و Mode را روی <b>IP</b> بگذار.<br><b>۴.</b> پروفایل Router را دانلود کن و Certificate آن را در <b>System → Certificates</b> ایمپورت کن.<br><b>۵.</b> در صورت نیاز <b>Use Peer DNS</b> را فعال کن و OK بزن."
 }

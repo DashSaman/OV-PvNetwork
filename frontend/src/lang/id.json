@@ -675,5 +675,8 @@
   "addNodeSshFingerprint": "Fingerprint host SSH (SHA256; koneksi pertama)",
   "addNodePanelIp": "IP sumber panel (opsional)",
   "addNodePanelIpPlaceholder": "Terdeteksi otomatis dari koneksi SSH",
-  "addNodePanelIpHelp": "Biarkan kosong untuk deteksi otomatis. Isi hanya jika panel mengakses node dari alamat yang berbeda dari koneksi SSH (misal di belakang NAT atau proksi)."
+  "addNodePanelIpHelp": "Biarkan kosong untuk deteksi otomatis. Isi hanya jika panel mengakses node dari alamat yang berbeda dari koneksi SSH (misal di belakang NAT atau proksi).",
+  "routerPanelDownloadProfile": "Unduh profil Router",
+  "routerPanelGuideTitle": "Tutorial koneksi MikroTik / RouterOS",
+  "routerPanelGuide": "<b>1.</b> Di RouterOS buka <b>PPP</b> lalu pilih <b>Add → OVPN Client</b>.<br><b>2.</b> Atur Connect ke alamat server di atas; port/protokol mengikuti profil Router.<br><b>3.</b> Masukkan <b>User</b> dan <b>Password</b> di atas, set Mode ke <b>IP</b>.<br><b>4.</b> Unduh profil Router dan impor sertifikatnya di <b>System → Certificates</b>.<br><b>5.</b> Aktifkan <b>Use Peer DNS</b> bila perlu lalu tekan OK."
 }

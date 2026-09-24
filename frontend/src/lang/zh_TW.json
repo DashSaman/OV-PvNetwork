@@ -675,5 +675,8 @@
   "addNodeSshFingerprint": "SSH 主機指紋（SHA256；首次連線）",
   "addNodePanelIp": "面板來源 IP（選填）",
   "addNodePanelIpPlaceholder": "將從 SSH 連線自動偵測",
-  "addNodePanelIpHelp": "留空即自動偵測。僅當面板透過與 SSH 連線不同的位址存取節點（例如位於 NAT 或代理後）時填寫。"
+  "addNodePanelIpHelp": "留空即自動偵測。僅當面板透過與 SSH 連線不同的位址存取節點（例如位於 NAT 或代理後）時填寫。",
+  "routerPanelDownloadProfile": "下載 Router 設定檔",
+  "routerPanelGuideTitle": "MikroTik / RouterOS 連線教學",
+  "routerPanelGuide": "<b>1.</b> 在 RouterOS 開啟 <b>PPP</b> 並選擇 <b>Add → OVPN Client</b>。<br><b>2.</b> 將 Connect 設為上方顯示的伺服器位址；連接埠/通訊協定依 Router 設定檔。<br><b>3.</b> 輸入上方的 <b>User</b> 與 <b>Password</b>，Mode 設為 <b>IP</b>。<br><b>4.</b> 下載 Router 設定檔並在 <b>System → Certificates</b> 匯入憑證。<br><b>5.</b> 視需要啟用 <b>Use Peer DNS</b> 後按 OK。"
 }

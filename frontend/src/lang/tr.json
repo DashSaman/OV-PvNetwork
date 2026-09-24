@@ -675,5 +675,8 @@
   "addNodeSshFingerprint": "SSH sunucu parmak izi (SHA256; ilk bağlantı)",
   "addNodePanelIp": "Panel kaynak IP (isteğe bağlı)",
   "addNodePanelIpPlaceholder": "SSH bağlantısından otomatik algılanır",
-  "addNodePanelIpHelp": "Otomatik algılama için boş bırakın. Yalnızca panel NAT veya vekil arkasından SSH bağlantısından farklı bir adresten düğüme erişiyorsa doldurun."
+  "addNodePanelIpHelp": "Otomatik algılama için boş bırakın. Yalnızca panel NAT veya vekil arkasından SSH bağlantısından farklı bir adresten düğüme erişiyorsa doldurun.",
+  "routerPanelDownloadProfile": "Router profilini indir",
+  "routerPanelGuideTitle": "MikroTik / RouterOS bağlantı eğitimi",
+  "routerPanelGuide": "<b>1.</b> RouterOS’ta <b>PPP</b>’yi aç ve <b>Add → OVPN Client</b>’ı seç.<br><b>2.</b> Connect’i yukarıdaki sunucu adresine ayarla; port/protokol Router profilini izler.<br><b>3.</b> Yukarıdaki <b>User</b> ve <b>Password</b>’ü gir, Mode’u <b>IP</b> yap.<br><b>4.</b> Router profilini indir ve sertifikasını <b>System → Certificates</b>’ten içe aktar.<br><b>5.</b> Gerekirse <b>Use Peer DNS</b>’i etkinleştir ve OK’e bas."
 }

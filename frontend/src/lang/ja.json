@@ -675,5 +675,8 @@
   "addNodeSshFingerprint": "SSHホスト鍵フィンガープリント（SHA256、初回接続時）",
   "addNodePanelIp": "パネル送信元IP（任意）",
   "addNodePanelIpPlaceholder": "SSH接続から自動検出されます",
-  "addNodePanelIpHelp": "空欄で自動検出します。パネルがSSH接続とは異なるアドレス（NATやプロキシ背後など）からノードへアクセスする場合のみ入力してください。"
+  "addNodePanelIpHelp": "空欄で自動検出します。パネルがSSH接続とは異なるアドレス（NATやプロキシ背後など）からノードへアクセスする場合のみ入力してください。",
+  "routerPanelDownloadProfile": "Routerプロファイルをダウンロード",
+  "routerPanelGuideTitle": "MikroTik / RouterOS 接続ガイド",
+  "routerPanelGuide": "<b>1.</b> RouterOSで<b>PPP</b>を開き<b>Add → OVPN Client</b>を選択。<br><b>2.</b> Connectに上記のサーバーアドレスを設定。ポート/プロトコルはRouterプロファイルに従います。<br><b>3.</b> 上の<b>User</b>と<b>Password</b>を入力し、Modeを<b>IP</b>に。<br><b>4.</b> Routerプロファイルをダウンロードし、証明書を<b>System → Certificates</b>でインポート。<br><b>5.</b> 必要なら<b>Use Peer DNS</b>を有効にしてOK。"
 }

@@ -675,5 +675,8 @@
   "addNodeSshFingerprint": "بصمة مفتاح SSH للمضيف (SHA256؛ الاتصال الأول)",
   "addNodePanelIp": "عنوان IP المصدر للوحة (اختياري)",
   "addNodePanelIpPlaceholder": "يُكتشف تلقائيًا من اتصال SSH",
-  "addNodePanelIpHelp": "اتركه فارغًا للكشف التلقائي. املأه فقط عندما تصل اللوحة إلى العقدة من عنوان مختلف عن اتصال SSH (خلف NAT أو وكيل مثلًا)."
+  "addNodePanelIpHelp": "اتركه فارغًا للكشف التلقائي. املأه فقط عندما تصل اللوحة إلى العقدة من عنوان مختلف عن اتصال SSH (خلف NAT أو وكيل مثلًا).",
+  "routerPanelDownloadProfile": "تنزيل ملف Router التعريفي",
+  "routerPanelGuideTitle": "شرح اتصال MikroTik / RouterOS",
+  "routerPanelGuide": "<b>1.</b> في RouterOS افتح <b>PPP</b> واختر <b>Add → OVPN Client</b>.<br><b>2.</b> اضبط Connect على عنوان الخادم الظاهر أعلاه؛ المنفذ/البروتوكول يتبعان ملف Router.<br><b>3.</b> أدخل <b>User</b> و<b>Password</b> أعلاه واضبط Mode على <b>IP</b>.<br><b>4.</b> نزّل ملف Router واستورد شهادته في <b>System → Certificates</b>.<br><b>5.</b> فعّل <b>Use Peer DNS</b> عند الحاجة واضغط OK."
 }

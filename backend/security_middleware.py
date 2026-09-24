@@ -1,5 +1,6 @@
 import ipaddress
 import json
+import os
 import time
 from collections import defaultdict, deque
 
@@ -70,6 +71,24 @@ def _limited(bucket_map, key: str, limit: int, now: float) -> bool:
     return False
 
 
+BASE_CSP = (
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data: blob: https:; font-src 'self' data:; "
+    "connect-src 'self' https: wss:; object-src 'none'; base-uri 'self'; "
+    "frame-ancestors 'none'; form-action 'self'"
+)
+
+# PVN-1009: the public subscription page (/sub) is a single Jinja template whose
+# runtime has always been inline scripts; the strict CSP shipped in v1.0.8
+# silently disabled them (language/theme switching, renewal countdown, copy
+# buttons). Until the template migrates to a nonce/external-file architecture
+# (registered as the follow-up task), this page gets 'unsafe-inline' for
+# scripts only. Jinja autoescaping keeps reflected values inert.
+SUBSCRIPTION_INLINE_CSP = BASE_CSP.replace(
+    "script-src 'self'", "script-src 'self' 'unsafe-inline'"
+)
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response = await call_next(request)
@@ -79,13 +98,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         headers.setdefault("X-Frame-Options", "DENY")
         headers.setdefault("Referrer-Policy", "no-referrer")
         headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
-        headers.setdefault(
-            "Content-Security-Policy",
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: blob: https:; font-src 'self' data:; "
-            "connect-src 'self' https: wss:; object-src 'none'; base-uri 'self'; "
-            "frame-ancestors 'none'; form-action 'self'",
-        )
+        path = request.url.path
+        sub_prefix = f"/{os.getenv('SUBSCRIPTION_PATH', 'sub').strip('/')}"
+        if path == sub_prefix or path.startswith(f"{sub_prefix}/"):
+            headers.setdefault("Content-Security-Policy", SUBSCRIPTION_INLINE_CSP)
+        else:
+            headers.setdefault("Content-Security-Policy", BASE_CSP)
         return response
 
 

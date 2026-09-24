@@ -675,5 +675,8 @@
   "addNodeSshFingerprint": "Dấu vân tay host SSH (SHA256; kết nối đầu tiên)",
   "addNodePanelIp": "IP nguồn của panel (tùy chọn)",
   "addNodePanelIpPlaceholder": "Tự động phát hiện từ kết nối SSH",
-  "addNodePanelIpHelp": "Để trống để tự động phát hiện. Chỉ điền khi panel truy cập node từ địa chỉ khác với kết nối SSH (ví dụ sau NAT hoặc proxy)."
+  "addNodePanelIpHelp": "Để trống để tự động phát hiện. Chỉ điền khi panel truy cập node từ địa chỉ khác với kết nối SSH (ví dụ sau NAT hoặc proxy).",
+  "routerPanelDownloadProfile": "Tải hồ sơ Router",
+  "routerPanelGuideTitle": "Hướng dẫn kết nối MikroTik / RouterOS",
+  "routerPanelGuide": "<b>1.</b> Trong RouterOS mở <b>PPP</b> và chọn <b>Add → OVPN Client</b>.<br><b>2.</b> Đặt Connect thành địa chỉ server ở trên; cổng/giao thức theo hồ sơ Router.<br><b>3.</b> Nhập <b>User</b> và <b>Password</b> ở trên, đặt Mode thành <b>IP</b>.<br><b>4.</b> Tải hồ sơ Router và nhập chứng chỉ tại <b>System → Certificates</b>.<br><b>5.</b> Bật <b>Use Peer DNS</b> nếu cần rồi nhấn OK."
 }
