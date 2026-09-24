@@ -252,6 +252,7 @@ const ServerStats = () => {
   const [nodeMetrics, setNodeMetrics] = useState({});
   const [presence, setPresence] = useState({ online_users: null });
   const [history, setHistory] = useState([]);
+  const [panelVersion, setPanelVersion] = useState('');
   const [themeMode, setThemeMode] = useState(() => {
     if (typeof window === 'undefined') {
       return 'dark';
@@ -273,6 +274,21 @@ const ServerStats = () => {
       document.body.setAttribute('data-ov-theme', themeMode);
     }
   }, [themeMode]);
+  useEffect(() => {
+    let active = true;
+    // PVNETWORK_PANEL_VERSION_BADGE_V1
+    fetch('/healthz', { cache: 'no-store' })
+      .then(response => (response.ok ? response.json() : null))
+      .then(data => {
+        if (active && data && typeof data.version === 'string' && data.version) {
+          setPanelVersion(data.version);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
   useEffect(() => {
     let active = true;
     const fetchServer = async () => {
@@ -772,6 +788,21 @@ const ServerStats = () => {
             0 0 16px #22c55e;
         }
 
+        .ov-version-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: 7px 12px;
+          border-radius: 999px;
+          border: 1px solid var(--ov-border);
+          background: var(--ov-toggle-bg);
+          color: var(--ov-text);
+          opacity: .75;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: .02em;
+          font-variant-numeric: tabular-nums;
+        }
+
         .ov-hero {
           position: relative;
           overflow: hidden;
@@ -1246,6 +1277,7 @@ const ServerStats = () => {
 
           <div className="ov-live-badge">
             <i />{t("ui.2efef14fa30b")}</div>
+          {panelVersion && <div className="ov-version-badge">v{panelVersion}</div>}
         </div>
       </div>
 

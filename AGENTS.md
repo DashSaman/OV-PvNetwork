@@ -223,6 +223,11 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.18` — RELEASE CANDIDATE — `PVN-1002` panel release-version badge.
+  - UX contract: the Dashboard (Server Stats) header renders the running release version (e.g. `v1.0.18`) directly beside the `LIVE · REALTIME` badge, styled consistently with the theme toggle, dark/light, LTR/RTL.
+  - Data contract: version is read at runtime from the public `/healthz` JSON (`version` field) with `no-store`; empty/failed lookup silently omits the badge; no authenticated API or new endpoint is introduced.
+  - Display-only: no API contract, authentication, OpenVPN, Node, Router listener, profile or session behavior changes; deployment is an atomic frontend asset/index switch with no backend restart.
+
 - `v1.0.17` — RELEASED — `PVN-1000` debounced CPU threshold alerts.
   - Defect: live-Production CPU threshold alerts flapped on transient spikes (single-sample fire/clear), producing Telegram alert/resolve storms and monitoring churn exactly while other services were busy.
   - Fix contract: High CPU requires 2 consecutive at-threshold samples; Resolved requires 2 consecutive below-threshold samples with a strict 5.0-point recovery margin; active alert text is reused from persisted state; `alerts` + `threshold_counters` persist across monitor restarts; offline-node CPU counters are dropped when neither live nor active.

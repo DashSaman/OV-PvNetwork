@@ -965,6 +965,7 @@ The permanent 001–999 registry above is fully allocated. New hotfix/regression
 
 - PVN-1000 [x] Debounced CPU threshold alerts: two consecutive at-threshold samples to fire, strict-margin two-sample recovery to clear, persisted threshold counters across monitor restarts, stale offline-node counters dropped. Released in v1.0.17.
 - PVN-1001 [ ] Firewall-hardening SSH unit detection: the boot-time host firewall hardening requires `ssh.service` and fails closed (with rollback) on hosts whose SSH daemon unit has a different name; accept the active SSH unit (`ssh.service`/`sshd.service`/socket-activated) before applying rules. Discovered on live Production 2026-09-24; firewall state intentionally left untouched.
+- PVN-1002 [x] Panel release-version badge next to the Dashboard LIVE · REALTIME indicator, sourced at runtime from public `/healthz` with silent omission on failure. Released in v1.0.18.
 
 ## Rule
 

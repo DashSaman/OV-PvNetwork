@@ -1,3 +1,9 @@
+## v1.0.18 — PVN-1002 panel release-version badge
+
+- The Dashboard header now shows the running panel release version (for example `v1.0.18`) directly next to the LIVE · REALTIME indicator.
+- The version is read at runtime from the public `/healthz` endpoint, so the badge always reflects the actually deployed backend release without a rebuild assumption.
+- Display-only: no API contract, authentication, OpenVPN, Node, Router listener, profile or session behavior changes.
+
 ## v1.0.17 — PVN-1000 debounced CPU threshold alerts
 
 - CPU threshold alerts now require two consecutive at-threshold samples before firing and two consecutive recovered samples (with a 5-point recovery margin) before sending Resolved, eliminating transient CPU alert flapping.
