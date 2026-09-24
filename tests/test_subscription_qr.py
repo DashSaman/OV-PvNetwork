@@ -35,7 +35,7 @@ class SubscriptionQrTests(unittest.TestCase):
     def test_bilingual_catalog_covers_qr_and_devices(self):
         for key in ('qrScan', 'qrPage', 'qrConfig', 'qrHint', 'qrClose', 'qrError',
                     'devWin', 'devMac', 'devIos', 'devAndroid', 'devLinux', 'devRouter'):
-            count = len(re.findall(rf'{key}:"', self.tpl))
+            count = len(re.findall(rf'{key}\s*:\s*[\'"]', self.tpl))
             self.assertEqual(2, count, f'{key} must exist in both fa and en catalogs')
 
     def test_device_guide_cards_render(self):
