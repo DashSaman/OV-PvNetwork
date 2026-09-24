@@ -964,6 +964,7 @@
 The permanent 001–999 registry above is fully allocated. New hotfix/regression IDs continue sequentially in this range and follow the same one-Production-visible-task-per-patch-release rule.
 
 - PVN-1000 [x] Debounced CPU threshold alerts: two consecutive at-threshold samples to fire, strict-margin two-sample recovery to clear, persisted threshold counters across monitor restarts, stale offline-node counters dropped. Released in v1.0.17.
+- PVN-1001 [ ] Firewall-hardening SSH unit detection: the boot-time host firewall hardening requires `ssh.service` and fails closed (with rollback) on hosts whose SSH daemon unit has a different name; accept the active SSH unit (`ssh.service`/`sshd.service`/socket-activated) before applying rules. Discovered on live Production 2026-09-24; firewall state intentionally left untouched.
 
 ## Rule
 
