@@ -27,7 +27,7 @@ class RenewalAlertTests(unittest.TestCase):
         u20 = _FakeUser('e', today + timedelta(days=20))
         keys = {item.key.split(':')[3] for item in self.build([u7, u3, u1, u0, u20], today)}
         self.assertEqual({'7', '3', '1', '0'}, keys)
-        self.assertFalse(any(item.key.endswith(':e:') for item in []))
+        
 
     def test_far_expiry_and_inactive_users_are_silent(self):
         today = date(2026, 9, 25)

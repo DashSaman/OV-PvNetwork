@@ -48,17 +48,22 @@ def build_renewal_alerts(users, today: date | None = None) -> list[RenewalAlert]
         expiry = getattr(user, "expiry_date", None)
         if expiry is not None:
             remaining = (expiry - today).days
-            for stage in EXPIRY_STAGES:
-                if 0 <= remaining <= stage:
+            label = None
+            for stage in sorted(EXPIRY_STAGES):
+                if remaining <= stage:
+                    # The final day carries its own key so the "today" alert
+                    # can fire even if the 1-day alert already fired.
+                    label = "0" if remaining == 0 else str(stage)
                     when = (
                         "امروز آخرین روز اشتراک است"
                         if remaining == 0
                         else f"{remaining} روز تا پایان اشتراک"
                     )
-                    alerts[f"renew:e:{name}:{stage}"] = (
-                        f"⏳ یادآوری تمدید: {name} — {when}. برای جلوگیری از قطع سرویس تمدید شود."
-                    )
-                    break  # only the nearest stage fires per run
+                    break
+            if label is not None:
+                alerts[f"renew:e:{name}:{label}"] = (
+                    f"⏳ یادآوری تمدید: {name} — {when}. برای جلوگیری از قطع سرویس تمدید شود."
+                )
 
         used = getattr(user, "used", None)
         total = getattr(user, "total", None)
