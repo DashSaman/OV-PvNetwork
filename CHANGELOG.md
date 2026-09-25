@@ -1,3 +1,7 @@
+## v1.0.30 — PVN-1014 renewal-alert repeat hotfix
+
+- Fixes the live Telegram spam introduced in v1.0.28: renewal keys persisted in the monitor state were fed into the generic node-alert transition builder, which announced them as “Resolved” on every monitor tick and immediately re-added them — an endless message loop. Renewal keys are now excluded from the generic builder and keep their own silent-clear transitions; regression tests pin both the wiring and the exact spam path.
+
 ## v1.0.29 — PVN-1013 installable panel (PWA) + mobile users-table cards
 
 - The admin panel is now installable (PWA web manifest with icons and standalone display): Add to Home Screen on Android/iOS or Install App in desktop browsers gives PVNetwork its own app window and icon.

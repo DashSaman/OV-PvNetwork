@@ -223,6 +223,9 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.30` — RELEASED — `PVN-1014` renewal-alert repeat hotfix.
+  - Live defect (introduced in v1.0.28): renewal keys persisted in monitor state were passed into `build_transition_messages` via `old`, announced as “Resolved” every tick and re-added — endless Telegram loop. Fix: renewal keys excluded from the generic builder (`old_node_alerts`), delivered only through `build_renewal_transition_messages` (silent clear); regression tests pin the wiring and the spam path.
+
 - `v1.0.29` — RELEASED — `PVN-1013` installable panel (PWA) + mobile users-table cards.
   - Contract: web manifest + icon + standalone display served through the assets mount (the first attempt at dist root was shadowed by the SPA catch-all and was fixed in-commit before tagging); Users table becomes stacked cards ≤640px while desktop keeps the table.
   - Release completion: CI PASS on `e49486e` and `996a41f` (assets-mount fix); tag `v1.0.29`; GitHub Release `396626135`; public re-download SHA256 PASS (`6282cf803fa9b99f4521e0bd7cc5a2cff934515b86464da370ab4b2be15534b9`); production redeployed with the fixed build (panel reports 1.0.28 until the next backend metadata delta — the deployed bundle/manifest are the v1.0.29 frontend).

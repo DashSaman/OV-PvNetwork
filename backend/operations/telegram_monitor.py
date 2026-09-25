@@ -125,18 +125,28 @@ async def main():
         except Exception as exc:
             alerts['ssl'] = f'🔴 SSL check failed for {host}: {type(exc).__name__}'
 
-    for message in build_transition_messages(old, alerts):
-        send(token, chat, message)
-
     # PVN-202/PVN-203: renewal (expiry / traffic-threshold) alerts.
+    renewal = {}
     if node_status_alerts_enabled:
         from backend.db.models import User
 
         users = db.query(User).all()
         renewal = {item.key: item.message for item in build_renewal_alerts(users)}
-        for message in build_renewal_transition_messages(old, renewal):
-            send(token, chat, message)
         alerts.update(renewal)
+
+    # Renewal keys are owned by their own silent-clear transition builder;
+    # exclude them from the node-alert transition set so the generic
+    # builder never announces them as "Resolved" on every run.
+    old_node_alerts = {
+        key: message
+        for key, message in old.items()
+        if not key.startswith("renew:")
+    }
+    for message in build_transition_messages(old_node_alerts, alerts):
+        send(token, chat, message)
+
+    for message in build_renewal_transition_messages(old, renewal):
+        send(token, chat, message)
 
     tmp = STATE.with_suffix('.tmp')
     tmp.write_text(
