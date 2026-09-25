@@ -387,6 +387,15 @@ class PrincipalSecurity(Base):
     totp_enabled: Mapped[bool]=mapped_column(default=False,nullable=False)
     updated_at: Mapped[int]=mapped_column(BigInteger,default=0,nullable=False)
     __table_args__=(UniqueConstraint('username','principal_type',name='uq_principal_security'),)
+class RecoveryCode(Base):
+    __tablename__='two_factor_recovery_codes'
+    id: Mapped[int]=mapped_column(BigInteger,primary_key=True)
+    username: Mapped[str]=mapped_column(String(128),nullable=False)
+    principal_type: Mapped[str]=mapped_column(String(32),nullable=False)
+    code_hash: Mapped[str]=mapped_column(String(128),nullable=False)
+    used_at: Mapped[int]=mapped_column(BigInteger,nullable=True)
+    created_at: Mapped[int]=mapped_column(BigInteger,default=0,nullable=False)
+
 class ApiToken(Base):
     __tablename__='api_tokens'
     id: Mapped[int]=mapped_column(BigInteger,primary_key=True)

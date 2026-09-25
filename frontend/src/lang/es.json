@@ -686,5 +686,9 @@
   "routerStatusReady": "Nodos listos para Router:",
   "routerErrNotEnabled": "La compatibilidad Router no está activada en este nodo — actívala desde Nodos → Router/MikroTik.",
   "routerErrNotHealthy": "El listener Router de este nodo no está sano — revisa su estado en la página Nodos.",
-  "routerErrUpgrade": "Este nodo debe actualizarse antes de soportar Router."
+  "routerErrUpgrade": "Este nodo debe actualizarse antes de soportar Router.",
+  "recoveryCodesRemaining": "Códigos de recuperación restantes:",
+  "recoveryCodesTitle": "¡Códigos de recuperación 2FA — solo se muestran esta vez!",
+  "recoveryCodesHelp": "Si pierdes el acceso a tu app de autenticación, introduce uno de estos códigos en lugar del código de 6 dígitos. Cada código sirve una sola vez.",
+  "recoveryCodesCopy": "Copiar todos los códigos"
 }

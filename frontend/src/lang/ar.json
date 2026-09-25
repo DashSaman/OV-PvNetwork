@@ -686,5 +686,9 @@
   "routerStatusReady": "العقد الجاهزة لـ Router:",
   "routerErrNotEnabled": "قدرة Router غير مفعّلة على هذه العقدة — فعّلها من العقد → Router/MikroTik.",
   "routerErrNotHealthy": "مستمع Router على هذه العقدة ليس سليمًا — تحقق من حالته في صفحة العقد.",
-  "routerErrUpgrade": "يجب ترقية هذه العقدة أولًا لدعم Router."
+  "routerErrUpgrade": "يجب ترقية هذه العقدة أولًا لدعم Router.",
+  "recoveryCodesRemaining": "أكواد الاسترداد المتبقية:",
+  "recoveryCodesTitle": "أكواد استرداد 2FA — تُعرض مرة واحدة فقط!",
+  "recoveryCodesHelp": "إذا فقدت الوصول إلى تطبيق المصادقة، أدخل أحد هذه الأكواد بدل الرمز المكوّن من 6 أرقام في صفحة الدخول. كل كود يُستخدم مرة واحدة.",
+  "recoveryCodesCopy": "نسخ كل الأكواد"
 }

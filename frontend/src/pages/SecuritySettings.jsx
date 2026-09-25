@@ -162,6 +162,7 @@ export default function SecuritySettings() {
   const [cidr, setCidr] = useState('');
   const [code, setCode] = useState('');
   const [setup, setSetup] = useState(null);
+  const [recoveryCodes, setRecoveryCodes] = useState(null);
   const [name, setName] = useState('');
   const [selectedScopes, setSelectedScopes] = useState([]);
   const [token, setToken] = useState('');
@@ -220,7 +221,11 @@ export default function SecuritySettings() {
   });
 
   const confirmTotp = () => run('totp-confirm', async () => {
-    await apiClient.post('/security/totp/confirm', { code }, { timeout: 12000 });
+    const response = await apiClient.post('/security/totp/confirm', { code }, { timeout: 12000 });
+    // PVN-540: recovery codes are shown exactly once, right after enabling.
+    if (Array.isArray(response.data?.data?.recovery_codes) && response.data.data.recovery_codes.length) {
+      setRecoveryCodes(response.data.data.recovery_codes);
+    }
     setSetup(null); setCode(''); await load();
   }, t('feature.saved'));
 
@@ -261,6 +266,18 @@ export default function SecuritySettings() {
       {!data.totp_enabled && <button type="button" className="btn" disabled={Boolean(busy)} onClick={beginTotp}>{t('ui.f0eed8dce439')}</button>}
       {setup && <><p className="ltr-number">{setup.secret}</p><input value={code} placeholder={t('ui.83e8f0bb6ae9')} onChange={event => setCode(event.target.value)}/><button type="button" className="btn" disabled={Boolean(busy) || code.length !== 6} onClick={confirmTotp}>{t('ui.a7b4c2d4a7f8')}</button></>}
       {data.totp_enabled && <><input value={code} placeholder={t('ui.83e8f0bb6ae9')} onChange={event => setCode(event.target.value)}/><button type="button" className="btn danger" disabled={Boolean(busy) || code.length !== 6} onClick={disableTotp}>{t('ui.e409bf474a5d')} 2FA</button></>}
+      {data.totp_enabled && Number.isInteger(data.recovery_codes_remaining) && (
+        <p style={{ fontSize: 12 }}>{t('recoveryCodesRemaining', 'باقی‌مانده کدهای بازیابی:')} {data.recovery_codes_remaining}</p>
+      )}
+      {recoveryCodes && (
+        <div className="recovery-codes" style={{ border: '1px solid rgba(148,163,184,.3)', borderRadius: 10, padding: 12, marginTop: 8 }}>
+          <p style={{ fontWeight: 700, color: '#ff9f1c' }}>{t('recoveryCodesTitle', 'کدهای بازیابی 2FA — فقط همین یک بار نمایش داده می‌شوند!')}</p>
+          <p style={{ fontSize: 12 }}>{t('recoveryCodesHelp', 'اگر به برنامه احراز دوعاملی دسترسی نداشتی، یکی از این کدها را جای کد ۶ رقمی در صفحه ورود وارد کن. هر کد فقط یک بار قابل استفاده است.')}</p>
+          <textarea readOnly dir="ltr" rows="8" value={recoveryCodes.join('\n')} onClick={event => event.target.select()} />
+          <button type="button" className="btn" style={{ marginTop: 8 }} onClick={() => { navigator.clipboard.writeText(recoveryCodes.join('\n')); }}>{t('recoveryCodesCopy', 'کپی همه کدها')}</button>
+          <button type="button" className="btn btn-secondary" style={{ marginTop: 8 }} onClick={() => setRecoveryCodes(null)}>{t('close', 'بستن')}</button>
+        </div>
+      )}
     </section>
 
     <section className="monitor-form">

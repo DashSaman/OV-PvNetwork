@@ -686,5 +686,9 @@
   "routerStatusReady": "Router hazır düğümler:",
   "routerErrNotEnabled": "Bu düğümde Router uyumluluğu etkin değil — Düğümler → Router/MikroTik üzerinden etkinleştirin.",
   "routerErrNotHealthy": "Bu düğümdeki Router dinleyicisi sağlıklı değil — durumunu Düğümler sayfasından kontrol edin.",
-  "routerErrUpgrade": "Bu düğüm Router desteklenmeden önce yükseltilmelidir."
+  "routerErrUpgrade": "Bu düğüm Router desteklenmeden önce yükseltilmelidir.",
+  "recoveryCodesRemaining": "Kalan kurtarma kodları:",
+  "recoveryCodesTitle": "2FA kurtarma kodları — yalnızca bir kez gösterilir!",
+  "recoveryCodesHelp": "Kimlik doğrulayıcı uygulamanıza erişimi kaybederseniz, giriş sayfasında 6 haneli kod yerine bu kodlardan birini girin. Her kod yalnızca bir kez kullanılabilir.",
+  "recoveryCodesCopy": "Tüm kodları kopyala"
 }

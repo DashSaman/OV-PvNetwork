@@ -686,5 +686,9 @@
   "routerStatusReady": "Router 就緒節點：",
   "routerErrNotEnabled": "此節點未啟用 Router 相容 — 請在 節點 → Router/MikroTik 中啟用。",
   "routerErrNotHealthy": "此節點的 Router 監聽器狀態異常 — 請在節點頁面檢查。",
-  "routerErrUpgrade": "此節點需先升級才能支援 Router。"
+  "routerErrUpgrade": "此節點需先升級才能支援 Router。",
+  "recoveryCodesRemaining": "剩餘復原碼：",
+  "recoveryCodesTitle": "2FA 復原碼 — 僅此一次顯示！",
+  "recoveryCodesHelp": "若無法存取驗證器應用程式，可在登入頁以下列任一代碼取代 6 位數字碼。每個代碼僅能使用一次。",
+  "recoveryCodesCopy": "複製全部代碼"
 }

@@ -486,7 +486,8 @@
 - PVN-537 Two-person approval for destructive fleet actions
 - PVN-538 Break-glass admin procedure
 - PVN-539 Account lockout recovery
-- PVN-540 2FA recovery codes
+- PVN-540 [x] 2FA recovery codes: eight bcrypt-hashed one-time codes shown once at TOTP enable, consumable at login in place of the TOTP, remaining count surfaced. Released in v1.0.27.
+- PVN-540-old 2FA recovery codes
 - PVN-541 Trusted-device policy
 - PVN-542 Password policy UI
 - PVN-543 Password breach-check optional
@@ -964,7 +965,7 @@
 The permanent 001–999 registry above is fully allocated. New hotfix/regression IDs continue sequentially in this range and follow the same one-Production-visible-task-per-patch-release rule.
 
 - PVN-1000 [x] Debounced CPU threshold alerts: two consecutive at-threshold samples to fire, strict-margin two-sample recovery to clear, persisted threshold counters across monitor restarts, stale offline-node counters dropped. Released in v1.0.17.
-- PVN-1001 [ ] Firewall-hardening SSH unit detection: the boot-time host firewall hardening requires `ssh.service` and fails closed (with rollback) on hosts whose SSH daemon unit has a different name; accept the active SSH unit (`ssh.service`/`sshd.service`/socket-activated) before applying rules. Discovered on live Production 2026-09-24; firewall state intentionally left untouched.
+- PVN-1001 [x] Firewall-hardening SSH unit detection: accepts socket-activated ssh.socket / sshd.service so the boot service can apply the allowlist. Released in v1.0.27.: the boot-time host firewall hardening requires `ssh.service` and fails closed (with rollback) on hosts whose SSH daemon unit has a different name; accept the active SSH unit (`ssh.service`/`sshd.service`/socket-activated) before applying rules. Discovered on live Production 2026-09-24; firewall state intentionally left untouched.
 - PVN-1002 [x] Panel release-version badge next to the Dashboard LIVE · REALTIME indicator, sourced at runtime from public `/healthz` with silent omission on failure. Released in v1.0.18.
 - PVN-1003 [x] White-screen regression fix and release hardening: production bundles must be built with `URLPATH` matching the deployed panel path (Vite reads `URLPATH`, not `VITE_URLPATH`); SPA index served with `Cache-Control: no-cache` so atomic asset switches cannot strand cached browsers; 35 missing UI keys translated in all 11 secondary languages; Production database/login role rebranded to `pvnetwork_panel` backup-first with the legacy database retained as rollback. Released in v1.0.19.
 - PVN-1010 [ ] Migrate the subscription template to nonce/external-file scripts so /sub can drop the inline-script CSP allowance.

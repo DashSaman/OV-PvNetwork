@@ -686,5 +686,9 @@
   "routerStatusReady": "Node yang siap Router:",
   "routerErrNotEnabled": "Kemampuan Router tidak aktif pada node ini — aktifkan dari Node → Router/MikroTik.",
   "routerErrNotHealthy": "Listener Router pada node ini tidak sehat — periksa statusnya di halaman Node.",
-  "routerErrUpgrade": "Node ini harus ditingkatkan dahulu agar mendukung Router."
+  "routerErrUpgrade": "Node ini harus ditingkatkan dahulu agar mendukung Router.",
+  "recoveryCodesRemaining": "Kode pemulihan tersisa:",
+  "recoveryCodesTitle": "Kode pemulihan 2FA — hanya ditampilkan sekali ini!",
+  "recoveryCodesHelp": "Jika kehilangan akses ke aplikasi autentikator, masukkan salah satu kode ini sebagai pengganti kode 6 digit di halaman masuk. Setiap kode hanya berlaku sekali.",
+  "recoveryCodesCopy": "Salin semua kode"
 }

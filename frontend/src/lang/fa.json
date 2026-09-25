@@ -686,5 +686,9 @@
   "routerStatusReady": "نودهای آماده Router:",
   "routerErrNotEnabled": "قابلیت Router روی این نود فعال نیست — از صفحه نودها → Router/MikroTik فعالش کن.",
   "routerErrNotHealthy": "Listener روتر روی این نود سالم نیست — وضعیتش را در صفحه نودها بررسی کن.",
-  "routerErrUpgrade": "این نود باید اول ارتقا پیدا کند تا Router پشتیبانی شود."
+  "routerErrUpgrade": "این نود باید اول ارتقا پیدا کند تا Router پشتیبانی شود.",
+  "recoveryCodesRemaining": "باقی‌مانده کدهای بازیابی:",
+  "recoveryCodesTitle": "کدهای بازیابی 2FA — فقط همین یک بار نمایش داده می‌شوند!",
+  "recoveryCodesHelp": "اگر به برنامه احراز دوعاملی دسترسی نداشتی، یکی از این کدها را جای کد ۶ رقمی در صفحه ورود وارد کن. هر کد فقط یک بار قابل استفاده است.",
+  "recoveryCodesCopy": "کپی همه کدها"
 }

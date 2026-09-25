@@ -686,5 +686,9 @@
   "routerStatusReady": "Router利用可能なノード:",
   "routerErrNotEnabled": "このノードではRouter互換が有効ではありません — ノード → Router/MikroTik から有効化してください。",
   "routerErrNotHealthy": "このノードのRouterリスナーが不正です — ノードページで状態を確認してください。",
-  "routerErrUpgrade": "このノードはRouter対応前にアップグレードが必要です。"
+  "routerErrUpgrade": "このノードはRouter対応前にアップグレードが必要です。",
+  "recoveryCodesRemaining": "残りのリカバリコード:",
+  "recoveryCodesTitle": "2FAリカバリコード — この一回のみ表示されます！",
+  "recoveryCodesHelp": "認証アプリにアクセスできなくなった場合、ログインページの6桁コードの代わりにこれらのコードを1つ入力してください。各コードは1回のみ有効です。",
+  "recoveryCodesCopy": "すべてのコードをコピー"
 }

@@ -686,5 +686,9 @@
   "routerStatusReady": "Router 就绪节点：",
   "routerErrNotEnabled": "此节点未启用 Router 兼容 — 请在 节点 → Router/MikroTik 中启用。",
   "routerErrNotHealthy": "此节点的 Router 监听器不健康 — 请在节点页面检查状态。",
-  "routerErrUpgrade": "此节点需要先升级才能支持 Router。"
+  "routerErrUpgrade": "此节点需要先升级才能支持 Router。",
+  "recoveryCodesRemaining": "剩余恢复代码：",
+  "recoveryCodesTitle": "2FA 恢复代码 — 仅此一次显示！",
+  "recoveryCodesHelp": "如果无法访问验证器应用，可在登录页用以下任一代码代替 6 位数字码。每个代码只能使用一次。",
+  "recoveryCodesCopy": "复制全部代码"
 }

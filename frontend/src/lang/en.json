@@ -686,5 +686,9 @@
   "routerStatusReady": "Router-ready nodes:",
   "routerErrNotEnabled": "Router capability is not enabled on this node — enable it from Nodes → Router/MikroTik.",
   "routerErrNotHealthy": "The Router listener on this node is not healthy — check its status on the Nodes page.",
-  "routerErrUpgrade": "This node must be upgraded before Router is supported."
+  "routerErrUpgrade": "This node must be upgraded before Router is supported.",
+  "recoveryCodesRemaining": "Remaining recovery codes:",
+  "recoveryCodesTitle": "2FA recovery codes — shown only this once!",
+  "recoveryCodesHelp": "If you lose access to your authenticator app, enter one of these codes instead of the 6-digit code on the login page. Each code works exactly once.",
+  "recoveryCodesCopy": "Copy all codes"
 }

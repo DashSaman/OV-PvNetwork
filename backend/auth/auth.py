@@ -12,6 +12,20 @@ from backend.config import config
 from backend.db import crud
 from backend.db.models import PrincipalSecurity, ApiToken
 from backend.security_core import verify_totp, dec
+from backend.auth.hash import pwd_context
+
+def _consume_recovery_code(db, username, principal_type, raw):
+    from backend.db.models import RecoveryCode
+    rows = db.query(RecoveryCode).filter_by(username=username, principal_type=principal_type, used_at=None).all()
+    for row in rows:
+        try:
+            if pwd_context.verify(raw, row.code_hash):
+                row.used_at = int(time.time())
+                db.commit()
+                return True
+        except Exception:
+            continue
+    return False
 import hashlib, json, time
 
 
@@ -75,7 +89,13 @@ async def login(
         otp = (form_data.client_secret or "").strip()
         secret = dec(principal.totp_secret_encrypted)
         if not secret or not verify_totp(secret, otp):
-            raise HTTPException(status_code=401, detail="TOTP code required or invalid")
+            # PVN-540: accept a one-time recovery code instead of the TOTP.
+            if "-" in otp and _consume_recovery_code(
+                db, admin["username"], admin["type"], otp
+            ):
+                pass
+            else:
+                raise HTTPException(status_code=401, detail="TOTP code required or invalid")
 
     access_token_expires = timedelta(seconds=config.JWT_ACCESS_TOKEN_EXPIRES)
     if admin["type"] == "main_admin":

@@ -8,6 +8,9 @@ from backend.db.engine import get_db
 from backend.db.models import SecuritySettings,PrincipalSecurity,ApiToken
 from backend.schema.output import ResponseModel
 from backend.security_core import new_totp_secret,verify_totp,enc,dec
+from backend.auth.hash import pwd_context
+from backend.db.models import RecoveryCode
+import secrets as _secrets
 from backend.security_middleware import client_ip
 router=APIRouter(prefix='/security',tags=['Security'])
 SCOPES={'users:read','users:write','nodes:read','nodes:write','settings:read','settings:write','audit:read'}
@@ -18,7 +21,7 @@ class TokenIn(BaseModel):name:str=Field(min_length=1,max_length=128);scopes:list
 @router.get('/',response_model=ResponseModel)
 async def get(db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u);r=db.query(SecuritySettings).filter_by(id=1).first();p=db.query(PrincipalSecurity).filter_by(username=u['username'],principal_type=u['type']).first();tokens=db.query(ApiToken).order_by(ApiToken.id.desc()).all()
- return ResponseModel(success=True,msg='Security settings',data={'rate_limit_enabled':r.rate_limit_enabled,'rate_limit_per_minute':r.rate_limit_per_minute,'ip_allowlist_enabled':r.ip_allowlist_enabled,'allowed_cidrs':json.loads(r.allowed_cidrs),'totp_enabled':bool(p and p.totp_enabled),'tokens':[{'id':x.id,'name':x.name,'prefix':x.token_prefix,'scopes':json.loads(x.scopes),'expires_at':x.expires_at,'revoked_at':x.revoked_at,'last_used_at':x.last_used_at} for x in tokens]})
+ return ResponseModel(success=True,msg='Security settings',data={'rate_limit_enabled':r.rate_limit_enabled,'rate_limit_per_minute':r.rate_limit_per_minute,'ip_allowlist_enabled':r.ip_allowlist_enabled,'allowed_cidrs':json.loads(r.allowed_cidrs),'totp_enabled':bool(p and p.totp_enabled),'recovery_codes_remaining':(db.query(RecoveryCode).filter_by(username=u['username'],principal_type=u['type'],used_at=None).count() if p and p.totp_enabled else 0),'tokens':[{'id':x.id,'name':x.name,'prefix':x.token_prefix,'scopes':json.loads(x.scopes),'expires_at':x.expires_at,'revoked_at':x.revoked_at,'last_used_at':x.last_used_at} for x in tokens]})
 @router.put('/',response_model=ResponseModel)
 async def put(q:SettingsIn,request:Request,db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u)
@@ -40,12 +43,22 @@ async def setup(db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
 async def confirm(q:TotpCode,db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u);p=db.query(PrincipalSecurity).filter_by(username=u['username'],principal_type=u['type']).first();s=dec(p.totp_secret_encrypted) if p else None
  if not s or not verify_totp(s,q.code):raise HTTPException(422,'Invalid TOTP code')
- p.totp_enabled=True;db.commit();return ResponseModel(success=True,msg='TOTP enabled',data=None)
+ p.totp_enabled=True
+ # PVN-540: one-time recovery codes; shown only here, stored as bcrypt hashes.
+ db.query(RecoveryCode).filter_by(username=u['username'],principal_type=u['type']).delete()
+ codes=[];now=int(time.time())
+ for _i in range(8):
+  raw=_secrets.token_hex(5)+'-'+_secrets.token_hex(5)
+  db.add(RecoveryCode(username=u['username'],principal_type=u['type'],code_hash=pwd_context.hash(raw),used_at=None,created_at=now))
+  codes.append(raw)
+ db.commit();return ResponseModel(success=True,msg='TOTP enabled',data={'recovery_codes':codes})
 @router.delete('/totp',response_model=ResponseModel)
 async def disable(q:TotpCode,db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u);p=db.query(PrincipalSecurity).filter_by(username=u['username'],principal_type=u['type']).first();s=dec(p.totp_secret_encrypted) if p else None
  if not s or not verify_totp(s,q.code):raise HTTPException(422,'Invalid TOTP code')
- p.totp_enabled=False;p.totp_secret_encrypted=None;db.commit();return ResponseModel(success=True,msg='TOTP disabled',data=None)
+ p.totp_enabled=False;p.totp_secret_encrypted=None
+ db.query(RecoveryCode).filter_by(username=u['username'],principal_type=u['type']).delete()
+ db.commit();return ResponseModel(success=True,msg='TOTP disabled',data=None)
 @router.post('/tokens',response_model=ResponseModel)
 async def token(q:TokenIn,db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u)

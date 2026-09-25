@@ -686,5 +686,9 @@
   "routerStatusReady": "Nós prontos para Router:",
   "routerErrNotEnabled": "A compatibilidade Router não está ativada neste nó — ative em Nós → Router/MikroTik.",
   "routerErrNotHealthy": "O listener Router deste nó não está saudável — verifique o status na página Nós.",
-  "routerErrUpgrade": "Este nó precisa ser atualizado antes de suportar Router."
+  "routerErrUpgrade": "Este nó precisa ser atualizado antes de suportar Router.",
+  "recoveryCodesRemaining": "Códigos de recuperação restantes:",
+  "recoveryCodesTitle": "Códigos de recuperação 2FA — exibidos apenas esta vez!",
+  "recoveryCodesHelp": "Se perder o acesso ao app autenticador, digite um destes códigos no lugar do código de 6 dígitos na página de login. Cada código funciona uma única vez.",
+  "recoveryCodesCopy": "Copiar todos os códigos"
 }

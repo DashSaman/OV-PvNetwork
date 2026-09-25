@@ -4,17 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.26-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.27-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## تغییرات v1.0.27 نسبت به v1.0.26
+
+**PVN-1001 + PVN-540 — رفع بوت فایروال + کدهای بازیابی 2FA.** سرویس بوت فایروال حالا SSH سوکت‌فعال را می‌فهمد و allowlist inventory-first را می‌تواند موقع بوت اعمال کند؛ فعال‌کردن TOTP هشت کد بازیابی یک‌بارمصرف می‌سازد (bcrypt در دیتابیس، یک‌بار نمایش، جایگزین کد ۶ رقمی در ورود، شمار باقی‌مانده قابل مشاهده).
+
+خط انتشار فعلی: **v1.0.27** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.27.fa.md).
+
 ## تغییرات v1.0.26 نسبت به v1.0.25
 
 **PVN-1012 — رمز Router قابل مشاهده در پنل ادمین.** رمزهای Router/MikroTik اکنون به‌صورت ciphertext برگشت‌پذیر Fernet (الگوی AnyConnect) ذخیره می‌شوند و در دیالوگ Router/MikroTik کاربر نمایش داده می‌شوند؛ هشدار هنگام ساخت هم می‌گوید رمز قابل مشاهده می‌ماند. اعتبارنامه‌های قدیمی با یک Rotate قابل مشاهده می‌شوند.
 
-خط انتشار فعلی: **v1.0.26** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.26.fa.md).
+انتشار قبلی: **v1.0.26** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.26.fa.md).
 
 ## تغییرات v1.0.25 نسبت به v1.0.24
 
@@ -266,7 +272,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.26/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.27/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

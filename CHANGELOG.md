@@ -1,3 +1,8 @@
+## v1.0.27 — PVN-1001 firewall boot fix + PVN-540 2FA recovery codes
+
+- Fixes the host firewall boot service that had failed on every boot since 2026-09-22: on Ubuntu 24.04 with socket-activated SSH, ssh.service is inactive at boot time until the first connection, so the required-service check always failed. The check now accepts ssh.socket/sshd.service as satisfying ssh.service (inventory-first rules and the built-in timed rollback are unchanged).
+- Adds one-time 2FA recovery codes: enabling TOTP now generates eight codes (bcrypt-hashed at rest), shown exactly once in Security Settings with a copy-all button; if the authenticator is unavailable, any unused code substitutes for the 6-digit code on the login page and is consumed. Disabling TOTP clears the codes, and the settings page shows the remaining count. Migration g9a0b1c2d3e4 creates the table.
+
 ## v1.0.26 — PVN-1012 Router password viewable in the admin panel
 
 - Router/MikroTik credentials now store a reversible Fernet ciphertext (keyed from the panel secret, same pattern as AnyConnect) so the password is viewable afterwards in the admin panel: the user Router/MikroTik dialog shows the current password under the username, with a hint to rotate once for credentials created before this release.
