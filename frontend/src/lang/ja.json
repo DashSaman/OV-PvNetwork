@@ -692,5 +692,9 @@
   "recoveryCodesHelp": "認証アプリにアクセスできなくなった場合、ログインページの6桁コードの代わりにこれらのコードを1つ入力してください。各コードは1回のみ有効です。",
   "recoveryCodesCopy": "すべてのコードをコピー",
   "liveSpeedTitle": "現在の速度",
-  "th_liveSpeed": "速度 (↓/↑)"
+  "th_liveSpeed": "速度 (↓/↑)",
+  "backupRetentionLabel": "バックアップ保持（日）:",
+  "backupRetentionHelp": "0 = 自動削除なし",
+  "backupRetentionSaved": "保持期間を保存しました。",
+  "backupRetentionFailed": "保持期間を保存できませんでした。"
 }

@@ -38,6 +38,7 @@ export default function BackupRestorePanel() {
   const [restoring, setRestoring] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [confirmation, setConfirmation] = useState('');
+  const [retentionDays, setRetentionDays] = useState(10);
   const [job, setJob] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -69,6 +70,17 @@ export default function BackupRestorePanel() {
     };
   }, []);
 
+  // PVN-1020: admin-configurable backup retention (days).
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await apiClient.get('/security/', { timeout: 15000 });
+        const days = Number(r.data?.data?.backup_retention_days);
+        if (Number.isFinite(days)) setRetentionDays(days);
+      } catch { /* retention is optional */ }
+    })();
+  }, []);
+
   const loadBackups = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
     setError('');
@@ -88,6 +100,24 @@ export default function BackupRestorePanel() {
   useEffect(() => {
     loadBackups();
   }, [loadBackups]);
+
+  const saveRetention = async days => {
+    const value = Math.max(0, Math.min(3650, Math.round(Number(days)) || 0));
+    try {
+      const r = await apiClient.get('/security/', { timeout: 15000 });
+      const current = r.data?.data || {};
+      await apiClient.put('/security/', {
+        rate_limit_enabled: Boolean(current.rate_limit_enabled),
+        rate_limit_per_minute: Number(current.rate_limit_per_minute) || 120,
+        ip_allowlist_enabled: Boolean(current.ip_allowlist_enabled),
+        allowed_cidrs: current.allowed_cidrs || [],
+        backup_retention_days: value,
+      }, { timeout: 15000 });
+      setRetentionDays(value);
+      setMessage(t('backupRetentionSaved', 'Retention saved.'));
+      await loadBackups(true);
+    } catch { setError(t('backupRetentionFailed', 'Could not save retention.')); }
+  };
 
   const createBackup = async () => {
     setCreating(true);
@@ -326,6 +356,23 @@ export default function BackupRestorePanel() {
         <div className="ov-backup-card">
           <h3>{t('backup.downloadTitle', 'دانلود بکاپ')}</h3>
           <p>{t('backup.downloadHelp', 'بکاپ جدید ابتدا ساخته و آزمایش می‌شود؛ سپس از جدول پایین قابل دانلود است.')}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+            <label htmlFor="retention-input" style={{ fontSize: 12 }}>{t('backupRetentionLabel', 'نگهداری بکاپ‌ها (روز):')}</label>
+            <input
+              id="retention-input"
+              type="number"
+              min="0"
+              max="3650"
+              dir="ltr"
+              style={{ width: 80 }}
+              value={retentionDays}
+              onChange={e => setRetentionDays(e.target.value)}
+              onBlur={e => saveRetention(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') saveRetention(e.currentTarget.value); }}
+            />
+            <small style={{ fontSize: 11 }}>{t('backupRetentionHelp', '۰ = بدون حذف خودکار')}</small>
+          </div>
+
           <div className="ov-backup-notice">
             <FiAlertTriangle size={18} />
             {t('backup.sensitiveNotice', 'فایل دانلودی شامل اطلاعات کاربران و تنظیمات محرمانه پنل است.')}

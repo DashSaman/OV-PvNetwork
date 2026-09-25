@@ -692,5 +692,9 @@
   "recoveryCodesHelp": "If you lose access to your authenticator app, enter one of these codes instead of the 6-digit code on the login page. Each code works exactly once.",
   "recoveryCodesCopy": "Copy all codes",
   "liveSpeedTitle": "Live speed",
-  "th_liveSpeed": "Speed (↓/↑)"
+  "th_liveSpeed": "Speed (↓/↑)",
+  "backupRetentionLabel": "Keep backups (days):",
+  "backupRetentionHelp": "0 = never auto-delete",
+  "backupRetentionSaved": "Retention saved.",
+  "backupRetentionFailed": "Could not save retention."
 }

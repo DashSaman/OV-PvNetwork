@@ -378,6 +378,8 @@ class SecuritySettings(Base):
     ip_allowlist_enabled: Mapped[bool]=mapped_column(default=False,nullable=False)
     allowed_cidrs: Mapped[str]=mapped_column(nullable=False,default='[]')
     updated_at: Mapped[int]=mapped_column(BigInteger,default=0,nullable=False)
+    # PVN-1020: automatic backup retention in days; 0 disables auto-cleanup.
+    backup_retention_days: Mapped[int]=mapped_column(default=10,nullable=False)
 class PrincipalSecurity(Base):
     __tablename__='principal_security'
     id: Mapped[int]=mapped_column(BigInteger,primary_key=True)

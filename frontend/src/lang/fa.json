@@ -692,5 +692,9 @@
   "recoveryCodesHelp": "اگر به برنامه احراز دوعاملی دسترسی نداشتی، یکی از این کدها را جای کد ۶ رقمی در صفحه ورود وارد کن. هر کد فقط یک بار قابل استفاده است.",
   "recoveryCodesCopy": "کپی همه کدها",
   "liveSpeedTitle": "سرعت لحظه‌ای",
-  "th_liveSpeed": "سرعت (↓/↑)"
+  "th_liveSpeed": "سرعت (↓/↑)",
+  "backupRetentionLabel": "نگهداری بکاپ‌ها (روز):",
+  "backupRetentionHelp": "۰ = بدون حذف خودکار",
+  "backupRetentionSaved": "تنظیم نگهداری ذخیره شد.",
+  "backupRetentionFailed": "ذخیره تنظیم نگهداری ناموفق بود."
 }

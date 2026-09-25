@@ -692,5 +692,9 @@
   "recoveryCodesHelp": "Nếu mất quyền truy cập ứng dụng xác thực, hãy nhập một trong các mã này thay cho mã 6 số ở trang đăng nhập. Mỗi mã chỉ dùng được một lần.",
   "recoveryCodesCopy": "Sao chép tất cả mã",
   "liveSpeedTitle": "Tốc độ trực tiếp",
-  "th_liveSpeed": "Tốc độ (↓/↑)"
+  "th_liveSpeed": "Tốc độ (↓/↑)",
+  "backupRetentionLabel": "Giữ bản sao (ngày):",
+  "backupRetentionHelp": "0 = không tự xóa",
+  "backupRetentionSaved": "Đã lưu thời gian giữ.",
+  "backupRetentionFailed": "Không thể lưu thời gian giữ."
 }

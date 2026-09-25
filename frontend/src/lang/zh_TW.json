@@ -692,5 +692,9 @@
   "recoveryCodesHelp": "若無法存取驗證器應用程式，可在登入頁以下列任一代碼取代 6 位數字碼。每個代碼僅能使用一次。",
   "recoveryCodesCopy": "複製全部代碼",
   "liveSpeedTitle": "即時速度",
-  "th_liveSpeed": "速度 (↓/↑)"
+  "th_liveSpeed": "速度 (↓/↑)",
+  "backupRetentionLabel": "保留備份（天）：",
+  "backupRetentionHelp": "0 = 不自動刪除",
+  "backupRetentionSaved": "保留期已儲存。",
+  "backupRetentionFailed": "無法儲存保留期。"
 }

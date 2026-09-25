@@ -15,13 +15,13 @@ from backend.security_middleware import client_ip
 router=APIRouter(prefix='/security',tags=['Security'])
 SCOPES={'users:read','users:write','nodes:read','nodes:write','settings:read','settings:write','audit:read'}
 main = require_interactive_main_admin
-class SettingsIn(BaseModel):rate_limit_enabled:bool=True;rate_limit_per_minute:int=Field(120,ge=10,le=10000);ip_allowlist_enabled:bool=False;allowed_cidrs:list[str]=[]
+class SettingsIn(BaseModel):rate_limit_enabled:bool=True;rate_limit_per_minute:int=Field(120,ge=10,le=10000);ip_allowlist_enabled:bool=False;allowed_cidrs:list[str]=[];backup_retention_days:int=Field(10,ge=0,le=3650)
 class TotpCode(BaseModel):code:str=Field(min_length=6,max_length=6)
 class TokenIn(BaseModel):name:str=Field(min_length=1,max_length=128);scopes:list[str];expires_at:int|None=None
 @router.get('/',response_model=ResponseModel)
 async def get(db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u);r=db.query(SecuritySettings).filter_by(id=1).first();p=db.query(PrincipalSecurity).filter_by(username=u['username'],principal_type=u['type']).first();tokens=db.query(ApiToken).order_by(ApiToken.id.desc()).all()
- return ResponseModel(success=True,msg='Security settings',data={'rate_limit_enabled':r.rate_limit_enabled,'rate_limit_per_minute':r.rate_limit_per_minute,'ip_allowlist_enabled':r.ip_allowlist_enabled,'allowed_cidrs':json.loads(r.allowed_cidrs),'totp_enabled':bool(p and p.totp_enabled),'recovery_codes_remaining':(db.query(RecoveryCode).filter_by(username=u['username'],principal_type=u['type'],used_at=None).count() if p and p.totp_enabled else 0),'tokens':[{'id':x.id,'name':x.name,'prefix':x.token_prefix,'scopes':json.loads(x.scopes),'expires_at':x.expires_at,'revoked_at':x.revoked_at,'last_used_at':x.last_used_at} for x in tokens]})
+ return ResponseModel(success=True,msg='Security settings',data={'rate_limit_enabled':r.rate_limit_enabled,'rate_limit_per_minute':r.rate_limit_per_minute,'ip_allowlist_enabled':r.ip_allowlist_enabled,'allowed_cidrs':json.loads(r.allowed_cidrs),'totp_enabled':bool(p and p.totp_enabled),'backup_retention_days':int(getattr(r,'backup_retention_days',10) or 10),'recovery_codes_remaining':(db.query(RecoveryCode).filter_by(username=u['username'],principal_type=u['type'],used_at=None).count() if p and p.totp_enabled else 0),'tokens':[{'id':x.id,'name':x.name,'prefix':x.token_prefix,'scopes':json.loads(x.scopes),'expires_at':x.expires_at,'revoked_at':x.revoked_at,'last_used_at':x.last_used_at} for x in tokens]})
 @router.put('/',response_model=ResponseModel)
 async def put(q:SettingsIn,request:Request,db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u)
@@ -33,7 +33,7 @@ async def put(q:SettingsIn,request:Request,db:Session=Depends(get_db),u:dict=Dep
   try:included=any(ipaddress.ip_address(current_ip) in network for network in nets)
   except ValueError:included=False
   if not included:raise HTTPException(422,'Your current IP must be included before enabling the allowlist')
- r=db.query(SecuritySettings).filter_by(id=1).first();r.rate_limit_enabled=q.rate_limit_enabled;r.rate_limit_per_minute=q.rate_limit_per_minute;r.ip_allowlist_enabled=q.ip_allowlist_enabled;r.allowed_cidrs=json.dumps(q.allowed_cidrs);r.updated_at=int(time.time());db.commit();return ResponseModel(success=True,msg='Security settings saved',data=None)
+ r=db.query(SecuritySettings).filter_by(id=1).first();r.backup_retention_days=max(0,int(q.backup_retention_days));r.rate_limit_enabled=q.rate_limit_enabled;r.rate_limit_per_minute=q.rate_limit_per_minute;r.ip_allowlist_enabled=q.ip_allowlist_enabled;r.allowed_cidrs=json.dumps(q.allowed_cidrs);r.updated_at=int(time.time());db.commit();return ResponseModel(success=True,msg='Security settings saved',data=None)
 @router.post('/totp/setup',response_model=ResponseModel)
 async def setup(db:Session=Depends(get_db),u:dict=Depends(get_current_user)):
  main(u);s=new_totp_secret();p=db.query(PrincipalSecurity).filter_by(username=u['username'],principal_type=u['type']).first()

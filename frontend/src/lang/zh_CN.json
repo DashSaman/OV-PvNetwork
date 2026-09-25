@@ -692,5 +692,9 @@
   "recoveryCodesHelp": "如果无法访问验证器应用，可在登录页用以下任一代码代替 6 位数字码。每个代码只能使用一次。",
   "recoveryCodesCopy": "复制全部代码",
   "liveSpeedTitle": "实时速度",
-  "th_liveSpeed": "速度 (↓/↑)"
+  "th_liveSpeed": "速度 (↓/↑)",
+  "backupRetentionLabel": "保留备份（天）：",
+  "backupRetentionHelp": "0 = 不自动删除",
+  "backupRetentionSaved": "保留期已保存。",
+  "backupRetentionFailed": "无法保存保留期。"
 }

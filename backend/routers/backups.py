@@ -5,6 +5,7 @@ import json
 import os
 import re
 import secrets
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -16,9 +17,14 @@ from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
 from backend.auth.auth import get_current_user
+from backend.db.engine import get_db
+from sqlalchemy.orm import Session
 from backend.auth.authorization import require_interactive_main_admin
 from backend.schema.output import ResponseModel
 
+
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/backups", tags=["Backups"])
 
@@ -31,6 +37,32 @@ BACKUP_ID_RE = re.compile(r"^\d{8}-\d{6}$")
 JOB_ID_RE = re.compile(r"^[a-f0-9]{24}$")
 _backup_lock = asyncio.Lock()
 
+
+def _apply_retention(db) -> int:
+    """PVN-1020: delete expired backups per the admin retention setting.
+
+    Returns the number of removed backup directories. Runs inline (small
+    shutil.rmtree calls) so both manual and scheduled backups clean up.
+    """
+    from datetime import datetime, timedelta, timezone
+    settings = db.query(SecuritySettings).filter_by(id=1).first()
+    days = int(getattr(settings, 'backup_retention_days', 10) or 0)
+    if days <= 0:
+        return 0
+    cutoff = datetime.now(tz=timezone.utc) - timedelta(days=days)
+    removed = 0
+    for path in _list_backup_directories():
+        try:
+            created = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+        except OSError:
+            continue
+        if created >= cutoff:
+            continue
+        shutil.rmtree(path, ignore_errors=True)
+        removed += 1
+    if removed:
+        logger.info('backup retention removed %d backups older than %dd', removed, days)
+    return removed
 
 def _backup_directory(backup_id: str) -> Path:
     if not BACKUP_ID_RE.fullmatch(backup_id):
@@ -153,8 +185,13 @@ def _write_status(job_directory: Path, payload: dict) -> None:
 
 
 @router.get("/", response_model=ResponseModel)
-async def list_backups(user: dict = Depends(get_current_user)):
+async def list_backups(user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     require_interactive_main_admin(user)
+    # PVN-1020: scheduled path cleanup (best-effort; the timer hits this list).
+    try:
+        cleanup = _apply_retention(db)
+    except Exception:
+        logger.exception("backup retention cleanup failed")
     rows = await asyncio.to_thread(
         lambda: [_backup_row(path) for path in _list_backup_directories()[:30]]
     )
@@ -162,7 +199,7 @@ async def list_backups(user: dict = Depends(get_current_user)):
 
 
 @router.post("/", response_model=ResponseModel)
-async def create_backup(user: dict = Depends(get_current_user)):
+async def create_backup(user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     require_interactive_main_admin(user)
     if not BACKUP_COMMAND.is_file():
         raise HTTPException(status_code=503, detail="Backup service is unavailable")
@@ -205,6 +242,10 @@ async def create_backup(user: dict = Depends(get_current_user)):
         row = _backup_row(created[0])
         if not row["verified"]:
             raise HTTPException(status_code=500, detail="Backup checksum verification failed")
+        try:
+            _apply_retention(db)
+        except Exception:
+            logger.exception("backup retention cleanup failed")
         return ResponseModel(success=True, msg="Backup created successfully", data=row)
 
 

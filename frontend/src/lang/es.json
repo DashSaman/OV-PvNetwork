@@ -692,5 +692,9 @@
   "recoveryCodesHelp": "Si pierdes el acceso a tu app de autenticación, introduce uno de estos códigos en lugar del código de 6 dígitos. Cada código sirve una sola vez.",
   "recoveryCodesCopy": "Copiar todos los códigos",
   "liveSpeedTitle": "Velocidad en vivo",
-  "th_liveSpeed": "Velocidad (↓/↑)"
+  "th_liveSpeed": "Velocidad (↓/↑)",
+  "backupRetentionLabel": "Conservar copias (días):",
+  "backupRetentionHelp": "0 = nunca eliminar",
+  "backupRetentionSaved": "Retención guardada.",
+  "backupRetentionFailed": "No se pudo guardar la retención."
 }

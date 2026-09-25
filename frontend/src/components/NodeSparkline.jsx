@@ -43,6 +43,16 @@ const NodeSparkline = ({ history = [], accent = '#22d3ee' }) => {
             isAnimationActive={false}
             dot={false}
           />
+          <Area
+            type="monotone"
+            dataKey="up"
+            stroke="#ff8a2a"
+            strokeWidth={1.4}
+            strokeDasharray="3 2"
+            fill="transparent"
+            isAnimationActive={false}
+            dot={false}
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>

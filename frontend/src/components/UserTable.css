@@ -186,10 +186,10 @@
 
 
 /* PVN-1018: dedicated live-speed column (stable, always visible online). */
-.pv-speed-cell { white-space: nowrap; }
+.pv-speed-cell { white-space: nowrap; width: 148px; min-width: 148px; max-width: 148px; }
 .pv-speed-pair { display: inline-flex; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
-.pv-speed-down { color: #22d3ee; font-weight: 700; font-size: 12px; }
-.pv-speed-up { color: #ff8a2a; font-weight: 700; font-size: 12px; }
+.pv-speed-down { color: #22d3ee; font-weight: 700; font-size: 12px; display: inline-block; min-width: 62px; }
+.pv-speed-up { color: #ff8a2a; font-weight: 700; font-size: 12px; display: inline-block; min-width: 62px; }
 @media (max-width: 640px) {
   .pv-speed-pair { flex-direction: column; gap: 2px; align-items: flex-start; }
 }

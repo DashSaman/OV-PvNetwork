@@ -1,25 +1,33 @@
-"""PVN-1016/PVN-1017 — per-user live traffic rates from node counters.
+"""PVN-1016/1017/1020 — per-user live traffic rates from node counters.
 
 /sync/usage on each node reports cumulative rx/tx bytes per Common Name
-(``{username}-{node_name}``). Nodes patched with
-``PVNETWORK_USERS_RX_TX_SPLIT_V1`` additionally report ``users_rx`` /
-``users_tx`` so download and upload rates are computed separately; on
-legacy nodes only the combined ``users`` total is available.
+(``{username}-{node_name}``), refreshed by OpenVPN's status log every 10
+seconds. A short 1–2 s delta therefore oscillates between zero and spikes,
+so rates are computed over a rolling window: the newest sample is compared
+against the oldest sample that is at least ``MIN_WINDOW`` seconds old. The
+result is a stable, genuinely realtime average per user.
 """
 from __future__ import annotations
 
 import asyncio
 import time
+from collections import deque
 
 from backend.db.engine import sessionLocal
 from backend.db.models import Node, User
 from backend.node.requests import NodeRequests
 from backend.operations.live_presence import client_username
 
-_CACHE_TTL = 1.6
+_CACHE_TTL = 1.2
+# Node status counters refresh every ~10s; compare against a sample at least
+# that old so the delta spans a full counter refresh.
+MIN_WINDOW = 10.0
+MAX_WINDOW = 35.0
+MAX_SAMPLES = 48
+
 _lock = asyncio.Lock()
 _cache: dict = {"data": None, "time": 0.0}
-_prev: dict = {"bytes": {}, "time": 0.0}
+_samples: "deque[tuple[float, dict]]" = deque(maxlen=MAX_SAMPLES)
 
 
 def _fetch_usage(client: NodeRequests) -> dict | None:
@@ -113,11 +121,24 @@ def _uuid_map() -> dict[str, str]:
         db.close()
 
 
+def _reference_index(now: float) -> int | None:
+    """Index of the oldest sample inside the delta window (>= MIN_WINDOW old)."""
+    ref: int | None = None
+    for index, (stamp, _) in enumerate(_samples):
+        if now - stamp >= MIN_WINDOW:
+            ref = index
+        else:
+            break
+    if ref is None and len(_samples) >= 2:
+        # Window still shorter than the node refresh; use the oldest sample.
+        ref = 0
+    return ref
+
+
 async def get_user_live_rates() -> dict:
     """Return per-uuid live rates in bits/s.
 
     ``{"rates_bps_by_uuid": {uuid: {"down": bps, "up": bps, "total": bps}}}``.
-    Legacy rows (combined only) keep down=up=0 with total filled.
     """
     now = time.monotonic()
     async with _lock:
@@ -126,26 +147,33 @@ async def get_user_live_rates() -> dict:
             return cached
 
         current = await _sample_all()
-        now_real = time.time()
-        prev = _prev.get("bytes") or {}
-        elapsed = now_real - float(_prev.get("time") or 0.0)
+        now_real = time.monotonic()
+        if current.get("total"):
+            _samples.append((now_real, current))
+            while _samples and now_real - _samples[0][0] > MAX_WINDOW:
+                _samples.popleft()
 
-        def delta(which: str) -> dict[str, float]:
-            out: dict[str, float] = {}
-            prev_map = prev.get(which) or {}
-            for username, value in current.get(which, {}).items():
-                before = prev_map.get(username)
-                if before is not None and value >= before:
-                    out[username] = (value - before) / elapsed
-            return out
-
+        ref = _reference_index(now_real)
         rates_total: dict[str, float] = {}
         rates_rx: dict[str, float] = {}
         rates_tx: dict[str, float] = {}
-        if prev and 0.4 <= elapsed <= 30.0:
-            rates_total = delta("total")
-            rates_rx = delta("rx")
-            rates_tx = delta("tx")
+        if ref is not None and len(_samples) > ref + 1:
+            ref_time, ref_maps = _samples[ref]
+            elapsed = now_real - ref_time
+            if 0.4 <= elapsed <= MAX_WINDOW:
+
+                def delta(which: str) -> dict[str, float]:
+                    out: dict[str, float] = {}
+                    ref_map = ref_maps.get(which) or {}
+                    for username, value in current.get(which, {}).items():
+                        before = ref_map.get(username)
+                        if before is not None and value >= before:
+                            out[username] = (value - before) / elapsed
+                    return out
+
+                rates_total = delta("total")
+                rates_rx = delta("rx")
+                rates_tx = delta("tx")
 
         try:
             mapping = await asyncio.get_running_loop().run_in_executor(None, _uuid_map)
@@ -165,10 +193,7 @@ async def get_user_live_rates() -> dict:
                 "total": round(total_bps * 8, 1),
             }
 
-        payload = {"rates_bps_by_uuid": by_uuid, "sample_time": int(now_real)}
+        payload = {"rates_bps_by_uuid": by_uuid, "sample_time": int(time.time())}
         _cache["data"] = payload
         _cache["time"] = time.monotonic()
-        if current.get("total"):
-            _prev["bytes"] = current
-            _prev["time"] = now_real
         return payload

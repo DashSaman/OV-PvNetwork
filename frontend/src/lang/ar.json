@@ -692,5 +692,9 @@
   "recoveryCodesHelp": "إذا فقدت الوصول إلى تطبيق المصادقة، أدخل أحد هذه الأكواد بدل الرمز المكوّن من 6 أرقام في صفحة الدخول. كل كود يُستخدم مرة واحدة.",
   "recoveryCodesCopy": "نسخ كل الأكواد",
   "liveSpeedTitle": "السرعة اللحظية",
-  "th_liveSpeed": "السرعة (↓/↑)"
+  "th_liveSpeed": "السرعة (↓/↑)",
+  "backupRetentionLabel": "الاحتفاظ بالنسخ (أيام):",
+  "backupRetentionHelp": "0 = بلا حذف تلقائي",
+  "backupRetentionSaved": "تم حفظ مدة الاحتفاظ.",
+  "backupRetentionFailed": "تعذر حفظ مدة الاحتفاظ."
 }
