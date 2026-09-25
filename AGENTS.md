@@ -223,6 +223,13 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.36` — RELEASED — `PVN-1020` realtime rolling-window rates + backup retention.
+  - Accuracy fix: OpenVPN status counters refresh every 10s, so 1–2s deltas oscillated between zero and spikes; rates now use a rolling window (newest vs oldest sample ≥10s old, ≤35s cap, 48-sample deque) → stable genuine realtime averages.
+  - Sparklines: upload plotted alongside download (dashed amber over the filled download area); speed cells fixed at 148px with 62px min per direction so the users table never resizes.
+  - Backup retention: `security_settings.backup_retention_days` (default 10, 0 disables), migration `h0a1b2c3d4e5`, exposed through the security settings API, editable from the Backup panel (save on blur/Enter), enforced by `_apply_retention` after manual creation and on the list endpoint (scheduled path).
+  - Release completion: three CI iterations caught stale assertions (window guard string, JS-style chr replace in a python test) — fixed; final CI PASS on `b1fa754`; tag `v1.0.36`; GitHub Release `396805525` with artifact + SHA256.
+  - Production deployment: DB backup (64 tables) → 24-file delta + migration (retention=10 confirmed in live table) → frontend switch → panel restart; `/healthz` 200 `1.0.36`; live rate test after ~25s of window build shows realistic split rates for 9 users (e.g. 322 Kbps↓ / 958 Kbps↑); server backups older than 10 days already purged (0 found — existing set was within 10 days, 17 remain); 0 errors.
+
 - `v1.0.35` — RELEASED — `PVN-1019` presence rate-dict hotfix.
   - Live defect: /users/presence returned 500 from the moment v1.0.33 shipped split-rate dicts (endpoint still did float(rate)) — this is why live speeds never showed in the panel UI. Fixed with dict passthrough + isinstance guard; production verified all presence requests 200 after deploy.
   - Release completion: CI PASS on `3f4d7b2`; tag `v1.0.35`; GitHub Release `396787155` (the tar asset landed in a partial `starter` state and was deleted/re-uploaded before verification); public re-download SHA256 PASS (`7f9d773f66911db8ee1ab980fb08dbdffed63cce53fb0ce8161d5c742c98512a`).
