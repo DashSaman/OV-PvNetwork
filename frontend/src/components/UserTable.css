@@ -209,3 +209,6 @@
   table.pv-users-table th:nth-child(9), table.pv-users-table td:nth-child(9) { width: 8%; }
   table.pv-users-table th:nth-child(10), table.pv-users-table td:nth-child(10) { width: 9%; }
 }
+/* PVN-1021: spanning rows keep full width under fixed layout. */
+table.pv-users-table td[colspan], table.pv-users-table td[colSpan] { width: 100% !important; }
+table.pv-users-table .quick-edit-grid { max-width: 100%; }
