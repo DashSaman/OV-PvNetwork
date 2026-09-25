@@ -226,6 +226,8 @@ Before implementation, record the task and target release here **and commit/push
 - `v1.0.32` — RELEASED — `PVN-1016` live per-user speed + professional charts.
   - Backend: `backend/operations/user_live_rates.py` samples `/sync/usage` per-CN cumulative bytes on every enabled node (parallel executor fetches, 1.6s shared cache), computes per-username B/s deltas with elapsed guards (0.4–30s), maps usernames to uuids and returns bits/s; `/users/presence` exposes `rates_bps_by_uuid` next to the existing presence counts.
   - Frontend: Users table renders a ⚡ rate chip beside each online username (updates every presence poll, idle <1Kbps hidden); dashboard LiveChart replaced by a recharts gradient AreaChart (lazy chunk 355KB, main bundle 982,952 < 990,000; old SVG kept as Suspense fallback).
+  - Release completion: first CI run caught a missing `liveSpeedTitle` catalog key (parity gate) and a stray probe script — fixed; final CI PASS on `ab81501`; tag `v1.0.32`; GitHub Release `396715156`; public re-download SHA256 PASS (`1ddaf9a3a46d7351f4e2baf07b95fc0d62d81070f26678324e7719476942ff4c`).
+  - Production deployment: backend delta + frontend dist; one panel restart; `/healthz` 200 `1.0.32`; LiveAreaChart chunk deployed; 0 errors; unrelated services untouched.
 
 - `v1.0.31` — RELEASED — `PVN-1015` Vengeance-style skin + speed.
   - Skin: `frontend/src/vengeance-skin.css` loaded last in main.jsx — token overrides only (no position/display/z-index rules), glass surfaces, single amber accent, focus rings, reduced-motion honored; rollback = remove one import.
