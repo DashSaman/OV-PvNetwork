@@ -223,6 +223,11 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.29` — RELEASED — `PVN-1013` installable panel (PWA) + mobile users-table cards.
+  - Contract: web manifest + icon + standalone display served through the assets mount (the first attempt at dist root was shadowed by the SPA catch-all and was fixed in-commit before tagging); Users table becomes stacked cards ≤640px while desktop keeps the table.
+  - Release completion: CI PASS on `e49486e` and `996a41f` (assets-mount fix); tag `v1.0.29`; GitHub Release `396626135`; public re-download SHA256 PASS (`6282cf803fa9b99f4521e0bd7cc5a2cff934515b86464da370ab4b2be15534b9`); production redeployed with the fixed build (panel reports 1.0.28 until the next backend metadata delta — the deployed bundle/manifest are the v1.0.29 frontend).
+  - Post-deploy: public `/hajsaman/assets/manifest.webmanifest` and icon 200; index links the manifest; 0 errors; unrelated services untouched.
+
 - `v1.0.28` — RELEASED — `PVN-202/203` renewal notifications.
   - Contract: expiry stages 7/3/1/0 (nearest stage per run; the final day carries its own key so the today-alert always fires) and traffic thresholds 80/90/100% of quota for active users; delivered through the existing Telegram monitor and transition-dedup state, clearing silently on renewal/reset.
   - Release completion: CI caught the final-day dedup-key collision and it was fixed (final CI PASS on `e0df3f6`); tag `v1.0.28`; GitHub Release `396614547`; public re-download SHA256 PASS (`80bc49ae09ee548a11afeacaa8c7493a68e1539d83f4fa11046d686b9dd44d35`).
