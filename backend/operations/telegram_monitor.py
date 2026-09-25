@@ -142,7 +142,14 @@ async def main():
         for key, message in old.items()
         if not key.startswith("renew:")
     }
-    for message in build_transition_messages(old_node_alerts, alerts):
+    # PVN-1021: renewal keys must be absent from BOTH sides of the generic
+    # builder, otherwise they re-fire as "new" alerts on every monitor run.
+    node_alerts_only = {
+        key: message
+        for key, message in alerts.items()
+        if not key.startswith("renew:")
+    }
+    for message in build_transition_messages(old_node_alerts, node_alerts_only):
         send(token, chat, message)
 
     # PVN-1018: one consolidated digest per 24h instead of bursts.

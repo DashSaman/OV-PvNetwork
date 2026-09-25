@@ -115,7 +115,7 @@ const UserTable = ({ ratesByUuid = {},
   }
   return <div className="table-container">
 
-      <table className="pv-mobile-cards">
+      <table className="pv-mobile-cards pv-users-table">
 
         <thead>
           <tr>

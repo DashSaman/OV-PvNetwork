@@ -4,6 +4,14 @@ import unittest
 class MonitorRenewalSpamTests(unittest.TestCase):
     """PVN-1014 — renewal keys must never reach the generic transition builder."""
 
+    def test_generic_builder_sees_no_renewal_keys_on_either_side(self):
+        from pathlib import Path
+        source = (Path(__file__).resolve().parents[1] / 'backend/operations/telegram_monitor.py').read_text(encoding='utf-8')
+        # The true every-run spam root: renewal keys were in 'alerts' (current)
+        # but stripped only from old -> generic builder fired them as new forever.
+        self.assertIn('node_alerts_only', source)
+        self.assertIn('build_transition_messages(old_node_alerts, node_alerts_only)', source)
+
     def test_monitor_excludes_renewal_keys_from_node_transitions(self):
         from pathlib import Path
         source = (Path(__file__).resolve().parents[1] / 'backend/operations/telegram_monitor.py').read_text(encoding='utf-8')

@@ -193,3 +193,20 @@
 @media (max-width: 640px) {
   .pv-speed-pair { flex-direction: column; gap: 2px; align-items: flex-start; }
 }
+
+
+/* PVN-1021: fixed table layout — volatile speed/traffic digits never resize the grid. */
+@media (min-width: 641px) {
+  table.pv-users-table { table-layout: fixed; width: 100%; }
+  table.pv-users-table th:nth-child(1), table.pv-users-table td:nth-child(1) { width: 14%; overflow: hidden; text-overflow: ellipsis; }
+  table.pv-users-table th:nth-child(2), table.pv-users-table td:nth-child(2) { width: 9%; }
+  table.pv-users-table th:nth-child(3), table.pv-users-table td:nth-child(3) { width: 12%; }
+  table.pv-users-table th:nth-child(4), table.pv-users-table td:nth-child(4) { width: 9%; }
+  table.pv-users-table th:nth-child(5), table.pv-users-table td:nth-child(5) { width: 11%; }
+  table.pv-users-table th:nth-child(6), table.pv-users-table td:nth-child(6) { width: 11%; }
+  table.pv-users-table th:nth-child(7), table.pv-users-table td:nth-child(7) { width: 8%; }
+  table.pv-users-table th:nth-child(8), table.pv-users-table td:nth-child(8) { width: 9%; }
+  table.pv-users-table th:nth-child(9), table.pv-users-table td:nth-child(9) { width: 8%; }
+  table.pv-users-table th:nth-child(10), table.pv-users-table td:nth-child(10) { width: 9%; }
+}
+table.pv-users-table td, table.pv-users-table th { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
