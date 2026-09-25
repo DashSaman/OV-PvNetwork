@@ -9,10 +9,10 @@ class PwaAndMobileCardsTests(unittest.TestCase):
 
     def test_manifest_exists_with_icons_and_standalone(self):
         import json
-        manifest = json.loads((ROOT / 'frontend' / 'public' / 'manifest.webmanifest').read_text(encoding='utf-8'))
+        manifest = json.loads((ROOT / 'frontend' / 'public' / 'assets' / 'manifest.webmanifest').read_text(encoding='utf-8'))
         self.assertEqual('standalone', manifest['display'])
         self.assertTrue(manifest['icons'])
-        self.assertTrue((ROOT / 'frontend' / 'public' / 'icon.webp').exists())
+        self.assertTrue((ROOT / 'frontend' / 'public' / 'assets' / 'icon.webp').exists())
 
     def test_index_links_manifest(self):
         html = (ROOT / 'frontend' / 'index.html').read_text(encoding='utf-8')
