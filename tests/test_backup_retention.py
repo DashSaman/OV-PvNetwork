@@ -35,7 +35,8 @@ class BackupRetentionTests(unittest.TestCase):
         page = (ROOT / 'frontend' / 'src' / 'components' / 'BackupRestorePanel.jsx').read_text(encoding='utf-8')
         self.assertIn('retention-input', page)
         self.assertIn('saveRetention', page)
-        page = page.replace(chr(39), chr(34))"+String.fromCharCode(10)+"        self.assertIn('put("/security/"', page)
+        page = page.replace(chr(39), chr(34))
+        self.assertIn('put("/security/"', page)
 
     def test_retention_labels_translated(self):
         langs = ['en', 'fa', 'ar', 'es', 'id', 'ja', 'pt_BR', 'ru', 'tr', 'uk', 'vi', 'zh_CN', 'zh_TW']
