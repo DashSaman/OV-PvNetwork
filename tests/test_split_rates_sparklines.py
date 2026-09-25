@@ -18,8 +18,8 @@ class SplitRatesTests(unittest.TestCase):
 
     def test_user_table_shows_separate_arrows(self):
         table = (ROOT / 'frontend' / 'src' / 'components' / 'UserTable.jsx').read_text(encoding='utf-8')
-        self.assertIn('"↓ "', table.replace("'", '"'))
-        self.assertIn('"↑ "', table.replace("'", '"'))
+        self.assertIn('↓ {fmt(r.down)}', table)
+        self.assertIn('↑ {fmt(r.up)}', table)
         self.assertIn('pv-speed-cell', table)
         self.assertIn("pv-speed-down", table)
         self.assertIn("pv-speed-up", table)

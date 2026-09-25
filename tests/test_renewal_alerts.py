@@ -58,7 +58,9 @@ class RenewalAlertTests(unittest.TestCase):
         from pathlib import Path
         source = (Path(__file__).resolve().parents[1] / 'backend/operations/telegram_monitor.py').read_text(encoding='utf-8')
         self.assertIn('build_renewal_alerts(users)', source)
-        self.assertIn('build_renewal_transition_messages(old, renewal)', source)
+        # PVN-1018: one consolidated digest per 24h instead of per-tick bursts.
+        self.assertIn('renewal_digest_at', source)
+        self.assertIn('>= 86400', source)
 
 
 if __name__ == '__main__':

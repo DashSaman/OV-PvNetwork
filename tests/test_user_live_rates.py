@@ -25,7 +25,9 @@ class UserLiveRatesTests(unittest.TestCase):
         table = (ROOT / 'frontend' / 'src' / 'components' / 'UserTable.jsx').read_text(encoding='utf-8')
         self.assertIn('ratesByUuid={presenceRates}', page)
         self.assertIn('ratesByUuid', table)
-        self.assertIn('pv-live-speed', table)
+        self.assertIn('pv-speed-cell', table)
+        self.assertIn('pv-speed-down', table)
+        self.assertIn('pv-speed-up', table)
 
     def test_chart_is_lazy_and_recharts(self):
         page = (ROOT / 'frontend' / 'src' / 'pages' / 'ServerStats.jsx').read_text(encoding='utf-8')
