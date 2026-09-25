@@ -149,9 +149,7 @@ async def main():
     last_digest = int(state.get("renewal_digest_at") or 0)
     if renewal and int(time.time()) - last_digest >= 86400:
         lines = [message for _, message in sorted(renewal.items())][:30]
-        digest = "🔔 یادآوری تمدید (خلاصه ۲۴ ساعته):
-" + "
-".join(lines)
+        digest = "🔔 یادآوری تمدید (خلاصه ۲۴ ساعته):\n" + "\n".join(lines)
         send(token, chat, digest)
         state["renewal_digest_at"] = int(time.time())
 
