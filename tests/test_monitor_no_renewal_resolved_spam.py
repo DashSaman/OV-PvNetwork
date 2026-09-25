@@ -18,7 +18,7 @@ class MonitorRenewalSpamTests(unittest.TestCase):
         self.assertIn('old_node_alerts', source)
         self.assertIn('not key.startswith("renew:")', source)
         # build_transition_messages must receive the filtered dict.
-        self.assertIn('build_transition_messages(old_node_alerts, alerts)', source)
+        self.assertIn('build_transition_messages(old_node_alerts, node_alerts_only)', source)
 
     def test_generic_builder_would_have_spammed_renewal_keys(self):
         from backend.operations.alert_transitions import build_transition_messages
