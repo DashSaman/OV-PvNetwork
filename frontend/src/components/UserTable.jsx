@@ -129,6 +129,10 @@ const UserTable = ({ ratesByUuid = {},
             </th>
 
             <th>
+              {t('th_liveSpeed', 'Speed (↓/↑)')}
+            </th>
+
+            <th>
               {t('th_connections', 'Connections')}
             </th>
 
@@ -163,7 +167,7 @@ const UserTable = ({ ratesByUuid = {},
         <tbody>
 
           {users.length === 0 ? <tr>
-              <td colSpan="9" style={{
+              <td colSpan="10" style={{
             textAlign: 'center'
           }}>
                 {t('noUsersFound')}
@@ -174,19 +178,6 @@ const UserTable = ({ ratesByUuid = {},
 
                 <td>
                   <span style={{ fontWeight: 650 }}>{user.name}</span>
-                  {(() => {
-                    const r = ratesByUuid[user.uuid] || {};
-                    const down = Number(r.down || (typeof r === "number" ? 0 : 0) || 0);
-                    const up = Number(r.up || 0);
-                    const fmt = b => b >= 1e6 ? (b / 1e6).toFixed(1) + " Mbps" : (b / 1e3).toFixed(0) + " Kbps";
-                    if (!user.is_online) return null;
-                    if (down < 1024 && up < 1024) return null;
-                    return <span className="pv-live-speed" title={t("liveSpeedTitle", "سرعت لحظه‌ای")}>
-                      {down >= 1024 && <span style={{ color: "#22d3ee" }}>{"↓ " + fmt(down)}</span>}
-                      {down >= 1024 && up >= 1024 && <span style={{ opacity: 0.4, margin: "0 3px" }}>·</span>}
-                      {up >= 1024 && <span style={{ color: "#ff8a2a" }}>{"↑ " + fmt(up)}</span>}
-                    </span>;
-                  })()}
                 </td>
 
 
@@ -200,6 +191,24 @@ const UserTable = ({ ratesByUuid = {},
 
                   </span>
 
+                </td>
+
+
+                <td className="pv-speed-cell">
+                  {(() => {
+                    if (!user.is_online) return <span style={{ opacity: .35 }}>—</span>;
+                    const r = ratesByUuid[user.uuid] || {};
+                    const fmt = b => {
+                      const v = Number(b || 0);
+                      if (v >= 1e6) return (v / 1e6).toFixed(1) + " Mbps";
+                      if (v >= 1e3) return (v / 1e3).toFixed(0) + " Kbps";
+                      return "0 Kbps";
+                    };
+                    return <span className="pv-speed-pair">
+                      <span className="pv-speed-down">↓ {fmt(r.down)}</span>
+                      <span className="pv-speed-up">↑ {fmt(r.up)}</span>
+                    </span>;
+                  })()}
                 </td>
 
 
@@ -360,7 +369,7 @@ const UserTable = ({ ratesByUuid = {},
 
               </tr>
               {expandedUserUuid === user.uuid && !compactQuickEdit && !renameBusy && <tr className="user-quick-edit-row desktop-user-quick-edit-row">
-                <td colSpan="9">
+                <td colSpan="10">
                   <InlineUserQuickEdit
                     user={user}
                     nodes={availableNodes}

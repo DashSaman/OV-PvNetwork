@@ -691,5 +691,6 @@
   "recoveryCodesTitle": "Kode pemulihan 2FA — hanya ditampilkan sekali ini!",
   "recoveryCodesHelp": "Jika kehilangan akses ke aplikasi autentikator, masukkan salah satu kode ini sebagai pengganti kode 6 digit di halaman masuk. Setiap kode hanya berlaku sekali.",
   "recoveryCodesCopy": "Salin semua kode",
-  "liveSpeedTitle": "Kecepatan langsung"
+  "liveSpeedTitle": "Kecepatan langsung",
+  "th_liveSpeed": "Kecepatan (↓/↑)"
 }

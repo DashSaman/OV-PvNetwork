@@ -145,8 +145,15 @@ async def main():
     for message in build_transition_messages(old_node_alerts, alerts):
         send(token, chat, message)
 
-    for message in build_renewal_transition_messages(old, renewal):
-        send(token, chat, message)
+    # PVN-1018: one consolidated digest per 24h instead of bursts.
+    last_digest = int(state.get("renewal_digest_at") or 0)
+    if renewal and int(time.time()) - last_digest >= 86400:
+        lines = [message for _, message in sorted(renewal.items())][:30]
+        digest = "🔔 یادآوری تمدید (خلاصه ۲۴ ساعته):
+" + "
+".join(lines)
+        send(token, chat, digest)
+        state["renewal_digest_at"] = int(time.time())
 
     tmp = STATE.with_suffix('.tmp')
     tmp.write_text(
@@ -155,6 +162,7 @@ async def main():
                 'checked_at': int(time.time()),
                 'alerts': alerts,
                 'threshold_counters': threshold_counters,
+                'renewal_digest_at': int(state.get('renewal_digest_at') or 0),
             },
             ensure_ascii=False,
         )

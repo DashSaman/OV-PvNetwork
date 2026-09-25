@@ -20,7 +20,9 @@ class SplitRatesTests(unittest.TestCase):
         table = (ROOT / 'frontend' / 'src' / 'components' / 'UserTable.jsx').read_text(encoding='utf-8')
         self.assertIn('"↓ "', table.replace("'", '"'))
         self.assertIn('"↑ "', table.replace("'", '"'))
-        self.assertIn('pv-live-speed', table)
+        self.assertIn('pv-speed-cell', table)
+        self.assertIn("pv-speed-down", table)
+        self.assertIn("pv-speed-up", table)
 
     def test_node_sparkline_exists_and_is_lazy(self):
         spark = (ROOT / 'frontend' / 'src' / 'components' / 'NodeSparkline.jsx').read_text(encoding='utf-8')
@@ -34,6 +36,25 @@ class SplitRatesTests(unittest.TestCase):
         tpl = (ROOT / 'frontend' / 'templates' / 'subscription.html').read_text(encoding='utf-8')
         self.assertIn('weekKey', tpl)
         self.assertIn('modalDismissKey) === weekKey()', tpl)
+
+
+class ChartUnitsAndDigestTests(unittest.TestCase):
+    """PVN-1018 — chart byte-to-bit fix and daily renewal digest."""
+
+    def test_charts_convert_bytes_to_bits(self):
+        chart = (ROOT / 'frontend' / 'src' / 'components' / 'LiveAreaChart.jsx').read_text(encoding='utf-8')
+        spark = (ROOT / 'frontend' / 'src' / 'components' / 'NodeSparkline.jsx').read_text(encoding='utf-8')
+        self.assertIn('Number(p.down || 0) * 8', chart)
+        self.assertIn('Number(p.up || 0) * 8', chart)
+        self.assertIn('Number(p.down || 0) * 8', spark)
+
+    def test_renewal_alerts_are_daily_digest(self):
+        source = (ROOT / 'backend' / 'operations' / 'telegram_monitor.py').read_text(encoding='utf-8')
+        self.assertIn('renewal_digest_at', source)
+        self.assertIn('>= 86400', source)
+        self.assertIn('خلاصه ۲۴ ساعته', source)
+        # The per-tick burst sender must be gone.
+        self.assertNotIn('for message in build_renewal_transition_messages(old, renewal):', source)
 
 
 if __name__ == '__main__':

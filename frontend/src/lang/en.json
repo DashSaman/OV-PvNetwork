@@ -691,5 +691,6 @@
   "recoveryCodesTitle": "2FA recovery codes — shown only this once!",
   "recoveryCodesHelp": "If you lose access to your authenticator app, enter one of these codes instead of the 6-digit code on the login page. Each code works exactly once.",
   "recoveryCodesCopy": "Copy all codes",
-  "liveSpeedTitle": "Live speed"
+  "liveSpeedTitle": "Live speed",
+  "th_liveSpeed": "Speed (↓/↑)"
 }

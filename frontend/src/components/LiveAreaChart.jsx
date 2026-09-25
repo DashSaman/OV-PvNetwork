@@ -23,8 +23,8 @@ const LiveAreaChart = ({ history = [] }) => {
   const { t } = useTranslation();
   const data = (history.length ? history : [{ down: 0, up: 0, at: 0 }]).map((p, i) => ({
     i,
-    down: Number(p.down || 0),
-    up: Number(p.up || 0),
+    down: Number(p.down || 0) * 8,
+    up: Number(p.up || 0) * 8,
   }));
 
   const tooltipStyle = {

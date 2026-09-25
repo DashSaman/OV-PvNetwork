@@ -223,6 +223,11 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.34` — RELEASED — `PVN-1018` stable speed column + chart units + daily renewal digest.
+  - Users table: dedicated Speed (↓/↑) column (always visible online, 0 Kbps idle, cyan/amber, phone-stacked); inline name chip removed; colSpans updated.
+  - Charts: node rates are bytes/s — dashboard area chart and node sparklines now ×8 so the bits/s axis matches the hero total (fixes 300 Mbps total vs ~26 chart).
+  - Renewals: single consolidated Telegram digest per 24h (renewal_digest_at persisted in monitor state); per-tick burst sender removed.
+
 - `v1.0.33` — RELEASED — `PVN-1017` split per-user speeds + node sparklines.
   - Node side (owner-authorized): idempotent additive patch `PVNETWORK_USERS_RX_TX_SPLIT_V1` applied on USA/Germany/Turkey2 via SSH (each backed up `*.pvn1017.bak`, py_compile verified, ov-node restarted — OpenVPN untouched, all nodes active; Turkey2 needed an indentation repair caught by py_compile before restart). Finland node (co-hosted) already upgraded in a later deploy.
   - Panel: user_live_rates now computes down/up/total per uuid from users_rx/users_tx deltas; presence exposes the dict; Users table renders separate ↓/↑ chips (cyan/amber, idle hidden).

@@ -183,3 +183,13 @@
   border: 1px solid rgba(255, 138, 42, 0.28);
   white-space: nowrap;
 }
+
+
+/* PVN-1018: dedicated live-speed column (stable, always visible online). */
+.pv-speed-cell { white-space: nowrap; }
+.pv-speed-pair { display: inline-flex; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
+.pv-speed-down { color: #22d3ee; font-weight: 700; font-size: 12px; }
+.pv-speed-up { color: #ff8a2a; font-weight: 700; font-size: 12px; }
+@media (max-width: 640px) {
+  .pv-speed-pair { flex-direction: column; gap: 2px; align-items: flex-start; }
+}

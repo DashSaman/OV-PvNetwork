@@ -11,7 +11,7 @@ const fmtBits = value => {
 };
 
 const NodeSparkline = ({ history = [], accent = '#22d3ee' }) => {
-  const data = history.map((p, i) => ({ i, down: Number(p.down || 0), up: Number(p.up || 0) }));
+  const data = history.map((p, i) => ({ i, down: Number(p.down || 0) * 8, up: Number(p.up || 0) }));
   return (
     <div style={{ width: '100%', height: 56 }} aria-hidden="true">
       <ResponsiveContainer width="100%" height="100%">

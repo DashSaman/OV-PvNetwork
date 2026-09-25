@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 REPO="DashSaman/OV-PvNetwork"
-REF="${PVNETWORK_REF:-v1.0.33}"
+REF="${PVNETWORK_REF:-v1.0.34}"
 TMP="$(mktemp -d /tmp/pvnetwork-panel-install.XXXXXX)"
 trap 'rm -rf "$TMP"' EXIT
 

@@ -691,5 +691,6 @@
   "recoveryCodesTitle": "2FA 恢复代码 — 仅此一次显示！",
   "recoveryCodesHelp": "如果无法访问验证器应用，可在登录页用以下任一代码代替 6 位数字码。每个代码只能使用一次。",
   "recoveryCodesCopy": "复制全部代码",
-  "liveSpeedTitle": "实时速度"
+  "liveSpeedTitle": "实时速度",
+  "th_liveSpeed": "速度 (↓/↑)"
 }

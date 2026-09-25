@@ -1,3 +1,9 @@
+## v1.0.34 — PVN-1018 stable speed column + chart units + daily renewal digest
+
+- The Users table gains a dedicated Speed (↓/↑) column — always visible for online users (0 Kbps when idle instead of a chip appearing and disappearing), cyan download / amber upload, stacked on phones; the inline name chip was removed.
+- Fixed an 8× unit error in the live charts: node rates are bytes/s while the recharts axes format bits/s, so the dashboard total could read ~300 Mbps while the chart plotted ~26. Both the dashboard area chart and the node sparklines now convert bytes→bits.
+- Renewal Telegram alerts are now a single consolidated digest per 24 hours (all active expiry/traffic reminders in one message, timestamp persisted in monitor state) instead of separate messages.
+
 ## v1.0.33 — PVN-1017 split ↓/↑ per-user speeds + per-node sparklines
 
 - Each online user now shows separate live download and upload speeds beside their name (↓ cyan / ↑ amber chips) instead of a combined figure: nodes report per-client rx and tx through an idempotent additive patch (combined totals untouched for quota accounting), and /users/presence returns down/up/total per uuid.

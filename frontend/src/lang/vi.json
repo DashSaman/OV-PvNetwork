@@ -691,5 +691,6 @@
   "recoveryCodesTitle": "Mã khôi phục 2FA — chỉ hiển thị một lần duy nhất!",
   "recoveryCodesHelp": "Nếu mất quyền truy cập ứng dụng xác thực, hãy nhập một trong các mã này thay cho mã 6 số ở trang đăng nhập. Mỗi mã chỉ dùng được một lần.",
   "recoveryCodesCopy": "Sao chép tất cả mã",
-  "liveSpeedTitle": "Tốc độ trực tiếp"
+  "liveSpeedTitle": "Tốc độ trực tiếp",
+  "th_liveSpeed": "Tốc độ (↓/↑)"
 }

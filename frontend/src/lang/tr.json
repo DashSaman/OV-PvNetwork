@@ -691,5 +691,6 @@
   "recoveryCodesTitle": "2FA kurtarma kodları — yalnızca bir kez gösterilir!",
   "recoveryCodesHelp": "Kimlik doğrulayıcı uygulamanıza erişimi kaybederseniz, giriş sayfasında 6 haneli kod yerine bu kodlardan birini girin. Her kod yalnızca bir kez kullanılabilir.",
   "recoveryCodesCopy": "Tüm kodları kopyala",
-  "liveSpeedTitle": "Anlık hız"
+  "liveSpeedTitle": "Anlık hız",
+  "th_liveSpeed": "Hız (↓/↑)"
 }
