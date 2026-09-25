@@ -175,11 +175,17 @@ const UserTable = ({ ratesByUuid = {},
                 <td>
                   <span style={{ fontWeight: 650 }}>{user.name}</span>
                   {(() => {
-                    const bps = Number(ratesByUuid[user.uuid] || user.live_bps || 0);
-                    if (!user.is_online || !bps || bps < 1024) return null;
-                    const mbps = bps / 1e6;
-                    const text = mbps >= 1 ? mbps.toFixed(1) + ' Mbps' : (bps / 1e3).toFixed(0) + ' Kbps';
-                    return <span className="pv-live-speed" title={t('liveSpeedTitle', 'سرعت لحظه‌ای')}>{'⚡ ' + text}</span>;
+                    const r = ratesByUuid[user.uuid] || {};
+                    const down = Number(r.down || (typeof r === "number" ? 0 : 0) || 0);
+                    const up = Number(r.up || 0);
+                    const fmt = b => b >= 1e6 ? (b / 1e6).toFixed(1) + " Mbps" : (b / 1e3).toFixed(0) + " Kbps";
+                    if (!user.is_online) return null;
+                    if (down < 1024 && up < 1024) return null;
+                    return <span className="pv-live-speed" title={t("liveSpeedTitle", "سرعت لحظه‌ای")}>
+                      {down >= 1024 && <span style={{ color: "#22d3ee" }}>{"↓ " + fmt(down)}</span>}
+                      {down >= 1024 && up >= 1024 && <span style={{ opacity: 0.4, margin: "0 3px" }}>·</span>}
+                      {up >= 1024 && <span style={{ color: "#ff8a2a" }}>{"↑ " + fmt(up)}</span>}
+                    </span>;
                   })()}
                 </td>
 

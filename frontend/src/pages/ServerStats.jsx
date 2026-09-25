@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { t } from "../i18n";
 // PVN-1016: recharts live chart in its own lazy chunk (bundle budget).
 const LiveAreaChart = lazy(() => import('../components/LiveAreaChart'));
+const NodeSparkline = lazy(() => import('../components/NodeSparkline'));
 import { useEffect, useMemo, useRef, useState } from 'react';
 import apiClient from '../services/api';
 import { FiActivity, FiClock, FiCpu, FiDownload, FiHardDrive, FiMoon, FiServer, FiSun, FiUpload, FiUsers } from 'react-icons/fi';
@@ -173,7 +174,8 @@ const ProgressLine = ({
 const NodeCard = ({
   node,
   metric,
-  online
+  online,
+  history
 }) => {
   const visual = nodeVisual(node.name);
   const available = Boolean(metric?.available);
@@ -208,6 +210,7 @@ const NodeCard = ({
             {sampled ? formatRate(metric.download) : t("ui.f536b5eaf524")}
           </strong>
         </div>
+      <Suspense fallback={null}><NodeSparkline history={history || []} accent={visual.accent} /></Suspense>
 
         <div>
           <span className="upload">{t("ui.71887a34a9be")}</span>
@@ -267,6 +270,8 @@ const ServerStats = () => {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   });
   const metricsRef = useRef({});
+  // PVN-1017: rolling per-node down/up history for the sparklines.
+  const nodeHistoryRef = useRef({});
   const pollBusy = useRef(false);
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -502,6 +507,14 @@ const ServerStats = () => {
             up: 0
           });
           setHistory(old => [...old, liveTotals].slice(-HISTORY_POINTS));
+          // PVN-1017: rolling per-node sparkline history.
+          const nextNodeHistory = {};
+          Object.entries(next).forEach(([id, metric]) => {
+            if (!metric || !metric.ready) return;
+            const prev = (nodeHistoryRef.current[id] || []).slice(-(HISTORY_POINTS - 1));
+            nextNodeHistory[id] = [...prev, { down: metric.download || 0, up: metric.upload || 0 }];
+          });
+          nodeHistoryRef.current = nextNodeHistory;
         }
       } catch (error) {
         /*
@@ -1336,6 +1349,7 @@ const ServerStats = () => {
           key={node.id}
           node={node}
           metric={nodeMetrics[node.id]}
+          history={nodeHistoryRef.current[node.id]}
           online={Number(
             presence.managed_online_by_node?.[node.id]
             ?? nodeMetrics[node.id]?.online_count

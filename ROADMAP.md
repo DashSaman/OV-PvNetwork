@@ -85,6 +85,7 @@ PVNetwork advances **one Production-visible task per patch release**. Exact exec
 - **v1.0.20 released:** `PVN-1005` uniform language switching — all 463 used translation keys resolve in every one of the 13 shipped languages, Router/MikroTik modal direction follows the active language, and a permanent catalog-parity CI gate blocks future mixed-language regressions.
 - **v1.0.21 released:** `PVN-1006` + `PVN-1007` (owner-directed combined patch) — full language uniformity (28 Persian-valued keys replaced across non-Persian catalogs, ~100 hardcoded Persian strings in Backup/AnyConnect/reseller UIs moved into the translation system, permanent value-purity CI gates) and Router/MikroTik one-time username/password credentials generated at user creation.
 - **v1.0.22 released:** `PVN-1008` reliable automatic node deployment — the node-side allowlist source auto-detects from the SSH session (optional field), firewall rule insertion survives empty INPUT chains, IPv6 panels get a proper allow branch, and post-install verification failures are actionable.
+- **v1.0.33 released:** `PVN-1017` split per-user ↓/↑ speeds + per-node sparklines.
 - **v1.0.32 released:** `PVN-1016` live per-user speed badges + recharts dashboard chart.
 - **v1.0.31 released:** `PVN-1015` Vengeance-style professional skin + transport speedups (gzip −70%, immutable caching).
 - **v1.0.30 released:** `PVN-1014` renewal-alert repeat hotfix (live Telegram loop closed).

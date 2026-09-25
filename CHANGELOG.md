@@ -1,3 +1,9 @@
+## v1.0.33 — PVN-1017 split ↓/↑ per-user speeds + per-node sparklines
+
+- Each online user now shows separate live download and upload speeds beside their name (↓ cyan / ↑ amber chips) instead of a combined figure: nodes report per-client rx and tx through an idempotent additive patch (combined totals untouched for quota accounting), and /users/presence returns down/up/total per uuid.
+- Every dashboard node card gains a live recharts sparkline of that node's download history (rolling window, hover tooltip, per-node accent color) in the shared lazy chart chunk.
+- The subscription-page renewal permission popup now appears at most once a week instead of daily.
+
 ## v1.0.32 — PVN-1016 live per-user speed + professional charts
 
 - The Users table now shows each connected user's live traffic rate (⚡ x.x Mbps) right beside their username, updated every presence poll — computed on the panel from per-CN cumulative usage deltas across all nodes and exposed through /users/presence (rates_bps_by_uuid). Offline or idle users show no chip.

@@ -2252,7 +2252,7 @@ window.PNQR=(function(){
     if(!browserNotificationAvailable()) return;
     if(Notification.permission !== "default") return;
     if(reminderEnabled()) return;
-    if(localStorage.getItem(modalDismissKey) === todayKey()) return;
+    if(localStorage.getItem(modalDismissKey) +"" >= weekKey()) return;
 
     const overlay = document.createElement("div");
     overlay.className = "pn5-modal-backdrop";

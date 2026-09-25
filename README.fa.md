@@ -4,17 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.32-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.33-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## تغییرات v1.0.33 نسبت به v1.0.32
+
+**PVN-1017 — سرعت جداگانه ↓/↑ هر کاربر + اسپارک‌لاین هر نود.** هر کاربر آنلاین چیپ‌های جدا دانلود/آپلود کنار نامش می‌بیند، هر کارت نود داشبورد نمودار زنده recharts می‌گیرد و پاپ‌آپ مجوز یادآوری هفتگی شد.
+
+خط انتشار فعلی: **v1.0.33** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.33.fa.md).
+
 ## تغییرات v1.0.32 نسبت به v1.0.31
 
 **PVN-1016 — سرعت لحظه‌ای هر کاربر + نمودار حرفه‌ای.** جدول کاربران سرعت زنده هر کاربر آنلاین (⚡ Mbps) را کنار نامش نشان می‌دهد و نمودار داشبورد با recharts (ناحیه گرادیانی، tooltip زنده) بازسازی شد — چانک lazy و بدون شکستن بودجه.
 
-خط انتشار فعلی: **v1.0.32** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.32.fa.md).
+انتشار قبلی: **v1.0.32** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.32.fa.md).
 
 ## تغییرات v1.0.31 نسبت به v1.0.30
 
@@ -302,7 +308,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.32/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.33/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.
