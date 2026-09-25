@@ -228,6 +228,8 @@ Before implementation, record the task and target release here **and commit/push
   - Panel: user_live_rates now computes down/up/total per uuid from users_rx/users_tx deltas; presence exposes the dict; Users table renders separate ↓/↑ chips (cyan/amber, idle hidden).
   - Dashboard: per-node rolling history feeds a lazy recharts sparkline in every node card (per-node accent, shared chunk with the area chart).
   - Subscription renewal permission popup: daily → weekly dismissal.
+  - Release completion: first CI run caught a mangled weekly-dismissal comparison — fixed; final CI PASS on `37fa18a`; tag `v1.0.33`; GitHub Release `396756579`; public re-download SHA256 PASS (`d02ff15f1188a90c25623cef623d8a42e94f29f000f0e181e6777575e6686976`).
+  - Production deployment: panel v1.0.33 + dist; live split-rate verification through the panel venv returned real per-user down/up (e.g. 641 Kbps↓ / 12.7 Mbps↑); Finland (co-hosted node) patched last so all 4 nodes report rx/tx; `/healthz` 200 `1.0.33`; 0 errors; unrelated services untouched.
 
 - `v1.0.32` — RELEASED — `PVN-1016` live per-user speed + professional charts.
   - Backend: `backend/operations/user_live_rates.py` samples `/sync/usage` per-CN cumulative bytes on every enabled node (parallel executor fetches, 1.6s shared cache), computes per-username B/s deltas with elapsed guards (0.4–30s), maps usernames to uuids and returns bits/s; `/users/presence` exposes `rates_bps_by_uuid` next to the existing presence counts.
