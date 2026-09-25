@@ -223,6 +223,12 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.37` — RELEASED — `PVN-1021` renewal spam root fix + stable table columns.
+  - The true every-few-minutes spam root: renewal keys were stripped from `old_node_alerts` but still present in the `current` side passed to the generic transition builder, so each monitor tick re-fired every renewal alert as "new". Both sides now exclude `renew:` keys (`node_alerts_only`); the 24h digest is the only renewal channel.
+  - Table stability: attempted `table-layout:fixed` broke the Quick-Edit smoke (CI caught it twice); final approach is fixed min-widths on volatile cells (speed 150px, per-direction 64px tabular-nums) with nowrap — digits changing can no longer move other columns.
+  - Deployment note: additive asset copies left stale NodeSparkline chunks; the live index references `NodeSparkline-DS2XUaTN.js` (contains the up series) and stale chunks were removed after verification. Live digest age at check: ~90 minutes (no re-fire).
+  - Release completion: CI PASS on `dc9eed4`; tag `v1.0.37`; GitHub Release `396830733` with artifact + SHA256; production at `1.0.37` with 0 errors.
+
 - `v1.0.36` — RELEASED — `PVN-1020` realtime rolling-window rates + backup retention.
   - Accuracy fix: OpenVPN status counters refresh every 10s, so 1–2s deltas oscillated between zero and spikes; rates now use a rolling window (newest vs oldest sample ≥10s old, ≤35s cap, 48-sample deque) → stable genuine realtime averages.
   - Sparklines: upload plotted alongside download (dashed amber over the filled download area); speed cells fixed at 148px with 62px min per direction so the users table never resizes.
