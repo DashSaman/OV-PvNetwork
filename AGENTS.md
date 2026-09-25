@@ -223,6 +223,14 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.27` — RELEASED — `PVN-1001` firewall boot fix + `PVN-540` 2FA recovery codes (owner-directed security batch).
+  - Context: the owner approved the full security batch; SSH password authentication was also disabled on the Production host with an owner key (see infrastructure note below).
+  - PVN-1001: boot gate accepts socket-activated `ssh.socket`/`sshd.service`; Production re-run passed — `PVNETWORK_FIREWALL_BOOT=PASS` with confirm, allowlist covers every co-hosted listener (mail tunnel, x-ui, xray, OpenVPN), all services active afterwards (panel/nginx/ssh/openvpn/x-ui/ov-node), public panel 200, pre-existing WWCAP NFQUEUE tunnel rules preserved ahead of the allowlist chain.
+  - PVN-540: eight bcrypt-hashed one-time recovery codes at TOTP enable (shown once, copy-all), consumable in place of the 6-digit login code, remaining count surfaced, disable clears; migration `g9a0b1c2d3e4`.
+  - Release completion: CI PASS on `2c2cc6c`; tag `v1.0.27`; GitHub Release `396601508`; public re-download SHA256 PASS (`781da547e47331217a27e66b6bbeb520e2f30ddcd74422fde31435a0ebcfbe9e`).
+  - Production deployment: DB backup (62 tables) → 24-file delta + migration + frontend switch → panel restart → `/healthz` 200 `1.0.27`, 0 errors; `paqet`/`x-ui`/xray PIDs unchanged.
+  - Infrastructure (owner-authorized, outside the repo): SSH hardened to key-only root login (`PasswordAuthentication no` + `prohibit-password`) with a 40-minute auto-revert fail-safe that was cancelled only after key login and password rejection were both verified; owner keypair saved locally for handoff, automation key installed for maintenance.
+
 - `v1.0.26` — RELEASED — `PVN-1012` Router password viewable in the admin panel.
   - Contract: `password_ciphertext` (nullable Fernet ciphertext via `encrypt_secret`, keyed from the panel secret — same pattern as AnyConnect) is persisted on generate/rotate; the user Router status endpoint reveals the decrypted password; the admin modal displays it with a legacy-rotate hint; the on-create warning no longer claims the password is shown only once.
   - Migration `f8a9b0c1d2e3` adds the column; legacy rows remain one-time until rotated. Display is limited to authenticated admin/reseller routes.
