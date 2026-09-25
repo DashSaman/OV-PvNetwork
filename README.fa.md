@@ -4,17 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.34-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.35-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## تغییرات v1.0.35 نسبت به v1.0.34
+
+**PVN-1019 — هات‌فیکس نرخ presence.** خطاهای ۵۰۰ /users/presence (تبدیل float روی dictهای جدید نرخ) که مانع نمایش سرعت ↓/↑ در جدول بود، رفع شد.
+
+خط انتشار فعلی: **v1.0.35** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.35.fa.md).
+
 ## تغییرات v1.0.34 نسبت به v1.0.33
 
 **PVN-1018 — ستون سرعت پایدار + واحد نمودار + دیجست روزانه.** ستون اختصاصی Speed (↓/↑) در جدول کاربران برای کاربران آنلاین همیشه دیده می‌شود؛ خطای واحد ۸ برابری نمودارها فیکس شد؛ اعلان‌های تمدید به یک خلاصه در ۲۴ ساعت تبدیل شدند.
 
-خط انتشار فعلی: **v1.0.34** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.34.fa.md).
+انتشار قبلی: **v1.0.34** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.34.fa.md).
 
 ## تغییرات v1.0.33 نسبت به v1.0.32
 
@@ -314,7 +320,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.34/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.35/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

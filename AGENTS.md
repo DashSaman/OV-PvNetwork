@@ -223,6 +223,9 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.35` — RELEASED — `PVN-1019` presence rate-dict hotfix.
+  - Live defect: /users/presence returned 500 from the moment v1.0.33 shipped split-rate dicts (endpoint still did float(rate)) — this is why live speeds never showed in the panel UI. Fixed with dict passthrough + isinstance guard; production verified all presence requests 200 after deploy.
+
 - `v1.0.34` — RELEASED — `PVN-1018` stable speed column + chart units + daily renewal digest.
   - Users table: dedicated Speed (↓/↑) column (always visible online, 0 Kbps idle, cyan/amber, phone-stacked); inline name chip removed; colSpans updated.
   - Charts: node rates are bytes/s — dashboard area chart and node sparklines now ×8 so the bits/s axis matches the hero total (fixes 300 Mbps total vs ~26 chart).

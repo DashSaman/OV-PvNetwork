@@ -1,3 +1,7 @@
+## v1.0.35 — PVN-1019 presence rate-dict hotfix
+
+- /users/presence was returning 500 since the split-rate change: the endpoint still coerced each rate to float while the payload had become {down, up, total} dicts — the very reason live speeds stopped appearing in the panel. Rates now pass through as dicts with a type guard; verified live (all presence requests 200 after deploy).
+
 ## v1.0.34 — PVN-1018 stable speed column + chart units + daily renewal digest
 
 - The Users table gains a dedicated Speed (↓/↑) column — always visible for online users (0 Kbps when idle instead of a chip appearing and disappearing), cyan download / amber upload, stacked on phones; the inline name chip was removed.

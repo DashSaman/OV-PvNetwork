@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.34-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.35-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,17 @@
 
 </div>
 
+## What changed in v1.0.35 vs v1.0.34
+
+**PVN-1019 — presence rate hotfix.** Fixes the /users/presence 500s (float coercion of the new rate dicts) that kept live ↓/↑ speeds from appearing in the Users table.
+
+Current release line: **v1.0.35** — [release notes](./docs/RELEASE-NOTES-v1.0.35.md).
+
 ## What changed in v1.0.34 vs v1.0.33
 
 **PVN-1018 — stable speed column + chart units + daily digest.** A dedicated Speed (↓/↑) column in the Users table is always visible for online users; the charts' 8× bytes/bits unit error is fixed; renewal alerts collapse into one digest per 24 hours.
 
-Current release line: **v1.0.34** — [release notes](./docs/RELEASE-NOTES-v1.0.34.md).
+Previous release: **v1.0.34** — [release notes](./docs/RELEASE-NOTES-v1.0.34.md).
 
 ## What changed in v1.0.33 vs v1.0.32
 
@@ -316,7 +322,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.34/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.35/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.
