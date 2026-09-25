@@ -225,6 +225,8 @@ Before implementation, record the task and target release here **and commit/push
 
 - `v1.0.35` — RELEASED — `PVN-1019` presence rate-dict hotfix.
   - Live defect: /users/presence returned 500 from the moment v1.0.33 shipped split-rate dicts (endpoint still did float(rate)) — this is why live speeds never showed in the panel UI. Fixed with dict passthrough + isinstance guard; production verified all presence requests 200 after deploy.
+  - Release completion: CI PASS on `3f4d7b2`; tag `v1.0.35`; GitHub Release `396787155` (the tar asset landed in a partial `starter` state and was deleted/re-uploaded before verification); public re-download SHA256 PASS (`7f9d773f66911db8ee1ab980fb08dbdffed63cce53fb0ce8161d5c742c98512a`).
+  - Production: hot-deployed before tagging (single file); `/healthz` 200; presence 500s stopped immediately; unrelated services untouched.
 
 - `v1.0.34` — RELEASED — `PVN-1018` stable speed column + chart units + daily renewal digest.
   - Users table: dedicated Speed (↓/↑) column (always visible online, 0 Kbps idle, cyan/amber, phone-stacked); inline name chip removed; colSpans updated.
