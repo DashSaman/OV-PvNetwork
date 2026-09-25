@@ -16,6 +16,10 @@ from backend.operations.alert_transitions import (
     build_transition_messages,
     threshold_alert_active,
 )
+from backend.operations.renewal_alerts import (
+    build_renewal_alerts,
+    build_renewal_transition_messages,
+)
 
 STATE = Path('/var/lib/pvnetwork-panel/monitor-state.json')
 
@@ -123,6 +127,16 @@ async def main():
 
     for message in build_transition_messages(old, alerts):
         send(token, chat, message)
+
+    # PVN-202/PVN-203: renewal (expiry / traffic-threshold) alerts.
+    if node_status_alerts_enabled:
+        from backend.db.models import User
+
+        users = db.query(User).all()
+        renewal = {item.key: item.message for item in build_renewal_alerts(users)}
+        for message in build_renewal_transition_messages(old, renewal):
+            send(token, chat, message)
+        alerts.update(renewal)
 
     tmp = STATE.with_suffix('.tmp')
     tmp.write_text(

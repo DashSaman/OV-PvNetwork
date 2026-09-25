@@ -1,3 +1,8 @@
+## v1.0.28 — PVN-202/203 renewal notifications (expiry + traffic)
+
+- The Telegram monitor now sends renewal alerts for active users: expiry stages at 7, 3, 1 and 0 days remaining (nearest stage only, one message per stage) and traffic thresholds at 80/90/100 percent of the quota. Alerts fire once when the condition appears and clear silently when the user renews or the usage resets, reusing the existing transition-dedup state so nothing spams.
+- Delivered through the existing monitoring toggle (same bot token/chat); no new settings, no OpenVPN/Node/Router changes.
+
 ## v1.0.27 — PVN-1001 firewall boot fix + PVN-540 2FA recovery codes
 
 - Fixes the host firewall boot service that had failed on every boot since 2026-09-22: on Ubuntu 24.04 with socket-activated SSH, ssh.service is inactive at boot time until the first connection, so the required-service check always failed. The check now accepts ssh.socket/sshd.service as satisfying ssh.service (inventory-first rules and the built-in timed rollback are unchanged).

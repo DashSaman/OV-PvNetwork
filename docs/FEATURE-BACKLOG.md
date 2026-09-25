@@ -140,7 +140,7 @@
 - PVN-200 Periodic traffic-reset schedules
 - PVN-201 Scheduled renewal rules
 - PVN-202 Multi-stage expiry notifications
-- PVN-203 Configurable traffic-threshold notifications
+- PVN-203 [x] Traffic-threshold notifications (80/90/100% of quota) via the Telegram monitor. Released in v1.0.28.
 - PVN-204 Improved self-service user portal
 - PVN-205 User profile/details page + inline quick-edit row
 - PVN-206 Per-user device inventory
@@ -487,7 +487,6 @@
 - PVN-538 Break-glass admin procedure
 - PVN-539 Account lockout recovery
 - PVN-540 [x] 2FA recovery codes: eight bcrypt-hashed one-time codes shown once at TOTP enable, consumable at login in place of the TOTP, remaining count surfaced. Released in v1.0.27.
-- PVN-540-old 2FA recovery codes
 - PVN-541 Trusted-device policy
 - PVN-542 Password policy UI
 - PVN-543 Password breach-check optional
