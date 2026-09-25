@@ -298,8 +298,9 @@ async def get_user_presence(
     presence = await get_display_live_presence()
     rates_payload = await get_user_live_rates()
     rates = {
-        str(uuid): float(rate)
+        str(uuid): dict(rate)
         for uuid, rate in (rates_payload.get("rates_bps_by_uuid") or {}).items()
+        if isinstance(rate, dict)
     }
     counts = {
         str(uuid): max(0, int(count))
