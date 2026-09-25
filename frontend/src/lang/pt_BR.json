@@ -690,5 +690,6 @@
   "recoveryCodesRemaining": "Códigos de recuperação restantes:",
   "recoveryCodesTitle": "Códigos de recuperação 2FA — exibidos apenas esta vez!",
   "recoveryCodesHelp": "Se perder o acesso ao app autenticador, digite um destes códigos no lugar do código de 6 dígitos na página de login. Cada código funciona uma única vez.",
-  "recoveryCodesCopy": "Copiar todos os códigos"
+  "recoveryCodesCopy": "Copiar todos os códigos",
+  "liveSpeedTitle": "Velocidade ao vivo"
 }

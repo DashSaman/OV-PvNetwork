@@ -690,5 +690,6 @@
   "recoveryCodesRemaining": "残りのリカバリコード:",
   "recoveryCodesTitle": "2FAリカバリコード — この一回のみ表示されます！",
   "recoveryCodesHelp": "認証アプリにアクセスできなくなった場合、ログインページの6桁コードの代わりにこれらのコードを1つ入力してください。各コードは1回のみ有効です。",
-  "recoveryCodesCopy": "すべてのコードをコピー"
+  "recoveryCodesCopy": "すべてのコードをコピー",
+  "liveSpeedTitle": "現在の速度"
 }
