@@ -13,7 +13,9 @@ class UserLiveRatesTests(unittest.TestCase):
         self.assertIn('client_username', source)
         self.assertIn('rates_bps_by_uuid', source)
         # Delta window guards: too-short and stale samples produce no rate.
-        self.assertIn('0.4 <= elapsed <= 30.0', source)
+        # PVN-1020: rolling window matching the 10s node status refresh.
+        self.assertIn('MIN_WINDOW = 10.0', source)
+        self.assertIn('0.4 <= elapsed <= MAX_WINDOW', source)
 
     def test_presence_endpoint_exposes_rates(self):
         source = (ROOT / 'backend' / 'routers' / 'users.py').read_text(encoding='utf-8')
