@@ -136,3 +136,34 @@
     }
 }
 
+
+/* PVN-123: users table becomes stacked cards on phones (<=640px). */
+@media (max-width: 640px) {
+  .table-container.pv-mobile-cards-wrap,
+  .table-container:has(table.pv-mobile-cards) {
+    overflow-x: visible;
+  }
+  table.pv-mobile-cards, table.pv-mobile-cards tbody, table.pv-mobile-cards tr, table.pv-mobile-cards td {
+    display: block;
+    width: 100%;
+  }
+  table.pv-mobile-cards thead {
+    display: none;
+  }
+  table.pv-mobile-cards tr {
+    border: 1px solid rgba(148,163,184,.25);
+    border-radius: 14px;
+    margin: 10px 0;
+    padding: 6px 10px;
+    background: rgba(15,23,42,.35);
+  }
+  table.pv-mobile-cards td {
+    border: 0;
+    padding: 6px 4px;
+    text-align: start;
+    min-height: 0;
+  }
+  table.pv-mobile-cards td:last-child {
+    padding-top: 10px;
+  }
+}

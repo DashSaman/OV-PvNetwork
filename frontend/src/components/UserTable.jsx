@@ -115,7 +115,7 @@ const UserTable = ({
   }
   return <div className="table-container">
 
-      <table>
+      <table className="pv-mobile-cards">
 
         <thead>
           <tr>

@@ -85,6 +85,7 @@ PVNetwork advances **one Production-visible task per patch release**. Exact exec
 - **v1.0.20 released:** `PVN-1005` uniform language switching — all 463 used translation keys resolve in every one of the 13 shipped languages, Router/MikroTik modal direction follows the active language, and a permanent catalog-parity CI gate blocks future mixed-language regressions.
 - **v1.0.21 released:** `PVN-1006` + `PVN-1007` (owner-directed combined patch) — full language uniformity (28 Persian-valued keys replaced across non-Persian catalogs, ~100 hardcoded Persian strings in Backup/AnyConnect/reseller UIs moved into the translation system, permanent value-purity CI gates) and Router/MikroTik one-time username/password credentials generated at user creation.
 - **v1.0.22 released:** `PVN-1008` reliable automatic node deployment — the node-side allowlist source auto-detects from the SSH session (optional field), firewall rule insertion survives empty INPUT chains, IPv6 panels get a proper allow branch, and post-install verification failures are actionable.
+- **v1.0.29 released:** `PVN-1013` installable admin panel (PWA) and mobile users-table cards.
 - **v1.0.28 released:** `PVN-202/203` renewal notifications — expiry (7/3/1/0 days) and traffic (80/90/100%) alerts through the Telegram monitor with transition dedup.
 - **v1.0.27 released:** `PVN-1001`+`PVN-540` firewall boot fix (socket-activated SSH accepted) and one-time 2FA recovery codes.
 - **v1.0.26 released:** `PVN-1012` Router password viewable in the admin panel (Fernet ciphertext storage + reveal).

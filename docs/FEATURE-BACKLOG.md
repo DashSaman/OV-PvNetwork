@@ -57,7 +57,7 @@
 - PVN-120 WCAG contrast audit
 - PVN-121 Reduced-motion support
 - PVN-122 Viewport-bounded/scrollable modals
-- PVN-123 Mobile table/card/details strategy
+- PVN-123 [x] Mobile table→card strategy for the Users management screen (other screens follow per PVN-124..133). Partially released in v1.0.29.
 - PVN-124 Responsive search/sort/pagination
 - PVN-125 Loading/empty/error/retry states
 - PVN-126 Duplicate-submit prevention
@@ -967,6 +967,7 @@ The permanent 001–999 registry above is fully allocated. New hotfix/regression
 - PVN-1001 [x] Firewall-hardening SSH unit detection: accepts socket-activated ssh.socket / sshd.service so the boot service can apply the allowlist. Released in v1.0.27.: the boot-time host firewall hardening requires `ssh.service` and fails closed (with rollback) on hosts whose SSH daemon unit has a different name; accept the active SSH unit (`ssh.service`/`sshd.service`/socket-activated) before applying rules. Discovered on live Production 2026-09-24; firewall state intentionally left untouched.
 - PVN-1002 [x] Panel release-version badge next to the Dashboard LIVE · REALTIME indicator, sourced at runtime from public `/healthz` with silent omission on failure. Released in v1.0.18.
 - PVN-1003 [x] White-screen regression fix and release hardening: production bundles must be built with `URLPATH` matching the deployed panel path (Vite reads `URLPATH`, not `VITE_URLPATH`); SPA index served with `Cache-Control: no-cache` so atomic asset switches cannot strand cached browsers; 35 missing UI keys translated in all 11 secondary languages; Production database/login role rebranded to `pvnetwork_panel` backup-first with the legacy database retained as rollback. Released in v1.0.19.
+- PVN-1013 [x] Installable admin panel (PWA manifest + icons + standalone) and mobile users-table cards (≤640px). Released in v1.0.29.
 - PVN-1010 [ ] Migrate the subscription template to nonce/external-file scripts so /sub can drop the inline-script CSP allowance.
 - PVN-1004 [ ] On-demand (lazy) loading of secondary language catalogs so the 11 non-primary languages leave the main JS chunk; enables shrinking the bundle budget back toward the pre-i18n-completion size.
 - PVN-1005 [x] Uniform language switching: every `t()` key used in the frontend resolves in all 13 shipped languages (45 previously-missing keys translated), Router/MikroTik modal direction follows the active language, last hardcoded download-flow errors cataloged, and a permanent catalog-parity CI gate added. Released in v1.0.20.

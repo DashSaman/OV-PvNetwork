@@ -1,3 +1,8 @@
+## v1.0.29 — PVN-1013 installable panel (PWA) + mobile users-table cards
+
+- The admin panel is now installable (PWA web manifest with icons and standalone display): Add to Home Screen on Android/iOS or Install App in desktop browsers gives PVNetwork its own app window and icon.
+- On phones (≤640px) the Users table transforms into stacked cards per user — no more horizontal scrolling — while keeping the full table on larger screens.
+
 ## v1.0.28 — PVN-202/203 renewal notifications (expiry + traffic)
 
 - The Telegram monitor now sends renewal alerts for active users: expiry stages at 7, 3, 1 and 0 days remaining (nearest stage only, one message per stage) and traffic thresholds at 80/90/100 percent of the quota. Alerts fire once when the condition appears and clear silently when the user renews or the usage resets, reusing the existing transition-dedup state so nothing spams.

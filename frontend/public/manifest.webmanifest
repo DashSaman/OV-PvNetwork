@@ -1,0 +1,26 @@
+{
+  "name": "PVNetwork Panel",
+  "short_name": "PVNetwork",
+  "description": "PVNetwork secure network operations panel",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "lang": "fa",
+  "dir": "auto",
+  "icons": [
+    {
+      "src": "icon.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "maskable"
+    }
+  ]
+}

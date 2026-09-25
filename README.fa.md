@@ -4,17 +4,23 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.28-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.29-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## تغییرات v1.0.29 نسبت به v1.0.28
+
+**PVN-1013 — پنل نصب‌شدنی + کارت موبایل.** پنل ادمین حالا به‌عنوان اپ قابل نصب است (manifest، آیکون، پنجره مستقل) و جدول کاربران روی گوشی به کارت‌های روی‌هم بدل می‌شود به‌جای اسکرول افقی.
+
+خط انتشار فعلی: **v1.0.29** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.29.fa.md).
+
 ## تغییرات v1.0.28 نسبت به v1.0.27
 
 **PVN-202/203 — اعلان‌های تمدید.** مانیتور تلگرام حالا یادآوری انقضا (۷/۳/۱/۰ روز مانده، هر مرحله یک‌بار) و هشدار آستانه مصرف (۸۰/۹۰/۱۰۰٪ سهمیه) را برای کاربران فعال می‌فرستد، با dedup وضعیت موجود که تمدید یا ریست، آن را بی‌صدا پاک می‌کند.
 
-خط انتشار فعلی: **v1.0.28** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.28.fa.md).
+انتشار قبلی: **v1.0.28** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.28.fa.md).
 
 ## تغییرات v1.0.27 نسبت به v1.0.26
 
@@ -278,7 +284,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.28/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.29/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

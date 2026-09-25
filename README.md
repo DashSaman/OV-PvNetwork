@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.28-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.29-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,17 @@
 
 </div>
 
+## What changed in v1.0.29 vs v1.0.28
+
+**PVN-1013 — installable panel + mobile cards.** The admin panel can now be installed as an app (PWA manifest, icons, standalone window), and the Users table turns into stacked cards on phones instead of horizontal scrolling.
+
+Current release line: **v1.0.29** — [release notes](./docs/RELEASE-NOTES-v1.0.29.md).
+
 ## What changed in v1.0.28 vs v1.0.27
 
 **PVN-202/203 — renewal notifications.** The Telegram monitor now sends expiry reminders (7/3/1/0 days remaining, once per stage) and traffic-threshold alerts (80/90/100% of quota) for active users, deduplicated through the existing alert-state so renewals or resets clear them silently.
 
-Current release line: **v1.0.28** — [release notes](./docs/RELEASE-NOTES-v1.0.28.md).
+Previous release: **v1.0.28** — [release notes](./docs/RELEASE-NOTES-v1.0.28.md).
 
 ## What changed in v1.0.27 vs v1.0.26
 
@@ -280,7 +286,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.28/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.29/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.
