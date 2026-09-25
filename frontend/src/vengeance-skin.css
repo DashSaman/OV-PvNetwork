@@ -1,0 +1,190 @@
+/* ============================================================
+   PVN-1015 — Vengeance-style professional skin (PVNetwork)
+   Near-black surfaces · single amber accent · glass cards ·
+   refined borders, glow and motion. Token-level only: every
+   existing class keeps working; remove this file to roll back.
+   ============================================================ */
+
+:root {
+  /* Depth: layered near-black instead of flat grey */
+  --body-bg: #08090d;
+  --background-primary: #0b0d13;
+  --background-secondary: #101319;
+  --card-base-bg: #11141c;
+  --background-card-hover: #171b25;
+
+  /* Single vibrant accent with a hot hover */
+  --accent-color: #ff8a2a;
+  --accent-color-hover: #ffa04d;
+  --accent-color-transparent: rgba(255, 138, 42, 0.09);
+  --sidebar-active-bg: rgba(255, 138, 42, 0.13);
+  --accent-glow: 0 0 0 1px rgba(255, 138, 42, 0.22), 0 8px 30px rgba(255, 138, 42, 0.09);
+
+  /* Text & borders: quieter chrome, brighter content */
+  --text-primary: #f2f3f7;
+  --text-secondary: #9aa3b5;
+  --border-color: #232836;
+  --border-color-hover: #323a4d;
+  --shadow: 0 18px 50px rgba(3, 5, 10, 0.55);
+
+  /* Status palette (kept distinct for color-blind safety) */
+  --danger-color: #ff5d5d;
+  --success-color: #2dd4a0;
+  --info-color: #5aa2ff;
+
+  --radius-surface: 16px;
+  --radius-control: 12px;
+  --focus-ring: 0 0 0 2px rgba(255, 138, 42, 0.35);
+  --surface-glass: linear-gradient(180deg, rgba(20, 24, 33, 0.92), rgba(13, 16, 23, 0.94));
+}
+
+/* --- Ambient page depth: faint accent aura + finer grid --- */
+body {
+  background:
+    radial-gradient(900px 420px at 50% -120px, rgba(255, 138, 42, 0.06), transparent 65%),
+    radial-gradient(700px 500px at 100% 100%, rgba(90, 162, 255, 0.04), transparent 70%),
+    var(--body-bg);
+  background-attachment: fixed;
+}
+
+/* --- Cards & panels: glass surfaces with hairline borders --- */
+.card,
+.login-box,
+.modal,
+.ov-backup-panel {
+  background: var(--surface-glass) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-surface) !important;
+  box-shadow: var(--shadow) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Hover lift for interactive cards */
+.card,
+.node,
+.client {
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.card:hover,
+.node:hover,
+.client:hover {
+  border-color: var(--border-color-hover) !important;
+  box-shadow: 0 18px 44px rgba(3, 5, 10, 0.6), var(--accent-glow) !important;
+}
+
+/* --- Buttons: accent gradient + glow on primary, quiet secondary --- */
+.btn {
+  border-radius: var(--radius-control) !important;
+  font-weight: 650;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:not(.btn-secondary):not(.danger):not(:disabled) {
+  background: linear-gradient(135deg, var(--accent-color), #ff6a00) !important;
+  border: 0 !important;
+  color: #14100b !important;
+  box-shadow: 0 6px 22px rgba(255, 120, 20, 0.22);
+}
+
+.btn:not(.btn-secondary):not(.danger):not(:disabled):hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(255, 120, 20, 0.32);
+}
+
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* --- Inputs: dark wells with focus accent --- */
+input,
+select,
+textarea {
+  background: rgba(8, 10, 15, 0.72) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-control) !important;
+  color: var(--text-primary) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(255, 138, 42, 0.55) !important;
+}
+
+/* --- Tables: header quieting + row rhythm --- */
+thead th,
+table th {
+  color: var(--text-secondary) !important;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+
+tbody tr {
+  transition: background 0.14s ease;
+}
+
+/* --- Sidebar: glass rail with active accent --- */
+.sidebar,
+aside.sidebar,
+nav.sidebar {
+  background: linear-gradient(180deg, rgba(16, 19, 25, 0.96), rgba(11, 13, 19, 0.97)) !important;
+  border-inline-end: 1px solid var(--border-color) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* --- Modals: deeper scrim --- */
+.modal-overlay {
+  background: rgba(4, 5, 9, 0.72) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* --- Status pills: glass chips --- */
+.pill,
+.badge,
+.status-pill {
+  border-radius: 999px !important;
+  border: 1px solid var(--border-color) !important;
+  background: rgba(12, 14, 20, 0.72) !important;
+}
+
+/* --- Scrollbars: slim dark --- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3141 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #262d3d;
+  border-radius: 8px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #333c50;
+}
+
+/* --- Reduced motion honored globally --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

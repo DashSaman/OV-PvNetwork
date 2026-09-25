@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.30-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.31-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,17 @@
 
 </div>
 
+## What changed in v1.0.31 vs v1.0.30
+
+**PVN-1015 — professional Vengeance-style skin + speed.** A token-level skin brings layered near-black surfaces, a single amber accent with glow, glass cards/modals and refined inputs/buttons (delete one file to roll back). nginx now gzips assets (main bundle −70%) and caches hashed assets for a year; BBR was already active.
+
+Current release line: **v1.0.31** — [release notes](./docs/RELEASE-NOTES-v1.0.31.md).
+
 ## What changed in v1.0.30 vs v1.0.29
 
 **PVN-1014 — renewal-alert repeat hotfix.** Fixes the live Telegram message loop introduced in v1.0.28: renewal keys were announced as “Resolved” on every monitor tick and immediately re-added. Renewal keys now flow only through their own silent-clear transition builder.
 
-Current release line: **v1.0.30** — [release notes](./docs/RELEASE-NOTES-v1.0.30.md).
+Previous release: **v1.0.30** — [release notes](./docs/RELEASE-NOTES-v1.0.30.md).
 
 ## What changed in v1.0.29 vs v1.0.28
 
@@ -292,7 +298,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.30/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.31/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

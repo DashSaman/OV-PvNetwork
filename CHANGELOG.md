@@ -1,3 +1,8 @@
+## v1.0.31 — PVN-1015 Vengeance-style professional skin
+
+- A new token-level skin gives the admin panel a professional Vengeance-inspired look: layered near-black surfaces, a single vibrant amber accent with glow, glass cards and modals (backdrop blur), hairline borders, gradient primary buttons with hover lift, dark input wells with accent focus rings, slim scrollbars and reduced-motion safety. Loaded after the core stylesheets so it only overrides visual tokens — every existing class keeps working and deleting the single skin file rolls the look back.
+- Speed: nginx now gzips JavaScript/JSON/SVG/webmanifest responses (main bundle 982 KB → 297 KB, −70%) and serves hashed panel assets with a one-year immutable cache; BBR + fq were already active and persisted. Telegram monitor: the v1.0.30 hotfix stopped the live repeat loop.
+
 ## v1.0.30 — PVN-1014 renewal-alert repeat hotfix
 
 - Fixes the live Telegram spam introduced in v1.0.28: renewal keys persisted in the monitor state were fed into the generic node-alert transition builder, which announced them as “Resolved” on every monitor tick and immediately re-added them — an endless message loop. Renewal keys are now excluded from the generic builder and keep their own silent-clear transitions; regression tests pin both the wiring and the exact spam path.
