@@ -223,6 +223,10 @@ Before implementation, record the task and target release here **and commit/push
   - Tag `v1.0.16` points at merge `ac8db0cead35241d653d6b58eb995f9b92ca84ca`. Release artifact `pvnetwork-panel-v1.0.16.tar.gz` published with SHA256 checksum asset.
   - Production deployment was authorized by the owner together with v1.0.17 (single narrow rollout of main `v1.0.17` containing both patches); deployment evidence is recorded under v1.0.17. Owner follow-up: a real-traffic synthetic rename remains recommended before relying on the workflow operationally.
 
+- `v1.0.32` — RELEASED — `PVN-1016` live per-user speed + professional charts.
+  - Backend: `backend/operations/user_live_rates.py` samples `/sync/usage` per-CN cumulative bytes on every enabled node (parallel executor fetches, 1.6s shared cache), computes per-username B/s deltas with elapsed guards (0.4–30s), maps usernames to uuids and returns bits/s; `/users/presence` exposes `rates_bps_by_uuid` next to the existing presence counts.
+  - Frontend: Users table renders a ⚡ rate chip beside each online username (updates every presence poll, idle <1Kbps hidden); dashboard LiveChart replaced by a recharts gradient AreaChart (lazy chunk 355KB, main bundle 982,952 < 990,000; old SVG kept as Suspense fallback).
+
 - `v1.0.31` — RELEASED — `PVN-1015` Vengeance-style skin + speed.
   - Skin: `frontend/src/vengeance-skin.css` loaded last in main.jsx — token overrides only (no position/display/z-index rules), glass surfaces, single amber accent, focus rings, reduced-motion honored; rollback = remove one import.
   - Speed (owner-authorized, host level): nginx gzip_types enabled (JS/JSON/SVG/webmanifest) and a hashed-asset location with `Cache-Control: public, max-age=31536000, immutable`; main bundle measured 981827 → 297078 bytes gzipped; config backed up at `/root/pvnetwork-deploy-backups/nginx-20260925-135947`, `nginx -t` + graceful reload; BBR+fq confirmed already active and persisted in sysctl.

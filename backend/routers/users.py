@@ -26,6 +26,7 @@ from backend.db.models import (
 from backend.routers.anyconnect import provision_new_user_if_enabled
 from backend.operations.user_renewal import build_renewal_plan, unlimited_reset_expiry
 from backend.operations.live_presence import get_display_live_presence
+from backend.operations.user_live_rates import get_user_live_rates
 from backend.node.assignment import (
     change_user_status_on_assigned_nodes,
     create_user_on_assigned_nodes,
@@ -295,6 +296,11 @@ async def get_user_presence(
         return ResponseModel(success=False, msg="Unauthorized access")
 
     presence = await get_display_live_presence()
+    rates_payload = await get_user_live_rates()
+    rates = {
+        str(uuid): float(rate)
+        for uuid, rate in (rates_payload.get("rates_bps_by_uuid") or {}).items()
+    }
     counts = {
         str(uuid): max(0, int(count))
         for uuid, count in (presence.get("counts_by_uuid") or {}).items()
@@ -311,6 +317,7 @@ async def get_user_presence(
         msg="Live user presence retrieved",
         data={
             "counts_by_uuid": counts,
+            "rates_bps_by_uuid": rates,
             "online_users": sum(1 for count in counts.values() if count > 0),
             "sample_time": presence.get("sample_time"),
         },

@@ -1,4 +1,7 @@
+import { Suspense, lazy } from 'react';
 import { t } from "../i18n";
+// PVN-1016: recharts live chart in its own lazy chunk (bundle budget).
+const LiveAreaChart = lazy(() => import('../components/LiveAreaChart'));
 import { useEffect, useMemo, useRef, useState } from 'react';
 import apiClient from '../services/api';
 import { FiActivity, FiClock, FiCpu, FiDownload, FiHardDrive, FiMoon, FiServer, FiSun, FiUpload, FiUsers } from 'react-icons/fi';
@@ -1308,7 +1311,9 @@ const ServerStats = () => {
           </div>
         </div>
 
-        <LiveChart history={history} />
+        <Suspense fallback={<LiveChart history={history} />}>
+          <LiveAreaChart history={history} />
+        </Suspense>
       </section>
 
 

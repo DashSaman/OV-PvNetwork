@@ -19,6 +19,7 @@ const ITEMS_PER_PAGE = 10;
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [presenceOnline, setPresenceOnline] = useState(null);
+  const [presenceRates, setPresenceRates] = useState({});
   const [nodes, setNodes] = useState([]);
   const [subscriptionSettings, setSubscriptionSettings] = useState(null);
   const [anyConnectSettings, setAnyConnectSettings] = useState({
@@ -90,14 +91,16 @@ const UserManagement = () => {
       const payload = response.data.data || {};
       const counts = payload.counts_by_uuid || {};
       setPresenceOnline(Number(payload.online_users || 0));
+      setPresenceRates(payload.rates_bps_by_uuid || {});
       setUsers(previous => previous.map(item => {
         const count = Number(counts[item.uuid] || 0);
         const nextOnline = count > 0;
         const currentOnlineCount = Number(item.online_count || 0);
-        if (currentOnlineCount === count && Boolean(item.is_online) === nextOnline) {
+        const nextRate = Number((payload.rates_bps_by_uuid || {})[item.uuid] || 0);
+        if (currentOnlineCount === count && Boolean(item.is_online) === nextOnline && Number(item.live_bps || 0) === nextRate) {
           return item;
         }
-        return { ...item, online_count: count, is_online: nextOnline };
+        return { ...item, online_count: count, is_online: nextOnline, live_bps: Number((payload.rates_bps_by_uuid || {})[item.uuid] || 0) };
       }));
     } catch {
       // Keep the last good presence snapshot on transient polling failures.
@@ -759,7 +762,7 @@ const UserManagement = () => {
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
 
-      <UserTable users={paginatedUsers} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onRouterOpenVpn={handleOpenRouterOpenVpn} routerOpenVpnNodeIds={routerHealthyNodeIds} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} availableNodes={nodes} userRole={userRole} onQuickSave={handleQuickSave} onRename={handleOpenRename} busyUserUuids={Object.keys(busyRenameJobs)} />
+      <UserTable users={paginatedUsers} ratesByUuid={presenceRates} isLoading={isLoading} onDelete={handleDelete} onDownload={handleOpenDownloadModal} onAnyConnect={handleOpenAnyConnect} onRouterOpenVpn={handleOpenRouterOpenVpn} routerOpenVpnNodeIds={routerHealthyNodeIds} onToggleAnyConnect={handleToggleAnyConnect} anyConnectBusy={anyConnectBusy} onEdit={handleEdit} onRenew={handleRenew} onToggleStatus={handleToggleStatus} onResetUsage={handleResetUsage} onViewDomainHistory={handleOpenDomainHistory} canViewDomainHistory={userRole === 'main_admin'} canDeleteUnlimited={userRole === 'main_admin'} getSubscriptionLink={getSubscriptionLink} availableNodes={nodes} userRole={userRole} onQuickSave={handleQuickSave} onRename={handleOpenRename} busyUserUuids={Object.keys(busyRenameJobs)} />
       {isAddModalOpen && <AddUserModal onClose={() => setIsAddModalOpen(false)} onUserAdded={handleUserAdded} userRole={userRole} anyConnectDefaultEnabled={Boolean(anyConnectSettings.default_enabled)} nodes={nodes} />}
       {isEditModalOpen && <EditUserModal user={selectedUser} onClose={() => setIsEditModalOpen(false)} onUserUpdated={handleUserUpdated} userRole={userRole} />}
       {isRenewModalOpen && <RenewUserModal user={selectedUser} onClose={() => setIsRenewModalOpen(false)} onRenewed={handleUserRenewed} />}

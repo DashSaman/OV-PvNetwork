@@ -1,3 +1,8 @@
+## v1.0.32 — PVN-1016 live per-user speed + professional charts
+
+- The Users table now shows each connected user's live traffic rate (⚡ x.x Mbps) right beside their username, updated every presence poll — computed on the panel from per-CN cumulative usage deltas across all nodes and exposed through /users/presence (rates_bps_by_uuid). Offline or idle users show no chip.
+- The dashboard live traffic chart was rebuilt with recharts (gradient areas, live tooltip, formatted axis) in its own lazy chunk so the main bundle stays within budget; the previous SVG chart remains as the Suspense fallback.
+
 ## v1.0.31 — PVN-1015 Vengeance-style professional skin
 
 - A new token-level skin gives the admin panel a professional Vengeance-inspired look: layered near-black surfaces, a single vibrant amber accent with glow, glass cards and modals (backdrop blur), hairline borders, gradient primary buttons with hover lift, dark input wells with accent focus rings, slim scrollbars and reduced-motion safety. Loaded after the core stylesheets so it only overrides visual tokens — every existing class keeps working and deleting the single skin file rolls the look back.

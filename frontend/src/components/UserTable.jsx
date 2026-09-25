@@ -4,7 +4,7 @@ import { FiCopy } from 'react-icons/fi';
 import ActionsDropdown from './ActionsDropdown';
 import InlineUserQuickEdit from './InlineUserQuickEdit';
 import './UserTable.css';
-const UserTable = ({
+const UserTable = ({ ratesByUuid = {},
   users,
   onDelete,
   onDownload,
@@ -173,7 +173,14 @@ const UserTable = ({
               return <Fragment key={user.uuid || user.name}><tr>
 
                 <td>
-                  {user.name}
+                  <span style={{ fontWeight: 650 }}>{user.name}</span>
+                  {(() => {
+                    const bps = Number(ratesByUuid[user.uuid] || user.live_bps || 0);
+                    if (!user.is_online || !bps || bps < 1024) return null;
+                    const mbps = bps / 1e6;
+                    const text = mbps >= 1 ? mbps.toFixed(1) + ' Mbps' : (bps / 1e3).toFixed(0) + ' Kbps';
+                    return <span className="pv-live-speed" title={t('liveSpeedTitle', 'سرعت لحظه‌ای')}>{'⚡ ' + text}</span>;
+                  })()}
                 </td>
 
 
