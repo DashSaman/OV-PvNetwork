@@ -79,6 +79,12 @@ Before implementation, record the task and target release here **and commit/push
   - Local evidence: six executable Bash-stage regressions pass after four expected failures against the unchanged hexadecimal filter; Bash syntax and backend/test compilation pass.
   - Full Windows suite: 299 tests, 3 failures and 66 errors (missing PyJWT, POSIX-only APIs, executable/permission differences and consequent import errors); complete diagnostics retained privately. The Linux checkpoint CI passes backend tests/lint/build but fails the pre-existing Axios runtime dependency audit; no release-ready claim.
 
+- `v1.0.38` — [~] TESTED_LOCALLY — `PVN-1023` frontend dependency security update.
+  - Fresh baseline CI fails the production dependency audit on the locked Axios version; existing backend tests, lint and frontend build pass.
+  - Scope: Axios `1.19.0 → 1.20.0`, development dependencies brace-expansion `1.1.18 → 1.1.21` and source-map-js `1.2.1 → 1.2.2`; compatible lock updates only. Isolate Axios into an HTTP-client build chunk to preserve the existing 990000-byte gate.
+  - Local evidence: clean `npm ci`, production/full `npm audit`, ESLint and Vite build PASS. Largest chunk 940185 bytes. Existing responsive matrix PASS (2 languages × 9 widths × 9 routes), security, quick edit, user/node selector, online truth, Router, panel settings and subscription browser smoke PASS. Initial Quick Edit invocation used its different default port; explicit CI base URL corrected the harness without product changes.
+  - This release is a prerequisite for `PVN-1022` smoke-gate correction reserved for `v1.0.39`. Publication/deployment remain pending all applicable gates.
+
 - `v1.0.0` — RELEASED — sanitized public baseline.
 - `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.
 - `v1.0.2` — RELEASED — `PVN-111` Responsive Subscription page; CI/Production/asset verification passed.
