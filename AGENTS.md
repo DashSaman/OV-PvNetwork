@@ -72,6 +72,11 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
+- `v1.0.38` — [~] IN_PROGRESS — `PVN-1022` migration revision parsing in the Production smoke gate.
+  - Reproduced: the database and Alembic agree on an alphanumeric head, but the smoke script's hexadecimal-only filter discards it and exits 31 with `ALEMBIC_HEAD_COUNT_INVALID=0`.
+  - Scope: revision parsing plus executable regression tests. No migration, panel/API behavior, node, VPN, routing or firewall change.
+  - Release/deployment remain gated on fresh tests, backup verification, exact-head CI, authorized deployment and immutable artifact verification. No completion claimed.
+
 - `v1.0.0` — RELEASED — sanitized public baseline.
 - `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.
 - `v1.0.2` — RELEASED — `PVN-111` Responsive Subscription page; CI/Production/asset verification passed.
