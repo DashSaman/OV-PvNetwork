@@ -29,12 +29,18 @@ with tarfile.open(archive,'r:gz') as tar:
         path=pathlib.PurePosixPath(m.name)
         if path.is_absolute() or '..' in path.parts or '\\' in m.name or not (m.isfile() or m.isdir()):raise SystemExit('unsafe release archive member')
     files=[m for m in members if m.isfile()]
-    versions=[m for m in files if pathlib.PurePosixPath(m.name).name=='VERSION']
+    names={str(pathlib.PurePosixPath(m.name)) for m in files}
+    versions=[m for m in files if pathlib.PurePosixPath(m.name).name=='VERSION' and
+              str(pathlib.PurePosixPath(m.name).parent/'manifest.json') in names and
+              str(pathlib.PurePosixPath(m.name).parent/'frontend/package.json') in names]
     if len(versions)!=1 or versions[0].size>100:raise SystemExit('ambiguous release version')
     prefix=pathlib.PurePosixPath(versions[0].name).parent
     mapping={str(pathlib.PurePosixPath(m.name).relative_to(prefix)):m for m in files}
     if len(mapping)!=len(files):raise SystemExit('duplicate release archive path')
     if tar.extractfile(mapping['VERSION']).read().decode().strip()!=version:raise SystemExit('wrong release version')
+    if 'node-agent/VERSION' in mapping:
+        agent=mapping['node-agent/VERSION']
+        if agent.size>100 or tar.extractfile(agent).read().decode().strip()!=version:raise SystemExit('inconsistent node agent version')
     for name in ['manifest.json','frontend/package.json']:
         if mapping[name].size>1000000:raise SystemExit('release metadata too large')
         if json.load(tar.extractfile(mapping[name]))['version']!=version:raise SystemExit('inconsistent release metadata')

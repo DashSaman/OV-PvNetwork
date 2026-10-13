@@ -30,6 +30,32 @@ class LifecycleSafetyTests(unittest.TestCase):
             with sqlite3.connect(restored) as c:self.assertEqual(c.execute('SELECT quota FROM users').fetchone()[0],12345)
             self.assertEqual(self.module.sqlite_fingerprint(restored),expected)
 
+    def test_nested_agent_version_does_not_make_root_release_ambiguous(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);archive=root/'source.tar.gz';stage=root/'stage'
+            files={'VERSION':b'1.0.43','manifest.json':b'{"version":"1.0.43"}',
+                   'frontend/package.json':b'{"version":"1.0.43"}','node-agent/VERSION':b'1.0.43'}
+            with tarfile.open(archive,'w:gz') as tar:
+                for name,value in files.items():
+                    info=tarfile.TarInfo('release/'+name);info.size=len(value);tar.addfile(info,io.BytesIO(value))
+            self.module.extract_release(archive,stage,'1.0.43')
+            self.assertEqual((stage/'node-agent/VERSION').read_text(),'1.0.43')
+
+    def test_old_code_rollback_transport_guard_uses_live_nodes_and_keeps_data(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'live.db'
+            with sqlite3.connect(path) as db:
+                db.execute('CREATE TABLE nodes(address TEXT,port INTEGER,key TEXT)')
+                db.execute("INSERT INTO nodes VALUES ('192.0.2.10',9090,'unchanged-demo-key')")
+            env={'DATABASE_URL':'sqlite:///'+str(path)}
+            self.assertFalse(self.module.requires_native_node_transport(env))
+            with sqlite3.connect(path) as db:
+                db.execute('CREATE TABLE node_tls_bindings(identity TEXT)')
+                db.execute('INSERT INTO node_tls_bindings VALUES (?)',(hashlib.sha256(b'192.0.2.10:9090').hexdigest(),))
+            before=path.read_bytes()
+            self.assertTrue(self.module.requires_native_node_transport(env))
+            self.assertEqual(path.read_bytes(),before)
+
     def test_corrupt_sqlite_restore_never_changes_target(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);target=root/'target.db';dump=root/'bad.dump'

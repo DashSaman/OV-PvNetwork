@@ -73,6 +73,7 @@ Before implementation, record the task and target release here **and commit/push
 ### Active release ledger
 
 - `v1.0.42` — [~] IN_PROGRESS — `PVN-1026` transactional lifecycle and verified native backup/restore.
+  - Forward release compatibility: the checked archive parser identifies the controller root independently of a nested native-agent VERSION, requires matching agent metadata, and refuses code rollback to plaintext-only transport while live managed HTTPS nodes exist. Eleven lifecycle integrity/data-preservation tests and fifteen installer/configuration tests passed in isolated Linux. This does not authorize new Production changes or complete schema-changing migrations.
   - Preserve 1.0.41 installer improvements. Replace active-tree deletion with staged builds, validated backups/clones, explicit schema compatibility, canary, atomic pointer and durable rollback/recovery.
   - Share the installer operation lock; preserve runtime environment/data and protected services. Verify real SQLite and PostgreSQL restores and inject interruption/failure in disposable hosts before any new Production approval.
   - Local implementation checkpoint: native row/file checksums and actual restores, atomic compatible-schema update/rollback, rooted adoption, v1 upload compatibility and durable data/update journals. Schema-changing updates remain explicitly refused pending a validated migration path.
