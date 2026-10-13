@@ -72,10 +72,12 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
-- `v1.0.38` — [~] IN_PROGRESS — `PVN-1022` migration revision parsing in the Production smoke gate.
+- `v1.0.39` — [~] TESTED_LOCALLY — `PVN-1022` migration revision parsing in the Production smoke gate; follows the dependency-security prerequisite reserved for `v1.0.38` / `PVN-1023`.
   - Reproduced: the database and Alembic agree on an alphanumeric head, but the smoke script's hexadecimal-only filter discards it and exits 31 with `ALEMBIC_HEAD_COUNT_INVALID=0`.
   - Scope: revision parsing plus executable regression tests. No migration, panel/API behavior, node, VPN, routing or firewall change.
   - Release/deployment remain gated on fresh tests, backup verification, exact-head CI, authorized deployment and immutable artifact verification. No completion claimed.
+  - Local evidence: six executable Bash-stage regressions pass after four expected failures against the unchanged hexadecimal filter; Bash syntax and backend/test compilation pass.
+  - Full Windows suite: 299 tests, 3 failures and 66 errors (missing PyJWT, POSIX-only APIs, executable/permission differences and consequent import errors); complete diagnostics retained privately. The Linux checkpoint CI passes backend tests/lint/build but fails the pre-existing Axios runtime dependency audit; no release-ready claim.
 
 - `v1.0.0` — RELEASED — sanitized public baseline.
 - `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.

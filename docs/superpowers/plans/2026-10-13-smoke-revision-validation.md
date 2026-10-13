@@ -10,16 +10,16 @@
 
 ## Constraints
 
-- Candidate target: `v1.0.38`; stable task: `PVN-1022`.
+- Candidate target: `v1.0.39`; stable task: `PVN-1022`. The independently discovered Axios security prerequisite (`PVN-1023`) reserves `v1.0.38`.
 - Preserve all release, database and service safety gates.
 - Never commit operational credentials, addresses or customer data.
 - Keep the task open until release and authorized deployment evidence exist.
 
 ## Execution
 
-- [ ] Add executable regression tests for the shipped alphanumeric revision, ordinary hexadecimal revision, missing/multiple heads, missing current revision and mismatch.
-- [ ] Run the tests against unchanged code and capture the alphanumeric failure.
-- [ ] Expand revision filtering consistently for expected and current heads; preserve the one-head and equality checks.
+- [x] Add executable regression tests for the shipped alphanumeric revision, ordinary hexadecimal revision, missing/multiple heads, missing current revision and mismatch.
+- [x] Run the tests against unchanged code and capture the alphanumeric failure (four failures; hexadecimal and empty-head cases pass).
+- [x] Expand revision filtering consistently for expected and current heads; preserve the one-head and equality checks (six tests pass).
 - [ ] Run focused regression tests, shell syntax, compilation and the existing suite; report platform/dependency failures separately.
 - [ ] Prepare the patch and deployment/rollback procedure. Verify app and native database backup before any authorized Production mutation.
 - [ ] Keep release and Production status pending until all applicable gates pass.
