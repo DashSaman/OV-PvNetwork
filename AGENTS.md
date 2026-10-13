@@ -72,6 +72,11 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
+- `v1.0.41` — [~] IN_PROGRESS — `PVN-1025` verified fresh installer, secure setup and generic public defaults.
+  - Resume from verified 1.0.40; no repeat of the three deployed fixes. Implementation plan: `docs/superpowers/plans/2026-10-13-final-completion.md`.
+  - First gates: verified official archive/checksum/version, safe extraction, pinned private toolchain, resource/port/existing-install preflight, loopback setup or verified public TLS, idempotent recovery and executable failure regressions.
+  - All coding and disposable testing is local/isolated. No new Production mutation is authorized by this checkpoint. Real boot/TLS/external-client coverage must be explicitly distinguished from fixtures.
+
 Operational URL/path examples in historical evidence below are generalized for public privacy; the recorded health outcomes are unchanged. Original identifiers remain in the owner's private audit.
 
 - `v1.0.40` — [~] VERIFIED_PRODUCTION / PUBLICATION_PENDING — `PVN-1024` bounded and configuration-aware self-healing.
