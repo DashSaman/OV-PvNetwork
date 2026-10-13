@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.37-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.39-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,19 @@
 
 </div>
 
+## Candidate v1.0.38 vs v1.0.37
+
+**PVN-1023 — Frontend dependency security refresh.** [Candidate notes](./docs/RELEASE-NOTES-v1.0.38.md). Publication and the overall final-hardening sign-off remain gated; this is a targeted patch candidate.
+
+## Candidate v1.0.39 vs v1.0.38
+
+**PVN-1022 — Alphanumeric migration smoke validation.** [Candidate notes](./docs/RELEASE-NOTES-v1.0.39.md). Publication and the overall final-hardening sign-off remain gated; this is a targeted patch candidate.
+
 ## What changed in v1.0.35 vs v1.0.34
 
 **PVN-1019 — presence rate hotfix.** Fixes the /users/presence 500s (float coercion of the new rate dicts) that kept live ↓/↑ speeds from appearing in the Users table.
 
-Current release line: **v1.0.35** — [release notes](./docs/RELEASE-NOTES-v1.0.35.md).
+Previous release: **v1.0.35** — [release notes](./docs/RELEASE-NOTES-v1.0.35.md).
 
 ## What changed in v1.0.34 vs v1.0.33
 
@@ -140,7 +148,7 @@ Previous release: **v1.0.16** — [release notes](./docs/RELEASE-NOTES-v1.0.16.m
 
 Existing Node upgrades now install the user-lifecycle patch as well as Router compatibility. Delete no longer depends on an optional interactive installer: it revokes the target certificate with EasyRSA, regenerates/publishes the CRL atomically, and removes only that client's stale PKI leaf artifacts after a successful revoke. No database migration is required.
 
-Current release line: **v1.0.15** — [release notes](./docs/RELEASE-NOTES-v1.0.15.md).
+Previous release: **v1.0.15** — [release notes](./docs/RELEASE-NOTES-v1.0.15.md).
 
 ## What changed in v1.0.14 vs v1.0.13
 
@@ -322,7 +330,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.37/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.39/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.
