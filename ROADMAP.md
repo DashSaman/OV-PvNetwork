@@ -108,3 +108,7 @@ The permanent numbered backlog remains in `docs/FEATURE-BACKLOG.md` and covers: 
 ## Release rule
 
 Released tags/assets are immutable. Every new Production-visible `PVN-xxx` task ships as the next sequential `1.0.x` GitHub Release after applicable tests, sanitization, verified backup, narrow deployment, health verification, bilingual documentation and release-asset verification pass.
+
+## v1.0.38 candidate — PVN-1023
+
+Frontend dependency security refresh. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.

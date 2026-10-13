@@ -4,17 +4,21 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.37-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.38-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
 
+## نامزد v1.0.38 نسبت به v1.0.37
+
+**PVN-1023 — اصلاح امنیت وابستگی‌های فرانت‌اند.** [یادداشت نامزد انتشار](./docs/RELEASE-NOTES-v1.0.38.fa.md). انتشار عمومی و تأیید نهایی کل پروژه همچنان وابسته به عبور از gateها است.
+
 ## تغییرات v1.0.35 نسبت به v1.0.34
 
 **PVN-1019 — هات‌فیکس نرخ presence.** خطاهای ۵۰۰ /users/presence (تبدیل float روی dictهای جدید نرخ) که مانع نمایش سرعت ↓/↑ در جدول بود، رفع شد.
 
-خط انتشار فعلی: **v1.0.35** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.35.fa.md).
+انتشار قبلی: **v1.0.35** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.35.fa.md).
 
 ## تغییرات v1.0.34 نسبت به v1.0.33
 
@@ -138,7 +142,7 @@
 
 Upgrade نودهای موجود اکنون Patch چرخه کاربر را نیز نصب می‌کند. Delete دیگر به Installer تعاملی اختیاری وابسته نیست؛ Certificate همان کاربر با EasyRSA revoke می‌شود، CRL به‌صورت اتمیک بازتولید/منتشر می‌شود و فقط artifactهای PKI همان Client پس از revoke موفق پاک می‌شوند. Migration دیتابیس لازم نیست.
 
-خط انتشار فعلی: **v1.0.15** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.15.fa.md).
+انتشار قبلی: **v1.0.15** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.15.fa.md).
 
 ## تغییرات v1.0.14 نسبت به v1.0.13
 
@@ -146,7 +150,7 @@ Upgrade نودهای موجود اکنون Patch چرخه کاربر را نیز
 
 تست‌های دائمی JWT/Admin/API Token/IDOR/SQL/CORS/CSRF/XSS/Redaction/Permission و یک Probe فقط‌خواندنی و بدون Credential برای Production اضافه شده‌اند. این نسخه معماری جدید SSO/RBAC/Passkey/OpenVPN/Node/Routing اضافه نمی‌کند.
 
-خط انتشار فعلی: **v1.0.14** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.14.fa.md).
+انتشار قبلی: **v1.0.14** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.14.fa.md).
 
 ## تغییرات v1.0.13 نسبت به v1.0.12
 
@@ -154,7 +158,7 @@ Upgrade نودهای موجود اکنون Patch چرخه کاربر را نیز
 
 این Patch مستقیماً حالت خطایی را می‌بندد که در Rollout نسخه v1.0.12 باعث شد Canary در حالی بسته شود که Nginx هنوز به آن Proxy می‌کرد و برای مدت کوتاه HTTP 502 دیده شود. OpenVPN، Nodeها، Router compatibility، Certificateها، Profileها و Tunnelهای فعال تغییری نمی‌کنند.
 
-خط انتشار فعلی: **v1.0.13** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.13.fa.md).
+انتشار قبلی: **v1.0.13** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.13.fa.md).
 
 ## تغییرات v1.0.12 نسبت به v1.0.11
 
@@ -162,7 +166,7 @@ Upgrade نودهای موجود اکنون Patch چرخه کاربر را نیز
 
 تغییر Path ابتدا با Build و Canary روی `127.0.0.1:19002` بررسی می‌شود و فقط در صورت موفقیت به Panel اصلی سوییچ می‌شود. Path قبلی 300 ثانیه HTTP 307 می‌دهد و سپس 404 می‌شود. در شکست Verification، Environment و Frontend قبلی خودکار برمی‌گردند. OpenVPN عادی، Listener سازگاری Router، Nodeها، Profileها، Certificateها و Tunnelهای فعال کاربران توسط PVN-032 Restart یا Reconfigure نمی‌شوند.
 
-خط انتشار فعلی: **v1.0.12** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.12.fa.md).
+انتشار قبلی: **v1.0.12** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.12.fa.md).
 
 ## تغییرات v1.0.11 نسبت به v1.0.10
 
@@ -170,13 +174,13 @@ Upgrade نودهای موجود اکنون Patch چرخه کاربر را نیز
 
 ![Dashboard شمارش مدیریت‌شده v1.0.11](./docs/images/v1.0.11/fa/desktop/online-truth-dashboard.png)
 
-خط انتشار فعلی: **v1.0.11** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.11.fa.md).
+انتشار قبلی: **v1.0.11** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.11.fa.md).
 
 ## تغییرات v1.0.10 نسبت به v1.0.9
 
 **PVN-030 — مهاجرت backward-compatible نام‌های پروتکل متعلق به PVNetwork.** توکن‌های جدید با `pvn_` ساخته می‌شوند و `ovp_`های قبلی همچنان کار می‌کنند. Callbackهای Node هم Header جدید `X-PVNetwork-Node-Key` و هم `X-OV-Node-Key` قدیمی را می‌پذیرند و اگر هر دو با مقدار متفاوت فرستاده شوند درخواست رد می‌شود. Helperهای تزریق‌شده Node هنگام Upgrade به `_pvnetwork_*` منتقل می‌شوند، ولی نام‌های upstream مربوط به `ov-node` و OpenVPN عادی دست‌نخورده می‌مانند.
 
-خط انتشار فعلی: **v1.0.10** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.10.fa.md).
+انتشار قبلی: **v1.0.10** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.10.fa.md).
 
 ## تغییرات v1.0.9 نسبت به v1.0.8
 
@@ -188,7 +192,7 @@ Upgrade نودهای موجود اکنون Patch چرخه کاربر را نیز
 
 ![جریان Node Router در v1.0.9](./docs/images/v1.0.9/fa/mobile/router-node.png)
 
-خط انتشار فعلی: **v1.0.9** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.9.fa.md).
+انتشار قبلی: **v1.0.9** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.9.fa.md).
 
 ## تغییرات v1.0.8 نسبت به v1.0.7
 
@@ -196,7 +200,7 @@ Upgrade نودهای موجود اکنون Patch چرخه کاربر را نیز
 
 ![Pin کردن کلید SSH در v1.0.8](./docs/images/v1.0.8/fa/desktop/ssh-host-key-pinning.png)
 
-خط انتشار فعلی: **v1.0.8** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.8.fa.md).
+انتشار قبلی: **v1.0.8** — [یادداشت انتشار](./docs/RELEASE-NOTES-v1.0.8.fa.md).
 
 ## تغییرات v1.0.7 نسبت به v1.0.6
 
@@ -320,7 +324,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.37/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.38/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.
