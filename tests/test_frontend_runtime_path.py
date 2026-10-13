@@ -10,10 +10,10 @@ def read(path: str) -> str:
 
 class FrontendRuntimePathTests(unittest.TestCase):
     def test_manager_build_uses_live_env_urlpath(self):
-        body = read("scripts/manage.sh")
-        self.assertIn('panel_path="$(awk', body)
-        self.assertIn('URLPATH="$panel_path"', body)
-        self.assertIn('VITE_URLPATH="$panel_path"', body)
+        self.assertIn('pvnetwork_lifecycle.py', read('scripts/manage.sh'))
+        body = read('scripts/pvnetwork_lifecycle.py')
+        self.assertIn("path=environment['URLPATH']", body)
+        self.assertIn("'URLPATH':path,'VITE_URLPATH':path", body)
 
     def test_installer_build_uses_selected_panel_path(self):
         wrapper = read("install-local.sh")

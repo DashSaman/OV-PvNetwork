@@ -75,6 +75,9 @@ class SecurityHardeningContractTests(unittest.TestCase):
             if path=="install-local.sh":
                 self.assertIn("pvnetwork_install.py", body)
                 body += text("scripts/pvnetwork_install.py")
+            if path in {'scripts/manage.sh','scripts/pvnetwork-panel-restore-job'}:
+                self.assertIn('pvnetwork_lifecycle.py', body)
+                body += text('scripts/pvnetwork_lifecycle.py')
             self.assertIn("/healthz", body, path)
             self.assertNotIn("/openapi.json", body, path)
 

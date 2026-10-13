@@ -210,5 +210,6 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
         self.assertIn("/opt/pvnetwork-panel", install)
         self.assertIn("pvnetwork-panel.service", install)
         self.assertIn("/opt/pvnetwork-panel", manage)
-        self.assertIn("pvnetwork-panel.service", manage)
+        self.assertIn("pvnetwork_lifecycle.py", manage)
+        self.assertIn("pvnetwork-panel.service", (root / 'scripts/pvnetwork_lifecycle.py').read_text())
         self.assertIn('"DashSaman/OV-PvNetwork"', manifest)

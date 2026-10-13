@@ -13,7 +13,7 @@ os.environ.setdefault("JWT_SECRET_KEY", "ci-jwt-secret-key-not-production-32char
 from backend import panel_runtime_settings as runtime
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_VERSION = "1.0.41"
+EXPECTED_VERSION = "1.0.42"
 
 
 class PanelSettingsProductionContractTests(unittest.TestCase):
@@ -56,7 +56,7 @@ class PanelSettingsProductionContractTests(unittest.TestCase):
 
     def test_install_and_ci_include_runtime_settings_safety_paths(self):
         installer = (ROOT / "scripts/install-runtime-tools.sh").read_text(encoding="utf-8")
-        manager = (ROOT / "scripts/manage.sh").read_text(encoding="utf-8")
+        manager = (ROOT / "scripts/pvnetwork_lifecycle.py").read_text(encoding="utf-8")
         ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
         self.assertIn("pvnetwork-panel-settings-apply", installer)
         self.assertIn("migrate_main_admin_generation.py", manager)
@@ -73,7 +73,7 @@ class PanelSettingsProductionContractTests(unittest.TestCase):
 
     def test_public_release_metadata_points_to_v1016_asset(self):
         manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-        self.assertEqual(manifest.get("release_asset"), "pvnetwork-panel-v1.0.41.tar.gz")
+        self.assertEqual(manifest.get("release_asset"), "pvnetwork-panel-v1.0.42.tar.gz")
 
 
 if __name__ == "__main__":

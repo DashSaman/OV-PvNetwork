@@ -98,7 +98,7 @@ class MainAdminGenerationMigrationTests(unittest.TestCase):
 
     def test_install_and_update_bootstrap_generation(self):
         install = (ROOT / "scripts/pvnetwork_install.py").read_text(encoding="utf-8")
-        manage = (ROOT / "scripts/manage.sh").read_text(encoding="utf-8")
+        manage = (ROOT / "scripts/pvnetwork_lifecycle.py").read_text(encoding="utf-8")
         example = (ROOT / ".env.example").read_text(encoding="utf-8")
         self.assertIn("'MAIN_ADMIN_AUTH_GENERATION':secrets.token_hex(24)", install)
         self.assertIn("migrate_main_admin_generation.py", manage)

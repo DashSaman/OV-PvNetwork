@@ -75,6 +75,9 @@ Before implementation, record the task and target release here **and commit/push
 - `v1.0.42` — [~] IN_PROGRESS — `PVN-1026` transactional lifecycle and verified native backup/restore.
   - Preserve 1.0.41 installer improvements. Replace active-tree deletion with staged builds, validated backups/clones, explicit schema compatibility, canary, atomic pointer and durable rollback/recovery.
   - Share the installer operation lock; preserve runtime environment/data and protected services. Verify real SQLite and PostgreSQL restores and inject interruption/failure in disposable hosts before any new Production approval.
+  - Local implementation checkpoint: native row/file checksums and actual restores, atomic compatible-schema update/rollback, rooted adoption, v1 upload compatibility and durable data/update journals. Schema-changing updates remain explicitly refused pending a validated migration path.
+  - Real systemd Ubuntu 24.04 update/restore/rollback and actual SIGKILL update/restore recovery passed with demo row/quota/UUID/device, environment, owned crypto file and unrelated PID preservation. Full current PostgreSQL 16 schema backup/actual clone restore matched all 27 table digests. Fresh PostgreSQL atomic rollback tests passed against a dedicated lab service.
+  - Exact candidate CI, final fresh-installer snapshot, UI restore, authorized Production and publication remain separate open gates. No new live-server mutation, release tag or stable claim has been made.
 
 - `v1.0.41` — [~] IN_PROGRESS — `PVN-1025` verified fresh installer, secure setup and generic public defaults.
   - Resume from verified 1.0.40; no repeat of the three deployed fixes. Implementation plan: `docs/superpowers/plans/2026-10-13-final-completion.md`.

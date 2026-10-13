@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.41-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.42-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.42 نسبت به v1.0.41
+
+**PVN-1026 — چرخهٔ مدیریت با بازیابی واقعی.** Update پس از build و بررسی clone دیتابیس به‌صورت اتمی فعال می‌شود. Backup/Restore از SQLite و PostgreSQL همراه با کلیدهای رمزنگاری و اعتماد SSH بررسی می‌شود و شکست یا قطع عملیات به وضعیت نهایی پیش از تغییر برمی‌گردد. [دستورها، تست‌ها و محدودیت‌ها](docs/LIFECYCLE-CANDIDATE.fa.md). نسخهٔ عمومی پایدار 1.0.37 و checkpoint عملیاتی مجاز 1.0.40 باقی می‌مانند؛ نود، CLI، انتشار و تست شبکهٔ خارجی هنوز gateهای باز دارند.
 
 ## نامزد v1.0.41 نسبت به v1.0.40
 

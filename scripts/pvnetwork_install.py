@@ -118,12 +118,13 @@ def download_verified(spec, directory):
     return target
 
 
-def install_toolchain(source, architecture):
+def install_toolchain(source, architecture, *, install_os_packages=True):
     pins=json.loads((source/'ops/toolchain.json').read_text())
     tools_env={**os.environ,'DEBIAN_FRONTEND':'noninteractive'}
-    command(['apt-get','update','-y'],env=tools_env)
-    command(['apt-get','install','-y','ca-certificates','curl','rsync','python3','python3-venv',
-             'build-essential','openssl','nginx','postgresql-client'],env=tools_env)
+    if install_os_packages:
+        command(['apt-get','update','-y'],env=tools_env)
+        command(['apt-get','install','-y','ca-certificates','curl','rsync','python3','python3-venv',
+                 'build-essential','openssl','nginx','postgresql-client'],env=tools_env)
     TOOLS.mkdir(parents=True,exist_ok=True,mode=0o755)
     bootstrap=TOOLS/'bootstrap'
     if not (bootstrap/'bin/python').exists():command(['python3','-m','venv',bootstrap])

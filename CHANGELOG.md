@@ -1,3 +1,10 @@
+## v1.0.42 candidate — PVN-1026: Verified native lifecycle
+
+- Native SQLite/PostgreSQL snapshots with actual restore and row/file checksums; owned encryption/trust files included and transaction backups pinned.
+- Isolated frozen build, compatible-schema clone canary, atomic release pointer, retained code/live data and durable update/restore/rollback recovery.
+- Existing v1 PostgreSQL uploads use the staged native restore engine; missing old-format crypto keys are explicitly outside that format.
+- Real local systemd and native database evidence recorded in `docs/LIFECYCLE-CANDIDATE.md`; candidate CI, authorized Production and publication gates remain open.
+
 ## v1.0.40 candidate — PVN-1024: Bounded configuration-aware self-healing
 
 - Targeted, independently tested patch; publication/deployment evidence remains governed by the active ledger.

@@ -18,6 +18,7 @@ from starlette.background import BackgroundTask
 
 from backend.auth.auth import get_current_user
 from backend.db.engine import get_db
+from backend.db.models import SecuritySettings
 from sqlalchemy.orm import Session
 from backend.auth.authorization import require_interactive_main_admin
 from backend.schema.output import ResponseModel
@@ -52,6 +53,8 @@ def _apply_retention(db) -> int:
     cutoff = datetime.now(tz=timezone.utc) - timedelta(days=days)
     removed = 0
     for path in _list_backup_directories():
+        if (path / '.PINNED_BY_TRANSACTION').is_file():
+            continue
         try:
             created = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
         except OSError:
@@ -154,7 +157,7 @@ def _list_backup_directories() -> list[Path]:
 
 
 def _build_download_archive(directory: Path, destination: Path) -> None:
-    selected = ("database.dump", "env", "SHA256SUMS", "RESTORE_TEST_OK")
+    selected = ("database.dump", "env", "SHA256SUMS", "RESTORE_TEST_OK", "metadata.json", "source.tar.gz", "runtime.tar.gz")
     root_name = f"pvnetwork-backup-{directory.name}"
     manifest = {
         "format": "pvnetwork-manual-backup-v1",
