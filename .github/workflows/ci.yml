@@ -133,7 +133,7 @@ jobs:
         env:
           PV_UI_BASE_URL: http://127.0.0.1:4173/panel
         run: |
-          python3 -m pip install --disable-pip-version-check jinja2
+          python3 -c 'import jinja2'
           npx playwright install --with-deps chromium
           npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/pvnetwork-vite.log 2>&1 &
           VITE_PID=$!
