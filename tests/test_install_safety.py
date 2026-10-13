@@ -99,7 +99,7 @@ class FreshHostPreflightTests(unittest.TestCase):
             with self.assertRaises(ValueError):self.install.check_port(listener.getsockname()[1])
 
     def test_config_injection_refused(self):
-        for value in ['panel\nJWT_SECRET_KEY=bad','../panel','panel;echo']:
+        for value in ['panel\nJWT_SECRET_KEY=<fake>','../panel','panel;echo']:
             with self.assertRaises(ValueError):self.install.validate_path(value)
 
     def test_https_is_not_announced_before_verification(self):
