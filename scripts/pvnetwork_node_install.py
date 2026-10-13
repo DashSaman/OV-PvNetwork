@@ -17,6 +17,8 @@ import base64
 import fcntl
 import importlib.util
 import secrets
+import shlex
+import stat
 import ssl
 import time
 import urllib.request
@@ -207,7 +209,7 @@ def open_http(request,context,timeout):
 def adopted_snapshot(config):
     lines={}
     for raw in SERVER.read_text().splitlines():
-        parts=raw.strip().split()
+        parts=shlex.split(raw,comments=True)
         if parts and not parts[0].startswith(('#',';')):lines.setdefault(parts[0],parts[1:])
     if lines.get('port')!=[str(config['ovpn_port'])] or not lines.get('proto') or lines['proto'][0].replace('4','').replace('6','').replace('-server','')!=config['protocol']:
         raise ValueError('adopt must match the existing VPN port and protocol')
@@ -218,12 +220,25 @@ def adopted_snapshot(config):
     if not lines.get('management') or len(lines['management'])<2 or lines['management'][1]!='unix':raise ValueError('adopt requires an existing protected Unix management socket')
     management=Path(lines['management'][0])
     if not management.is_absolute():management=SERVER.parent/management
+    if lines.get('management-client-user')!=['root']:
+        info=management.stat()
+        if info.st_uid!=0 or info.st_mode & 0o077:
+            raise ValueError('adopt requires root peer authentication or a root-private management socket')
+    hooks={}
+    for action in ['connect','disconnect']:
+        if lines.get('client-'+action)!=['/usr/local/libexec/ov-session-'+action]:
+            raise ValueError('adopt requires recognized legacy session hooks; custom hooks need explicit migration')
+        hooks[action]=lines['client-'+action][0]
+    if lines.get('client-config-dir')!=['/etc/openvpn/ccd']:
+        raise ValueError('adopt requires the compatible existing CCD directory')
+    import grp
+    group=lines.get('group',['root'])[0];grp.getgrnam(group)
     ca=Path(lines.get('ca',[''])[0])
     if not ca.is_absolute():ca=SERVER.parent/ca
     if not ca.is_file() or ca.read_bytes()!=(pki/'ca.crt').read_bytes():raise ValueError('existing server CA and profile PKI do not match; adoption refused')
     pid=run(['systemctl','show','openvpn-server@server','--property=MainPID','--value'])
-    if pid=='0':raise ValueError('adopt requires a running OpenVPN service')
-    return {'server_sha256':hashlib.sha256(SERVER.read_bytes()).hexdigest(),'ca_sha256':hashlib.sha256((pki/'ca.crt').read_bytes()).hexdigest(),'pid':pid,'status':str(status),'management':str(management)}
+    if not pid.isdigit() or int(pid)==0:raise ValueError('adopt requires a running OpenVPN service')
+    return {'server_sha256':hashlib.sha256(SERVER.read_bytes()).hexdigest(),'ca_sha256':hashlib.sha256((pki/'ca.crt').read_bytes()).hexdigest(),'pid':pid,'status':str(status),'management':str(management),'hooks':hooks,'group':group}
 
 
 def verify_adopted(record):
@@ -231,6 +246,122 @@ def verify_adopted(record):
     if not before:return
     after=adopted_snapshot(record['configuration'])
     if before!=after:raise ValueError('existing OpenVPN configuration, CA or process changed during adoption')
+
+
+def hash_file(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def root_owned_file(path):
+    path=Path(path)
+    if path.is_symlink():raise ValueError('linked handover file refused')
+    info=path.stat()
+    if not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_mode & 0o022:
+        raise ValueError('handover requires root-owned regular files without shared write access')
+    for parent in path.parents:
+        # Sticky /tmp is allowed for isolated test fixtures, not writable leaf directories.
+        item=parent.stat()
+        if parent.is_symlink() or item.st_uid!=0 or (item.st_mode & 0o022 and not item.st_mode & stat.S_ISVTX):
+            raise ValueError('unsafe handover parent directory')
+    return info
+
+
+def legacy_units():
+    result={}
+    for name in ['ov-node','ov-domain-collector']:
+        path=Path('/etc/systemd/system/'+name+'.service')
+        if not path.exists():continue
+        root_owned_file(path);text=path.read_text()
+        if name=='ov-node':
+            owned=bool(re.search(r'^WorkingDirectory=/opt/ov-node/?\s*$',text,re.M) and
+                       re.search(r'^ExecStart=/opt/ov-node/[^\n]+$',text,re.M))
+        else:owned=bool(re.search(r'^ExecStart=/usr/local/sbin/ov-domain-collector\s*$',text,re.M))
+        if not owned or list(path.parent.glob(name+'.service.d/*.conf')):
+            raise ValueError('legacy service ownership is not verified; explicit migration required')
+        state={}
+        for line in run(['systemctl','show',name,'--property=ActiveState,UnitFileState,FragmentPath']).splitlines():
+            key,_,value=line.partition('=');state[key]=value
+        if state.get('FragmentPath')!=str(path):raise ValueError('legacy service fragment differs; migration refused')
+        if state.get('UnitFileState') not in {'enabled','disabled'}:raise ValueError('unsupported legacy service enablement state')
+        result[name]={'path':str(path),'sha256':hash_file(path),'active':state.get('ActiveState')=='active','enabled':state['UnitFileState']=='enabled'}
+    if 'ov-node' not in result:
+        raise ValueError('compatible legacy agent service ownership is required before adoption')
+    return result
+
+
+def hook_alias(action):
+    if action not in {'connect','disconnect'}:raise ValueError('invalid hook action')
+    return ('#!/bin/sh\nexec /usr/local/libexec/pvnetwork-node/session-'+action+' "$@"\n').encode()
+
+
+def capture_handover(record):
+    files=[]
+    for action,value in record['adopted']['hooks'].items():
+        path=Path(value);info=root_owned_file(path);content=path.read_bytes()
+        endpoint='acquire' if action=='connect' else 'release'
+        if not re.search(rb'http://(?:127\.0\.0\.1|localhost):9090/sync/local-session/'+endpoint.encode(),content):
+            raise ValueError('adopt requires a compatible legacy hook; custom hooks are preserved')
+        files.append({'path':str(path),'action':action,'sha256':hashlib.sha256(content).hexdigest(),
+                      'replacement_sha256':hashlib.sha256(hook_alias(action)).hexdigest(),
+                      'mode':stat.S_IMODE(info.st_mode),'uid':info.st_uid,'gid':info.st_gid})
+    units=legacy_units()
+    backup=STATE/'handover';backup.mkdir(parents=True,exist_ok=True,mode=0o700);backup.chmod(0o700)
+    for item in files:
+        path=backup/('session-'+item['action']);private(path,Path(item['path']).read_bytes())
+        if hash_file(path)!=item['sha256']:raise ValueError('legacy hook changed during backup')
+        item['backup']=str(path)
+    record['handover']={'files':files,'units':units};checkpoint(record,record['phase'])
+
+
+def validate_handover(record):
+    handover=record.get('handover',{})
+    for item in handover.get('files',[]):
+        info=root_owned_file(item['path']);root_owned_file(item['backup'])
+        if (stat.S_IMODE(info.st_mode),info.st_uid,info.st_gid)!=(item['mode'],item['uid'],item['gid']):
+            raise ValueError('handover file changed permissions or ownership; preservation required')
+        if hash_file(item['path']) not in {item['sha256'],item['replacement_sha256']} or hash_file(item['backup'])!=item['sha256']:
+            raise ValueError('handover file changed; preserve and inspect before recovery')
+    for unit in handover.get('units',{}).values():
+        root_owned_file(unit['path'])
+        if hash_file(unit['path'])!=unit['sha256']:raise ValueError('legacy service changed; preservation required')
+
+
+def activate_handover(record):
+    validate_handover(record)
+    for item in record['handover']['files']:
+        private(item['path'],hook_alias(item['action']),item['mode'])
+        os.chown(item['path'],item['uid'],item['gid'])
+    checkpoint(record,record['phase'])
+
+
+def restore_handover(record):
+    validate_handover(record)
+    for item in record.get('handover',{}).get('files',[]):
+        private(item['path'],Path(item['backup']).read_bytes(),item['mode'])
+        os.chown(item['path'],item['uid'],item['gid'])
+    for name,unit in record.get('handover',{}).get('units',{}).items():
+        if unit.get('stop_requested'):
+            if unit['enabled']:run(['systemctl','enable',name])
+            if unit['active']:run(['systemctl','start',name])
+
+
+def finalize_handover(record):
+    if not record.get('handover'):return
+    validate_handover(record)
+    if any(hash_file(item['path'])!=item['replacement_sha256'] for item in record['handover']['files']):
+        raise ValueError('native session hooks must be active before stopping the legacy agent')
+    for name,unit in record['handover']['units'].items():
+        unit['stop_requested']=True;checkpoint(record,record['phase'])
+        run(['systemctl','stop',name]);run(['systemctl','disable',name])
+    run(['systemctl','enable','--now','pvnetwork-domain-collector'])
+
+
+def seed_accounting(release,record):
+    spec=importlib.util.spec_from_file_location('node_accounting_seed',release/'core/service/accounting.py')
+    accounting=importlib.util.module_from_spec(spec);spec.loader.exec_module(accounting)
+    samples=accounting.status_samples(record['adopted']['status'],require_complete=True)
+    if samples is None:raise ValueError('incomplete existing status snapshot; retry adoption without changing OpenVPN')
+    accounting.UsageLedger(RUNTIME/'usage.db').observe(samples)
 
 
 def install_owned(record,path,content,mode=0o755):
@@ -395,6 +526,7 @@ def health(config):
 
 def rollback(record):
     if record['phase']=='finalized':raise ValueError('finalized nodes require their managed lifecycle; installation rollback refused')
+    validate_handover(record)
     if record.get('owned_vpn_directory'):
         target=Path(record['owned_vpn_directory'])
         if target!=SERVER.parent:raise ValueError('invalid rollback VPN directory')
@@ -406,6 +538,7 @@ def rollback(record):
         target=Path(path);expected=record.get('created_file_sha256',{}).get(path)
         if target.is_symlink() or (target.is_file() and expected and hashlib.sha256(target.read_bytes()).hexdigest()!=expected):
             raise ValueError('owned rollback file changed; preservation required')
+    restore_handover(record)
     if '/etc/systemd/system/pvnetwork-domain-collector.service' in record['created_files']:
         run(['systemctl','stop','pvnetwork-domain-collector'])
     if APP.is_symlink() and str(APP.resolve())==record.get('release'):
@@ -464,6 +597,7 @@ def install(config,source):
     if config['mode']=='adopt':record['adopted']=adopted_snapshot(config)
     checkpoint(record,'preflight')
     try:
+        if config['mode']=='adopt':capture_handover(record)
         install_dependencies(config['mode'])
         checkpoint(record,'dependencies')
         spec=importlib.util.spec_from_file_location('verified_tools',source/'scripts/pvnetwork_install.py')
@@ -492,25 +626,26 @@ def install(config,source):
         status=record.get('adopted',{}).get('status','/var/log/openvpn-status.log')
         values={'SERVICE_PORT':config['api_port'],'API_KEY':config['api_key'],'PANEL_URL':config['panel_url'],'HOOK_KEY':hook_key,'TLS_CERTFILE':str(STATE/'tls.crt'),'TLS_KEYFILE':str(STATE/'tls.key'),'OPENVPN_STATUS_FILE':status}
         values['OPENVPN_MANAGEMENT_SOCKET']=record.get('adopted',{}).get('management','/var/run/openvpn-server/server.sock')
-        if config['mode']=='fresh':
-            RUNTIME.chmod(0o711)
-            spool=RUNTIME/'hook-spool';spool.mkdir(mode=0o1730,exist_ok=True)
-            import grp
-            os.chown(spool,0,grp.getgrnam('pvnetwork-vpn').gr_gid);spool.chmod(0o1730)
-            values.update(ACCOUNTING_FILE=str(RUNTIME/'usage.db'),ACCOUNTING_SPOOL_DIR=str(spool))
+        vpn_group=record.get('adopted',{}).get('group','pvnetwork-vpn')
+        RUNTIME.chmod(0o711)
+        spool=RUNTIME/'hook-spool';spool.mkdir(mode=0o1730,exist_ok=True)
+        import grp
+        os.chown(spool,0,grp.getgrnam(vpn_group).gr_gid);spool.chmod(0o1730)
+        values.update(ACCOUNTING_FILE=str(RUNTIME/'usage.db'),ACCOUNTING_SPOOL_DIR=str(spool))
+        if config['mode']=='adopt':seed_accounting(release,record)
         private(STATE/'node.env',''.join(key+'='+json.dumps(str(value))+'\n' for key,value in values.items())+ca_setting)
         (release/'.env').symlink_to(STATE/'node.env')
         Path('/etc/openvpn/ccd').mkdir(parents=True,exist_ok=True)
         for name,target in [('pvnetwork-build-client-profile','/usr/local/sbin/pvnetwork-build-client-profile'),('pvnetwork-router-openvpn','/usr/local/sbin/pvnetwork-router-openvpn'),('pvnetwork-router-auth','/usr/local/libexec/pvnetwork-router-auth')]:
             install_owned(record,target,(source/'scripts'/name).read_bytes())
-        if config['mode']=='fresh':
+        if config['mode'] in {'fresh','adopt'}:
             hooks=Path('/usr/local/libexec/pvnetwork-node');hooks.mkdir(parents=True,exist_ok=True,mode=0o755);hooks.chmod(0o755)
             for name in ['connect','disconnect']:install_owned(record,hooks/('session-'+name),(source/'scripts'/('pvnetwork-session-'+name)).read_bytes())
             install_owned(record,hooks/'tls.crt',(STATE/'ca.crt').read_bytes(),0o644)
             install_owned(record,hooks/'hooks.env','LOCAL_URL=https://127.0.0.1:'+str(config['api_port'])+'/sync/local-session\nCA_FILE='+str(hooks/'tls.crt')+'\n',0o644)
             install_owned(record,hooks/'hook-header','X-PVNetwork-Hook-Key: '+hook_key+'\n',0o640)
             import grp
-            os.chown(hooks/'hook-header',0,grp.getgrnam('pvnetwork-vpn').gr_gid)
+            os.chown(hooks/'hook-header',0,grp.getgrnam(vpn_group).gr_gid)
             private(STATE/'hook-token',hook_key)
             private(STATE/'collector.env','PVNETWORK_DOMAIN_LOCAL_PORT='+str(config['api_port'])+'\nPVNETWORK_DOMAIN_STATUS='+status+'\n')
             install_owned(record,'/usr/local/sbin/pvnetwork-domain-collector',(source/'scripts/pvnetwork-domain-collector').read_bytes())
@@ -527,6 +662,8 @@ def install(config,source):
             if run(['systemctl','is-active','openvpn-server@server'])!='active':raise ValueError('fresh VPN readiness failed')
         APP.symlink_to(release);run(['systemctl','daemon-reload']);run(['systemctl','enable','--now','pvnetwork-node'])
         health(config)
+        if config['mode']=='adopt':
+            activate_handover(record);seed_accounting(release,record)
         if config['mode']=='fresh':
             run(['systemctl','enable','--now','pvnetwork-domain-collector'])
         verify_adopted(record);checkpoint(record,'ready')
@@ -570,7 +707,8 @@ def main():
             if args.action=='rollback':rollback(record)
             elif args.action=='finalize':
                 if record['phase'] not in {'ready','finalized'}:raise ValueError('node is not ready to finalize')
-                health(record['configuration']);verify_adopted(record);checkpoint(record,'finalized')
+                health(record['configuration']);verify_adopted(record)
+                finalize_handover(record);verify_adopted(record);checkpoint(record,'finalized')
             print('PVNETWORK_RESULT|'+json.dumps({'state':record['phase'],'version':record['version'],'transaction_id':record['id']}));return 0
         if not args.configuration or not args.source:raise ValueError('configuration and verified source required')
         config=json.loads(Path(args.configuration).read_text());source=Path(args.source);validate_source(source)

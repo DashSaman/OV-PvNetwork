@@ -587,17 +587,17 @@ def _run_deploy_job(job, request_data: dict) -> None:
             ) from verify_exc
 
         update_job(job, 98, "database", "Registering verified node")
-        node_request = NodeCreate(
-            name=request_data["name"], address=result.address,
-            tunnel_address=(request_data.get("tunnel_address") or result.address),
-            protocol=result.protocol, ovpn_port=result.ovpn_port,
-            port=result.api_port, key=result.api_key,
-            status=True, set_new_setting=False,
-        )
         if adopting:
             created=existing
             created.port=result.api_port
         else:
+            node_request = NodeCreate(
+                name=request_data["name"], address=result.address,
+                tunnel_address=(request_data.get("tunnel_address") or result.address),
+                protocol=result.protocol, ovpn_port=result.ovpn_port,
+                port=result.api_port, key=result.api_key,
+                status=True, set_new_setting=False,
+            )
             created=Node(name=node_request.name,address=node_request.address,tunnel_address=node_request.tunnel_address,
                          protocol=node_request.protocol,ovpn_port=node_request.ovpn_port,port=node_request.port,key=node_request.key,status=True)
             db.add(created)
