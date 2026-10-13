@@ -72,10 +72,12 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
-- `v1.0.40` — [~] IN_PROGRESS — `PVN-1024` bounded and configuration-aware self-healing.
+- `v1.0.40` — [~] TESTED_LOCALLY — `PVN-1024` bounded and configuration-aware self-healing.
   - Reproduce missing-node configuration/key/unit restarts and unbounded force-kill fallback in an isolated executable shell fixture.
   - Preserve existing authenticated GET-with-JSON health probes; repair only installed/running panel or node services, record cooldowns, and stop after a failed bounded restart.
   - No OpenVPN restart, unrelated service repair, network/firewall change or live deployment is authorized by this checkpoint.
+  - Evidence: eight failures reproduced against the original script; 11 executable regressions pass after the fix, plus three existing rollout guard tests and Bash syntax/compilation checks.
+  - A focused independent review found a stopped-unit race and loss of 4xx status on a failed curl transfer. Both were reproduced and fixed: systemd `try-restart` preserves stopped units, and received client-error statuses are retained even on a truncated response.
 
 - `v1.0.38` — [~] TESTED_LOCALLY — `PVN-1023` frontend dependency security update.
   - Fresh baseline CI fails the production dependency audit on the locked Axios version; existing backend tests, lint and frontend build pass.
