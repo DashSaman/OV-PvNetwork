@@ -72,25 +72,28 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
-- `v1.0.40` — [~] TESTED_LOCALLY — `PVN-1024` bounded and configuration-aware self-healing.
+- `v1.0.40` — [~] VERIFIED_PRODUCTION / PUBLICATION_PENDING — `PVN-1024` bounded and configuration-aware self-healing.
   - Reproduce missing-node configuration/key/unit restarts and unbounded force-kill fallback in an isolated executable shell fixture.
   - Preserve existing authenticated GET-with-JSON health probes; repair only installed/running panel or node services, record cooldowns, and stop after a failed bounded restart.
-  - No OpenVPN restart, unrelated service repair, network/firewall change or live deployment is authorized by this checkpoint.
+  - The owner subsequently authorized this limited Production deployment after green CI, a fresh verified backup and rollback preparation. No OpenVPN restart, unrelated service repair or network/firewall change was authorized.
   - Evidence: eight failures reproduced against the original script; 11 executable regressions pass after the fix, plus three existing rollout guard tests and Bash syntax/compilation checks.
   - A focused independent review found a stopped-unit race and loss of 4xx status on a failed curl transfer. Both were reproduced and fixed: systemd `try-restart` preserves stopped units, and received client-error statuses are retained even on a truncated response.
+  - Deployed commit `7592fff59fa6f826a75ea400ae4b9ade89965af9`; exact-commit CI run `38386166653` PASS. Application/native database backup and actual temporary-database restore PASS before rollout. Canary, public/local health/UI/authenticated read-only APIs and official smoke PASS; existing timer invoked the new helper successfully without a repair. One panel restart loaded release metadata; protected service PIDs/configuration and environment were unchanged. See `docs/HARDENING-CHECKPOINT-2026-10-13.md` for sanitized evidence and open release gates.
 
-- `v1.0.39` — [~] TESTED_LOCALLY — `PVN-1022` migration revision parsing in the Production smoke gate; follows the dependency-security prerequisite reserved for `v1.0.38` / `PVN-1023`.
+- `v1.0.39` — [~] VERIFIED_PRODUCTION / PUBLICATION_PENDING — `PVN-1022` migration revision parsing in the Production smoke gate; follows the dependency-security prerequisite reserved for `v1.0.38` / `PVN-1023`.
   - Reproduced: the database and Alembic agree on an alphanumeric head, but the smoke script's hexadecimal-only filter discards it and exits 31 with `ALEMBIC_HEAD_COUNT_INVALID=0`.
   - Scope: revision parsing plus executable regression tests. No migration, panel/API behavior, node, VPN, routing or firewall change.
-  - Release/deployment remain gated on fresh tests, backup verification, exact-head CI, authorized deployment and immutable artifact verification. No completion claimed.
+  - Public release remains pending merge/tag/release and artifact verification. The owner-authorized limited deployment passed the required rollout gates; no overall completion claimed.
   - Local evidence: six executable Bash-stage regressions pass after four expected failures against the unchanged hexadecimal filter; Bash syntax and backend/test compilation pass.
-  - Full Windows suite: 299 tests, 3 failures and 66 errors (missing PyJWT, POSIX-only APIs, executable/permission differences and consequent import errors); complete diagnostics retained privately. The Linux checkpoint CI passes backend tests/lint/build but fails the pre-existing Axios runtime dependency audit; no release-ready claim.
+  - Earlier Windows suite: 299 tests, 3 failures and 66 errors (missing PyJWT, POSIX-only APIs, executable/permission differences and consequent import errors); complete diagnostics retained privately. The original Linux checkpoint failed the Axios audit. After the dependency prerequisite, final candidate CI run `38386150273` PASS for deployed commit `d569bdcee9d8bedf13ddb2605760ddddde98e124`.
+  - Production evidence: fresh application/native database backup and actual temporary-database restore PASS; canary/local/public health, UI and authenticated read-only APIs PASS. The installed smoke helper and its systemd oneshot PASS against the existing migration head. One panel restart loaded release metadata; protected service PIDs/configuration and environment were unchanged. No migration ran.
 
-- `v1.0.38` — [~] TESTED_LOCALLY — `PVN-1023` frontend dependency security update.
+- `v1.0.38` — [~] VERIFIED_PRODUCTION / PUBLICATION_PENDING — `PVN-1023` frontend dependency security update.
   - Fresh baseline CI fails the production dependency audit on the locked Axios version; existing backend tests, lint and frontend build pass.
   - Scope: Axios `1.19.0 → 1.20.0`, development dependencies brace-expansion `1.1.18 → 1.1.21` and source-map-js `1.2.1 → 1.2.2`; compatible lock updates only. Isolate Axios into an HTTP-client build chunk to preserve the existing 990000-byte gate.
   - Local evidence: clean `npm ci`, production/full `npm audit`, ESLint and Vite build PASS. Largest chunk 940185 bytes. Existing responsive matrix PASS (2 languages × 9 widths × 9 routes), security, quick edit, user/node selector, online truth, Router, panel settings and subscription browser smoke PASS. Initial Quick Edit invocation used its different default port; explicit CI base URL corrected the harness without product changes.
-  - This release is a prerequisite for `PVN-1022` smoke-gate correction reserved for `v1.0.39`. Publication/deployment remain pending all applicable gates.
+  - This release is a prerequisite for `PVN-1022` smoke-gate correction reserved for `v1.0.39`. Public release remains pending merge/tag/release and artifact verification.
+  - Deployed commit `256589921cde80caed819623f046f5fca0d76d0b`; exact-commit CI run `38386074970` PASS. Fresh application/native database backup and actual temporary-database restore PASS. Canary/local/public health, hashed frontend assets and authenticated read-only APIs PASS; one panel restart loaded release metadata. Protected service PIDs/configuration and environment were unchanged. The pre-existing migration-filter smoke defect was retained for the next isolated patch and subsequently fixed by v1.0.39.
 
 - `v1.0.0` — RELEASED — sanitized public baseline.
 - `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.

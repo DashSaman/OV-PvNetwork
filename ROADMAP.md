@@ -113,10 +113,16 @@ Released tags/assets are immutable. Every new Production-visible `PVN-xxx` task 
 
 Frontend dependency security refresh. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
 
+Limited Production deployment and targeted verification passed on 2026-10-13. Public merge/tag/release gates remain open; see [the sanitized checkpoint](docs/HARDENING-CHECKPOINT-2026-10-13.md).
+
 ## v1.0.39 candidate — PVN-1022
 
 Alphanumeric migration smoke validation. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
 
+Limited Production deployment passed; the official smoke helper and oneshot now accept the existing migration revision without modifying the database.
+
 ## v1.0.40 candidate — PVN-1024
 
 Bounded configuration-aware self-healing. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
+
+Limited Production deployment passed; the next existing timer invocation succeeded with protected service PIDs unchanged. Fresh-install, lifecycle recovery and independent node bootstrap/traffic gates remain open.
