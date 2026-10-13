@@ -118,11 +118,11 @@ def download_verified(spec, directory):
     return target
 
 
-def install_toolchain(source, architecture, *, install_os_packages=True):
+def install_toolchain(source, architecture, *, install_os_packages=True, include_node=True):
     pins=json.loads((source/'ops/toolchain.json').read_text())
     tools_env={**os.environ,'DEBIAN_FRONTEND':'noninteractive'}
     if install_os_packages:
-        command(['apt-get','update','-y'],env=tools_env)
+        command(['apt-get','update','--error-on=any','-y'],env=tools_env)
         command(['apt-get','install','-y','ca-certificates','curl','rsync','python3','python3-venv',
                  'build-essential','openssl','nginx','postgresql-client'],env=tools_env)
     TOOLS.mkdir(parents=True,exist_ok=True,mode=0o755)
@@ -130,23 +130,25 @@ def install_toolchain(source, architecture, *, install_os_packages=True):
     if not (bootstrap/'bin/python').exists():command(['python3','-m','venv',bootstrap])
     wheel=download_verified(pins['platforms'][architecture]['uv'],TOOLS)
     command([bootstrap/'bin/python','-m','pip','install','--no-deps',wheel])
-    node_spec=pins['platforms'][architecture]['node']
-    node_archive=download_verified(node_spec,TOOLS)
-    node_dir=TOOLS/node_spec['filename'].removesuffix('.tar.xz')
-    if not (node_dir/'bin/node').exists():
-        with tarfile.open(node_archive,'r:xz') as tar:
-            # Official Node archives contain relative internal symlinks. Reject
-            # traversal, absolute targets and special devices before extraction.
-            for m in tar.getmembers():
-                p=Path(m.name)
-                if p.is_absolute() or '..' in p.parts or not (m.isfile() or m.isdir() or m.issym()):raise ValueError('unsafe Node archive')
-                expected=node_dir.name
-                if not p.parts or p.parts[0]!=expected:raise ValueError('unexpected Node archive root')
-                if m.issym():
-                    target=Path(posixpath.normpath(str(p.parent/m.linkname)))
-                    if Path(m.linkname).is_absolute() or not target.parts or target.parts[0]!=expected:raise ValueError('unsafe Node archive link')
-            tar.extractall(TOOLS)
-    env={**os.environ,'PATH':str(node_dir/'bin')+os.pathsep+str(bootstrap/'bin')+os.pathsep+os.environ['PATH'],
+    tool_paths=[str(bootstrap/'bin')]
+    if include_node:
+        node_spec=pins['platforms'][architecture]['node']
+        node_archive=download_verified(node_spec,TOOLS)
+        node_dir=TOOLS/node_spec['filename'].removesuffix('.tar.xz')
+        if not (node_dir/'bin/node').exists():
+            with tarfile.open(node_archive,'r:xz') as tar:
+                # Official Node archives contain relative internal symlinks.
+                for m in tar.getmembers():
+                    p=Path(m.name)
+                    if p.is_absolute() or '..' in p.parts or not (m.isfile() or m.isdir() or m.issym()):raise ValueError('unsafe Node archive')
+                    expected=node_dir.name
+                    if not p.parts or p.parts[0]!=expected:raise ValueError('unexpected Node archive root')
+                    if m.issym():
+                        target=Path(posixpath.normpath(str(p.parent/m.linkname)))
+                        if Path(m.linkname).is_absolute() or not target.parts or target.parts[0]!=expected:raise ValueError('unsafe Node archive link')
+                tar.extractall(TOOLS)
+        tool_paths.insert(0,str(node_dir/'bin'))
+    env={**os.environ,'PATH':os.pathsep.join(tool_paths)+os.pathsep+os.environ['PATH'],
          'UV_PYTHON_INSTALL_DIR':str(TOOLS/'python'),'UV_LINK_MODE':'copy','UV_PYTHON_PREFERENCE':'only-managed'}
     command([bootstrap/'bin/uv','python','install',pins['python_version']],env=env)
     return bootstrap/'bin/uv',env,pins['python_version']

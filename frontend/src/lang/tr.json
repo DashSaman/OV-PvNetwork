@@ -696,5 +696,15 @@
   "backupRetentionLabel": "Yedekleri sakla (gün):",
   "backupRetentionHelp": "0 = otomatik silme yok",
   "backupRetentionSaved": "Saklama süresi kaydedildi.",
-  "backupRetentionFailed": "Saklama süresi kaydedilemedi."
+  "backupRetentionFailed": "Saklama süresi kaydedilemedi.",
+  "addNodeAuthMethod": "SSH kimlik doğrulama",
+  "addNodePrivateKey": "Özel anahtar",
+  "addNodeKeyPassphrase": "Anahtar parolası (isteğe bağlı)",
+  "addNodeControllerUrl": "Denetleyici HTTPS adresi",
+  "addNodeControllerTlsHelp": "Uzak düğümler erişilebilir bir HTTPS denetleyicisi gerektirir. Önce TLS yapılandırın.",
+  "addNodeMode": "Kurulum modu",
+  "addNodeFresh": "Boş sunucu",
+  "addNodeAdopt": "Mevcut düğümü aktar",
+  "addNodeExistingId": "Mevcut düğüm kimliği",
+  "addNodeAdoptHelp": "Adı, adresi, VPN portunu ve protokolünü koruyun. Boş API portu seçin; OpenVPN çalışmaya devam eder."
 }

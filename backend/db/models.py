@@ -109,6 +109,16 @@ class UserNode(Base):
     )
 
 
+class NodeTlsBinding(Base):
+    __tablename__ = 'node_tls_bindings'
+    identity: Mapped[str] = mapped_column(String(64),primary_key=True)
+    address: Mapped[str] = mapped_column(String(253),nullable=False)
+    port: Mapped[int] = mapped_column(nullable=False)
+    ca_sha256: Mapped[str] = mapped_column(String(64),nullable=False)
+    credential_sha256: Mapped[str] = mapped_column(String(64),nullable=False)
+    __table_args__ = (CheckConstraint('port >= 1 AND port <= 65535',name='ck_node_tls_binding_port'),)
+
+
 class Settings(Base):
     __tablename__ = "settings"
 

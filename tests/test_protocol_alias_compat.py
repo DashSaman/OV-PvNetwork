@@ -56,28 +56,19 @@ class ProtocolAliasCompatibilityTests(unittest.TestCase):
 
 
     def test_node_upgrade_injects_pvnetwork_owned_helper_aliases(self):
-        import base64
-        import re
-
-        deploy = text("backend/node/deploy.py")
-        match = re.search(
-            r"echo '([A-Za-z0-9+/=]+)' \| base64 -d >/tmp/ov-node-compat-patch\.py",
-            deploy,
-        )
-        self.assertIsNotNone(match)
-        compat_patch = base64.b64decode(match.group(1)).decode("utf-8")
+        # The native agent now owns these functions directly; no remote
+        # compatibility patch or installed local legacy node is required.
+        compat_patch = text('node-agent/core/routers/router.py')
 
         self.assertIn("def _pvnetwork_dashboard_default_interface", compat_patch)
         self.assertIn("def _pvnetwork_dashboard_network_snapshot", compat_patch)
         self.assertIn("def _pvnetwork_openvpn_online_snapshot", compat_patch)
-        self.assertIn("_ov_dashboard_network_snapshot", compat_patch)
         self.assertIn("_pvnetwork_dashboard_network_snapshot", compat_patch)
         self.assertNotIn("def _ov_dashboard_network_snapshot", compat_patch)
         self.assertNotIn("def _ov_openvpn_online_snapshot", compat_patch)
 
-        self.assertIn("grep -q '_pvnetwork_dashboard_network_snapshot'", deploy)
-        self.assertIn("status.update(_pvnetwork_dashboard_network_snapshot())", deploy)
-        self.assertIn("status.update(_pvnetwork_openvpn_online_snapshot())", deploy)
+        self.assertIn("_pvnetwork_dashboard_network_snapshot()", compat_patch)
+        self.assertIn("_pvnetwork_openvpn_online_snapshot()", compat_patch)
 
 
 if __name__ == "__main__":

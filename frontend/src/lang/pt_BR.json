@@ -696,5 +696,15 @@
   "backupRetentionLabel": "Manter cópias (dias):",
   "backupRetentionHelp": "0 = nunca excluir",
   "backupRetentionSaved": "Retenção salva.",
-  "backupRetentionFailed": "Falha ao salvar retenção."
+  "backupRetentionFailed": "Falha ao salvar retenção.",
+  "addNodeAuthMethod": "Autenticação SSH",
+  "addNodePrivateKey": "Chave privada",
+  "addNodeKeyPassphrase": "Senha da chave (opcional)",
+  "addNodeControllerUrl": "Origem HTTPS do controlador",
+  "addNodeControllerTlsHelp": "Nós remotos exigem um controlador HTTPS acessível. Configure TLS primeiro.",
+  "addNodeMode": "Modo de instalação",
+  "addNodeFresh": "Servidor vazio",
+  "addNodeAdopt": "Adotar nó existente",
+  "addNodeExistingId": "ID do nó existente",
+  "addNodeAdoptHelp": "Mantenha nome, endereço, porta e protocolo VPN. Escolha uma porta API livre; OpenVPN continua ativo."
 }

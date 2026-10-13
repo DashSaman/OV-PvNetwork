@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.42-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.43-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.43 نسبت به v1.0.42
+
+**PVN-1027 — منبع مستقل نود HTTPS.** انتقال منبع روی SSH تأییدشده، اعتماد TLS، اثبات callback و مصرف پایدار جایگزین bootstrap قدیمی نصب تازه می‌شوند. TUN و ترافیک واقعی و کنترل کاربر هدف در Demo آزمایش شده‌اند؛ منبع نهایی، Adopt/Fleet کامل، UI/CLI و انتشار هنوز gateهای باز دارند. [شواهد و محدودیت‌ها](docs/NODE-CANDIDATE.fa.md). نسخهٔ عمومی 1.0.37 و Production مجاز 1.0.40 باقی می‌مانند.
 
 ## نامزد v1.0.42 نسبت به v1.0.41
 

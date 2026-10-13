@@ -696,5 +696,15 @@
   "backupRetentionLabel": "الاحتفاظ بالنسخ (أيام):",
   "backupRetentionHelp": "0 = بلا حذف تلقائي",
   "backupRetentionSaved": "تم حفظ مدة الاحتفاظ.",
-  "backupRetentionFailed": "تعذر حفظ مدة الاحتفاظ."
+  "backupRetentionFailed": "تعذر حفظ مدة الاحتفاظ.",
+  "addNodeAuthMethod": "مصادقة SSH",
+  "addNodePrivateKey": "المفتاح الخاص",
+  "addNodeKeyPassphrase": "عبارة مرور المفتاح (اختيارية)",
+  "addNodeControllerUrl": "عنوان HTTPS لوحدة التحكم",
+  "addNodeControllerTlsHelp": "تتطلب العقد البعيدة وحدة تحكم HTTPS قابلة للوصول. اضبط TLS أولاً.",
+  "addNodeMode": "طريقة التثبيت",
+  "addNodeFresh": "خادم فارغ",
+  "addNodeAdopt": "نقل عقدة موجودة",
+  "addNodeExistingId": "معرّف العقدة الحالية",
+  "addNodeAdoptHelp": "احتفظ بالاسم والعنوان ومنفذ وبروتوكول VPN. اختر منفذ API متاحاً؛ يبقى OpenVPN قيد التشغيل."
 }

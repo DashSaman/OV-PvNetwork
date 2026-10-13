@@ -155,6 +155,16 @@ def build_upgrade_script():
   raise RuntimeError('Fleet upgrade restart marker not found')
  return SCRIPT.replace(marker,capability+'\nsystemctl restart ov-node\nready=0',1)
 
+
+def is_native(node):
+ from backend.node import tls
+ return node.key.startswith(tls.KEY_PREFIX) or tls.has_trust(node.address,node.port) or bool(tls.binding(node.address,node.port))
+
+
+def native_operation(node,action,user,password,port,fingerprint):
+ from backend.node.native_deploy import agent_operation
+ return agent_operation(action=action,host=node.address,ssh_port=port,username=user,password=password,fingerprint=fingerprint)
+
 def run(job,password):
  db=SessionLocal();job['state']='running';save(job)
  try:
@@ -163,15 +173,25 @@ def run(job,password):
    if str(i) in job['completed']:continue
    n=db.query(Node).filter(Node.id==i).first()
    if not n:raise RuntimeError(f'Node {i} not found')
-   n.maintenance=True;n.drain=True;n.last_upgrade_status='running';db.commit();job['stage']=f'upgrading:{n.name}';save(job)
-   out=ssh(n,job['ssh_username'],password,job['ssh_port'],build_upgrade_script(),job.get('ssh_fingerprints',{}).get(str(i)))
+   native=is_native(n);prior_flags=(n.maintenance,n.drain)
+   if not native:n.maintenance=True;n.drain=True
+   n.last_upgrade_status='running';db.commit();job['stage']=f'upgrading:{n.name}';save(job)
+   fingerprint=job.get('ssh_fingerprints',{}).get(str(i))
+   if native:
+    from backend.version import __version__
+    current=NodeRequests(n.address,n.port,n.key,n.tunnel_address or n.address,n.protocol,n.ovpn_port).get_node_info()
+    result={'version':__version__,'changed':False} if current.get('version')==__version__ else native_operation(n,'upgrade',job['ssh_username'],password,job['ssh_port'],fingerprint)
+    out=result['version']
+   else:out=ssh(n,job['ssh_username'],password,job['ssh_port'],build_upgrade_script(),fingerprint)
    info=NodeRequests(n.address,n.port,n.key,n.tunnel_address or n.address,n.protocol,n.ovpn_port).get_node_info()
    if not info or info.get('status')!='running':raise RuntimeError(f'Health check failed: {n.name}')
-   n.version=(out.strip().splitlines()[-1] if out.strip() else 'latest')[:128];n.last_upgrade_at=int(time.time());n.last_upgrade_status='succeeded';n.maintenance=False;n.drain=False;db.commit();job['completed'][str(i)]='succeeded';save(job)
+   n.version=(out.strip().splitlines()[-1] if out.strip() else 'latest')[:128];n.last_upgrade_at=int(time.time());n.last_upgrade_status='succeeded';n.maintenance,n.drain=prior_flags if native else (False,False);db.commit();job['completed'][str(i)]='succeeded';save(job)
    if pos==0:job['stage']='canary_passed';save(job)
   job['state']='succeeded';job['stage']='complete';save(job)
  except Exception as e:
-  db.rollback();job['state']='failed';job['error']=str(e)[:1500];save(job)
+  db.rollback();job['state']='failed';message=str(e).replace(password,'[REDACTED]') if password else str(e)
+  for known in db.query(Node).filter(Node.id.in_(job['node_ids'])).all():message=message.replace(known.key,'[REDACTED]')
+  job['error']=message[:1500];save(job)
  finally:
   password=''
   db.close()
@@ -262,13 +282,19 @@ async def rollback_node(
     if not node:
         raise HTTPException(404, "Node not found")
 
-    node.maintenance = True
-    node.drain = True
+    native=is_native(node)
+    prior_flags=(node.maintenance,node.drain)
+    if not native:
+        node.maintenance = True
+        node.drain = True
     node.last_upgrade_status = "rollback_running"
     db.commit()
 
     try:
-        output = await __import__("asyncio").to_thread(
+        if native:
+            result=await __import__('asyncio').to_thread(native_operation,node,'rollback-agent',request.ssh_username,request.ssh_password,request.ssh_port,request.ssh_fingerprint)
+            output=result['version']
+        else:output = await __import__("asyncio").to_thread(
             ssh,
             node,
             request.ssh_username,
@@ -296,8 +322,7 @@ async def rollback_node(
         )[:128]
         node.last_upgrade_status = "rolled_back"
         node.last_upgrade_at = int(time.time())
-        node.maintenance = False
-        node.drain = False
+        node.maintenance,node.drain=prior_flags if native else (False,False)
         db.commit()
 
         return ResponseModel(

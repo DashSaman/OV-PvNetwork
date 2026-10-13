@@ -696,5 +696,15 @@
   "backupRetentionLabel": "保留備份（天）：",
   "backupRetentionHelp": "0 = 不自動刪除",
   "backupRetentionSaved": "保留期已儲存。",
-  "backupRetentionFailed": "無法儲存保留期。"
+  "backupRetentionFailed": "無法儲存保留期。",
+  "addNodeAuthMethod": "SSH驗證",
+  "addNodePrivateKey": "私密金鑰",
+  "addNodeKeyPassphrase": "金鑰密碼（選填）",
+  "addNodeControllerUrl": "控制器HTTPS位址",
+  "addNodeControllerTlsHelp": "遠端節點需要可存取的HTTPS控制器。請先設定TLS。",
+  "addNodeMode": "安裝模式",
+  "addNodeFresh": "空白伺服器",
+  "addNodeAdopt": "接管現有節點",
+  "addNodeExistingId": "現有節點ID",
+  "addNodeAdoptHelp": "保留目前名稱、位址、VPN連接埠和協定。選擇空閒API連接埠；OpenVPN持續運作。"
 }

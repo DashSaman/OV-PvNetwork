@@ -65,15 +65,17 @@ class RouterOpenVpnNodeContractTests(unittest.TestCase):
         self.assertTrue(all("/sync/router-openvpn/" in url for url in called_urls))
         self.assertFalse(any("/sync/status" in url for url in called_urls))
 
-    def test_fresh_node_stage_installs_capability_but_does_not_enable_listener(self):
-        from backend.node.deploy import _stage_script
-
-        with patch("backend.node.deploy._domain_payload", return_value="Zm9v"):
-            script = _stage_script(9090, 1194, "udp", "key", "203.0.113.5")
-        self.assertIn("pvnetwork-router-openvpn", script)
-        self.assertIn("pvnetwork-router-auth", script)
-        self.assertNotIn("systemctl start openvpn-server@pvnetwork-router", script)
-        self.assertNotIn("systemctl enable openvpn-server@pvnetwork-router", script)
+    def test_fresh_native_bundle_contains_inert_router_capability(self):
+        import io,tarfile
+        from backend.node.deploy import build_native_node_bundle
+        payload,_=build_native_node_bundle()
+        with tarfile.open(fileobj=io.BytesIO(payload),mode='r:gz') as archive:
+            self.assertIn('node-agent/core/routers/router_openvpn.py',archive.getnames())
+            self.assertIn('scripts/pvnetwork-router-openvpn',archive.getnames())
+            self.assertIn('scripts/pvnetwork-router-auth',archive.getnames())
+            installer=archive.extractfile('scripts/pvnetwork_node_install.py').read().decode()
+        self.assertNotIn('systemctl start openvpn-server@pvnetwork-router',installer)
+        self.assertNotIn('systemctl enable openvpn-server@pvnetwork-router',installer)
 
     def test_fleet_capability_install_is_explicit_and_idempotent(self):
         from backend.routers.fleet import router_capability_install_script

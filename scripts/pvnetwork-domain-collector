@@ -1,0 +1,433 @@
+#!/usr/bin/env python3
+"""Collect DNS query domains from OpenVPN clients without inspecting HTTPS."""
+
+from __future__ import annotations
+
+import csv
+import ipaddress
+import json
+import os
+import re
+import selectors
+import signal
+import subprocess
+import sys
+import time
+import urllib.error
+import ssl
+import urllib.request
+from pathlib import Path
+
+
+OPENVPN_CONFIG = Path("/etc/openvpn/server/server.conf")
+DEFAULT_STATUS = "/var/log/openvpn-status.log"
+DEFAULT_INTERFACE = "tun0"
+FLUSH_INTERVAL = 10
+MAP_INTERVAL = 5
+MAX_PENDING = 5000
+MAX_BATCH = 500
+
+QUERY_PATTERN = re.compile(
+    r"\b(?:A|AAAA|CNAME|HTTPS|SVCB)\?\s+([^\s]+)",
+    re.IGNORECASE,
+)
+SOURCE_PATTERN = re.compile(r"\bIP6?\s+(\S+)\s+>\s+\S+:")
+DOMAIN_PATTERN = re.compile(
+    r"^(?=.{1,253}$)(?:[a-z0-9_](?:[a-z0-9_-]{0,61}[a-z0-9_])?\.)+"
+    r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$"
+)
+COMMON_SECOND_LEVEL_SUFFIXES = {
+    "ac.ir", "ac.uk", "co.id", "co.in", "co.ir", "co.jp", "co.kr",
+    "co.nz", "co.uk", "co.za", "com.ar", "com.au", "com.br", "com.cn",
+    "com.hk", "com.mx", "com.my", "com.sg", "com.tr", "com.tw", "com.ua",
+    "com.vn", "gov.ir", "net.au", "net.ir", "org.au", "org.ir", "org.uk",
+}
+
+stopping = False
+
+
+def log(message: str) -> None:
+    print(message, file=sys.stderr, flush=True)
+
+
+def stop(_signum, _frame) -> None:
+    global stopping
+    stopping = True
+
+
+def config_directive(name: str) -> str | None:
+    try:
+        with OPENVPN_CONFIG.open(
+            encoding="utf-8",
+            errors="ignore",
+        ) as source:
+            for raw in source:
+                line = raw.strip()
+
+                if not line or line.startswith(("#", ";")):
+                    continue
+
+                parts = line.split()
+
+                if len(parts) >= 2 and parts[0] == name:
+                    return parts[1].strip('"\'')
+    except OSError:
+        return None
+
+    return None
+
+
+def status_path() -> str:
+    return os.getenv(
+        "PVNETWORK_DOMAIN_STATUS",
+        config_directive("status") or DEFAULT_STATUS,
+    )
+
+
+def capture_interface() -> str:
+    configured = os.getenv("PVNETWORK_DOMAIN_INTERFACE")
+
+    if configured:
+        return configured
+
+    directive = config_directive("dev") or DEFAULT_INTERFACE
+
+    if directive not in {"tun", "tap"}:
+        return directive
+
+    candidates = sorted(Path("/sys/class/net").glob(f"{directive}*"))
+
+    if candidates:
+        return candidates[0].name
+
+    return DEFAULT_INTERFACE
+
+
+def local_url() -> str:
+    raw_port = os.getenv("PVNETWORK_DOMAIN_LOCAL_PORT", "9090")
+
+    try:
+        port = int(raw_port)
+    except ValueError as exc:
+        raise RuntimeError("Invalid local API port") from exc
+
+    if not 1 <= port <= 65535:
+        raise RuntimeError("Invalid local API port")
+
+    return f"https://127.0.0.1:{port}/sync/local-domain-activity"
+
+
+def normalize_domain(value: str) -> str | None:
+    value = (value or "").strip().rstrip(".").lower()
+
+    if not value or len(value) > 1024:
+        return None
+
+    try:
+        value = value.encode("idna").decode("ascii")
+    except (UnicodeError, ValueError):
+        return None
+
+    if value.endswith((".local", ".localhost", ".in-addr.arpa", ".ip6.arpa")):
+        return None
+
+    try:
+        ipaddress.ip_address(value)
+        return None
+    except ValueError:
+        pass
+
+    if not DOMAIN_PATTERN.fullmatch(value):
+        return None
+
+    labels = value.split(".")
+    suffix = ".".join(labels[-2:])
+    keep = 3 if suffix in COMMON_SECOND_LEVEL_SUFFIXES else 2
+
+    if len(labels) < keep:
+        return None
+
+    return ".".join(labels[-keep:])
+
+
+def load_client_map(path: str) -> dict[str, str] | None:
+    try:
+        content = Path(path).read_text(
+            encoding="utf-8",
+            errors="ignore",
+        )
+    except OSError:
+        return None
+
+    lines = content.splitlines()
+
+    if not lines or lines[-1].strip() != "END":
+        return None
+
+    mapping: dict[str, str] = {}
+
+    for row in csv.reader(lines):
+        if not row:
+            continue
+
+        if row[0] == "CLIENT_LIST" and len(row) >= 5:
+            common_name = row[1].strip()
+
+            for virtual_address in (row[3].strip(), row[4].strip()):
+                if virtual_address:
+                    mapping[virtual_address] = common_name
+
+        elif row[0] == "ROUTING_TABLE" and len(row) >= 3:
+            virtual_address = row[1].strip()
+            common_name = row[2].strip()
+
+            if virtual_address and common_name:
+                mapping[virtual_address] = common_name
+
+    return mapping
+
+
+def source_ip(endpoint: str, client_map: dict[str, str]) -> str | None:
+    if endpoint in client_map:
+        return endpoint
+
+    for address in sorted(client_map, key=len, reverse=True):
+        if endpoint.startswith(address + "."):
+            return address
+
+    return None
+
+
+def parse_query(
+    line: str,
+    client_map: dict[str, str],
+) -> tuple[str, str] | None:
+    source_match = SOURCE_PATTERN.search(line)
+    query_match = QUERY_PATTERN.search(line)
+
+    if not source_match or not query_match:
+        return None
+
+    address = source_ip(source_match.group(1), client_map)
+
+    if address is None:
+        return None
+
+    common_name = client_map.get(address)
+    domain = normalize_domain(query_match.group(1))
+
+    if not common_name or domain is None:
+        return None
+
+    return common_name, domain
+
+
+def send_pending(
+    pending: dict[tuple[str, str], list[int]],
+    url: str,
+) -> bool:
+    if not pending:
+        return True
+
+    keys = list(pending)[:MAX_BATCH]
+    events = []
+
+    for common_name, domain in keys:
+        first_seen, last_seen, hit_count = pending[(common_name, domain)]
+        events.append(
+            {
+                "common_name": common_name,
+                "domain": domain,
+                "first_seen": first_seen,
+                "last_seen": last_seen,
+                "hit_count": hit_count,
+            }
+        )
+
+    body = json.dumps(
+        {"events": events},
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+    request = urllib.request.Request(
+        url,
+        data=body,
+        method="POST",
+        headers={"Content-Type": "application/json","X-PVNetwork-Hook-Key":Path('/etc/pvnetwork-node/hook-token').read_text().strip()},
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=10, context=ssl.create_default_context(cafile='/usr/local/libexec/pvnetwork-node/tls.crt')) as response:
+            response.read()
+
+            if response.status != 200:
+                return False
+    except (OSError, urllib.error.URLError, urllib.error.HTTPError):
+        return False
+
+    for key in keys:
+        pending.pop(key, None)
+
+    return True
+
+
+def self_test() -> None:
+    client_map = {"10.8.0.2": "Example-Germany"}
+    fixture = (
+        "1785600000.1 IP 10.8.0.2.53000 > 185.12.64.2.53: "
+        "1234+ A? www.youtube.com. (33)"
+    )
+
+    assert parse_query(fixture, client_map) == (
+        "Example-Germany",
+        "youtube.com",
+    )
+    assert normalize_domain("Example.COM.") == "example.com"
+    assert normalize_domain("10.8.0.1") is None
+    assert normalize_domain("printer.local") is None
+    command = tcpdump_command("tun-test")
+    assert command[:4] == ["tcpdump", "-Z", "root", "-l"]
+    assert command[command.index("-i") + 1] == "tun-test"
+    print("PVNETWORK_DOMAIN_COLLECTOR_SELF_TEST_OK")
+
+
+def tcpdump_command(interface: str) -> list[str]:
+    return [
+        "tcpdump",
+        # The systemd sandbox intentionally grants only NET_RAW/NET_ADMIN.
+        # Ubuntu tcpdump otherwise tries to switch to its package user and
+        # exits because CAP_SETUID/CAP_SETGID are not granted.  Staying as
+        # the already capability-bounded root process preserves the smaller
+        # capability set and avoids widening the service sandbox.
+        "-Z",
+        "root",
+        "-l",
+        "-n",
+        "-tt",
+        "-i",
+        interface,
+        "-s",
+        "0",
+        "udp dst port 53 or tcp dst port 53",
+    ]
+
+
+def run() -> int:
+    path = status_path()
+    interface = capture_interface()
+    url = local_url()
+    pending: dict[tuple[str, str], list[int]] = {}
+    client_map: dict[str, str] = {}
+    next_map = 0.0
+    next_flush = time.monotonic() + FLUSH_INTERVAL
+    command = tcpdump_command(interface)
+
+    while not stopping:
+        process = None
+        selector = selectors.DefaultSelector()
+
+        try:
+            process = subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+            )
+
+            if process.stdout is None:
+                raise RuntimeError("tcpdump output is unavailable")
+
+            selector.register(process.stdout, selectors.EVENT_READ)
+
+            while not stopping and process.poll() is None:
+                now_monotonic = time.monotonic()
+
+                if now_monotonic >= next_map:
+                    fresh_map = load_client_map(path)
+
+                    if fresh_map is not None:
+                        client_map = fresh_map
+
+                    next_map = now_monotonic + MAP_INTERVAL
+
+                for key, _mask in selector.select(timeout=1):
+                    line = key.fileobj.readline()
+
+                    if not line:
+                        continue
+
+                    parsed = parse_query(line, client_map)
+
+                    if parsed is None:
+                        continue
+
+                    observed_at = int(time.time())
+                    current = pending.get(parsed)
+
+                    if current is None:
+                        pending[parsed] = [observed_at, observed_at, 1]
+                    else:
+                        current[1] = observed_at
+                        current[2] = min(10000, current[2] + 1)
+
+                    if len(pending) > MAX_PENDING:
+                        oldest = min(
+                            pending,
+                            key=lambda item: pending[item][1],
+                        )
+                        pending.pop(oldest, None)
+
+                if time.monotonic() >= next_flush:
+                    while pending and send_pending(pending, url):
+                        if len(pending) < MAX_BATCH:
+                            break
+
+                    next_flush = time.monotonic() + FLUSH_INTERVAL
+
+            if process.poll() is not None and not stopping:
+                detail = ""
+
+                if process.stderr is not None:
+                    detail = process.stderr.read(500).strip()
+
+                message = f"tcpdump exited rc={process.returncode}"
+
+                if detail:
+                    message += f" detail={detail}"
+
+                log(message)
+
+        except FileNotFoundError:
+            log("tcpdump is required")
+            return 2
+        except Exception as exc:
+            log(f"collector restart: {type(exc).__name__}")
+        finally:
+            selector.close()
+
+            if process is not None and process.poll() is None:
+                process.terminate()
+
+                try:
+                    process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+
+        if not stopping:
+            time.sleep(3)
+
+    if pending:
+        send_pending(pending, url)
+
+    return 0
+
+
+if __name__ == "__main__":
+    if "--self-test" in sys.argv:
+        self_test()
+        raise SystemExit(0)
+
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    raise SystemExit(run())

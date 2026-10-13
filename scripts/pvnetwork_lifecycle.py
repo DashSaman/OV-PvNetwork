@@ -150,12 +150,18 @@ def extract_release(archive, target, expected_version):
             p=Path(m.name)
             if p.is_absolute() or '..' in p.parts or '\\' in m.name or not (m.isdir() or m.isfile()):raise ValueError('unsafe release archive')
         files=[m for m in members if m.isfile()]
-        versions=[m for m in files if Path(m.name).name=='VERSION']
+        names={str(Path(m.name)) for m in files}
+        versions=[m for m in files if Path(m.name).name=='VERSION' and
+                  str(Path(m.name).parent/'manifest.json') in names and
+                  str(Path(m.name).parent/'frontend/package.json') in names]
         if len(versions)!=1 or versions[0].size>100:raise ValueError('ambiguous release version')
         prefix=Path(versions[0].name).parent
         mapping={str(Path(m.name).relative_to(prefix)):m for m in files}
         if len(mapping)!=len(files):raise ValueError('duplicate release path')
         if tar.extractfile(mapping['VERSION']).read().decode().strip()!=expected_version:raise ValueError('wrong release version')
+        if 'node-agent/VERSION' in mapping:
+            agent=mapping['node-agent/VERSION']
+            if agent.size>100 or tar.extractfile(agent).read().decode().strip()!=expected_version:raise ValueError('node agent release version mismatch')
         for name in ['manifest.json','frontend/package.json']:
             if mapping[name].size>1000000 or json.load(tar.extractfile(mapping[name]))['version']!=expected_version:raise ValueError('release metadata mismatch')
         if target.exists():raise ValueError('release stage already exists')
@@ -720,6 +726,8 @@ def rollback_release():
     current=APP.resolve();port=int(environment['PORT'])
     # This compatible-schema rollback retains current live data, not an old dump.
     if _schema_head(previous,environment)!=_db_head(environment):raise ValueError('schema-incompatible rollback requires explicit native restore')
+    if requires_native_node_transport(environment) and not (previous/'backend/node/tls_binding.py').is_file():
+        raise ValueError('retained code predates managed HTTPS nodes; select a transport-compatible release before rollback')
     data_journal=STATE/'data-transaction.json'
     pause={'kind':'rollback','state':'maintenance','previous':str(current),'version':(current/'VERSION').read_text().strip(),'port':port,'site':str(site),'site_original':original,'paused_timers':[]}
     durable_json(data_journal,pause)
@@ -736,6 +744,21 @@ def rollback_release():
         run(['systemctl','restart','pvnetwork-panel.service']);health(port,(current/'VERSION').read_text().strip())
         _proxy_content(site,original);_resume_writers(pause)
         pause['state']='rolled_back';durable_json(data_journal,pause);raise
+
+
+def requires_native_node_transport(environment):
+    from sqlalchemy import create_engine,inspect,text
+    engine=create_engine(environment.get('DATABASE_URL') or 'sqlite:///'+str(APP/'data/pvnetwork-panel.db'))
+    try:
+        tables=set(inspect(engine).get_table_names())
+        if 'nodes' not in tables:return False
+        with engine.connect() as connection:
+            nodes=list(connection.execute(text('SELECT address,port,key FROM nodes')))
+            if any(str(row[2]).startswith('pvn_tls_v1_') for row in nodes):return True
+            if 'node_tls_bindings' not in tables:return False
+            identities={row[0] for row in connection.execute(text('SELECT identity FROM node_tls_bindings'))}
+            return any(hashlib.sha256((str(row[0]).lower()+':'+str(int(row[1]))).encode()).hexdigest() in identities for row in nodes)
+    finally:engine.dispose()
 
 
 def recover_data_transaction(record):

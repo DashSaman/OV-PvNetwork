@@ -1,8 +1,26 @@
 import requests
+import hashlib
+from pathlib import Path
 
 # PVNETWORK_FAILOPEN_EVENTLOOP_V1
 from fastapi.responses import Response
 from backend.logger import logger
+from backend.node import tls
+
+
+class _Transport:
+    def __init__(self, ca):
+        self.ca = ca
+
+    def __getattr__(self, method):
+        if method not in {'get','post','put','delete','request'}:
+            raise AttributeError(method)
+        def call(*args, **kwargs):
+            kwargs['allow_redirects'] = False
+            if self.ca:
+                kwargs['verify'] = self.ca
+            return getattr(requests, method)(*args, **kwargs)
+        return call
 
 
 class NodeRequests:
@@ -18,7 +36,13 @@ class NodeRequests:
         ovpn_port: int = 1194,
         set_new_setting: bool = False,
     ):
-        self.address = f"{address}:{port}"
+        self.address = f"[{address}]:{port}" if ':' in address else f"{address}:{port}"
+        bound = tls.binding(address,port)
+        ca = tls.trust_path(address, port) if bound or api_key.startswith(tls.KEY_PREFIX) or tls.has_trust(address,port) else None
+        if bound and (hashlib.sha256(api_key.encode()).hexdigest()!=bound['credential_sha256'] or hashlib.sha256(Path(ca).read_bytes()).hexdigest()!=bound['ca_sha256']):
+            raise ValueError('native node TLS/credential binding mismatch; recover verified trust before connecting')
+        self.base_url = ('https://' if ca else 'http://') + self.address
+        self.transport = _Transport(ca)
         self.headers = {"key": api_key, "api-key": api_key}
         self.tunnel_address = tunnel_address or address
         self.protocol = protocol
@@ -27,7 +51,7 @@ class NodeRequests:
 
     def check_node(self) -> bool:
         """Check node status."""
-        api = f"http://{self.address}/sync/status"
+        api = f"{self.base_url}/sync/status"
 
         try:
             data = {
@@ -37,7 +61,7 @@ class NodeRequests:
                 "set_new_setting": self.set_new_setting,
             }
 
-            response = requests.get(
+            response = self.transport.get(
                 api,
                 headers=self.headers,
                 json=data,
@@ -64,7 +88,7 @@ class NodeRequests:
 
 
     def get_node_info(self) -> dict:
-        api = f"http://{self.address}/sync/status"
+        api = f"{self.base_url}/sync/status"
         try:
             data = {
                 "tunnel_address": self.tunnel_address,
@@ -72,7 +96,7 @@ class NodeRequests:
                 "ovpn_port": self.ovpn_port,
                 "set_new_setting": self.set_new_setting,
             }
-            response = requests.get(
+            response = self.transport.get(
                 api, headers=self.headers, json=data, timeout=(2, 4)
             ).json()
             if response.get("success"):
@@ -87,10 +111,10 @@ class NodeRequests:
             return {}
 
     def create_user(self, name: str) -> bool:
-        api = f"http://{self.address}/sync/user"
+        api = f"{self.base_url}/sync/user"
         data = {"name": name}
         try:
-            response = requests.post(
+            response = self.transport.post(
                 api, headers=self.headers, json=data, timeout=(3, 10)
             ).json()
             if response.get("success"):
@@ -105,9 +129,9 @@ class NodeRequests:
             return False
 
     def get_user_identity(self, name: str) -> dict:
-        api = f"http://{self.address}/sync/user/{name}/identity"
+        api = f"{self.base_url}/sync/user/{name}/identity"
         try:
-            response = requests.get(api, headers=self.headers, timeout=(2, 6))
+            response = self.transport.get(api, headers=self.headers, timeout=(2, 6))
             response.raise_for_status()
             payload = response.json()
             if not payload.get("success") or not isinstance(payload.get("data"), dict):
@@ -127,10 +151,10 @@ class NodeRequests:
             return {}
 
     def change_user_status(self, name, status):
-        api = f"http://{self.address}/sync/user"
+        api = f"{self.base_url}/sync/user"
         try:
             data = {"name": name, "status": "activate" if status else "deactivate"}
-            response = requests.put(
+            response = self.transport.put(
                 api, headers=self.headers, json=data, timeout=(2, 6)
             ).json()
 
@@ -146,9 +170,9 @@ class NodeRequests:
             return False
 
     def download_ovpn_client(self, name: str) -> Response:
-        api = f"http://{self.address}/sync/download/ovpn/{name}"
+        api = f"{self.base_url}/sync/download/ovpn/{name}"
         try:
-            response = requests.get(api, headers=self.headers, timeout=(2, 8))
+            response = self.transport.get(api, headers=self.headers, timeout=(2, 8))
             if response.status_code == 200:
                 return Response(
                     content=response.content,
@@ -162,9 +186,9 @@ class NodeRequests:
         return None
 
     def delete_user(self, name: str) -> bool:
-        api = f"http://{self.address}/sync/user/{name}"
+        api = f"{self.base_url}/sync/user/{name}"
         try:
-            response = requests.delete(
+            response = self.transport.delete(
                 api, headers=self.headers, timeout=(3, 10)
             ).json()
             if response.get("success"):
@@ -179,9 +203,9 @@ class NodeRequests:
             return False
 
     def get_users_usage(self, timeout=(2, 8)) -> dict | bool:
-        api = f"http://{self.address}/sync/usage"
+        api = f"{self.base_url}/sync/usage"
         try:
-            response = requests.get(api, headers=self.headers, timeout=timeout).json()
+            response = self.transport.get(api, headers=self.headers, timeout=timeout).json()
             if response.get("success"):
                 logger.info(f"get users usage on node {self.address}: {response.get('msg')}")
                 return response.get("data")
@@ -202,9 +226,9 @@ class NodeRequests:
         payload: dict | None = None,
         timeout=(2, 8),
     ) -> dict:
-        api = f"http://{self.address}/sync/router-openvpn/{path.lstrip('/')}"
+        api = f"{self.base_url}/sync/router-openvpn/{path.lstrip('/')}"
         try:
-            response = requests.request(
+            response = self.transport.request(
                 method,
                 api,
                 headers=self.headers,
@@ -299,9 +323,9 @@ class NodeRequests:
         )
 
     def router_openvpn_profile(self, cn: str) -> Response | None:
-        api = f"http://{self.address}/sync/router-openvpn/profile/{cn}"
+        api = f"{self.base_url}/sync/router-openvpn/profile/{cn}"
         try:
-            response = requests.request(
+            response = self.transport.request(
                 "GET", api, headers=self.headers, timeout=(2, 8)
             )
         except requests.RequestException as exc:
@@ -324,9 +348,9 @@ class NodeRequests:
     # ========================================================
 
     def _bandwidth_call(self, method: str, path: str, payload: dict | None = None) -> dict:
-        api = f"http://{self.address}/sync/bandwidth/{path.lstrip('/')}"
+        api = f"{self.base_url}/sync/bandwidth/{path.lstrip('/')}"
         try:
-            response = requests.request(
+            response = self.transport.request(
                 method,
                 api,
                 headers=self.headers,

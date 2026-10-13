@@ -696,5 +696,15 @@
   "backupRetentionLabel": "Хранить копии (дней):",
   "backupRetentionHelp": "0 = не удалять автоматически",
   "backupRetentionSaved": "Срок хранения сохранён.",
-  "backupRetentionFailed": "Не удалось сохранить срок хранения."
+  "backupRetentionFailed": "Не удалось сохранить срок хранения.",
+  "addNodeAuthMethod": "Аутентификация SSH",
+  "addNodePrivateKey": "Закрытый ключ",
+  "addNodeKeyPassphrase": "Пароль ключа (необязательно)",
+  "addNodeControllerUrl": "HTTPS-адрес контроллера",
+  "addNodeControllerTlsHelp": "Удалённым узлам нужен доступный HTTPS-контроллер. Сначала настройте TLS.",
+  "addNodeMode": "Режим установки",
+  "addNodeFresh": "Пустой сервер",
+  "addNodeAdopt": "Перенести существующий узел",
+  "addNodeExistingId": "ID существующего узла",
+  "addNodeAdoptHelp": "Сохраните имя, адрес, порт и протокол VPN. Выберите свободный порт API; OpenVPN продолжит работу."
 }

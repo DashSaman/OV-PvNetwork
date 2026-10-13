@@ -9,6 +9,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel, Field
+from backend.protocol_compat import node_key_header
 from sqlalchemy.orm import Session
 
 from backend.config import config
@@ -33,6 +34,17 @@ router = APIRouter(
     prefix="/integrations/mirza",
     tags=["Mirza Integration"],
 )
+
+
+class _DeploymentProof(BaseModel):
+    nonce: str = Field(min_length=16,max_length=128)
+
+
+@router.post('/deployment-proof')
+def deployment_proof(request:_DeploymentProof,node_key:str=Depends(node_key_header)):
+    from backend.node.deploy_probe import matches
+    if not matches(node_key,request.nonce):raise HTTPException(status_code=401,detail='Invalid deployment proof')
+    return {'status':'verified','controller':'pvnetwork-panel'}
 
 
 class MirzaCreateUser(BaseModel):

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+. /usr/local/libexec/pvnetwork-node/hooks.env
+CN="${common_name:-}"
+IP="${trusted_ip:-${trusted_ip6:-}}"
+PORT="${trusted_port:-}"
+[[ "$CN" =~ ^[A-Za-z0-9_-]{1,128}$ && "$IP" =~ ^[0-9A-Fa-f:.]+$ && "$PORT" =~ ^[0-9]{1,5}$ ]] || exit 0
+REMOTE="${IP}:${PORT}"
+[[ "$IP" != *:* ]] || REMOTE="[${IP}]:${PORT}"
+# OpenVPN supplies final byte counters and the original connection timestamp.
+# Persist before contacting the agent so an agent restart cannot lose the tail.
+if [[ "${bytes_received:-}" =~ ^[0-9]{1,18}$ && "${bytes_sent:-}" =~ ^[0-9]{1,18}$ && "${time_unix:-}" =~ ^[0-9]{1,18}$ ]]; then
+  umask 077
+  SAMPLE="$(mktemp /var/lib/pvnetwork-node/hook-spool/.sample.XXXXXX)" || SAMPLE=""
+  if [[ -n "$SAMPLE" ]]; then
+    printf '{"name":"%s","remote":"%s","since":%s,"rx":%s,"tx":%s}\n' "$CN" "$REMOTE" "$time_unix" "$bytes_received" "$bytes_sent" >"$SAMPLE"
+    mv -- "$SAMPLE" "$SAMPLE.json"
+  fi
+fi
+curl -sS --cacert "$CA_FILE" --header @/usr/local/libexec/pvnetwork-node/hook-header --connect-timeout 2 --max-time 6 -o /dev/null -X POST "$LOCAL_URL/release" -H 'Content-Type: application/json' --data "{\"common_name\":\"$CN\",\"remote_addr\":\"$REMOTE\"}" >/dev/null 2>&1 || true
+exit 0

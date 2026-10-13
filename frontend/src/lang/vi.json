@@ -696,5 +696,15 @@
   "backupRetentionLabel": "Giữ bản sao (ngày):",
   "backupRetentionHelp": "0 = không tự xóa",
   "backupRetentionSaved": "Đã lưu thời gian giữ.",
-  "backupRetentionFailed": "Không thể lưu thời gian giữ."
+  "backupRetentionFailed": "Không thể lưu thời gian giữ.",
+  "addNodeAuthMethod": "Xác thực SSH",
+  "addNodePrivateKey": "Khóa riêng",
+  "addNodeKeyPassphrase": "Mật khẩu khóa (tùy chọn)",
+  "addNodeControllerUrl": "Địa chỉ HTTPS bộ điều khiển",
+  "addNodeControllerTlsHelp": "Nút từ xa cần bộ điều khiển HTTPS có thể truy cập. Hãy cấu hình TLS trước.",
+  "addNodeMode": "Chế độ cài đặt",
+  "addNodeFresh": "Máy chủ trống",
+  "addNodeAdopt": "Tiếp nhận nút hiện có",
+  "addNodeExistingId": "ID nút hiện có",
+  "addNodeAdoptHelp": "Giữ tên, địa chỉ, cổng và giao thức VPN. Chọn cổng API trống; OpenVPN tiếp tục chạy."
 }

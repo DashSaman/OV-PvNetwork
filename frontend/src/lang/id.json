@@ -696,5 +696,15 @@
   "backupRetentionLabel": "Simpan cadangan (hari):",
   "backupRetentionHelp": "0 = tanpa hapus otomatis",
   "backupRetentionSaved": "Retensi disimpan.",
-  "backupRetentionFailed": "Gagal menyimpan retensi."
+  "backupRetentionFailed": "Gagal menyimpan retensi.",
+  "addNodeAuthMethod": "Autentikasi SSH",
+  "addNodePrivateKey": "Kunci pribadi",
+  "addNodeKeyPassphrase": "Frasa sandi kunci (opsional)",
+  "addNodeControllerUrl": "Alamat HTTPS pengendali",
+  "addNodeControllerTlsHelp": "Node jarak jauh memerlukan pengendali HTTPS yang dapat diakses. Atur TLS terlebih dahulu.",
+  "addNodeMode": "Mode instalasi",
+  "addNodeFresh": "Server kosong",
+  "addNodeAdopt": "Adopsi node yang ada",
+  "addNodeExistingId": "ID node yang ada",
+  "addNodeAdoptHelp": "Pertahankan nama, alamat, port dan protokol VPN. Pilih port API kosong; OpenVPN tetap berjalan."
 }

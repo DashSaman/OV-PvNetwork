@@ -696,5 +696,15 @@
   "backupRetentionLabel": "Keep backups (days):",
   "backupRetentionHelp": "0 = never auto-delete",
   "backupRetentionSaved": "Retention saved.",
-  "backupRetentionFailed": "Could not save retention."
+  "backupRetentionFailed": "Could not save retention.",
+  "addNodeAuthMethod": "SSH authentication",
+  "addNodePrivateKey": "Private key",
+  "addNodeKeyPassphrase": "Key passphrase (optional)",
+  "addNodeControllerUrl": "Controller HTTPS origin",
+  "addNodeControllerTlsHelp": "Remote nodes require a reachable HTTPS controller. Configure TLS first.",
+  "addNodeMode": "Installation mode",
+  "addNodeFresh": "Fresh server",
+  "addNodeAdopt": "Adopt existing node",
+  "addNodeExistingId": "Existing node ID",
+  "addNodeAdoptHelp": "Keep the current name, address, VPN port and protocol. Choose a free API port; OpenVPN remains running."
 }

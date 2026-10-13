@@ -696,5 +696,15 @@
   "backupRetentionLabel": "Зберігати копії (днів):",
   "backupRetentionHelp": "0 = не видаляти автоматично",
   "backupRetentionSaved": "Термін зберігання збережено.",
-  "backupRetentionFailed": "Не вдалося зберегти термін."
+  "backupRetentionFailed": "Не вдалося зберегти термін.",
+  "addNodeAuthMethod": "Автентифікація SSH",
+  "addNodePrivateKey": "Приватний ключ",
+  "addNodeKeyPassphrase": "Пароль ключа (необов’язково)",
+  "addNodeControllerUrl": "HTTPS-адреса контролера",
+  "addNodeControllerTlsHelp": "Віддаленим вузлам потрібен доступний HTTPS-контролер. Спочатку налаштуйте TLS.",
+  "addNodeMode": "Режим встановлення",
+  "addNodeFresh": "Порожній сервер",
+  "addNodeAdopt": "Перенести наявний вузол",
+  "addNodeExistingId": "ID наявного вузла",
+  "addNodeAdoptHelp": "Збережіть назву, адресу, порт і протокол VPN. Оберіть вільний порт API; OpenVPN продовжить роботу."
 }

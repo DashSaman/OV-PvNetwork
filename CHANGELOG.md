@@ -1,3 +1,11 @@
+## v1.0.43 candidate — PVN-1027: Independent HTTPS node source
+
+- Self-contained manifest/checksum source bundle, pinned SSH and frozen private agent tools; no dependency on an installed controller-local node or unverified remote setup script.
+- Authenticated HTTPS, issuing-controller callback proof, durable CA/credential digests and preserved legacy compatibility. Registration failure rolls back only owned provisioning; public job validation errors exclude secret input values.
+- Integer multi-session accounting with durable reconnect/final-disconnect samples; periodic device leases and identity-safe management commands. Identical settings do not restart OpenVPN.
+- Staged agent-only upgrades, durable recovery and retained code rollback; prospective fixtures survived injected failures/SIGKILL while preserving active VPN. Callback redirects/environment proxies and runtime-file bundle collection are refused.
+- Real corrected demo TLS/TUN/upload/download, controller accounting, targeted disable, duplicate-device denial and direct Internet HTTPS evidence recorded in `docs/NODE-CANDIDATE.md`. Exact final source matrix, adoption, agent management, UI/CLI, authorized Production and publication gates remain open.
+
 ## v1.0.42 candidate — PVN-1026: Verified native lifecycle
 
 - Native SQLite/PostgreSQL snapshots with actual restore and row/file checksums; owned encryption/trust files included and transaction backups pinned.

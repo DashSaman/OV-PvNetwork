@@ -696,5 +696,15 @@
   "backupRetentionLabel": "نگهداری بکاپ‌ها (روز):",
   "backupRetentionHelp": "۰ = بدون حذف خودکار",
   "backupRetentionSaved": "تنظیم نگهداری ذخیره شد.",
-  "backupRetentionFailed": "ذخیره تنظیم نگهداری ناموفق بود."
+  "backupRetentionFailed": "ذخیره تنظیم نگهداری ناموفق بود.",
+  "addNodeAuthMethod": "احراز هویت SSH",
+  "addNodePrivateKey": "کلید خصوصی",
+  "addNodeKeyPassphrase": "رمز کلید (اختیاری)",
+  "addNodeControllerUrl": "نشانی HTTPS کنترلر",
+  "addNodeControllerTlsHelp": "نود راه دور به کنترلر HTTPS قابل دسترس نیاز دارد. ابتدا TLS را تنظیم کنید.",
+  "addNodeMode": "روش نصب",
+  "addNodeFresh": "سرور خالی",
+  "addNodeAdopt": "انتقال نود موجود",
+  "addNodeExistingId": "شناسه نود موجود",
+  "addNodeAdoptHelp": "نام، نشانی، پورت و پروتکل VPN فعلی را حفظ کنید. پورت API آزاد انتخاب کنید؛ OpenVPN روشن می‌ماند."
 }

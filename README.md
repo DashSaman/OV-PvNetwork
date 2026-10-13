@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.42-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.43-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.43 candidate vs v1.0.42
+
+**PVN-1027 — independent HTTPS node source.** Verified SSH/source delivery, protected TLS trust, callback identity and persistent accounting replace the legacy fresh-node bootstrap. Real demo TUN/traffic and target-only controls have been exercised; exact final artifact, complete adoption/fleet, UI/CLI and release gates remain open. [Evidence and limits](docs/NODE-CANDIDATE.md). Public stable remains 1.0.37 and authorized Production remains 1.0.40.
 
 ## v1.0.42 candidate vs v1.0.41
 
