@@ -30,7 +30,6 @@ async def add_node_handler(request: NodeCreate, db: Session) -> bool:
 
 async def update_node_handler(node_id: int, request: NodeCreate, db: Session) -> bool:
     """Update a node"""
-    crud.update_node(db, node_id, request)
     restart_request = NodeRequests(
         address=request.address,
         port=request.port,
@@ -41,8 +40,11 @@ async def update_node_handler(node_id: int, request: NodeCreate, db: Session) ->
         set_new_setting=True,
     )
     restart_node = await asyncio.to_thread(restart_request.check_node)
-
-    logger.info(f"Node updated successfully: {request.address}:{request.port}")
+    if restart_node:
+        crud.update_node(db, node_id, request)
+        logger.info(f"Node updated successfully: {request.address}:{request.port}")
+    else:
+        logger.warning('Node edit refused because the remote operation was not verified')
     return restart_node
 
 
