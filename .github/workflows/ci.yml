@@ -87,6 +87,11 @@ jobs:
       - name: Unit and governance tests
         run: python3 -m unittest discover -s tests -v
 
+      - name: Root-owned adoption fixtures in disposable runner
+        # These fixtures write only private temporary files; all service commands
+        # are mocked. Ownership/security checks remain strict in the installer.
+        run: sudo -E env TMPDIR=/tmp "$PWD/.venv/bin/python" -m unittest tests.test_node_adoption_handover -v
+
       - name: Security regression suite
         run: |
           python3 -m unittest \

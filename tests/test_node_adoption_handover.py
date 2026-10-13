@@ -1,5 +1,7 @@
 import importlib.util
 import json
+import os
+import stat
 from pathlib import Path
 import tempfile
 import unittest
@@ -8,6 +10,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@unittest.skipUnless(hasattr(os,'geteuid') and os.geteuid()==0,'root-owned handover fixtures run in the dedicated isolated root gate')
 class AdoptionHandoverTests(unittest.TestCase):
     def module(self):
         spec = importlib.util.spec_from_file_location('handover_node', ROOT/'scripts/pvnetwork_node_install.py')
@@ -120,6 +123,27 @@ class AdoptionHandoverTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'permissions'):
                     module.restore_handover(record)
                 self.assertEqual(hooks['disconnect'].stat().st_mode & 0o777,0o700)
+
+
+@unittest.skipUnless(hasattr(os,'geteuid'),'POSIX ownership validation')
+class HandoverOwnershipTests(unittest.TestCase):
+    def module(self):
+        spec=importlib.util.spec_from_file_location('ownership_node',ROOT/'scripts/pvnetwork_node_install.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
+
+    def test_non_root_owner_is_refused(self):
+        from types import SimpleNamespace
+        info=SimpleNamespace(st_mode=stat.S_IFREG|0o755,st_uid=1001)
+        with patch.object(Path,'stat',return_value=info):
+            with self.assertRaisesRegex(ValueError,'root-owned'):
+                self.module().root_owned_file('/tmp/ci-untrusted-hook')
+
+    def test_shared_write_is_refused_even_for_root_owner(self):
+        from types import SimpleNamespace
+        info=SimpleNamespace(st_mode=stat.S_IFREG|0o777,st_uid=0)
+        with patch.object(Path,'stat',return_value=info):
+            with self.assertRaisesRegex(ValueError,'shared write'):
+                self.module().root_owned_file('/tmp/ci-shared-hook')
 
 
 if __name__=='__main__':unittest.main()

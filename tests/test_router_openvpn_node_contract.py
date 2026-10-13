@@ -86,15 +86,11 @@ class RouterOpenVpnNodeContractTests(unittest.TestCase):
         self.assertIn("--router-only", script)
         self.assertNotIn("systemctl start openvpn-server@pvnetwork-router", script)
 
-    def test_fleet_upgrade_installs_capability_before_node_restart_only(self):
+    def test_legacy_upgrade_requires_explicit_verified_adoption(self):
         from backend.routers.fleet import build_upgrade_script
 
-        script = build_upgrade_script()
-        install_at = script.index("PVNETWORK_ROUTER_CAPABILITY_V1")
-        restart_at = script.index("systemctl restart ov-node")
-        self.assertLess(install_at, restart_at)
-        self.assertNotIn("systemctl restart openvpn-server@server", script)
-        self.assertNotIn("systemctl start openvpn-server@pvnetwork-router", script)
+        with self.assertRaisesRegex(ValueError,'Adopt Existing Node'):
+            build_upgrade_script()
 
 
 if __name__ == "__main__":
