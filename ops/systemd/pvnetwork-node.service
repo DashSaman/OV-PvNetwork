@@ -1,0 +1,24 @@
+[Unit]
+Description=PVNetwork Node HTTPS control plane
+After=network-online.target openvpn-server@server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/pvnetwork-node
+EnvironmentFile=/etc/pvnetwork-node/node.env
+ExecStart=/opt/pvnetwork-node/.venv/bin/python /opt/pvnetwork-node/main.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/etc/openvpn/server /etc/openvpn/ccd /etc/pvnetwork-node /var/lib/pvnetwork-node /root
+ProtectKernelTunables=true
+ProtectControlGroups=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

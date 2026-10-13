@@ -1,0 +1,27 @@
+[Unit]
+Description=PVNetwork OpenVPN DNS domain collector
+After=network-online.target pvnetwork-node.service openvpn-server@server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+EnvironmentFile=/etc/pvnetwork-node/collector.env
+ExecStart=/usr/local/sbin/pvnetwork-domain-collector
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_PACKET
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+MemoryMax=128M
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
