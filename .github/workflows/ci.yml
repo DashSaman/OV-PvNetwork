@@ -70,7 +70,7 @@ jobs:
           uv sync --project node-agent --frozen --no-dev --python 3.12
           uv export --project node-agent --frozen --no-dev --no-emit-project -q > /tmp/pvnetwork-node-audit-requirements.txt
           uv tool run pip-audit --no-deps --disable-pip -r /tmp/pvnetwork-node-audit-requirements.txt
-          uv tool run bandit -q -r node-agent/core scripts/pvnetwork_node_install.py scripts/pvnetwork_node_lifecycle.py scripts/pvnetwork_node_backup.py scripts/pvnetwork_node_restore.py -ll
+          uv tool run bandit -q -r node-agent/core scripts/pvnetwork_node_install.py scripts/pvnetwork_node_lifecycle.py scripts/pvnetwork_node_backup.py scripts/pvnetwork_node_restore.py scripts/pvnetwork_install.py scripts/pvnetwork_lifecycle.py -ll
 
       - name: Bash syntax
         run: |

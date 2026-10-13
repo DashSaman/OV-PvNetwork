@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tarfile
 import time
+import tempfile
 import urllib.parse
 import urllib.request
 
@@ -86,8 +87,14 @@ def write_private(path, content, mode=0o600):
 
 def command(args, *, cwd=None, env=None, timeout=1200, stdin=None):
     # Child output can contain credentials/connection strings; keep it private.
-    result=subprocess.run([str(x) for x in args],cwd=cwd,env=env,input=stdin,
-                          capture_output=True,text=True,timeout=timeout)
+    try:
+        result=subprocess.run([str(x) for x in args],cwd=cwd,env=env,input=stdin,
+                              capture_output=True,text=True,timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        output=lambda value:value.decode('utf-8',errors='replace') if isinstance(value,bytes) else (value or '')
+        STATE.mkdir(parents=True,exist_ok=True,mode=0o700)
+        write_private(STATE/'last-install-error.log',output(exc.stdout)+'\n'+output(exc.stderr))
+        raise RuntimeError(Path(str(args[0])).name+' timed out; partial diagnostics are in the root-private installation state') from None
     if result.returncode:
         STATE.mkdir(parents=True,exist_ok=True,mode=0o700)
         write_private(STATE/'last-install-error.log',result.stdout+'\n'+result.stderr)
@@ -109,13 +116,55 @@ def download_verified(spec, directory):
         if hashlib.sha256(cached.read_bytes()).hexdigest()!=spec['sha256']:raise ValueError('offline tool cache checksum mismatch')
         shutil.copyfile(cached,target)
     if not target.exists() or hashlib.sha256(target.read_bytes()).hexdigest()!=spec['sha256']:
-        with urllib.request.urlopen(url,timeout=90) as response:
+        # The scheme/official host guard above and the pinned digest are mandatory.
+        with urllib.request.urlopen(url,timeout=90) as response:  # nosec B310
             temporary=target.with_suffix(target.suffix+'.download')
             with temporary.open('wb') as output:shutil.copyfileobj(response,output)
         if hashlib.sha256(temporary.read_bytes()).hexdigest()!=spec['sha256']:
             temporary.unlink();raise ValueError('toolchain checksum mismatch')
         os.replace(temporary,target)
     return target
+
+
+def extract_node_tool(archive,tools,expected):
+    """Extract regular files first, internal links last, into absent private staging."""
+    tools=Path(tools);destination=tools/expected
+    if Path(expected).name!=expected or destination.exists() or destination.is_symlink():raise ValueError('existing or invalid Node tool directory; preserve it before recovery')
+    if tools.is_symlink():raise ValueError('linked tool directory refused')
+    with tarfile.open(archive,'r:xz') as tar:
+        members=tar.getmembers();names=set();links=set();total=0
+        if len(members)>50000:raise ValueError('Node archive member limit exceeded')
+        for member in members:
+            path=Path(member.name);total+=member.size
+            if path.is_absolute() or '..' in path.parts or not path.parts or path.parts[0]!=expected or member.name in names or not (member.isfile() or member.isdir() or member.issym()) or total>512*1024**2:
+                raise ValueError('unsafe Node archive member')
+            names.add(member.name)
+            if member.issym():
+                target=Path(posixpath.normpath(str(path.parent/member.linkname)))
+                if Path(member.linkname).is_absolute() or not target.parts or target.parts[0]!=expected:raise ValueError('unsafe Node archive link')
+                links.add(path)
+        if any(any(parent in links for parent in Path(member.name).parents) for member in members):raise ValueError('Node archive member descends through a link')
+        with tempfile.TemporaryDirectory(prefix='.node-tool-',dir=tools) as folder:
+            stage=Path(folder);stage.chmod(0o700)
+            for member in members:
+                path=stage/member.name
+                if member.issym():continue
+                path.parent.mkdir(parents=True,exist_ok=True,mode=0o755)
+                if member.isdir():path.mkdir(exist_ok=True,mode=0o755)
+                else:
+                    with path.open('xb') as output:shutil.copyfileobj(tar.extractfile(member),output)
+                    path.chmod(member.mode&0o777)
+            for member in members:
+                if member.issym():
+                    path=stage/member.name;path.parent.mkdir(parents=True,exist_ok=True,mode=0o755);path.symlink_to(member.linkname)
+            for relative in links:
+                try:(stage/relative).resolve().relative_to((stage/expected).resolve())
+                except (ValueError,RuntimeError):raise ValueError('unsafe or circular Node archive link') from None
+            if destination.exists() or destination.is_symlink():raise ValueError('existing Node tool destination appeared; preserve it')
+            os.replace(stage/expected,destination)
+            descriptor=os.open(tools,os.O_RDONLY|os.O_DIRECTORY)
+            try:os.fsync(descriptor)
+            finally:os.close(descriptor)
 
 
 def install_toolchain(source, architecture, *, install_os_packages=True, include_node=True):
@@ -136,17 +185,7 @@ def install_toolchain(source, architecture, *, install_os_packages=True, include
         node_archive=download_verified(node_spec,TOOLS)
         node_dir=TOOLS/node_spec['filename'].removesuffix('.tar.xz')
         if not (node_dir/'bin/node').exists():
-            with tarfile.open(node_archive,'r:xz') as tar:
-                # Official Node archives contain relative internal symlinks.
-                for m in tar.getmembers():
-                    p=Path(m.name)
-                    if p.is_absolute() or '..' in p.parts or not (m.isfile() or m.isdir() or m.issym()):raise ValueError('unsafe Node archive')
-                    expected=node_dir.name
-                    if not p.parts or p.parts[0]!=expected:raise ValueError('unexpected Node archive root')
-                    if m.issym():
-                        target=Path(posixpath.normpath(str(p.parent/m.linkname)))
-                        if Path(m.linkname).is_absolute() or not target.parts or target.parts[0]!=expected:raise ValueError('unsafe Node archive link')
-                tar.extractall(TOOLS)
+            extract_node_tool(node_archive,TOOLS,node_dir.name)
         tool_paths.insert(0,str(node_dir/'bin'))
     env={**os.environ,'PATH':os.pathsep.join(tool_paths)+os.pathsep+os.environ['PATH'],
          'UV_PYTHON_INSTALL_DIR':str(TOOLS/'python'),'UV_LINK_MODE':'copy','UV_PYTHON_PREFERENCE':'only-managed'}
@@ -155,9 +194,17 @@ def install_toolchain(source, architecture, *, install_os_packages=True, include
 
 
 def verify_http(url, *, version=None):
+    import ipaddress
+    parsed=urllib.parse.urlsplit(url)
+    local=parsed.hostname=='localhost'
+    try:local=local or ipaddress.ip_address(parsed.hostname).is_loopback
+    except ValueError:pass
+    if not parsed.hostname or parsed.username or parsed.password or parsed.fragment or (parsed.scheme!='https' and not (parsed.scheme=='http' and local)):
+        raise ValueError('HTTPS or owned loopback HTTP required for health verification')
     for attempt in range(30):
         try:
-            with urllib.request.urlopen(url,timeout=3) as response:
+            # Explicit scheme/loopback policy is checked before this retry loop.
+            with urllib.request.urlopen(url,timeout=3) as response:  # nosec B310
                 payload=response.read()
                 if response.status==200 and (version is None or json.loads(payload)['version']==version):return payload
         except (OSError,ValueError,KeyError):pass
@@ -240,7 +287,8 @@ def install(args):
     elif args.domain and not args.recover:
         for public_port in [80,443]:
             with socket.socket() as probe:
-                try:probe.bind(('0.0.0.0',public_port))
+                # Closed immediately; bind-only conflict check never listens.
+                try:probe.bind(('0.0.0.0',public_port))  # nosec B104
                 except OSError as exc:raise ValueError('fresh HTTPS install requires free ports 80 and 443; adopt existing proxy separately') from exc
     if args.preflight:
         print(json.dumps({'preflight':'PASS','mode':'https' if args.domain else 'loopback_setup','os':info['ID'],'version':info['VERSION_ID'],'architecture':platform.machine()}));return

@@ -114,7 +114,12 @@ def private(path,content,mode=0o600):
 
 
 def run(args,**kwargs):
-    result=subprocess.run([str(x) for x in args],capture_output=True,text=True,timeout=kwargs.pop('timeout',1200),**kwargs)
+    try:
+        result=subprocess.run([str(x) for x in args],capture_output=True,text=True,timeout=kwargs.pop('timeout',1200),**kwargs)
+    except subprocess.TimeoutExpired as exc:
+        output=lambda value:value.decode('utf-8',errors='replace') if isinstance(value,bytes) else (value or '')
+        private(STATE/'last-error.log',output(exc.stdout)+'\n'+output(exc.stderr))
+        raise ValueError(Path(str(args[0])).name+' timed out; partial diagnostics are in the root-private node state') from None
     if result.returncode:
         private(STATE/'last-error.log',result.stdout+'\n'+result.stderr)
         raise ValueError(Path(str(args[0])).name+' failed; diagnostics are in the root-private node state directory')
