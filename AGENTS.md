@@ -72,6 +72,11 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
+- `v1.0.38` — [~] IN_PROGRESS — `PVN-1023` frontend Axios security dependency update.
+  - Fresh baseline CI fails the production dependency audit on the locked Axios version; existing backend tests, lint and frontend build pass.
+  - Scope: targeted compatible Axios dependency/lock update, audit and existing frontend/API browser regression checks. No changes to panel authentication, routes, node configuration, firewall or database.
+  - This release is a prerequisite for `PVN-1022` smoke-gate correction reserved for `v1.0.39`. Publication/deployment remain pending all applicable gates.
+
 - `v1.0.0` — RELEASED — sanitized public baseline.
 - `v1.0.1` — RELEASED — responsive/mobile hardening batch + Telegram Node DOWN/UP transition alerts + bilingual screenshots.
 - `v1.0.2` — RELEASED — `PVN-111` Responsive Subscription page; CI/Production/asset verification passed.
