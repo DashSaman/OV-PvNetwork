@@ -72,6 +72,12 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
+- `v1.0.43` — [~] IN_PROGRESS — `PVN-1027` independent native node package, pinned transport and explicit adoption.
+  - Preserve current node API, PKI/CCD/user identity, accounting, session proxy, Router/OpenVPN and domain history. MIT upstream provenance and notices remain intact.
+  - Verified source bundle replaces controller-local node asset dependencies and unverified remote setup execution. Preflight separates fresh/adopt and rejects listener/runtime conflicts before mutation.
+  - Native node service/paths use PVNetwork names, HTTPS trust arrives over pinned SSH, and legacy nodes remain compatible until explicitly adopted. Existing OpenVPN must not restart merely for node branding/migration.
+  - Local/CI proof and actual SSH/TUN/traffic tests are required before new Production authorization or release. No new live-node migration has been performed.
+
 - `v1.0.42` — [~] IN_PROGRESS — `PVN-1026` transactional lifecycle and verified native backup/restore.
   - Preserve 1.0.41 installer improvements. Replace active-tree deletion with staged builds, validated backups/clones, explicit schema compatibility, canary, atomic pointer and durable rollback/recovery.
   - Share the installer operation lock; preserve runtime environment/data and protected services. Verify real SQLite and PostgreSQL restores and inject interruption/failure in disposable hosts before any new Production approval.
