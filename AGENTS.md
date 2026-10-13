@@ -79,6 +79,13 @@ Before implementation, record the task and target release here **and commit/push
   - Evidence: eight failures reproduced against the original script; 11 executable regressions pass after the fix, plus three existing rollout guard tests and Bash syntax/compilation checks.
   - A focused independent review found a stopped-unit race and loss of 4xx status on a failed curl transfer. Both were reproduced and fixed: systemd `try-restart` preserves stopped units, and received client-error statuses are retained even on a truncated response.
 
+- `v1.0.39` — [~] TESTED_LOCALLY — `PVN-1022` migration revision parsing in the Production smoke gate; follows the dependency-security prerequisite reserved for `v1.0.38` / `PVN-1023`.
+  - Reproduced: the database and Alembic agree on an alphanumeric head, but the smoke script's hexadecimal-only filter discards it and exits 31 with `ALEMBIC_HEAD_COUNT_INVALID=0`.
+  - Scope: revision parsing plus executable regression tests. No migration, panel/API behavior, node, VPN, routing or firewall change.
+  - Release/deployment remain gated on fresh tests, backup verification, exact-head CI, authorized deployment and immutable artifact verification. No completion claimed.
+  - Local evidence: six executable Bash-stage regressions pass after four expected failures against the unchanged hexadecimal filter; Bash syntax and backend/test compilation pass.
+  - Full Windows suite: 299 tests, 3 failures and 66 errors (missing PyJWT, POSIX-only APIs, executable/permission differences and consequent import errors); complete diagnostics retained privately. The Linux checkpoint CI passes backend tests/lint/build but fails the pre-existing Axios runtime dependency audit; no release-ready claim.
+
 - `v1.0.38` — [~] TESTED_LOCALLY — `PVN-1023` frontend dependency security update.
   - Fresh baseline CI fails the production dependency audit on the locked Axios version; existing backend tests, lint and frontend build pass.
   - Scope: Axios `1.19.0 → 1.20.0`, development dependencies brace-expansion `1.1.18 → 1.1.21` and source-map-js `1.2.1 → 1.2.2`; compatible lock updates only. Isolate Axios into an HTTP-client build chunk to preserve the existing 990000-byte gate.
