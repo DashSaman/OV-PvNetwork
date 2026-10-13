@@ -1,3 +1,8 @@
+## v1.0.38 candidate — PVN-1023: Frontend dependency security refresh
+
+- Targeted, independently tested patch; publication/deployment evidence remains governed by the active ledger.
+- No database migration, certificate or VPN configuration changes.
+
 ## v1.0.35 — PVN-1019 presence rate-dict hotfix
 
 - /users/presence was returning 500 since the split-rate change: the endpoint still coerced each rate to float while the payload had become {down, up, total} dicts — the very reason live speeds stopped appearing in the panel. Rates now pass through as dicts with a type guard; verified live (all presence requests 200 after deploy).
