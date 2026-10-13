@@ -4,6 +4,7 @@ from pathlib import Path
 import secrets
 import subprocess
 import sys
+import tempfile
 import unittest
 
 from sqlalchemy import create_engine,inspect,text
@@ -28,10 +29,12 @@ class FreshPostgresTests(unittest.TestCase):
         with self.admin.connect() as c:c.execute(text('DROP DATABASE IF EXISTS "'+self.name+'" WITH (FORCE)'))
         self.admin.dispose()
 
-    def initialize(self,failpoint=None):
+    def initialize(self,failpoint=None,marker=None):
         environment={**os.environ,'DATABASE_URL':self.target.render_as_string(hide_password=False)}
         if failpoint:environment['PVNETWORK_SCHEMA_FAILPOINT']=failpoint
-        return subprocess.run([sys.executable,ROOT/'scripts/pvnetwork_initialize_database.py','--project',ROOT],env=environment,capture_output=True,text=True)
+        args=[sys.executable,ROOT/'scripts/pvnetwork_initialize_database.py','--project',ROOT]
+        if marker:args.extend(['--completion-marker',marker])
+        return subprocess.run(args,env=environment,capture_output=True,text=True)
 
     def test_current_schema_head_and_database_constraints(self):
         result=self.initialize();self.assertEqual(result.returncode,0,result.stdout+result.stderr)
@@ -46,3 +49,15 @@ class FreshPostgresTests(unittest.TestCase):
         result=self.initialize('after_create');self.assertNotEqual(result.returncode,0)
         self.assertIn('requested disposable schema fault injection',result.stderr)
         self.assertEqual(inspect(self.engine).get_table_names(),[])
+
+    def test_owned_commit_before_journal_is_recoverable_but_data_is_never_reinitialized(self):
+        with tempfile.TemporaryDirectory() as folder:
+            marker=str(Path(folder)/'ownership.json')
+            result=self.initialize('after_commit',marker);self.assertNotEqual(result.returncode,0)
+            self.assertIn('interruption after database commit',result.stderr)
+            recovered=self.initialize(marker=marker);self.assertEqual(recovered.returncode,0,recovered.stderr)
+            self.assertIn('OWNED_FRESH_DATABASE_ALREADY_INITIALIZED',recovered.stdout)
+            with self.engine.begin() as c:
+                c.execute(text("INSERT INTO users(uuid,name,total,used,last_node_usage,expiry_date,is_active,owner,device_limit) VALUES ('demo-preserved-uuid','demo-preserved',1234567,0,0,'2030-01-01',true,'demo-owner',1)"))
+            refused=self.initialize(marker=marker);self.assertNotEqual(refused.returncode,0)
+            with self.engine.connect() as c:self.assertEqual(c.execute(text('SELECT uuid FROM users')).scalar_one(),'demo-preserved-uuid')

@@ -20,6 +20,20 @@ def initialize(project, marker=None):
     import db.models  # register every current model and its constraints
     inspector=inspect(engine)
     if inspector.get_table_names() or inspector.get_view_names():
+        if marker and engine.dialect.name=='postgresql' and Path(marker).is_file():
+            from alembic.script import ScriptDirectory
+            from sqlalchemy import text
+            ownership=json.loads(Path(marker).read_text())
+            identity=hashlib.sha256(str(engine.url.render_as_string(hide_password=False)).encode()).hexdigest()
+            config=Config(str(root/'backend/alembic.ini'));config.set_main_option('script_location',str(root/'backend/alembic'))
+            heads=ScriptDirectory.from_config(config).get_heads()
+            names=set(inspector.get_table_names())
+            if ownership.get('database_backend')=='postgresql' and ownership.get('database_identity')==identity and names==set(Base.metadata.tables)|{'alembic_version'} and len(heads)==1:
+                with engine.connect() as connection:
+                    current=list(connection.execute(text('SELECT version_num FROM alembic_version')).scalars())
+                    empty=all(connection.execute(text('SELECT count(*) FROM "'+name.replace('"','""')+'"')).scalar_one()==0 for name in Base.metadata.tables)
+                if current==heads and empty:
+                    print('OWNED_FRESH_DATABASE_ALREADY_INITIALIZED');return
         if marker and engine.dialect.name=='sqlite' and Path(marker).is_file():
             data=json.loads(Path(marker).read_text())
             current=Path(engine.url.database)
@@ -61,11 +75,18 @@ def initialize(project, marker=None):
         # Historical upgrades assume tables from older runtime bootstrap code.
         # A genuinely empty database starts from current metadata in one DDL
         # transaction, then receives the same canonical Alembic head.
+        ownership={'database_backend':'postgresql','database_identity':hashlib.sha256(engine.url.render_as_string(hide_password=False).encode()).hexdigest(),'phase':'initializing'}
+        if marker:
+            from pvnetwork_install import write_private
+            write_private(Path(marker),json.dumps(ownership))
         with engine.begin() as connection:
             Base.metadata.create_all(connection)
             if os.environ.get('PVNETWORK_SCHEMA_FAILPOINT')=='after_create':raise ValueError('requested disposable schema fault injection')
             config.attributes['connection']=connection
             command.stamp(config,'head')
+        if os.environ.get('PVNETWORK_SCHEMA_FAILPOINT')=='after_commit':raise ValueError('requested disposable interruption after database commit')
+        if marker:
+            ownership['phase']='initialized';write_private(Path(marker),json.dumps(ownership))
     else:raise ValueError('fresh database backend must be SQLite or PostgreSQL')
     print('FRESH_DATABASE_INITIALIZED')
 
