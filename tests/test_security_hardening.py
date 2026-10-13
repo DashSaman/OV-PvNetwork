@@ -1,4 +1,6 @@
 import pathlib
+import re
+import tomllib
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -55,7 +57,12 @@ class SecurityHardeningContractTests(unittest.TestCase):
         self.assertIn("pip-audit", workflow)
         self.assertIn("bandit", workflow)
         self.assertNotIn("python-jose", pyproject)
-        self.assertIn("pyjwt>=2.13", pyproject)
+        dependencies=tomllib.loads(text('pyproject.toml'))['project']['dependencies']
+        requirement=next(value.lower() for value in dependencies if value.lower().startswith('pyjwt'))
+        minimum=re.fullmatch(r'pyjwt>=([0-9]+(?:\.[0-9]+){1,2}),<3',requirement)
+        self.assertIsNotNone(minimum,'a patched PyJWT minimum and compatible major bound are required')
+        version=tuple(int(part) for part in minimum[1].split('.'))
+        self.assertGreaterEqual(version+(0,)*(3-len(version)),(2,15,0))
         self.assertIn("python-dotenv>=1.2.2", pyproject)
 
     def test_anyconnect_secret_key_requires_private_permissions(self):
