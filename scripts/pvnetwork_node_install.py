@@ -226,8 +226,9 @@ def adopted_snapshot(config):
             raise ValueError('adopt requires root peer authentication or a root-private management socket')
     hooks={}
     for action in ['connect','disconnect']:
-        if lines.get('client-'+action)!=['/usr/local/libexec/ov-session-'+action]:
-            raise ValueError('adopt requires recognized legacy session hooks; custom hooks need explicit migration')
+        expected=('/usr/local/libexec/pvnetwork-node/session-' if config.get('mode')=='fresh' else '/usr/local/libexec/ov-session-')+action
+        if lines.get('client-'+action)!=[expected]:
+            raise ValueError('recognized session hooks required; custom hooks need explicit migration')
         hooks[action]=lines['client-'+action][0]
     if lines.get('client-config-dir')!=['/etc/openvpn/ccd']:
         raise ValueError('adopt requires the compatible existing CCD directory')

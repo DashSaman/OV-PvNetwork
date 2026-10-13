@@ -25,6 +25,16 @@ class NodeAgentLifecycleTests(unittest.TestCase):
             self.assertEqual(run.call_count,1)
             self.assertIn('--property=LoadState',run.call_args.args[0])
 
+    def test_prior_protected_record_accepts_new_derived_hook_metadata(self):
+        lifecycle=self.module()
+        before={'vpn':{'server_sha256':'ci-conf','ca_sha256':'ci-ca','pid':'42','status':'/tmp/ci-status','management':'/tmp/ci-management'},'env':'ci-env','tls_key':'ci-key','tls_ca':'ci-api-ca'}
+        current={**before,'vpn':{**before['vpn'],'hooks':{'connect':'ci-hook'},'group':'ci-group'}}
+        with patch.object(lifecycle,'protected',return_value=current):
+            lifecycle.verify_protected(before,{})
+            current['vpn']['server_sha256']='operator-change'
+            with self.assertRaisesRegex(ValueError,'protected VPN'):
+                lifecycle.verify_protected(before,{})
+
     def test_existing_canary_stop_failure_is_reported(self):
         lifecycle=self.module()
         with patch.object(lifecycle.subprocess,'run') as run,patch.object(lifecycle.node,'run',side_effect=ValueError('stop failed')):

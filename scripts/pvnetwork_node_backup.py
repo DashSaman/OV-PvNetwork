@@ -10,6 +10,7 @@ import sqlite3
 import stat
 import tarfile
 import tempfile
+import re
 
 FORMAT='pvnetwork-node-backup-v1'
 LIMIT=240*1024**2
@@ -50,6 +51,38 @@ def snapshot_sqlite(source,target):
     return sqlite_fingerprint(target)
 
 
+def accounting_rows(db):
+    db.execute('PRAGMA trusted_schema=OFF')
+    if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('invalid node accounting database')
+    objects=set(db.execute("SELECT type,name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'"))
+    columns=[(row[1],row[2].upper(),row[5]) for row in db.execute('PRAGMA table_info(sessions)')]
+    if objects!={('table','sessions')} or columns!=[('id','TEXT',1),('name','TEXT',0),('rx','INTEGER',0),('tx','INTEGER',0)]:
+        raise ValueError('unsupported node accounting schema')
+    rows=list(db.execute('SELECT id,name,rx,tx FROM sessions'))
+    for identity,name,rx,tx in rows:
+        if not isinstance(identity,str) or not re.fullmatch('[0-9a-f]{64}',identity) or not isinstance(name,str) or not re.fullmatch('[A-Za-z0-9_-]{1,64}',name):
+            raise ValueError('invalid accounting identity')
+        if any(not isinstance(value,int) or not 0<=value<2**63 for value in [rx,tx]):raise ValueError('invalid accounting counters')
+    return rows
+
+
+def merge_accounting(restored,current):
+    """Merge into an isolated restored database; never write current counters."""
+    restored=regular(restored);current=regular(current)
+    if restored.resolve()==current.resolve():raise ValueError('accounting merge requires an isolated target')
+    with sqlite3.connect(current.resolve().as_uri()+'?mode=ro',uri=True) as source:
+        existing=accounting_rows(source)
+    with sqlite3.connect(restored) as target:
+        target.execute('PRAGMA synchronous=FULL')
+        before={identity:name for identity,name,_,_ in accounting_rows(target)}
+        if any(identity in before and before[identity]!=name for identity,name,_,_ in existing):
+            raise ValueError('accounting session identity conflict; preserve current data')
+        for row in existing:
+            target.execute('INSERT INTO sessions VALUES (?,?,?,?) ON CONFLICT(id) DO UPDATE SET rx=max(rx,excluded.rx),tx=max(tx,excluded.tx)',row)
+        after=len(accounting_rows(target))
+    return {'sessions_before':len(before),'sessions_after':after,'current_sessions':len(existing)}
+
+
 def inspect_archive(archive):
     archive=regular(archive)
     if archive.stat().st_size>LIMIT:raise ValueError('node backup exceeds size limit')
@@ -67,6 +100,10 @@ def inspect_archive(archive):
     for name,value in content.items():
         entry=manifest['files'][name]
         if entry['sha256']!=hashlib.sha256(value).hexdigest() or entry['size']!=len(value):raise ValueError('node backup checksum mismatch')
+        metadata=[entry.get(key) for key in ['mode','uid','gid']]
+        if any(value is not None for value in metadata):
+            if any(not isinstance(value,int) or isinstance(value,bool) or value<0 for value in metadata) or metadata[0]>0o777 or max(metadata[1:])>2**32-1:
+                raise ValueError('unsafe node backup permissions or ownership')
     if not set(manifest.get('databases',{})).issubset(content):raise ValueError('node backup database inventory mismatch')
     return manifest,content
 
@@ -90,18 +127,23 @@ def create_archive(destination,files,databases,identity):
     destination=Path(destination)
     if destination.exists() or destination.is_symlink():raise ValueError('existing node backup is immutable')
     if set(files)&set(databases):raise ValueError('duplicate node backup path')
-    payload={};manifest={'format':FORMAT,'identity':identity,'files':{},'databases':{}}
+    payload={};metadata={};manifest={'format':FORMAT,'identity':identity,'files':{},'databases':{}}
     with tempfile.TemporaryDirectory(prefix='pvnetwork-node-backup-') as folder:
         scratch=Path(folder);scratch.chmod(0o700)
         for name,source in files.items():
             safe_name(name);path=regular(source);before=path.stat();value=path.read_bytes();after=regular(path).stat()
-            if (before.st_ino,before.st_size,before.st_mtime_ns)!=(after.st_ino,after.st_size,after.st_mtime_ns):raise ValueError('node files changed during snapshot; retry when stable')
+            if (before.st_ino,before.st_size,before.st_mtime_ns,before.st_mode,before.st_uid,before.st_gid)!=(after.st_ino,after.st_size,after.st_mtime_ns,after.st_mode,after.st_uid,after.st_gid):raise ValueError('node files changed during snapshot; retry when stable')
+            if stat.S_IMODE(before.st_mode)>0o777:raise ValueError('special-permission node files require explicit backup scope')
+            metadata[name]={'mode':stat.S_IMODE(before.st_mode),'uid':before.st_uid,'gid':before.st_gid}
             payload[name]=value
         for index,(name,source) in enumerate(databases.items()):
             safe_name(name);copy=scratch/('database-'+str(index)+'.db')
+            original=regular(source).stat()
+            if stat.S_IMODE(original.st_mode)>0o777:raise ValueError('special-permission node databases require explicit backup scope')
             manifest['databases'][name]=snapshot_sqlite(source,copy);payload[name]=copy.read_bytes()
+            metadata[name]={'mode':stat.S_IMODE(original.st_mode),'uid':original.st_uid,'gid':original.st_gid}
         if sum(map(len,payload.values()))>LIMIT:raise ValueError('node backup exceeds size limit')
-        for name,value in payload.items():manifest['files'][name]={'sha256':hashlib.sha256(value).hexdigest(),'size':len(value)}
+        for name,value in payload.items():manifest['files'][name]={'sha256':hashlib.sha256(value).hexdigest(),'size':len(value),**metadata[name]}
         staged=scratch/'snapshot.tar.gz'
         with tarfile.open(staged,'w:gz') as tar:
             for name,value in [*sorted(payload.items()),('NODE-BACKUP.json',json.dumps(manifest,sort_keys=True).encode())]:
@@ -110,7 +152,9 @@ def create_archive(destination,files,databases,identity):
         # Cross-file consistency: no PKI/environment/CCD writer changed a source
         # while accounting was being snapshotted and rehearsed.
         for name,source in files.items():
-            if hashlib.sha256(regular(source).read_bytes()).hexdigest()!=manifest['files'][name]['sha256']:raise ValueError('node files changed during snapshot; retry when stable')
+            path=regular(source);info=path.stat();entry=manifest['files'][name]
+            if (stat.S_IMODE(info.st_mode),info.st_uid,info.st_gid)!=(entry['mode'],entry['uid'],entry['gid']) or hashlib.sha256(path.read_bytes()).hexdigest()!=entry['sha256']:
+                raise ValueError('node files changed during snapshot; retry when stable')
         destination.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
         if destination.parent.is_symlink():raise ValueError('linked node backup directory refused')
         descriptor=os.open(destination,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
@@ -124,7 +168,7 @@ def create_archive(destination,files,databases,identity):
 def native_files(node):
     """Only declared native state/PKI/CCD/hooks and certificate-owned profiles."""
     files={};databases={}
-    for name in ['node.env','ca.crt','ca.key','tls.crt','tls.key','panel-ca.crt','collector.env','hook-token']:
+    for name in ['node.env','ca.crt','ca.key','tls.crt','tls.key','panel-ca.crt','collector.env','hook-token','transaction.json']:
         path=node.STATE/name
         if path.exists():files['state/'+name]=regular(path)
     for name in ['server.conf','client-template.txt','client-common.txt','crl.pem','tls-crypt.key']:
@@ -135,7 +179,7 @@ def native_files(node):
     for line in node.SERVER.read_text().splitlines():
         parts=shlex.split(line,comments=True)
         if parts:directives[parts[0]]=parts[1:]
-    for name in ['ca','cert','key','tls-crypt','tls-auth','crl-verify']:
+    for name in ['ca','cert','key','tls-crypt','tls-crypt-v2','tls-auth','crl-verify']:
         if not directives.get(name):continue
         path=Path(directives[name][0])
         if not path.is_absolute():path=node.SERVER.parent/path
@@ -143,7 +187,7 @@ def native_files(node):
         try:relative=path.resolve().relative_to(node.SERVER.parent.resolve())
         except ValueError:raise ValueError('external VPN key/certificate path requires an explicit backup scope') from None
         files['vpn/'+relative.as_posix()]=path
-    roots=[('vpn/easy-rsa/pki',node.SERVER.parent/'easy-rsa/pki'),('ccd',Path('/etc/openvpn/ccd')),('hooks',Path('/usr/local/libexec/pvnetwork-node')),('runtime/hook-spool',node.RUNTIME/'hook-spool')]
+    roots=[('vpn/easy-rsa/pki',node.SERVER.parent/'easy-rsa/pki'),('ccd',Path('/etc/openvpn/ccd')),('hooks',Path('/usr/local/libexec/pvnetwork-node')),('runtime/hook-spool',node.RUNTIME/'hook-spool'),('state/handover',node.STATE/'handover')]
     for prefix,root in roots:
         if not root.exists():continue
         if root.is_symlink():raise ValueError('linked node backup directory refused')

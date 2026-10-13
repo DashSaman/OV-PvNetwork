@@ -43,7 +43,13 @@ def protected(config):
 
 
 def verify_protected(before,config):
-    if protected(config)!=before:raise ValueError('protected VPN process/configuration/CA or agent secret state changed')
+    current=protected(config)
+    required={'server_sha256','ca_sha256','pid','status','management'}
+    # New hook/group fields are derived from the already-protected server bytes.
+    # Older journals remain valid while their original hashes and PID match.
+    valid=set(before)==set(current) and isinstance(before.get('vpn'),dict) and required<=set(before['vpn'])<=set(current['vpn'])
+    if not valid or any(current[key]!=value for key,value in before.items() if key!='vpn') or any(current['vpn'][key]!=value for key,value in before['vpn'].items()):
+        raise ValueError('protected VPN process/configuration/CA or agent secret state changed')
 
 
 def readiness(config,version):

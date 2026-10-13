@@ -19,6 +19,19 @@ class NodeInstallPreflightTests(unittest.TestCase):
     def test_foreign_api_listener_refused_before_install(self):
         with self.assertRaisesRegex(ValueError,'API port.*occupied'):self.module().preflight(self.configuration(),self.facts(listeners={('tcp',9090)}))
 
+    def test_lifecycle_snapshot_accepts_generated_fresh_native_hooks(self):
+        from unittest.mock import patch
+        import tempfile
+        module=self.module()
+        with tempfile.TemporaryDirectory() as folder:
+            vpn=Path(folder);pki=vpn/'easy-rsa/pki';pki.mkdir(parents=True)
+            (pki/'ca.crt').write_bytes(b'ci-ca');(vpn/'client-template.txt').write_text('client\n')
+            server=vpn/'server.conf'
+            server.write_text('port 1194\nproto udp\nca '+str(pki/'ca.crt')+'\nstatus /tmp/ci-status\nmanagement /tmp/ci-management unix\nmanagement-client-user root\nclient-config-dir /etc/openvpn/ccd\ngroup root\nclient-connect /usr/local/libexec/pvnetwork-node/session-connect\nclient-disconnect /usr/local/libexec/pvnetwork-node/session-disconnect\n')
+            with patch.object(module,'SERVER',server),patch.object(module,'run',return_value='42'):
+                value=module.adopted_snapshot(self.configuration())
+            self.assertEqual(value['hooks']['connect'],'/usr/local/libexec/pvnetwork-node/session-connect')
+
     def test_fresh_never_replaces_existing_openvpn(self):
         with self.assertRaisesRegex(ValueError,'adopt'):self.module().preflight(self.configuration(),self.facts(openvpn_exists=True))
 
