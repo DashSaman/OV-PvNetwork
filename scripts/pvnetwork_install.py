@@ -300,8 +300,8 @@ def install(args):
             database_check='import os; from dotenv import load_dotenv; from sqlalchemy import create_engine,inspect; load_dotenv("../.env"); url=os.environ["DATABASE_URL"]; e=create_engine(url); tables=inspect(e).get_table_names(); print(len(tables))'
             count=command([release/'.venv/bin/python','-c',database_check],cwd=release/'backend',env=env)
             if count!='0':raise ValueError('existing database schema detected; use explicit adoption/migration with backup')
-        # Fresh SQLite uses the current model schema; PostgreSQL runs its full
-        # historical chain. Existing data must use the separate migration path.
+        # Fresh empty databases use current metadata and the canonical head.
+        # Existing data must use the separate validated migration path.
         if not record['database_initialized']:
             command([release/'.venv/bin/python',release/'scripts/pvnetwork_initialize_database.py','--project',release,'--completion-marker',STATE/('database-initialize-'+release.name+'.json')],cwd=release/'backend',env=env)
             record['database_initialized']=True
