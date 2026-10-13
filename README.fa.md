@@ -4,7 +4,7 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.39-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.40-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -17,6 +17,10 @@
 ## نامزد v1.0.39 نسبت به v1.0.38
 
 **PVN-1022 — اصلاح اعتبارسنجی migration در smoke test.** [یادداشت نامزد انتشار](./docs/RELEASE-NOTES-v1.0.39.fa.md). انتشار عمومی و تأیید نهایی کل پروژه همچنان وابسته به عبور از gateها است.
+
+## نامزد v1.0.40 نسبت به v1.0.39
+
+**PVN-1024 — محدودسازی و تشخیص صحیح ترمیم خودکار.** [یادداشت نامزد انتشار](./docs/RELEASE-NOTES-v1.0.40.fa.md). انتشار عمومی و تأیید نهایی کل پروژه همچنان وابسته به عبور از gateها است.
 
 ## تغییرات v1.0.35 نسبت به v1.0.34
 
@@ -328,7 +332,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.39/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.40/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

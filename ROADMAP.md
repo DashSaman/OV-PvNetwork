@@ -116,3 +116,7 @@ Frontend dependency security refresh. Targeted gates and owner-authorized Produc
 ## v1.0.39 candidate — PVN-1022
 
 Alphanumeric migration smoke validation. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
+
+## v1.0.40 candidate — PVN-1024
+
+Bounded configuration-aware self-healing. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
