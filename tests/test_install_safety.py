@@ -39,7 +39,14 @@ class BootstrapSafetyTests(unittest.TestCase):
             marker=base/'invoked'
             env={**os.environ,'PATH':str(base)+os.pathsep+os.environ['PATH'],
                  'PVNETWORK_REF':'v1.0.41','FIXTURE_ARCHIVE':str(archive),'FIXTURE_HASH':digest,'MARKER':str(marker)}
-            result=subprocess.run(['bash',str(ROOT/'install.sh')],env=env,capture_output=True,text=True,timeout=15)
+            args=['bash',str(ROOT/'install.sh')]
+            if os.geteuid()!=0:
+                if not shutil.which('sudo'):self.skipTest('root bootstrap fixture requires root or noninteractive sudo')
+                # Only this synthetic archive/curl fixture runs as root. Never
+                # run the actual product installation on the CI runner host.
+                values={k:env[k] for k in ['PATH','PVNETWORK_REF','FIXTURE_ARCHIVE','FIXTURE_HASH','MARKER']}
+                args=['sudo','-n','env',*(k+'='+v for k,v in values.items()),*args]
+            result=subprocess.run(args,env=env,capture_output=True,text=True,timeout=15)
             return result.returncode, marker.exists(), result.stdout+result.stderr
 
     def test_corrupt_checksum_never_executes_installer(self):
