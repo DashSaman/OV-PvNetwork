@@ -19,6 +19,7 @@ class Setting(BaseSettings):
     SSL_CERTFILE: Optional[str] = None
     JWT_SECRET_KEY: str
     MIRZA_API_KEY: Optional[str] = None
+    PVNETWORK_ANYCONNECT_PUBLIC_SERVER: Optional[str] = None
     DATABASE_URL: Optional[str] = None
     JWT_ACCESS_TOKEN_EXPIRES: int = 86400  # in seconds
     LOGIN_RATE_LIMIT_PER_MINUTE: int = 10
