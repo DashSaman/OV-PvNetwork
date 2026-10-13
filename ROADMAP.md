@@ -112,3 +112,7 @@ Released tags/assets are immutable. Every new Production-visible `PVN-xxx` task 
 ## v1.0.38 candidate — PVN-1023
 
 Frontend dependency security refresh. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
+
+## v1.0.39 candidate — PVN-1022
+
+Alphanumeric migration smoke validation. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.

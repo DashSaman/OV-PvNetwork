@@ -1,3 +1,8 @@
+## v1.0.39 candidate — PVN-1022: Alphanumeric migration smoke validation
+
+- Targeted, independently tested patch; publication/deployment evidence remains governed by the active ledger.
+- No database migration, certificate or VPN configuration changes.
+
 ## v1.0.38 candidate — PVN-1023: Frontend dependency security refresh
 
 - Targeted, independently tested patch; publication/deployment evidence remains governed by the active ledger.
