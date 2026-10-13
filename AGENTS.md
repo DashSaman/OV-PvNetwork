@@ -72,6 +72,11 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
+- `v1.0.40` — [~] IN_PROGRESS — `PVN-1024` bounded and configuration-aware self-healing.
+  - Reproduce missing-node configuration/key/unit restarts and unbounded force-kill fallback in an isolated executable shell fixture.
+  - Preserve existing authenticated GET-with-JSON health probes; repair only installed/running panel or node services, record cooldowns, and stop after a failed bounded restart.
+  - No OpenVPN restart, unrelated service repair, network/firewall change or live deployment is authorized by this checkpoint.
+
 - `v1.0.38` — [~] TESTED_LOCALLY — `PVN-1023` frontend dependency security update.
   - Fresh baseline CI fails the production dependency audit on the locked Axios version; existing backend tests, lint and frontend build pass.
   - Scope: Axios `1.19.0 → 1.20.0`, development dependencies brace-expansion `1.1.18 → 1.1.21` and source-map-js `1.2.1 → 1.2.2`; compatible lock updates only. Isolate Axios into an HTTP-client build chunk to preserve the existing 990000-byte gate.
