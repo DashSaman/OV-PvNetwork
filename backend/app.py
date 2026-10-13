@@ -1,6 +1,7 @@
 import os
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -20,6 +21,7 @@ from backend.routers.anyconnect import (
 from backend.version import __version__
 from backend.panel_redirect import PanelPathTransitionMiddleware
 from backend.operations.history import record_usage_history
+from backend.validation_privacy import validation_response
 from backend.audit import AuditMiddleware
 from backend.security_middleware import (
     ApiScopeMiddleware,
@@ -36,6 +38,7 @@ api = FastAPI(
     redoc_url="/redoc" if config.DOC else None,
     openapi_url="/openapi.json" if config.DOC else None,
 )
+api.add_exception_handler(RequestValidationError,validation_response)
 
 frontend_build_path = os.getenv(
     "PVNETWORK_FRONTEND_DIST",

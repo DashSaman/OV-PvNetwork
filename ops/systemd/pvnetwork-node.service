@@ -1,6 +1,7 @@
 [Unit]
 Description=PVNetwork Node HTTPS control plane
-After=network-online.target openvpn-server@server.service
+After=network-online.target openvpn-server@server.service pvnetwork-node-network.service
+Requires=pvnetwork-node-network.service
 Wants=network-online.target
 
 [Service]

@@ -44,16 +44,19 @@ def host_facts():
                 fields=row.split()
                 if len(fields)<4 or (protocol=='tcp' and fields[3]!='0A'):continue
                 listeners.add((protocol,int(fields[1].rsplit(':',1)[1],16)))
-    routes=[]
+    routes=[];interfaces=[]
     result=subprocess.run(['ip','-j','route'],capture_output=True,text=True) if shutil.which('ip') else None
     if result and result.returncode==0:
         for route in json.loads(result.stdout):
             if route.get('dst') not in {None,'default'}:routes.append(route['dst'])
+    if shutil.which('ip'):
+        result=subprocess.run(['ip','-j','link'],capture_output=True,text=True)
+        if result.returncode==0:interfaces=[item['ifname'] for item in json.loads(result.stdout)]
     memory=int(re.search(r'MemTotal:\s+(\d+)',Path('/proc/meminfo').read_text()).group(1))
     return {'os_id':values.get('ID'),'os_version':values.get('VERSION_ID'),'architecture':platform.machine(),
             'memory_kib':memory,'disk_free':shutil.disk_usage('/opt').free,'listeners':listeners,
             'openvpn_exists':SERVER.exists() or any(Path('/etc/openvpn/server').glob('*.conf')),
-            'native_exists':APP.exists(),'routes':routes}
+            'native_exists':APP.exists(),'routes':routes,'interfaces':interfaces}
 
 
 def preflight(config,facts=None):
@@ -71,6 +74,7 @@ def preflight(config,facts=None):
     if ('tcp',ports[0]) in facts['listeners']:raise ValueError('API port is occupied; choose a free port before deployment')
     if config['mode']=='fresh':
         if facts['openvpn_exists']:raise ValueError('existing OpenVPN detected; choose adopt rather than fresh install')
+        if 'pvn0' in facts.get('interfaces',[]):raise ValueError('VPN interface pvn0 already exists; fresh installation refused')
         if (config['protocol'],ports[1]) in facts['listeners']:raise ValueError('VPN port is occupied')
         network=ipaddress.ip_network(config.get('subnet','10.44.0.0/24'),strict=True)
         if network.version!=4 or not network.is_private or network.prefixlen!=24:raise ValueError('a private IPv4 /24 VPN subnet is required')
@@ -130,13 +134,10 @@ def validate_adopt_package_plan(plan,installed):
 
 
 def install_dependencies(mode):
-    environment={**os.environ,'DEBIAN_FRONTEND':'noninteractive'}
+    environment={**os.environ,'DEBIAN_FRONTEND':'noninteractive','NEEDRESTART_MODE':'l'}
     packages=['ca-certificates','python3','python3-venv','openssl','socat','curl','iptables','iproute2','tcpdump']
     if mode=='fresh':
-        run(['apt-get','update','--error-on=any','-y'],env=environment)
-        run(['apt-get','install','-y',*packages,'openvpn','easy-rsa'],env=environment)
-        return
-    environment['NEEDRESTART_MODE']='l'
+        packages.extend(['openvpn','easy-rsa'])
     # Never ask apt to upgrade an already running VPN or unrelated package.
     output=run(['dpkg-query','-W','-f','${binary:Package}\t${Status}\n'])
     installed={line.split('\t',1)[0].split(':')[0] for line in output.splitlines() if '\t' in line and line.split('\t',1)[1]=='install ok installed'}
@@ -168,6 +169,8 @@ def config_values(config):
         ssl.create_default_context(cadata=config['panel_ca_pem'])
     try:ipaddress.ip_address(config.get('panel_source_ip',''))
     except ValueError:raise ValueError('controller source IP could not be determined; provide its explicit source IP')
+    if ipaddress.ip_address(config['panel_source_ip']).version!=4:
+        raise ValueError('native installation currently requires an IPv4 controller source; IPv6 agent binding is not yet verified')
 
 
 def verify_controller(config):
@@ -317,6 +320,7 @@ def firewall_script(config,record):
     subnet=config.get('subnet','10.44.0.0/24')
     tag='pvnetwork-node-'+record['id']
     commands=[['-t','nat','POSTROUTING','-s',subnet,'!','-d',subnet,'-m','comment','--comment',tag,'-j','MASQUERADE'],
+              ['INPUT','-p',config['protocol'],'--dport',str(config['ovpn_port']),'-m','comment','--comment',tag,'-j','ACCEPT'],
               ['FORWARD','-i','pvn0','-s',subnet,'-m','comment','--comment',tag,'-j','ACCEPT'],
               ['FORWARD','-o','pvn0','-d',subnet,'-m','conntrack','--ctstate','RELATED,ESTABLISHED','-m','comment','--comment',tag,'-j','ACCEPT']]
     record['firewall_rules']=commands
@@ -326,23 +330,30 @@ def firewall_script(config,record):
     for command in commands:
         table=command[:2] if command[0]=='-t' else []
         rest=command[2:] if table else command
-        run(['iptables','-w',*table,'-A',*rest])
+        run(['iptables','-w',*table,*(['-A'] if table else ['-I']),rest[0],*([] if table else ['1']),*rest[1:]])
+    persist_network(record)
+
+
+def persist_network(record):
     import shlex
     script='#!/bin/sh\nset -eu\n'
-    for command in commands:
+    for command in record.get('firewall_rules',[]):
         table=command[:2] if command[0]=='-t' else [];rest=command[2:] if table else command
         check=' '.join(shlex.quote(x) for x in ['iptables','-w',*table,'-C',*rest])
-        add=' '.join(shlex.quote(x) for x in ['iptables','-w',*table,'-A',*rest])
+        add=' '.join(shlex.quote(x) for x in ['iptables','-w',*table,*(['-A'] if table else ['-I']),rest[0],*([] if table else ['1']),*rest[1:]])
         script+=check+' 2>/dev/null || '+add+'\n'
-    script+='sysctl -w net.ipv4.ip_forward=1 >/dev/null\n'
+    if record.get('firewall_rules'):script+='sysctl -w net.ipv4.ip_forward=1 >/dev/null\n'
+    # Reposition only this transaction's exact API rules ahead of earlier ACCEPTs.
     for binary,rest in record.get('api_rules',[]):
-        check=' '.join(shlex.quote(x) for x in [binary,'-w','-C',*rest])
-        add=' '.join(shlex.quote(x) for x in [binary,'-w','-A',*rest])
-        script+=check+' 2>/dev/null || '+add+'\n'
+        delete=' '.join(shlex.quote(x) for x in [binary,'-w','-D',*rest])
+        script+='while '+delete+' 2>/dev/null; do :; done\n'
+    for binary,rest in reversed(record.get('api_rules',[])):
+        add=' '.join(shlex.quote(x) for x in [binary,'-w','-I',rest[0],'1',*rest[1:]])
+        script+=add+'\n'
     install_owned(record,'/usr/local/sbin/pvnetwork-node-network',script)
-    unit='[Unit]\nDescription=PVNetwork owned node network rules\nAfter=network-online.target\n[Service]\nType=oneshot\nExecStart=/usr/local/sbin/pvnetwork-node-network\nRemainAfterExit=yes\n[Install]\nWantedBy=multi-user.target\n'
+    unit='[Unit]\nDescription=PVNetwork owned node network rules\nAfter=network-online.target nftables.service ufw.service netfilter-persistent.service\nBefore=pvnetwork-node.service\n[Service]\nType=oneshot\nExecStart=/usr/local/sbin/pvnetwork-node-network\nRemainAfterExit=yes\n[Install]\nWantedBy=multi-user.target\n'
     install_owned(record,'/etc/systemd/system/pvnetwork-node-network.service',unit,0o644)
-    run(['systemctl','daemon-reload']);run(['systemctl','enable','pvnetwork-node-network'])
+    run(['systemctl','daemon-reload']);run(['systemctl','enable','--now','pvnetwork-node-network'])
 
 
 def api_firewall(config,record):
@@ -354,7 +365,7 @@ def api_firewall(config,record):
            ['INPUT','-s',str(source),'-p','tcp','--dport',port,'-m','comment','--comment',tag,'-j','ACCEPT'],
            ['INPUT','-p','tcp','--dport',port,'-m','comment','--comment',tag,'-j','DROP']]
     record['api_rules']=[[binary,rule] for rule in rules];checkpoint(record,'agent')
-    for rule in rules:run([binary,'-w','-A',*rule])
+    for rule in reversed(rules):run([binary,'-w','-I',rule[0],'1',*rule[1:]])
 
 
 def health(config):
@@ -372,11 +383,19 @@ def health(config):
 
 def rollback(record):
     if record['phase']=='finalized':raise ValueError('finalized nodes require their managed lifecycle; installation rollback refused')
+    # Validate owned files before stopping anything; an operator's changed file
+    # cannot turn an installation rollback into an unrelated service mutation.
+    for path in record['created_files']:
+        target=Path(path);expected=record.get('created_file_sha256',{}).get(path)
+        if target.is_symlink() or (target.is_file() and expected and hashlib.sha256(target.read_bytes()).hexdigest()!=expected):
+            raise ValueError('owned rollback file changed; preservation required')
     if '/etc/systemd/system/pvnetwork-domain-collector.service' in record['created_files']:
         run(['systemctl','stop','pvnetwork-domain-collector'])
     if APP.is_symlink() and str(APP.resolve())==record.get('release'):
         run(['systemctl','stop','pvnetwork-node'])
         APP.unlink()
+    if '/etc/systemd/system/pvnetwork-node-network.service' in record['created_files']:
+        run(['systemctl','stop','pvnetwork-node-network'])
     if record.get('mode')=='fresh' and record.get('vpn_start_requested'):
         run(['systemctl','stop','openvpn-server@server'])
         run(['systemctl','disable','openvpn-server@server'])
@@ -482,14 +501,16 @@ def install(config,source):
         install_owned(record,'/etc/systemd/system/pvnetwork-node.service',(source/'ops/systemd/pvnetwork-node.service').read_bytes(),0o644)
         checkpoint(record,'agent')
         install_owned(record,'/usr/local/lib/pvnetwork-node/pvnetwork_node_install.py',(source/'scripts/pvnetwork_node_install.py').read_bytes(),0o644)
-        APP.symlink_to(release);run(['systemctl','daemon-reload']);run(['systemctl','enable','--now','pvnetwork-node'])
-        health(config)
         api_firewall(config,record)
+        if config['mode']=='adopt':persist_network(record)
         if config['mode']=='fresh':
             firewall_script(config,record)
             record['vpn_start_requested']=True;checkpoint(record,'vpn')
             run(['systemctl','enable','--now','openvpn-server@server'])
             if run(['systemctl','is-active','openvpn-server@server'])!='active':raise ValueError('fresh VPN readiness failed')
+        APP.symlink_to(release);run(['systemctl','daemon-reload']);run(['systemctl','enable','--now','pvnetwork-node'])
+        health(config)
+        if config['mode']=='fresh':
             run(['systemctl','enable','--now','pvnetwork-domain-collector'])
         verify_adopted(record);checkpoint(record,'ready')
         return {'state':'ready','version':manifest['version'],'ca_pem':(STATE/'ca.crt').read_text(),'transaction_id':record['id']}
@@ -507,6 +528,11 @@ def main():
     parser.add_argument('--transaction-id')
     args=parser.parse_args()
     if os.geteuid()!=0:raise ValueError('root or approved passwordless sudo is required for node deployment')
+    if args.preflight:
+        if args.action!='install' or not args.configuration or not args.source:raise ValueError('preflight requires installation configuration and verified source')
+        config=json.loads(Path(args.configuration).read_text());validate_source(Path(args.source))
+        facts=preflight(config);config_values(config)
+        print(json.dumps({'state':'PREFLIGHT_OK','os':facts['os_id'],'version':facts['os_version'],'mode':config['mode']}));return 0
     STATE.mkdir(parents=True,exist_ok=True,mode=0o700);STATE.chmod(0o700)
     with (STATE/'install.lock').open('a') as lock:
         os.chmod(STATE/'install.lock',0o600);fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
@@ -528,9 +554,6 @@ def main():
             print('PVNETWORK_RESULT|'+json.dumps({'state':record['phase'],'version':record['version'],'transaction_id':record['id']}));return 0
         if not args.configuration or not args.source:raise ValueError('configuration and verified source required')
         config=json.loads(Path(args.configuration).read_text());source=Path(args.source);validate_source(source)
-        if args.preflight:
-            facts=preflight(config);config_values(config)
-            print(json.dumps({'state':'PREFLIGHT_OK','os':facts['os_id'],'version':facts['os_version'],'mode':config['mode']}));return 0
         print('PVNETWORK_RESULT|'+json.dumps(install(config,source)));return 0
 
 

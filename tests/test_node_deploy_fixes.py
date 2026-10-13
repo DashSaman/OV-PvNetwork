@@ -25,8 +25,8 @@ class PanelSourceAutodetectTests(TestCase):
             module.api_firewall({'panel_source_ip':'203.0.113.5','api_port':9443},record)
         commands=[c.args[0] for c in run.call_args_list]
         self.assertEqual(len(commands),3)
-        self.assertTrue(all(c[0]=='iptables' and c[2]=='-A' for c in commands))
-        self.assertIn('lo',commands[0]);self.assertIn('203.0.113.5',commands[1]);self.assertEqual(commands[-1][-1],'DROP')
+        self.assertTrue(all(c[0]=='iptables' and c[2]=='-I' and c[4]=='1' for c in commands))
+        self.assertEqual(commands[0][-1],'DROP');self.assertIn('203.0.113.5',commands[1]);self.assertIn('lo',commands[-1])
         self.assertTrue(all('9443' in c and '--comment' in c for c in commands))
         self.assertFalse(any('-F' in c or '-P' in c or 'systemctl' in c for c in commands))
 

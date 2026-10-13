@@ -36,6 +36,15 @@ class NodeInstallPreflightTests(unittest.TestCase):
     def test_existing_private_route_is_never_overwritten(self):
         with self.assertRaisesRegex(ValueError,'subnet.*conflict'):self.module().preflight(self.configuration(),self.facts(routes=['10.44.0.0/16']))
 
+    def test_existing_tunnel_interface_is_never_adopted_by_fresh_install(self):
+        with self.assertRaisesRegex(ValueError,'interface.*exists'):
+            self.module().preflight(self.configuration(),self.facts(interfaces=['lo','pvn0']))
+
+    def test_unverified_ipv6_source_is_refused_before_partial_firewall_installation(self):
+        config=self.configuration(api_key='pvn_tls_v1_'+'x'*28,panel_url='https://panel.example.com',panel_source_ip='2001:db8::1')
+        with self.assertRaisesRegex(ValueError,'IPv4'):
+            self.module().config_values(config)
+
     def test_insufficient_memory_refused(self):
         with self.assertRaisesRegex(ValueError,'memory'):self.module().preflight(self.configuration(),self.facts(memory_kib=128*1024))
 
@@ -45,3 +54,35 @@ class NodeInstallPreflightTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'existing package'):
                 module.validate_adopt_package_plan(plan,{'openvpn'})
         module.validate_adopt_package_plan('Inst tcpdump (4.99 Ubuntu)\nConf tcpdump (4.99 Ubuntu)\n',{'openvpn'})
+
+    def test_rollback_stops_the_owned_network_service(self):
+        from unittest.mock import patch
+        module=self.module()
+        record={'phase':'agent','created_files':['/etc/systemd/system/pvnetwork-node-network.service'],'configuration':{}}
+        with patch.object(module,'run') as run,patch.object(module,'checkpoint'),patch.object(module.subprocess,'run'):
+            module.rollback(record)
+        self.assertIn(['systemctl','stop','pvnetwork-node-network'],[call.args[0] for call in run.call_args_list])
+
+    def test_fresh_node_packages_preserve_existing_packages_and_services(self):
+        from unittest.mock import patch
+        module=self.module()
+        installed=['ca-certificates','python3','python3-venv','openssl','socat','curl','iptables','iproute2','tcpdump','openvpn']
+        status=''.join(name+'\tinstall ok installed\n' for name in installed)
+        with patch.object(module,'run',side_effect=[status,'','Inst easy-rsa (3.1.6 Ubuntu)\nConf easy-rsa (3.1.6 Ubuntu)\n','']) as run:
+            module.install_dependencies('fresh')
+        install=run.call_args.args[0]
+        self.assertIn('--no-upgrade',install);self.assertEqual(install[-1],'easy-rsa')
+        self.assertNotIn('openvpn',install)
+        self.assertEqual(run.call_args.kwargs['env']['NEEDRESTART_MODE'],'l')
+
+    def test_preflight_cli_does_not_create_installed_state_or_lock(self):
+        from unittest.mock import patch
+        import contextlib,io,json,tempfile
+        module=self.module()
+        config=self.configuration(api_key='pvn_tls_v1_'+'x'*28,panel_url='https://panel.example.com',panel_source_ip='203.0.113.5')
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);configuration=root/'config.json';configuration.write_text(json.dumps(config))
+            state=root/'uncreated-state'
+            with patch.object(module,'STATE',state),patch.object(module,'JOURNAL',state/'transaction.json'),patch.object(module,'validate_source'),patch.object(module,'host_facts',return_value=self.facts()),patch.object(module.os,'geteuid',return_value=0),patch.object(module.sys,'argv',['installer','--configuration',str(configuration),'--source',str(root),'--preflight']),contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(module.main(),0)
+            self.assertFalse(state.exists(),'preflight created installed state or lock')
