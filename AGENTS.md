@@ -72,6 +72,10 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
+- `v1.0.42` — [~] IN_PROGRESS — `PVN-1026` transactional lifecycle and verified native backup/restore.
+  - Preserve 1.0.41 installer improvements. Replace active-tree deletion with staged builds, validated backups/clones, explicit schema compatibility, canary, atomic pointer and durable rollback/recovery.
+  - Share the installer operation lock; preserve runtime environment/data and protected services. Verify real SQLite and PostgreSQL restores and inject interruption/failure in disposable hosts before any new Production approval.
+
 - `v1.0.41` — [~] IN_PROGRESS — `PVN-1025` verified fresh installer, secure setup and generic public defaults.
   - Resume from verified 1.0.40; no repeat of the three deployed fixes. Implementation plan: `docs/superpowers/plans/2026-10-13-final-completion.md`.
   - First gates: verified official archive/checksum/version, safe extraction, pinned private toolchain, resource/port/existing-install preflight, loopback setup or verified public TLS, idempotent recovery and executable failure regressions.
