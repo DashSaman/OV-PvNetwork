@@ -414,7 +414,7 @@ Before helper spawn, record only the current `PrincipalSecurity.id` and old/new 
 
 - [ ] **Step 6: Add explicit result audit without secrets**
 
-Worker writes a terminal `AuditLog` row using action `SETTINGS_APPLY`; resource format is bounded and non-secret, e.g. `panel-settings:<change_id>:path=hajsaman->newpath:username=changed:result=complete`. Use a deterministic terminal request id `settings-<change_id>-complete` or `settings-<change_id>-rollback` to avoid duplicate audit rows on helper retry.
+Worker writes a terminal `AuditLog` row using action `SETTINGS_APPLY`; resource format is bounded and non-secret, e.g. `panel-settings:<change_id>:path=panel-example->newpath:username=changed:result=complete`. Use a deterministic terminal request id `settings-<change_id>-complete` or `settings-<change_id>-rollback` to avoid duplicate audit rows on helper retry.
 
 - [ ] **Step 7: Implement status endpoint independent of old JWT**
 
