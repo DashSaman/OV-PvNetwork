@@ -48,3 +48,16 @@ class NodeBackupTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'linked'):
                 module.create_archive(root/'backup.tar.gz',{'state/tls.key':link},{},{})
             self.assertFalse((root/'backup.tar.gz').exists())
+
+    def test_legacy_conf_leaf_names_are_captured_without_unrelated_server_files(self):
+        from types import SimpleNamespace
+        module=self.module()
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);state=root/'state';vpn=root/'vpn';runtime=root/'runtime'
+            state.mkdir();vpn.mkdir();runtime.mkdir()
+            (state/'node.env').write_text('ci-private-env')
+            (vpn/'server.conf').write_text('ca ca.crt\ncert server.crt\nkey server.key\ntls-crypt tc.key\ncrl-verify crl.pem\n')
+            for name in ['ca.crt','server.crt','server.key','tc.key','crl.pem','unrelated.conf']:(vpn/name).write_text('ci-fixture-'+name)
+            files,_=module.native_files(SimpleNamespace(STATE=state,SERVER=vpn/'server.conf',RUNTIME=runtime))
+            for name in ['ca.crt','server.crt','server.key','tc.key','crl.pem']:self.assertIn('vpn/'+name,files)
+            self.assertNotIn('vpn/unrelated.conf',files)

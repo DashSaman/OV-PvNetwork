@@ -86,3 +86,18 @@ class NodeInstallPreflightTests(unittest.TestCase):
             with patch.object(module,'STATE',state),patch.object(module,'JOURNAL',state/'transaction.json'),patch.object(module,'validate_source'),patch.object(module,'host_facts',return_value=self.facts()),patch.object(module.os,'geteuid',return_value=0),patch.object(module.sys,'argv',['installer','--configuration',str(configuration),'--source',str(root),'--preflight']),contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(module.main(),0)
             self.assertFalse(state.exists(),'preflight created installed state or lock')
+
+    def test_rollback_preserves_new_customer_pki_before_stopping_services(self):
+        from unittest.mock import patch
+        import hashlib,tempfile
+        module=self.module()
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);vpn=root/'vpn';vpn.mkdir()
+            original=b'ci-server-conf';(vpn/'server.conf').write_bytes(original)
+            (vpn/'new-customer.crt').write_bytes(b'ci-new-customer-certificate')
+            record={'phase':'agent','mode':'fresh','created_files':[],'configuration':{},'owned_vpn_directory':str(vpn),'owned_vpn_sha256':{'server.conf':hashlib.sha256(original).hexdigest()}}
+            with patch.object(module,'SERVER',vpn/'server.conf'),patch.object(module,'APP',root/'app'),patch.object(module,'run') as run:
+                with self.assertRaisesRegex(ValueError,'PKI.*changed'):
+                    module.rollback(record)
+                run.assert_not_called()
+            self.assertEqual((vpn/'new-customer.crt').read_bytes(),b'ci-new-customer-certificate')

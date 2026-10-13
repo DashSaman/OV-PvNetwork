@@ -130,6 +130,19 @@ def native_files(node):
     for name in ['server.conf','client-template.txt','client-common.txt','crl.pem','tls-crypt.key']:
         path=node.SERVER.parent/name
         if path.exists():files['vpn/'+name]=regular(path)
+    import shlex
+    directives={}
+    for line in node.SERVER.read_text().splitlines():
+        parts=shlex.split(line,comments=True)
+        if parts:directives[parts[0]]=parts[1:]
+    for name in ['ca','cert','key','tls-crypt','tls-auth','crl-verify']:
+        if not directives.get(name):continue
+        path=Path(directives[name][0])
+        if not path.is_absolute():path=node.SERVER.parent/path
+        path=regular(path)
+        try:relative=path.resolve().relative_to(node.SERVER.parent.resolve())
+        except ValueError:raise ValueError('external VPN key/certificate path requires an explicit backup scope') from None
+        files['vpn/'+relative.as_posix()]=path
     roots=[('vpn/easy-rsa/pki',node.SERVER.parent/'easy-rsa/pki'),('ccd',Path('/etc/openvpn/ccd')),('hooks',Path('/usr/local/libexec/pvnetwork-node')),('runtime/hook-spool',node.RUNTIME/'hook-spool')]
     for prefix,root in roots:
         if not root.exists():continue

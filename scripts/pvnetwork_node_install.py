@@ -313,6 +313,18 @@ verb 3
     template=f'client\ndev tun\nproto {config["protocol"]}\nremote {config["host"]} {config["ovpn_port"]}\nresolv-retry infinite\nnobind\npersist-key\npersist-tun\nremote-cert-tls server\ntls-version-min 1.2\nverb 3\n'
     private(SERVER.parent/'client-template.txt',template,0o644)
     private(SERVER.parent/'client-common.txt',template,0o644)
+    record['owned_vpn_sha256']=vpn_inventory(SERVER.parent);checkpoint(record,'build')
+
+
+def vpn_inventory(root):
+    root=Path(root)
+    if root.is_symlink():raise ValueError('owned PKI directory changed to a link; preservation required')
+    result={}
+    if not root.exists():return result
+    for path in root.rglob('*'):
+        if path.is_symlink():raise ValueError('owned PKI contains a changed link; preservation required')
+        if path.is_file():result[path.relative_to(root).as_posix()]=hashlib.sha256(path.read_bytes()).hexdigest()
+    return result
 
 
 def firewall_script(config,record):
@@ -383,6 +395,11 @@ def health(config):
 
 def rollback(record):
     if record['phase']=='finalized':raise ValueError('finalized nodes require their managed lifecycle; installation rollback refused')
+    if record.get('owned_vpn_directory'):
+        target=Path(record['owned_vpn_directory'])
+        if target!=SERVER.parent:raise ValueError('invalid rollback VPN directory')
+        if record.get('owned_vpn_sha256') is None or vpn_inventory(target)!=record['owned_vpn_sha256']:
+            raise ValueError('owned PKI inventory changed or is unverified; preserve it and inspect the pending transaction')
     # Validate owned files before stopping anything; an operator's changed file
     # cannot turn an installation rollback into an unrelated service mutation.
     for path in record['created_files']:
