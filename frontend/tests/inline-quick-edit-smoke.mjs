@@ -5,6 +5,7 @@ const widths = [360, 390, 768, 1440];
 const languages = ['en', 'fa'];
 const GB = 1024 ** 3;
 const failures = [];
+const mutationDelay = Math.max(0, Math.min(1000, Number(process.env.PV_QUICK_EDIT_RESPONSE_DELAY_MS || 0)));
 
 const demoNodes = [
   { id: 1, name: 'Demo Europe', status: true, drain: false, maintenance: false },
@@ -70,6 +71,7 @@ for (const language of languages) {
       else if (path === '/anyconnect/settings') payload = ok({ default_enabled: false });
       else if (path === '/server/settings/' || path === '/server/settings') payload = ok({ subscription_url_prefix: 'https://demo.example.invalid/', subscription_path: 'sub' });
       else if (path === '/users/demo-user-v103/nodes') payload = ok({ desired_node_ids: [1, 2, 3], pending_node_ids: [] });
+      if (mutationDelay && path.startsWith('/users/demo-user-v103')) await new Promise(resolve => setTimeout(resolve, mutationDelay));
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) });
     });
 
@@ -99,7 +101,9 @@ for (const language of languages) {
       await page.locator('.quick-edit-node').filter({ hasText: 'Demo Turkey' }).click();
       await page.locator('.quick-edit-reset-usage').click();
       await page.locator('.quick-edit-apply').click();
-      await page.waitForTimeout(250);
+      // Save performs reset/edit/status/assignment sequentially. Form closure
+      // confirms the real action completed; a fixed delay races slower runners.
+      await form.waitFor({ state: 'hidden', timeout: 10000 });
 
       const reset = requests.find(item => item.method === 'GET' && item.path === '/users/demo-user-v103');
       const update = requests.find(item => item.method === 'PUT' && item.path === '/users/demo-user-v103/');
