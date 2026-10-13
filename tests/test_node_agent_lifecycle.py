@@ -35,6 +35,19 @@ class NodeAgentLifecycleTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'protected VPN'):
                 lifecycle.verify_protected(before,{})
 
+    def test_pending_data_restore_blocks_agent_operations(self):
+        lifecycle=self.module()
+        import json
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);install=root/'transaction.json'
+            install.write_text(json.dumps({'phase':'finalized','configuration':{'host':'node.example.com'}}))
+            (root/'data-transaction.json').write_text(json.dumps({'state':'switched'}))
+            with patch.object(lifecycle.node,'STATE',root),patch.object(lifecycle.node,'JOURNAL',install):
+                with self.assertRaisesRegex(ValueError,'data transaction'):
+                    lifecycle.configuration()
+                (root/'data-transaction.json').write_text(json.dumps({'state':'rolled_back'}))
+                self.assertEqual(lifecycle.configuration()['host'],'node.example.com')
+
     def test_existing_canary_stop_failure_is_reported(self):
         lifecycle=self.module()
         with patch.object(lifecycle.subprocess,'run') as run,patch.object(lifecycle.node,'run',side_effect=ValueError('stop failed')):

@@ -30,6 +30,9 @@ def pointer(target):
 
 
 def configuration():
+    data_journal=node.STATE/'data-transaction.json'
+    if data_journal.exists() and json.loads(data_journal.read_text()).get('state') not in {'complete','rolled_back'}:
+        raise ValueError('pending node data transaction; recover data before agent operations')
     value=json.loads(node.JOURNAL.read_text())
     if value['phase']!='finalized':raise ValueError('finalize or recover the installation before agent operations')
     return value['configuration']

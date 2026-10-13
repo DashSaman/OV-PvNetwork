@@ -48,6 +48,10 @@ def snapshot_sqlite(source,target):
     source=regular(source)
     with sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True) as original,sqlite3.connect(target) as copy:original.backup(copy)
     Path(target).chmod(0o600)
+    for path in [Path(target),Path(target).parent]:
+        descriptor=os.open(path,os.O_RDONLY)
+        try:os.fsync(descriptor)
+        finally:os.close(descriptor)
     return sqlite_fingerprint(target)
 
 

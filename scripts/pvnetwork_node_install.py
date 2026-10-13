@@ -679,8 +679,10 @@ def main():
     parser.add_argument('--configuration')
     parser.add_argument('--source')
     parser.add_argument('--preflight',action='store_true')
-    parser.add_argument('--action',choices=['install','finalize','rollback','status','upgrade','rollback-agent','recover-agent','backup'],default='install')
+    parser.add_argument('--action',choices=['install','finalize','rollback','status','upgrade','rollback-agent','recover-agent','backup','restore','recover-data'],default='install')
     parser.add_argument('--transaction-id')
+    parser.add_argument('--archive')
+    parser.add_argument('--sha256')
     args=parser.parse_args()
     if os.geteuid()!=0:raise ValueError('root or approved passwordless sudo is required for node deployment')
     if args.preflight:
@@ -694,6 +696,13 @@ def main():
         if args.action=='backup':
             from pvnetwork_node_backup import native_backup
             print('PVNETWORK_RESULT|'+json.dumps(native_backup()));return 0
+        if args.action in {'restore','recover-data'}:
+            import pvnetwork_node_restore as data_restore
+            if args.action=='restore':
+                if not args.archive or not args.sha256:raise ValueError('private archive and verified SHA256 required for node restore')
+                result=data_restore.restore(Path(args.archive),args.sha256)
+            else:result=data_restore.recover()
+            print('PVNETWORK_RESULT|'+json.dumps(result));return 0
         if args.action in {'upgrade','rollback-agent','recover-agent'}:
             import pvnetwork_node_lifecycle as lifecycle
             if args.action=='upgrade':
