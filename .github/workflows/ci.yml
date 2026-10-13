@@ -17,6 +17,21 @@ env:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      pvnetwork-test-postgres:
+        image: postgres@sha256:75adc2a65806c96bc0e59030230bfe3f1c1b0d6d8f8181a8913e2b8b53bdc166
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 25432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # Dedicated ephemeral QA database; this is not a Production auth test.
+      PVNETWORK_TEST_POSTGRES_URL: postgresql+psycopg://postgres@127.0.0.1:25432/postgres
     steps:
       - uses: actions/checkout@v5
 

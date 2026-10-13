@@ -1,6 +1,6 @@
 # v1.0.41 candidate — PVN-1025
 
-Verified fresh installer, private pinned toolchain, atomic release staging, truthful secure Setup Mode and generic public smoke path defaults. Fresh SQLite uses current constrained metadata through an isolated atomic initializer; PostgreSQL keeps its migration chain. Existing installations/data are refused by the fresh path. [Installer/recovery details](INSTALLER-CANDIDATE.md).
+Verified fresh installer, private pinned toolchain, atomic release staging, truthful secure Setup Mode and generic public smoke path defaults. Empty SQLite/PostgreSQL use current constrained metadata and the canonical head through atomic file/DDL initialization. Historical upgrade migrations remain unchanged. Existing installations/data are refused by the fresh path. [Installer/recovery details](INSTALLER-CANDIDATE.md).
 
 Local checkpoints: 405 Linux tests and three real x86_64 distribution/systemd installation snapshots passed; final exact-commit integration/CI is required after final code changes. Public HTTPS is gated in code and requires real certificate/proxy verification. Public ACME/ARM64/external VPN tests are not claimed.
 

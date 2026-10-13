@@ -1,6 +1,6 @@
 # نامزد v1.0.41 — PVN-1025
 
-نصب تازه با بررسی بسته، ابزارهای اختصاصی با نسخه و hash ثابت، staging اتمی، Setup Mode امن و URL واقعی، و default عمومی smoke اصلاح شده‌اند. SQLite خالی با metadata و constraintهای جاری در مسیر اتمی ساخته می‌شود؛ PostgreSQL مسیر migration خود را حفظ می‌کند. نصب و دیتابیس موجود از مسیر نصب تازه رد می‌شوند. [راهنمای نصب و recovery](INSTALLER-CANDIDATE.fa.md).
+نصب تازه با بررسی بسته، ابزارهای اختصاصی با نسخه و hash ثابت، staging اتمی، Setup Mode امن و URL واقعی، و default عمومی smoke اصلاح شده‌اند. SQLite و PostgreSQL خالی با metadata و constraintهای جاری و revision نهایی در مسیر اتمی ساخته می‌شوند؛ migrationهای ارتقای تاریخی تغییر نمی‌کنند. نصب و دیتابیس موجود از مسیر نصب تازه رد می‌شوند. [راهنمای نصب و recovery](INSTALLER-CANDIDATE.fa.md).
 
 در checkpoint محلی، ۴۰۵ تست Linux و نصب در سه محیط موقت x86_64 با systemd واقعی عبور کردند. پس از آخرین تغییر کد، CI و regression نهایی روی commit دقیق لازم است. ACME عمومی، ARM64 و VPN خارجی بدون اجرای واقعی تأیید نشده‌اند.
 

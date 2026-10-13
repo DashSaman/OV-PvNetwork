@@ -58,7 +58,14 @@ def initialize(project, marker=None):
             stage.dispose()
             if temporary.exists():temporary.unlink()
     elif engine.dialect.name=='postgresql':
-        command.upgrade(config,'head')
+        # Historical upgrades assume tables from older runtime bootstrap code.
+        # A genuinely empty database starts from current metadata in one DDL
+        # transaction, then receives the same canonical Alembic head.
+        with engine.begin() as connection:
+            Base.metadata.create_all(connection)
+            if os.environ.get('PVNETWORK_SCHEMA_FAILPOINT')=='after_create':raise ValueError('requested disposable schema fault injection')
+            config.attributes['connection']=connection
+            command.stamp(config,'head')
     else:raise ValueError('fresh database backend must be SQLite or PostgreSQL')
     print('FRESH_DATABASE_INITIALIZED')
 
