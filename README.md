@@ -4,13 +4,19 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.40-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.41-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.41 candidate vs v1.0.40
+
+**PVN-1025 — verified fresh installation.** The bootstrap validates the official versioned release asset/checksum and archive before execution. Private pinned Python/Node/uv tools and immutable release directories replace remote setup-script execution. Fresh SQLite initialization uses the current constrained schema; existing databases are refused. Secure Setup Mode verifies loopback proxy/UI access and requires SSH forwarding; public HTTPS is announced only after ACME and proxy checks succeed. Credentials stay in a root-only file.
+
+This candidate is not a published release. See [installer validation and recovery](docs/INSTALLER-CANDIDATE.md). Lifecycle, node, final privacy/publication and external-network gates remain open. Do not use the old lifecycle updater for these candidates.
 
 ## Candidate v1.0.38 vs v1.0.37
 

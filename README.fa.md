@@ -4,11 +4,17 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.40-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.41-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.41 نسبت به v1.0.40
+
+**PVN-1025 — نصب تازه با صحت‌سنجی بسته.** نسخه، SHA256 و محتوای آرشیو رسمی پیش از اجرا بررسی می‌شوند. ابزارهای Python، Node و uv با نسخهٔ ثابت و در مسیر اختصاصی نصب می‌شوند؛ اسکریپت راه‌اندازی خارجی بدون بررسی اجرا نمی‌شود. دیتابیس خالی SQLite با schema و constraintهای جاری ساخته می‌شود؛ دیتابیس موجود از این مسیر عبور نمی‌کند. Setup Mode فقط روی loopback و از طریق SSH forwarding در دسترس است. URL عمومی HTTPS فقط پس از موفقیت ACME و proxy اعلام می‌شود و اطلاعات ورود در فایل خصوصی root می‌ماند.
+
+این Candidate هنوز release عمومی نیست. [راهنمای نصب و بازیابی](docs/INSTALLER-CANDIDATE.fa.md) را ببینید. gateهای Lifecycle، نود، خصوصی‌سازی و انتشار نهایی و شبکهٔ خارجی باز هستند؛ برای این Candidateها از updater قدیمی استفاده نکنید.
 
 ## نامزد v1.0.38 نسبت به v1.0.37
 

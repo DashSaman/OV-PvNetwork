@@ -161,7 +161,7 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
 
     def test_lifecycle_cli_is_pvnetwork_owned(self):
         root = Path(__file__).resolve().parents[1]
-        install = (root / "install-local.sh").read_text()
+        install = (root / "install-local.sh").read_text() + (root / "scripts/pvnetwork_install.py").read_text()
         runtime_tools = (root / "scripts/install-runtime-tools.sh").read_text()
         manage = (root / "scripts/manage.sh").read_text()
         bootstrap = (root / "install.sh").read_text()
@@ -204,7 +204,7 @@ class PVNetworkBrandPurityTests(unittest.TestCase):
 
     def test_pvnetwork_owned_runtime_contract_is_declared(self):
         root = Path(__file__).resolve().parents[1]
-        install = (root / "install-local.sh").read_text()
+        install = (root / "install-local.sh").read_text() + (root / "scripts/pvnetwork_install.py").read_text()
         manage = (root / "scripts/manage.sh").read_text()
         manifest = (root / "manifest.json").read_text()
         self.assertIn("/opt/pvnetwork-panel", install)

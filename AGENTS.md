@@ -76,6 +76,8 @@ Before implementation, record the task and target release here **and commit/push
   - Resume from verified 1.0.40; no repeat of the three deployed fixes. Implementation plan: `docs/superpowers/plans/2026-10-13-final-completion.md`.
   - First gates: verified official archive/checksum/version, safe extraction, pinned private toolchain, resource/port/existing-install preflight, loopback setup or verified public TLS, idempotent recovery and executable failure regressions.
   - All coding and disposable testing is local/isolated. No new Production mutation is authorized by this checkpoint. Real boot/TLS/external-client coverage must be explicitly distinguished from fixtures.
+  - Local checkpoint: 405 Linux tests PASS, including 18 new installer/fresh-schema cases. Three initial bootstrap failures and the real PostgreSQL-only SQLite migration failure were reproduced before correction. Existing textual wrapper contracts were updated to follow the Python implementation; their eight initial failures are retained privately.
+  - Disposable x86_64 Ubuntu 22.04/24.04 and Debian 12 systemd containers completed real package/tool/build/database/proxy/service installation. API/UI checks and a repeat preserving DB/env hashes and service PIDs PASS for those snapshots. Later atomic-schema/config-hardening changes require final integration regression before release. Public ACME, ARM64, new Production deployment, lifecycle and final publication remain open.
 
 Operational URL/path examples in historical evidence below are generalized for public privacy; the recorded health outcomes are unchanged. Original identifiers remain in the owner's private audit.
 

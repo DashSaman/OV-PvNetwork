@@ -18,7 +18,7 @@ class SecurityHardeningContractTests(unittest.TestCase):
     def test_main_admin_uses_hash_not_plaintext_comparison(self):
         auth = text("backend/auth/auth.py")
         env = text(".env.example")
-        installer = text("install-local.sh")
+        installer = text("scripts/pvnetwork_install.py")
         self.assertNotIn("password == main_admin_password", auth)
         self.assertIn("ADMIN_PASSWORD_HASH", auth)
         self.assertIn("ADMIN_PASSWORD_HASH=", env)
@@ -72,6 +72,9 @@ class SecurityHardeningContractTests(unittest.TestCase):
         ]
         for path in panel_paths:
             body = text(path)
+            if path=="install-local.sh":
+                self.assertIn("pvnetwork_install.py", body)
+                body += text("scripts/pvnetwork_install.py")
             self.assertIn("/healthz", body, path)
             self.assertNotIn("/openapi.json", body, path)
 

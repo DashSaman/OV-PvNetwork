@@ -16,9 +16,11 @@ class FrontendRuntimePathTests(unittest.TestCase):
         self.assertIn('VITE_URLPATH="$panel_path"', body)
 
     def test_installer_build_uses_selected_panel_path(self):
-        body = read("install-local.sh")
-        self.assertIn('URLPATH="$PANEL_PATH"', body)
-        self.assertIn('VITE_URLPATH="$PANEL_PATH"', body)
+        wrapper = read("install-local.sh")
+        self.assertIn('pvnetwork_install.py', wrapper)
+        body = read("scripts/pvnetwork_install.py")
+        self.assertIn("'URLPATH':args.path", body)
+        self.assertIn("'VITE_URLPATH':args.path", body)
 
     def test_smoke_rejects_mismatched_asset_base(self):
         body = read("scripts/pvnetwork-panel-smoke-test")

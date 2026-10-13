@@ -17,7 +17,7 @@ read_env_value() {
 PORT="$(read_env_value PORT)"
 URLPATH="$(read_env_value URLPATH)"
 PORT="${PORT:-19000}"
-URLPATH="${URLPATH:-hajsaman}"
+URLPATH="${URLPATH:-panel}"
 BASE="http://127.0.0.1:${PORT}"
 
 OPENAPI_TMP=""

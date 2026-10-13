@@ -1,0 +1,31 @@
+{
+  "uv_version": "0.13.0",
+  "node_version": "22.23.3",
+  "python_version": "3.12.15",
+  "platforms": {
+    "x86_64": {
+      "uv": {
+        "url": "https://files.pythonhosted.org/packages/c3/75/1901383808ba0d421f32060ba0e9884169b685a722e1af5d87fdd4225ba6/uv-0.13.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "sha256": "52c7da0fd9056d9551124777ec77de53f0df7017daf8f98a19e947b7837416ed",
+        "filename": "uv-0.13.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+      },
+      "node": {
+        "url": "https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-x64.tar.xz",
+        "sha256": "df450af89261115ef9f9e3830c3eeb2cc9213b63c720b1af623cb5dcbe2e02de",
+        "filename": "node-v22.23.3-linux-x64.tar.xz"
+      }
+    },
+    "aarch64": {
+      "uv": {
+        "url": "https://files.pythonhosted.org/packages/65/0e/9e707b242c041dd10d31688a7d0acf90ee321ef7627bdf0978b3d19e3325/uv-0.13.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl",
+        "sha256": "5163a516b9a488bccb4001f727720b775719dfb6dcb144a9bc0ef23e5cfdd269",
+        "filename": "uv-0.13.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl"
+      },
+      "node": {
+        "url": "https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-arm64.tar.xz",
+        "sha256": "a44aeb94849a299b22df10b9e622ec2f605c2183501bc40590705131de7c740f",
+        "filename": "node-v22.23.3-linux-arm64.tar.xz"
+      }
+    }
+  }
+}

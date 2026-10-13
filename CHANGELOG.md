@@ -259,6 +259,15 @@ PVN-026 user-creation node-selection release.
 
 # Changelog
 
+## v1.0.41 — Candidate / PVN-1025
+
+- Verify immutable official release archives, SHA256, metadata and safe member types before executing the fresh installer.
+- Pin private uv/Node/Python toolchains; use frozen project/frontend locks and signed OS repositories instead of piping remote setup scripts into a shell.
+- Add supported-OS/architecture/resource/port/existing-install preflight, durable recovery, immutable staging and atomic panel pointer activation.
+- Add truthful loopback Setup Mode, root-only credentials and public HTTPS gating on successful ACME/proxy validation.
+- Initialize empty SQLite from the current constrained schema without altering existing databases or historical PostgreSQL migration files; use isolated atomic schema staging.
+- Generalize the smoke helper's public path fallback. Existing Production remains on the separately verified 1.0.40 candidate until additional deployment approval.
+
 ## 1.0.4 — 2026-09-19
 
 PVNetwork brand-purity and runtime-ownership release.
