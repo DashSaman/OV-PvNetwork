@@ -70,7 +70,7 @@ jobs:
           uv sync --project node-agent --frozen --no-dev --python 3.12
           uv export --project node-agent --frozen --no-dev --no-emit-project -q > /tmp/pvnetwork-node-audit-requirements.txt
           uv tool run pip-audit --no-deps --disable-pip -r /tmp/pvnetwork-node-audit-requirements.txt
-          uv tool run bandit -q -r node-agent/core scripts/pvnetwork_node_install.py scripts/pvnetwork_node_lifecycle.py -ll
+          uv tool run bandit -q -r node-agent/core scripts/pvnetwork_node_install.py scripts/pvnetwork_node_lifecycle.py scripts/pvnetwork_node_backup.py -ll
 
       - name: Bash syntax
         run: |
@@ -164,13 +164,17 @@ jobs:
             echo 'Forbidden tracked private material detected.' >&2
             exit 1
           fi
-          ! grep -RInE \
-            --exclude-dir=.git \
-            --exclude-dir=node_modules \
-            --exclude-dir=dist \
-            --exclude='.env.example' \
-            --exclude='ci.yml' \
-            '(^|[^A-Z_])(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD=[^$<]|JWT_SECRET_KEY=[^$<])' .
+          set +e
+          git grep -l -I -E \
+            '(^|[^A-Z_])(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD=[^$<]|JWT_SECRET_KEY=[^$<])' \
+            -- . ':!.env.example' ':!**/.env.example' ':!.github/workflows/ci.yml'
+          SCAN_RC=$?
+          set -e
+          if [ "$SCAN_RC" -eq 0 ]; then
+            echo 'Possible tracked credential content; review the named files privately.' >&2
+            exit 1
+          fi
+          test "$SCAN_RC" -eq 1
 
       - name: Governance files present
         run: |

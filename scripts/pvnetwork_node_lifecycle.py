@@ -112,7 +112,9 @@ def upgrade(source):
     if not fullmatch(r'1\.0\.\d+',old) or not fullmatch(r'1\.0\.\d+',target) or int(target.rsplit('.',1)[1])<=int(old.rsplit('.',1)[1]):raise ValueError('same-version replacement or agent downgrade refused')
     if shutil.disk_usage(node.RELEASES).free<2*1024**3:raise ValueError('insufficient agent staging disk space')
     candidate=node.RELEASES/(target+'-'+secrets.token_hex(6))
-    value={'state':'building','previous':str(current),'previous_version':old,'candidate':str(candidate),'version':target,'protected':protected(config)}
+    from pvnetwork_node_backup import native_backup
+    backup=native_backup()
+    value={'state':'building','previous':str(current),'previous_version':old,'candidate':str(candidate),'version':target,'protected':protected(config),'backup':backup}
     record(value)
     try:
         shutil.copytree(source/'node-agent',candidate)

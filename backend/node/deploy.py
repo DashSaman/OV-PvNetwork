@@ -36,7 +36,7 @@ def build_native_node_bundle() -> tuple[bytes,str]:
     root=Path(__file__).resolve().parents[2]
     required=['VERSION','ops/toolchain.json','node-agent/VERSION','node-agent/LICENSE',
               'node-agent/pyproject.toml','node-agent/uv.lock',
-              'scripts/pvnetwork_node_install.py','scripts/pvnetwork_node_lifecycle.py','scripts/pvnetwork_install.py',
+              'scripts/pvnetwork_node_install.py','scripts/pvnetwork_node_lifecycle.py','scripts/pvnetwork_node_backup.py','scripts/pvnetwork_install.py',
               'scripts/pvnetwork-build-client-profile','scripts/pvnetwork-router-openvpn',
               'scripts/pvnetwork-router-auth','scripts/pvnetwork-domain-collector',
               'scripts/pvnetwork-session-connect','scripts/pvnetwork-session-disconnect',
@@ -277,7 +277,7 @@ def deploy_node(*, host: str, ssh_port: int, username: str, password: str | None
         raise ValueError('SSH password or private key is required')
     report = reporter or (lambda *_: None)
     payload,digest=build_native_node_bundle()
-    # Fits the existing VARCHAR(40) contract without a schema migration.
+    # Fits the existing creation API's 40-character limit without a schema migration.
     # The random portion retains 168 bits of entropy.
     api_key=adopted_api_key if mode=='adopt' and adopted_api_key else tls.KEY_PREFIX+secrets.token_urlsafe(21)
     configuration={'mode':mode,'api_port':api_port,'ovpn_port':ovpn_port,'protocol':protocol,

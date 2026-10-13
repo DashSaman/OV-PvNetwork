@@ -524,7 +524,7 @@ def main():
     parser.add_argument('--configuration')
     parser.add_argument('--source')
     parser.add_argument('--preflight',action='store_true')
-    parser.add_argument('--action',choices=['install','finalize','rollback','status','upgrade','rollback-agent','recover-agent'],default='install')
+    parser.add_argument('--action',choices=['install','finalize','rollback','status','upgrade','rollback-agent','recover-agent','backup'],default='install')
     parser.add_argument('--transaction-id')
     args=parser.parse_args()
     if os.geteuid()!=0:raise ValueError('root or approved passwordless sudo is required for node deployment')
@@ -536,6 +536,9 @@ def main():
     STATE.mkdir(parents=True,exist_ok=True,mode=0o700);STATE.chmod(0o700)
     with (STATE/'install.lock').open('a') as lock:
         os.chmod(STATE/'install.lock',0o600);fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        if args.action=='backup':
+            from pvnetwork_node_backup import native_backup
+            print('PVNETWORK_RESULT|'+json.dumps(native_backup()));return 0
         if args.action in {'upgrade','rollback-agent','recover-agent'}:
             import pvnetwork_node_lifecycle as lifecycle
             if args.action=='upgrade':
