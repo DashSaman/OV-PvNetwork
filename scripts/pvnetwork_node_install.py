@@ -22,6 +22,7 @@ import stat
 import ssl
 import time
 import urllib.request
+from contextlib import contextmanager
 
 APP=Path('/opt/pvnetwork-node')
 STATE=Path('/etc/pvnetwork-node')
@@ -30,6 +31,33 @@ TOOLS=Path('/opt/pvnetwork-node-tools')
 SERVER=Path('/etc/openvpn/server/server.conf')
 RUNTIME=Path('/var/lib/pvnetwork-node')
 JOURNAL=STATE/'transaction.json'
+
+
+@contextmanager
+def operation_lock():
+    """Validate owned state before chmod and lock a regular file without aliases."""
+    if STATE.is_symlink():raise ValueError('linked node state refused')
+    for parent in STATE.parents:
+        info=parent.lstat()
+        if not stat.S_ISDIR(info.st_mode) or info.st_uid!=0 or (info.st_mode&0o022 and not info.st_mode&stat.S_ISVTX):
+            raise ValueError('unsafe node state parent directory')
+    if not STATE.exists():STATE.mkdir(mode=0o700)
+    directory=os.open(STATE,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:
+        info=os.fstat(directory)
+        if info.st_uid!=0 or info.st_mode&0o022:raise ValueError('node state requires root ownership without shared write access')
+        os.fchmod(directory,0o700)
+        try:descriptor=os.open('install.lock',os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW|os.O_NONBLOCK,0o600,dir_fd=directory)
+        except OSError:raise ValueError('unsafe node operation lock refused') from None
+        try:
+            info=os.fstat(descriptor)
+            if not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_nlink!=1 or info.st_mode&0o022:
+                raise ValueError('node operation lock requires a private root-owned regular file')
+            os.fchmod(descriptor,0o600)
+            fcntl.flock(descriptor,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            yield
+        finally:os.close(descriptor)
+    finally:os.close(directory)
 
 
 def host_facts():
@@ -698,9 +726,7 @@ def main():
         config=json.loads(Path(args.configuration).read_text());validate_source(Path(args.source))
         facts=preflight(config);config_values(config)
         print(json.dumps({'state':'PREFLIGHT_OK','os':facts['os_id'],'version':facts['os_version'],'mode':config['mode']}));return 0
-    STATE.mkdir(parents=True,exist_ok=True,mode=0o700);STATE.chmod(0o700)
-    with (STATE/'install.lock').open('a') as lock:
-        os.chmod(STATE/'install.lock',0o600);fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    with operation_lock():
         if args.action=='backup':
             from pvnetwork_node_backup import native_backup
             print('PVNETWORK_RESULT|'+json.dumps(native_backup()));return 0
