@@ -3,6 +3,9 @@ import hashlib
 import os
 from pathlib import Path
 import sys
+import io
+import tarfile
+import shutil
 import unittest
 from unittest.mock import patch
 
@@ -55,6 +58,17 @@ class NodeConfigurationTransactionTests(unittest.TestCase):
         plan=self.module.prepare(self.record,self.request(tunnel_address=''))
         self.assertFalse(plan['updates']);self.assertFalse(plan['vpn_restart'])
 
+    def test_semantic_noop_preserves_server_spacing_and_address_family(self):
+        self.server.write_bytes(b'port\t1194\nproto\tudp4\n# preserve\n')
+        plan=self.module.prepare(self.record,self.request())
+        self.assertFalse(plan['updates']);self.assertFalse(plan['vpn_restart'])
+
+    def test_new_port_conflict_refuses_before_any_file_write(self):
+        original=self.server.read_bytes()
+        with patch.object(self.node,'host_facts',return_value={'listeners':{('tcp',443)}}):
+            with self.assertRaises(ValueError):self.module.prepare(self.record,self.request(protocol='tcp',ovpn_port=443))
+        self.assertEqual(self.server.read_bytes(),original)
+
     def test_conflicting_own_profile_or_stale_journal_refuses_before_any_write(self):
         original=self.server.read_bytes();self.fixture.profile.write_bytes(self.fixture.content('bob'))
         with self.assertRaises(ValueError):self.module.prepare(self.record,self.request(ovpn_port=443))
@@ -94,6 +108,26 @@ class NodeConfigurationTransactionTests(unittest.TestCase):
         self.assertEqual(updated['created_file_sha256'][str(self.module.NETWORK)],hashlib.sha256(item['content']).hexdigest())
         self.module.NETWORK.write_bytes(b'operator changed prior helper')
         with self.assertRaises(ValueError):self.module.network_plan(self.record,config)
+
+    def test_versioned_management_helpers_are_verified_and_existing_directory_is_preserved(self):
+        from backend.node.deploy import build_native_node_bundle
+        payload,_=build_native_node_bundle()
+        source=self.root/'source';source.mkdir()
+        with tarfile.open(fileobj=io.BytesIO(payload),mode='r:gz') as archive:archive.extractall(source,filter='data')
+        release=self.root/'candidate';shutil.copytree(source/'node-agent',release)
+        self.node.stage_resources(source,release)
+        helpers=release/'resources'
+        self.assertEqual((helpers/'pvnetwork_node_configure.py').read_bytes(),(source/'scripts/pvnetwork_node_configure.py').read_bytes())
+        self.assertEqual((helpers/'pvnetwork-build-client-profile').read_bytes(),(source/'scripts/pvnetwork-build-client-profile').read_bytes())
+        self.assertFalse((helpers/'.env').exists())
+        self.assertEqual((helpers/'pvnetwork_node_install.py').stat().st_mode&0o777,0o644)
+        marker=helpers/'operator';marker.write_bytes(b'preserve')
+        with self.assertRaises(ValueError):self.node.stage_resources(source,release)
+        self.assertEqual(marker.read_bytes(),b'preserve')
+        (source/'scripts/pvnetwork_node_configure.py').write_bytes(b'altered verified source')
+        empty=self.root/'bad-candidate';empty.mkdir()
+        with self.assertRaises(ValueError):self.node.stage_resources(source,empty)
+        self.assertFalse((empty/'resources').exists())
 
 
 if __name__=='__main__':unittest.main()

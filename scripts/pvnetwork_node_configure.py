@@ -102,11 +102,16 @@ def prepare(record,request):
     normalized='tcp' if old_protocol.startswith('tcp') else 'udp'
     if int(ports[0][1])!=config['ovpn_port'] or normalized!=config['protocol']:
         raise ValueError('native configuration journal differs from current VPN settings')
-    changed=re.sub(rb'^port[ \t]+[0-9]+',b'port '+str(port).encode(),value,flags=re.M)
+    settings_changed=int(ports[0][1])!=port or normalized!=protocol
+    if settings_changed and (protocol,port) in node.host_facts()['listeners']:
+        raise ValueError('requested VPN port is occupied; unrelated listener preserved')
+    changed=value
+    if int(ports[0][1])!=port:
+        match=ports[0];changed=value[:match.start(1)]+str(port).encode()+value[match.end(1):]
     if normalized!=protocol:
         family='6' if '6' in old_protocol else '4' if '4' in old_protocol else ''
         target=(protocol+family+('-server' if protocol=='tcp' else '')).encode()
-        changed=re.sub(rb'^proto[ \t]+\S+',b'proto '+target,changed,flags=re.M)
+        changed=re.sub(rb'(^proto[ \t]+)\S+',lambda match:match[1]+target,changed,flags=re.M)
     if changed!=value:updates[str(SERVER)]={**original,'content':changed}
     templates=[path for path in TEMPLATES if path.exists() or path.is_symlink()]
     if not templates:raise ValueError('existing native client template required')

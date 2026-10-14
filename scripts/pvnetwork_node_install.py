@@ -300,6 +300,21 @@ def root_owned_file(path):
     return info
 
 
+def stage_resources(source,release):
+    """Keep verified management scripts with the immutable agent code pointer."""
+    source=Path(source);release=Path(release);manifest=validate_source(source)
+    if release.is_symlink() or not release.is_dir() or release.stat().st_uid!=0 or release.stat().st_mode&0o022:
+        raise ValueError('private owned agent staging directory required')
+    if (release/'VERSION').read_text().strip()!=manifest['version']:raise ValueError('management helper and agent versions differ')
+    resources=release/'resources'
+    if resources.exists() or resources.is_symlink():raise ValueError('existing agent resources preserved; use a new immutable release')
+    resources.mkdir(mode=0o755)
+    names=['pvnetwork-build-client-profile','pvnetwork_node_install.py','pvnetwork_node_lifecycle.py',
+           'pvnetwork_node_backup.py','pvnetwork_node_restore.py','pvnetwork_node_configure.py','pvnetwork_install.py']
+    for name in names:
+        shutil.copyfile(source/'scripts'/name,resources/name);(resources/name).chmod(0o644)
+
+
 def legacy_units():
     result={}
     for name in ['ov-node','ov-domain-collector']:
@@ -644,11 +659,9 @@ def install(config,source):
         uv,env,python_version=tools.install_toolchain(source,facts['architecture'],install_os_packages=False,include_node=False)
         release=RELEASES/(manifest['version']+'-'+record['id']);record['release']=str(release);checkpoint(record,'build')
         release.parent.mkdir(parents=True,exist_ok=True);shutil.copytree(source/'node-agent',release)
-        resources=release/'resources';resources.mkdir(mode=0o755)
-        shutil.copyfile(source/'scripts/pvnetwork-build-client-profile',resources/'pvnetwork-build-client-profile')
-        (resources/'pvnetwork-build-client-profile').chmod(0o644)
+        stage_resources(source,release)
         run([uv,'sync','--frozen','--no-dev','--python',python_version],cwd=release,env=env)
-        run([release/'.venv/bin/python','-m','compileall','-q',release/'core'])
+        run([release/'.venv/bin/python','-m','compileall','-q',release/'core',release/'resources'])
         RUNTIME.mkdir(parents=True,exist_ok=True,mode=0o700)
         if config['mode']=='fresh':
             import pwd

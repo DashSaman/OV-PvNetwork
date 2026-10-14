@@ -127,15 +127,13 @@ def upgrade(source):
     record(value)
     try:
         shutil.copytree(source/'node-agent',candidate)
-        resources=candidate/'resources';resources.mkdir(mode=0o755)
-        shutil.copyfile(source/'scripts/pvnetwork-build-client-profile',resources/'pvnetwork-build-client-profile')
-        (resources/'pvnetwork-build-client-profile').chmod(0o644)
+        node.stage_resources(source,candidate)
         (candidate/'.env').symlink_to(node.STATE/'node.env')
         bootstrap=node.TOOLS/'bootstrap/bin/uv'
         env={**os.environ,'UV_PYTHON_INSTALL_DIR':str(node.TOOLS/'python'),'UV_PYTHON_PREFERENCE':'only-managed','UV_LINK_MODE':'copy'}
         python=json.loads((source/'ops/toolchain.json').read_text())['python_version']
         node.run([bootstrap,'sync','--frozen','--no-dev','--python',python],cwd=candidate,env=env)
-        node.run([candidate/'.venv/bin/python','-m','compileall','-q',candidate/'core'])
+        node.run([candidate/'.venv/bin/python','-m','compileall','-q',candidate/'core',candidate/'resources'])
         verify_protected(value['protected'],config);canary(candidate,config,value);phase(value,'canary_verified')
         phase(value,'switching');pointer(candidate);phase(value,'switched')
         node.run(['systemctl','restart','pvnetwork-node']);readiness(config,target)
