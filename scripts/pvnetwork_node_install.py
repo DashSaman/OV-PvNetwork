@@ -511,7 +511,7 @@ def firewall_script(config,record):
     persist_network(record)
 
 
-def persist_network(record):
+def network_script(record):
     import shlex
     script='#!/bin/sh\nset -eu\n'
     for command in record.get('firewall_rules',[]):
@@ -519,7 +519,8 @@ def persist_network(record):
         check=' '.join(shlex.quote(x) for x in ['iptables','-w',*table,'-C',*rest])
         add=' '.join(shlex.quote(x) for x in ['iptables','-w',*table,*(['-A'] if table else ['-I']),rest[0],*([] if table else ['1']),*rest[1:]])
         script+=check+' 2>/dev/null || '+add+'\n'
-    if record.get('firewall_rules'):script+='sysctl -w net.ipv4.ip_forward=1 >/dev/null\n'
+    if any(command[0]=='FORWARD' or command[:2]==['-t','nat'] for command in record.get('firewall_rules',[])):
+        script+='sysctl -w net.ipv4.ip_forward=1 >/dev/null\n'
     # Reposition only this transaction's exact API rules ahead of earlier ACCEPTs.
     for binary,rest in record.get('api_rules',[]):
         delete=' '.join(shlex.quote(x) for x in [binary,'-w','-D',*rest])
@@ -527,7 +528,11 @@ def persist_network(record):
     for binary,rest in reversed(record.get('api_rules',[])):
         add=' '.join(shlex.quote(x) for x in [binary,'-w','-I',rest[0],'1',*rest[1:]])
         script+=add+'\n'
-    install_owned(record,'/usr/local/sbin/pvnetwork-node-network',script)
+    return script
+
+
+def persist_network(record):
+    install_owned(record,'/usr/local/sbin/pvnetwork-node-network',network_script(record))
     unit='[Unit]\nDescription=PVNetwork owned node network rules\nAfter=network-online.target nftables.service ufw.service netfilter-persistent.service\nBefore=pvnetwork-node.service\n[Service]\nType=oneshot\nExecStart=/usr/local/sbin/pvnetwork-node-network\nRemainAfterExit=yes\n[Install]\nWantedBy=multi-user.target\n'
     install_owned(record,'/etc/systemd/system/pvnetwork-node-network.service',unit,0o644)
     run(['systemctl','daemon-reload']);run(['systemctl','enable','--now','pvnetwork-node-network'])

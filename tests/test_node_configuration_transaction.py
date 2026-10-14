@@ -1,4 +1,5 @@
 import importlib.util
+import hashlib
 import os
 from pathlib import Path
 import sys
@@ -25,6 +26,8 @@ class NodeConfigurationTransactionTests(unittest.TestCase):
         self.module.SERVER=self.server;self.module.TEMPLATES=[self.template]
         self.module.PROFILES=self.root;self.module.PKI=fixture.pki
         self.record={'id':'a'*24,'phase':'finalized','configuration':{'host':'api.example.com','mode':'fresh','protocol':'udp','ovpn_port':1194}}
+        self.module.NETWORK=self.root/'network-helper'
+        self.module.NETWORK.write_text(self.node.network_script(self.record));self.module.NETWORK.chmod(0o755)
 
     def request(self,**changes):
         return {'protocol':'udp','ovpn_port':1194,'tunnel_address':'node.example.com','set_new_setting':True,**changes}
@@ -60,6 +63,37 @@ class NodeConfigurationTransactionTests(unittest.TestCase):
         self.record['configuration']['ovpn_port']=1195
         with self.assertRaises(ValueError):self.module.prepare(self.record,self.request(ovpn_port=443))
         self.assertEqual(self.server.read_bytes(),original)
+
+    def test_adopted_input_only_rule_does_not_change_global_forwarding(self):
+        tag='pvnetwork-node-'+self.record['id']
+        record={**self.record,'firewall_rules':[['INPUT','-p','tcp','--dport','443','-m','comment','--comment',tag,'-j','ACCEPT']]}
+        script=self.node.network_script(record)
+        self.assertNotIn('sysctl',script)
+        self.assertIn('iptables -w -C INPUT -p tcp --dport 443',script)
+
+    def test_network_plan_preserves_API_rules_and_refuses_changed_owned_helper(self):
+        tag='pvnetwork-node-'+self.record['id']
+        self.record['api_rules']=[['iptables',['INPUT','-p','tcp','--dport','9443','-s','192.0.2.11','-m','comment','--comment',tag+'-api','-j','ACCEPT']]]
+        self.module.NETWORK.write_text(self.node.network_script(self.record))
+        original=self.module.NETWORK.read_bytes()
+        config={**self.record['configuration'],'protocol':'tcp','ovpn_port':443}
+        next_record,item=self.module.network_plan(self.record,config)
+        self.assertEqual(self.module.NETWORK.read_bytes(),original)
+        self.assertIn(b'--dport 443',item['content']);self.assertNotIn(b'sysctl',item['content'])
+        self.assertEqual(next_record['configuration']['host'],'api.example.com')
+        self.assertEqual(next_record['api_rules'],self.record['api_rules'])
+        self.module.NETWORK.write_bytes(b'operator changed helper')
+        with self.assertRaises(ValueError):self.module.network_plan(self.record,config)
+        self.assertEqual(self.module.NETWORK.read_bytes(),b'operator changed helper')
+
+    def test_previous_verified_network_rendering_uses_recorded_digest(self):
+        self.module.NETWORK.write_bytes(b'#!/bin/sh\nset -eu\n# earlier verified rendering\n')
+        self.record['created_file_sha256']={str(self.module.NETWORK):hashlib.sha256(self.module.NETWORK.read_bytes()).hexdigest()}
+        config={**self.record['configuration'],'protocol':'tcp','ovpn_port':443}
+        updated,item=self.module.network_plan(self.record,config)
+        self.assertEqual(updated['created_file_sha256'][str(self.module.NETWORK)],hashlib.sha256(item['content']).hexdigest())
+        self.module.NETWORK.write_bytes(b'operator changed prior helper')
+        with self.assertRaises(ValueError):self.module.network_plan(self.record,config)
 
 
 if __name__=='__main__':unittest.main()

@@ -17,6 +17,7 @@ SERVER=Path('/etc/openvpn/server/server.conf')
 TEMPLATES=[Path('/etc/openvpn/server/client-template.txt'),Path('/etc/openvpn/server/client-common.txt')]
 PKI=Path('/etc/openvpn/server/easy-rsa/pki')
 PROFILES=Path('/root')
+NETWORK=Path('/usr/local/sbin/pvnetwork-node-network')
 
 
 def profile_helpers():
@@ -45,6 +46,40 @@ def endpoint(value,profile):
         parts=token.split()
         if parts and parts[0]==b'remote':return parts[1].decode('ascii')
     raise ValueError('profile endpoint missing')
+
+
+def network_plan(record,configuration):
+    if not re.fullmatch(r'[a-f0-9]{24}',record.get('id','')):raise ValueError('owned native firewall transaction required')
+    tag='pvnetwork-node-'+record['id']
+    old_config=record['configuration']
+    def input_rule(config):
+        return ['INPUT','-p',config['protocol'],'--dport',str(config['ovpn_port']),'-m','comment','--comment',tag,'-j','ACCEPT']
+    previous=input_rule(old_config);target=input_rule(configuration)
+    rules=copy.deepcopy(record.get('firewall_rules',[]));seen=0
+    for index,command in enumerate(rules):
+        if not isinstance(command,list) or not all(isinstance(value,str) for value in command) or '--comment' not in command:
+            raise ValueError('unknown owned firewall rule; preserve and reconcile it')
+        position=command.index('--comment')
+        if position+1>=len(command) or command[position+1]!=tag:
+            raise ValueError('foreign firewall rule in native journal; preserve it')
+        if command[0]=='INPUT':
+            if command!=previous or seen:raise ValueError('unknown native VPN input rule; preserve it')
+            rules[index]=target;seen+=1
+        elif command[0]!='FORWARD' and command[:2]!=['-t','nat']:
+            raise ValueError('unsupported native firewall rule')
+    if not seen:rules.append(target)
+    profile=profile_helpers();original=snapshot(NETWORK,profile)
+    recorded_digest=record.get('created_file_sha256',{}).get(str(NETWORK))
+    # Earlier verified releases rendered the same owned rules differently.
+    # Their private installation digest remains authoritative; without one,
+    # require the complete canonical script. Never accept an operator edit.
+    owned=(recorded_digest==original['sha256']) if recorded_digest else original['original']==node.network_script(record).encode()
+    if not owned or original['mode']!=0o755:
+        raise ValueError('owned network helper changed; preserve and reconcile it')
+    updated=copy.deepcopy(record);updated['configuration']=copy.deepcopy(configuration);updated['firewall_rules']=rules
+    content=node.network_script(updated).encode()
+    updated.setdefault('created_file_sha256',{})[str(NETWORK)]=hashlib.sha256(content).hexdigest()
+    return updated,{**original,'content':content}
 
 
 def prepare(record,request):
@@ -101,4 +136,9 @@ def prepare(record,request):
         if changed!=original['original']:updates[str(path)]={**original,'content':changed}
     config.update(protocol=protocol,ovpn_port=port)
     if updates:config['tunnel_address']=resolved_host
-    return {'configuration':config,'updates':updates,'vpn_restart':str(SERVER) in updates}
+    updated=copy.deepcopy(record);updated['configuration']=config
+    restart=str(SERVER) in updates
+    if restart:
+        updated,network=network_plan(record,config)
+        if network['content']!=network['original']:updates[str(NETWORK)]=network
+    return {'configuration':config,'record':updated,'updates':updates,'vpn_restart':restart}
