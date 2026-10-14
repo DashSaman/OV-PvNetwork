@@ -64,6 +64,7 @@ jobs:
           uv export --frozen --no-dev --no-emit-project -q > /tmp/pvnetwork-audit-requirements.txt
           uv tool run pip-audit --no-deps --disable-pip -r /tmp/pvnetwork-audit-requirements.txt
           uv tool run bandit -q -r backend -ll -x backend/alembic/versions
+          uv tool run bandit -q -r scripts/pvnetwork_install.py -ll
 
       - name: Bash syntax
         run: |

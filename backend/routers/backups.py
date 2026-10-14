@@ -18,6 +18,7 @@ from starlette.background import BackgroundTask
 
 from backend.auth.auth import get_current_user
 from backend.db.engine import get_db
+from backend.db.models import SecuritySettings
 from sqlalchemy.orm import Session
 from backend.auth.authorization import require_interactive_main_admin
 from backend.schema.output import ResponseModel
