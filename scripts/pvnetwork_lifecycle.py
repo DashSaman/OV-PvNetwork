@@ -32,7 +32,8 @@ def published_version(selection=None):
     selected=(selection or os.environ.get('PVNETWORK_REF') or 'latest').removeprefix('v')
     if selected=='latest':
         request=urllib.request.Request('https://api.github.com/repos/'+REPO+'/releases/latest',headers={'Accept':'application/vnd.github+json','User-Agent':'PVNetwork-lifecycle'})
-        with urllib.request.urlopen(request,timeout=30) as response:
+        # Fixed official HTTPS API; no caller-controlled scheme or origin.
+        with urllib.request.urlopen(request,timeout=30) as response:  # nosec B310
             details=json.loads(response.read(1024*1024))
         if details.get('draft') or details.get('prerelease'):raise ValueError('latest stable release required')
         selected=str(details.get('tag_name','')).removeprefix('v')
@@ -41,13 +42,15 @@ def published_version(selection=None):
 
 
 def download_published_release(version, directory):
+    if not isinstance(version,str) or not re.fullmatch(r'1\.0\.\d+',version):raise ValueError('immutable release version required')
     asset='pvnetwork-panel-v'+version+'.tar.gz';base='https://github.com/'+REPO+'/releases/download/v'+version+'/'
-    with urllib.request.urlopen(base+asset+'.sha256',timeout=30) as response:line=response.read(4097).decode('ascii').strip()
+    # Fixed official HTTPS release origin; the exact filename/digest are checked.
+    with urllib.request.urlopen(base+asset+'.sha256',timeout=30) as response:line=response.read(4097).decode('ascii').strip()  # nosec B310
     match=re.fullmatch(r'([a-fA-F0-9]{64})\s+\*?'+re.escape(asset),line)
     if not match:raise ValueError('release checksum must contain only the exact immutable asset filename')
     expected=match.group(1).lower();target=Path(directory)/asset
     try:
-        with urllib.request.urlopen(base+asset,timeout=90) as response,target.open('xb') as output:
+        with urllib.request.urlopen(base+asset,timeout=90) as response,target.open('xb') as output:  # nosec B310
             target.chmod(0o600);size=0
             for chunk in iter(lambda:response.read(1024*1024),b''):
                 size+=len(chunk)
@@ -100,7 +103,8 @@ def sqlite_fingerprint(path):
         names=[row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
         for name in names:
             quoted='"'+name.replace('"','""')+'"'
-            cursor=db.execute('SELECT * FROM '+quoted)
+            # Catalog identifiers are fully quoted/escaped; values are not SQL.
+            cursor=db.execute('SELECT * FROM '+quoted)  # nosec B608
             rows=sorted(canonical(row) for row in cursor.fetchall())
             tables[name]={'columns':[x[0] for x in cursor.description], 'count':len(rows),'rows_sha256':hashlib.sha256('\n'.join(rows).encode()).hexdigest()}
         return tables
@@ -267,7 +271,16 @@ def restore_runtime_files(archive, expected):
 
 
 def run(args, *, env=None, cwd=None, input=None, timeout=900):
-    result=subprocess.run([str(x) for x in args],env=env,cwd=cwd,input=input,capture_output=True,text=True,timeout=timeout)
+    try:
+        result=subprocess.run([str(x) for x in args],env=env,cwd=cwd,input=input,capture_output=True,text=True,timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        output=lambda value:value.decode('utf-8',errors='replace') if isinstance(value,bytes) else (value or '')
+        STATE.mkdir(parents=True,exist_ok=True,mode=0o700)
+        path=STATE/'last-lifecycle-error.log'
+        descriptor=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_TRUNC|os.O_NOFOLLOW,0o600)
+        with os.fdopen(descriptor,'w') as handle:
+            os.chmod(path,0o600);handle.write(output(exc.stdout)+'\n'+output(exc.stderr));handle.flush();os.fsync(handle.fileno())
+        raise RuntimeError(Path(str(args[0])).name+' timed out; partial diagnostics are in the root-private lifecycle state') from None
     if result.returncode:
         STATE.mkdir(parents=True,exist_ok=True,mode=0o700)
         path=STATE/'last-lifecycle-error.log'
@@ -306,7 +319,8 @@ def postgres_fingerprint(url):
             connection.execute(text("SET LOCAL statement_timeout = '30000ms'"))
             for name in sorted(inspect(connection).get_table_names()):
                 q='"'+name.replace('"','""')+'"'
-                rows=connection.execute(text('SELECT * FROM '+q))
+                # SQLAlchemy-inspected catalog identifiers are quoted/escaped.
+                rows=connection.execute(text('SELECT * FROM '+q))  # nosec B608
                 columns=list(rows.keys());values=sorted(canonical(tuple(row)) for row in rows)
                 result[name]={'columns':columns,'count':len(values),'rows_sha256':hashlib.sha256('\n'.join(values).encode()).hexdigest()}
     finally:engine.dispose()
@@ -444,7 +458,8 @@ def commit_release(pointer, candidate, prepare, restart, verify):
 def health(port, version):
     for i in range(30):
         try:
-            with urllib.request.urlopen('http://127.0.0.1:'+str(port)+'/healthz',timeout=2) as response:
+            # A fixed numeric loopback endpoint for the owned staged service.
+            with urllib.request.urlopen('http://127.0.0.1:'+str(port)+'/healthz',timeout=2) as response:  # nosec B310
                 if response.status==200 and json.load(response)['version']==version:return
         except (OSError,ValueError,KeyError):pass
         time.sleep(1)
