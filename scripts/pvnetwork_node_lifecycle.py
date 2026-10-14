@@ -127,6 +127,9 @@ def upgrade(source):
     record(value)
     try:
         shutil.copytree(source/'node-agent',candidate)
+        resources=candidate/'resources';resources.mkdir(mode=0o755)
+        shutil.copyfile(source/'scripts/pvnetwork-build-client-profile',resources/'pvnetwork-build-client-profile')
+        (resources/'pvnetwork-build-client-profile').chmod(0o644)
         (candidate/'.env').symlink_to(node.STATE/'node.env')
         bootstrap=node.TOOLS/'bootstrap/bin/uv'
         env={**os.environ,'UV_PYTHON_INSTALL_DIR':str(node.TOOLS/'python'),'UV_PYTHON_PREFERENCE':'only-managed','UV_LINK_MODE':'copy'}

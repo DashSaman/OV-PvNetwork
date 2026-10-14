@@ -2,6 +2,9 @@ import re
 import os
 import subprocess
 import csv
+from pathlib import Path
+
+from core.service.client_profile import verify_profile
 
 from core.logger import logger
 from core.config import settings
@@ -13,14 +16,18 @@ def create_user_on_server(name) -> bool:
     if not _pvnetwork_safe_name(name):
         return False
     try:
+        versioned_builder = Path(__file__).resolve().parents[2] / 'resources/pvnetwork-build-client-profile'
+        command = ['/usr/bin/bash', str(versioned_builder), name] if versioned_builder.is_file() else ["/usr/local/sbin/pvnetwork-build-client-profile", name]
         result = subprocess.run(
-            ["/usr/local/sbin/pvnetwork-build-client-profile", name],
+            command,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, timeout=240, check=False,
         )
-        path = f"/root/{name}.ovpn"
-        return result.returncode == 0 and os.path.isfile(path) and os.path.getsize(path) > 500
-    except (OSError, subprocess.TimeoutExpired):
+        path = os.path.join(_PVNETWORK_PROFILE_DIR, name+'.ovpn')
+        if result.returncode != 0: return False
+        verify_profile(Path(path), name, Path(_PVNETWORK_EASYRSA_DIR)/'pki')
+        return True
+    except (OSError, ValueError, UnicodeError, subprocess.TimeoutExpired):
         logger.error("Verified profile generation failed")
         return False
 
@@ -307,10 +314,15 @@ async def download_ovpn_file(name: str) -> str | None:
     """Return an existing profile or create it once."""
     if not _pvnetwork_safe_name(name):
         return None
-    file_path = f"/root/{name}.ovpn"
+    file_path = os.path.join(_PVNETWORK_PROFILE_DIR, name+'.ovpn')
 
-    if os.path.isfile(file_path) and os.path.getsize(file_path) > 0:
-        return file_path
+    if os.path.lexists(file_path):
+        try:
+            verify_profile(Path(file_path), name, Path(_PVNETWORK_EASYRSA_DIR)/'pki')
+            return file_path
+        except (OSError, ValueError, UnicodeError):
+            logger.error('Existing client profile identity verification failed')
+            return None
 
     created = create_user_on_server(name)
 
