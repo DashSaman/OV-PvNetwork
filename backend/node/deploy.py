@@ -36,7 +36,7 @@ def build_native_node_bundle() -> tuple[bytes,str]:
     root=Path(__file__).resolve().parents[2]
     required=['VERSION','ops/toolchain.json','node-agent/VERSION','node-agent/LICENSE',
               'node-agent/pyproject.toml','node-agent/uv.lock',
-              'scripts/pvnetwork_node_install.py','scripts/pvnetwork_node_lifecycle.py','scripts/pvnetwork_node_backup.py','scripts/pvnetwork_node_restore.py','scripts/pvnetwork_install.py',
+              'scripts/pvnetwork_node_install.py','scripts/pvnetwork_node_lifecycle.py','scripts/pvnetwork_node_backup.py','scripts/pvnetwork_node_restore.py','scripts/pvnetwork_node_configure.py','scripts/pvnetwork_install.py',
               'scripts/pvnetwork-build-client-profile','scripts/pvnetwork-router-openvpn',
               'scripts/pvnetwork-router-auth','scripts/pvnetwork-domain-collector',
               'scripts/pvnetwork-session-connect','scripts/pvnetwork-session-disconnect',

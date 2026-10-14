@@ -31,7 +31,7 @@ def read_regular(path):
         raise ValueError('profile identity file unavailable') from None
 
 
-def parse_profile(value):
+def parse_profile(value, *, require_identity=True):
     if not isinstance(value, bytes) or len(value) > LIMIT or b'\0' in value:
         raise ValueError('profile content refused')
     blocks = {}; header = []; active = None; contents = []
@@ -51,7 +51,7 @@ def parse_profile(value):
             continue
         if active is not None: contents.append(line)
         else: header.append(line)
-    if active is not None or not {'ca', 'cert', 'key'} <= blocks.keys():
+    if active is not None or (require_identity and not {'ca', 'cert', 'key'} <= blocks.keys()):
         raise ValueError('incomplete inline profile identity')
     if len({'tls-auth', 'tls-crypt', 'tls-crypt-v2'} & blocks.keys()) > 1:
         raise ValueError('ambiguous TLS protection')
@@ -87,8 +87,8 @@ def validate_host(value):
         raise ValueError('invalid profile host')
 
 
-def update_endpoint(value, host, port, protocol):
-    parse_profile(value)
+def update_endpoint(value, host, port, protocol, *, require_identity=True):
+    parse_profile(value,require_identity=require_identity)
     validate_host(host)
     if not isinstance(port, int) or isinstance(port, bool) or not 1 <= port <= 65535 or protocol not in {'udp', 'tcp'}:
         raise ValueError('invalid profile endpoint settings')
