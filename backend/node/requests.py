@@ -49,6 +49,27 @@ class NodeRequests:
         self.ovpn_port = ovpn_port
         self.set_new_setting = set_new_setting
 
+    def configuration_operation(self,action,transaction_id):
+        import re
+        if not self.base_url.startswith('https://') or not self.transport.ca:
+            raise ValueError('verified native HTTPS transport required for configuration')
+        if action not in {'prepare','finalize','rollback'} or not re.fullmatch(r'[a-f0-9]{24}',transaction_id):
+            raise ValueError('scoped native configuration operation required')
+        path='/sync/configuration'
+        body=None
+        if action=='prepare':
+            body={'tunnel_address':self.tunnel_address,'protocol':self.protocol,'ovpn_port':self.ovpn_port,
+                  'set_new_setting':True,'transaction_id':transaction_id}
+        else:path+='/'+transaction_id+'/'+action
+        response=self.transport.post(self.base_url+path,headers=self.headers,json=body,timeout=(3,310))
+        response.raise_for_status();payload=response.json()
+        value=payload.get('data')
+        if not payload.get('success') or not isinstance(value,dict) or value.get('state') not in {'ready','complete','rolled_back'}:
+            raise ValueError('native configuration operation failed; inspect its private job')
+        returned=value.get('transaction_id')
+        if returned is not None and returned!=transaction_id:raise ValueError('native configuration transaction mismatch')
+        return value
+
     def check_node(self) -> bool:
         """Check node status."""
         api = f"{self.base_url}/sync/status"
@@ -94,7 +115,7 @@ class NodeRequests:
                 "tunnel_address": self.tunnel_address,
                 "protocol": self.protocol,
                 "ovpn_port": self.ovpn_port,
-                "set_new_setting": self.set_new_setting,
+                "set_new_setting": False,
             }
             response = self.transport.get(
                 api, headers=self.headers, json=data, timeout=(2, 4)

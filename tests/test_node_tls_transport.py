@@ -44,3 +44,15 @@ class NativeTransportTests(TestCase):
             get.return_value.json.return_value={'success':True}
             self.assertTrue(NodeRequests('::1',9090,'legacy-demo').check_node())
             self.assertEqual(get.call_args.args[0], 'http://[::1]:9090/sync/status')
+
+    def test_configuration_POST_requires_CA_and_never_redirects(self):
+        with mock.patch.object(tls,'binding',return_value=None),mock.patch.object(tls,'trust_path',return_value='/private/node-ca.pem'),mock.patch('backend.node.requests.requests.post') as post:
+            client=NodeRequests('node.example.com',9443,'pvn_tls_v1_demo')
+            post.return_value.json.return_value={'success':True,'data':{'state':'ready','transaction_id':'b'*24}}
+            self.assertEqual(client.configuration_operation('prepare','b'*24)['state'],'ready')
+            self.assertEqual(post.call_args.kwargs['verify'],'/private/node-ca.pem')
+            self.assertFalse(post.call_args.kwargs['allow_redirects'])
+            self.assertEqual(post.call_args.kwargs['json']['transaction_id'],'b'*24)
+        with mock.patch.object(tls,'binding',return_value=None),mock.patch.object(tls,'has_trust',return_value=False):
+            legacy=NodeRequests('node.example.com',9090,'legacy-demo')
+            with self.assertRaises(ValueError):legacy.configuration_operation('prepare','b'*24)

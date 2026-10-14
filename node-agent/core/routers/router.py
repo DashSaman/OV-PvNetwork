@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 import psutil
 import time
 import json
+import asyncio
 import urllib.request
 import urllib.error
 from core.controller_transport import open_controller,require_local_hook
-from core.schema.all_schemas import User, ResponseModel, SetSettingsModel
+from core.schema.all_schemas import User, ResponseModel, SetSettingsModel, NativeConfigurationRequest
 from core.auth.auth import check_api_key
 from core.config import settings
 from core.service.user_managment import (
@@ -17,7 +18,7 @@ from core.service.user_managment import (
     get_users_usage,
     get_user_identity_state,
 )
-from core.setting.core import change_config
+from core.setting.core import change_config, native_operation, native_manager
 
 
 router = APIRouter(prefix="/sync", tags=["node_sync"])
@@ -228,12 +229,13 @@ def _pvnetwork_dashboard_network_snapshot():
 async def get_status(request: SetSettingsModel, api_key: str = Depends(check_api_key)):
     """Get the current status of the node and set ovpn settings"""
     if request.set_new_setting:
-        change_settings = change_config(request)
+        change_settings = await asyncio.to_thread(change_config,request)
         if not change_settings:
             return ResponseModel(success=False, msg="Failed to change settings")
 
     from pathlib import Path
     status = {"status": "running", "version":(Path(__file__).resolve().parents[2]/'VERSION').read_text().strip(),"agent":"pvnetwork-node","tls":True}
+    if native_manager() is not None:status['configuration_transaction']='v1'
     cpu_usage = psutil.cpu_percent()
     memory_info = psutil.virtual_memory()
     status.update(
@@ -254,6 +256,29 @@ async def get_status(request: SetSettingsModel, api_key: str = Depends(check_api
         success=True, msg="Node status retrieved successfully", data=status
     )
 
+
+@router.post('/configuration',response_model=ResponseModel)
+async def prepare_configuration(request:NativeConfigurationRequest,api_key:str=Depends(check_api_key)):
+    scoped=SetSettingsModel(**request.model_dump(exclude={'transaction_id'}))
+    try:result=await asyncio.to_thread(native_operation,'configure',scoped,transaction_id=request.transaction_id)
+    except ValueError:raise HTTPException(status_code=409,detail='Native configuration could not reach ready state; inspect its private transaction') from None
+    return ResponseModel(success=True,msg='Native configuration prepared',data=result)
+
+
+@router.post('/configuration/{transaction_id}/finalize',response_model=ResponseModel)
+async def finalize_configuration(transaction_id:str,api_key:str=Depends(check_api_key)):
+    try:result=await asyncio.to_thread(native_operation,'finalize-configuration',transaction_id=transaction_id)
+    except ValueError:raise HTTPException(status_code=409,detail='Native configuration finalization requires recovery') from None
+    return ResponseModel(success=True,msg='Native configuration finalized',data=result)
+
+
+@router.post('/configuration/{transaction_id}/rollback',response_model=ResponseModel)
+async def rollback_configuration(transaction_id:str,api_key:str=Depends(check_api_key)):
+    try:result=await asyncio.to_thread(native_operation,'rollback-configuration',transaction_id=transaction_id)
+    except ValueError:raise HTTPException(status_code=409,detail='Native configuration rollback requires inspection') from None
+    return ResponseModel(success=True,msg='Native configuration rollback resolved',data=result)
+
+
 @router.get("/usage", response_model=ResponseModel)
 async def get_all_user_usage(api_key: str = Depends(check_api_key)):
     usages = get_users_usage()
@@ -265,7 +290,7 @@ async def get_all_user_usage(api_key: str = Depends(check_api_key)):
 
 @router.post("/user", response_model=ResponseModel)
 async def create_user(user: User, api_key: str = Depends(check_api_key)):
-    success = create_user_on_server(user.name)
+    success = await asyncio.to_thread(create_user_on_server,user.name)
     if success:
         return ResponseModel(
             success=True,
@@ -283,7 +308,7 @@ async def get_user_identity(name: str, api_key: str = Depends(check_api_key)):
 
 @router.delete("/user/{name}", response_model=ResponseModel)
 async def delete_user(name: str, api_key: str = Depends(check_api_key)):
-    result = delete_user_on_server(name)
+    result = await asyncio.to_thread(delete_user_on_server,name)
     if result:
         return ResponseModel(
             success=True,
@@ -295,7 +320,7 @@ async def delete_user(name: str, api_key: str = Depends(check_api_key)):
 
 @router.put("/user", response_model=ResponseModel)
 async def change_user_status(user: User, api_key: str = Depends(check_api_key)):
-    result = change_user_status_on_server(user.name, user.status)
+    result = await asyncio.to_thread(change_user_status_on_server,user.name,user.status)
     if result:
         return ResponseModel(
             success=True,

@@ -78,3 +78,81 @@ with tempfile.TemporaryDirectory() as d:
   assert m.change_config(request)
   restart.assert_not_called()
 ''')
+
+    def test_pending_configuration_blocks_user_PKI_and_CCD_mutation(self):
+        self.child(r'''
+import contextlib,types
+from unittest.mock import patch
+from core.service import user_managment as m
+def pending():raise ValueError('pending configuration')
+manager=types.SimpleNamespace(operation_lock=contextlib.nullcontext,require_configuration_complete=pending)
+with patch.object(m,'_runtime_manager',return_value=manager),patch.object(m,'_pvnetwork_remove_ccd') as ccd,patch.object(m,'_pvnetwork_disconnect') as kill,patch.object(m,'_pvnetwork_revoke_certificate') as revoke,patch.object(m,'_pvnetwork_touch_ccd') as touch:
+ assert m.delete_user_on_server('demo') is False
+ assert m.change_user_status('demo','activate') is False
+ assert ccd.call_count==kill.call_count==revoke.call_count==touch.call_count==0
+''')
+
+    def test_native_configuration_helper_sends_scoped_JSON_and_sanitizes_failure(self):
+        self.child(r'''
+import json,tempfile,pathlib,types
+from unittest.mock import patch
+from core.setting import core as m
+from core.schema.all_schemas import SetSettingsModel
+request=SetSettingsModel(tunnel_address='vpn.example.com',protocol='udp',ovpn_port=1194,set_new_setting=True)
+with tempfile.TemporaryDirectory() as folder:
+ helper=pathlib.Path(folder)/'manager.py';helper.write_text('# private verified helper fixture\n')
+ with patch.object(m,'native_manager',return_value=helper),patch.object(m.subprocess,'run') as run:
+  run.return_value=types.SimpleNamespace(returncode=0,stdout='PVNETWORK_RESULT|'+json.dumps({'state':'ready','transaction_id':'b'*24})+'\n')
+  result=m.native_operation('configure',request,transaction_id='b'*24)
+  assert result['state']=='ready'
+  assert json.loads(run.call_args.kwargs['input'])==request.model_dump()
+  assert '--transaction-id' in run.call_args.args[0]
+  run.return_value=types.SimpleNamespace(returncode=1,stdout='ci-private-detail',stderr='ci-secret-marker')
+  try:m.native_operation('configure',request,transaction_id='b'*24)
+  except ValueError as error:assert 'ci-secret-marker' not in str(error) and 'ci-private-detail' not in str(error)
+  else:raise AssertionError('failed helper accepted')
+''')
+
+    def test_native_configuration_HTTP_requires_node_key_and_scoped_operation_id(self):
+        self.child(r'''
+import asyncio,json
+from unittest.mock import patch
+from core.app import api
+from core.routers import router as module
+async def test():
+ async def call(body,headers):
+  messages=[];received=False
+  async def receive():
+   nonlocal received
+   if not received:received=True;return {'type':'http.request','body':json.dumps(body).encode(),'more_body':False}
+   await asyncio.Event().wait()
+  async def send(message):messages.append(message)
+  scope={'type':'http','asgi':{'version':'3.0'},'http_version':'1.1','method':'POST','scheme':'https','path':'/sync/configuration','raw_path':b'/sync/configuration','query_string':b'','headers':[(b'content-type',b'application/json'),*headers],'client':('127.0.0.1',12345),'server':('node.example.com',443)}
+  await api(scope,receive,send)
+  status=next(message['status'] for message in messages if message['type']=='http.response.start')
+  body=b''.join(message.get('body',b'') for message in messages if message['type']=='http.response.body')
+  return status,json.loads(body)
+ body={'tunnel_address':'vpn.example.com','protocol':'udp','ovpn_port':1194,'set_new_setting':True,'transaction_id':'b'*24}
+ with patch.object(module,'native_operation',return_value={'state':'ready','transaction_id':'b'*24}) as operation:
+  denied,_=await call(body,[])
+  assert denied==401 and operation.call_count==0
+  status,response=await call(body,[(b'x-pvnetwork-node-key',b'ci-node-key-not-production-32bytes')])
+  assert status==200 and response['data']['state']=='ready'
+  assert operation.call_args.args[0]=='configure'
+  assert operation.call_args.kwargs['transaction_id']=='b'*24
+asyncio.run(test())
+''')
+
+    def test_legacy_setting_API_on_native_uses_durable_helper_without_direct_file_writes(self):
+        self.child(r'''
+from pathlib import Path
+from unittest.mock import patch
+from core.setting import core as m
+from core.schema.all_schemas import SetSettingsModel
+request=SetSettingsModel(tunnel_address='vpn.example.com',protocol='udp',ovpn_port=1194,set_new_setting=True)
+with patch.object(m,'native_manager',return_value=Path('/private/versioned-manager.py')),patch.object(m,'native_operation') as operation,patch.object(m,'atomic_write') as write:
+ operation.side_effect=[{'state':'ready','transaction_id':'b'*24},{'state':'complete','transaction_id':'b'*24}]
+ assert m.change_config(request)
+ assert [call.args[0] for call in operation.call_args_list]==['configure','finalize-configuration']
+ assert write.call_count==0
+''')

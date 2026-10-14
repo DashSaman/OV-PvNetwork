@@ -7,6 +7,7 @@ from backend.schema._input import NodeCreate
 from .requests import NodeRequests
 from backend.db import crud
 from backend.db.models import Node, RouterOpenVpnCredential
+from . import configuration
 
 
 async def add_node_handler(request: NodeCreate, db: Session) -> bool:
@@ -30,6 +31,8 @@ async def add_node_handler(request: NodeCreate, db: Session) -> bool:
 
 async def update_node_handler(node_id: int, request: NodeCreate, db: Session) -> bool:
     """Update a node"""
+    node=crud.get_node_by_id(db,node_id)
+    if node is None:return False
     restart_request = NodeRequests(
         address=request.address,
         port=request.port,
@@ -37,8 +40,45 @@ async def update_node_handler(node_id: int, request: NodeCreate, db: Session) ->
         tunnel_address=request.tunnel_address,
         protocol=request.protocol,
         ovpn_port=request.ovpn_port,
-        set_new_setting=True,
+        set_new_setting=False,
     )
+    info=await asyncio.to_thread(restart_request.get_node_info)
+    if info.get('configuration_transaction')=='v1':
+        job=configuration.create(node,request)
+        with configuration.running(job):
+            try:
+                prepared=await asyncio.to_thread(restart_request.configuration_operation,'prepare',job['id'])
+                if prepared['state'] not in {'ready','complete'}:raise ValueError('native configuration did not become ready')
+                configuration.phase(job,'ready')
+                crud.update_node(db,node_id,request)
+            except Exception:
+                db.rollback()
+                with Session(bind=db.get_bind()) as persisted:
+                    saved=crud.get_node_by_id(persisted,node_id)
+                    resolved={**job,'in_flight':False}
+                    decision=configuration.decision(resolved,saved)
+                if decision=='finalize':
+                    configuration.phase(job,'committed')
+                    try:
+                        await asyncio.to_thread(restart_request.configuration_operation,'finalize',job['id'])
+                        configuration.phase(job,'complete')
+                    except Exception:logger.error('Committed native node edit finalization remains pending; private decision retained')
+                    raise
+                if decision!='rollback':
+                    logger.error('Native node edit SQL outcome is unresolved; private state preserved')
+                    raise
+                configuration.phase(job,'rollback')
+                try:
+                    await asyncio.to_thread(restart_request.configuration_operation,'rollback',job['id'])
+                    configuration.phase(job,'rolled_back')
+                except Exception:logger.error('Native node edit rollback remains pending; private decision retained')
+                raise
+            configuration.phase(job,'committed')
+            if prepared.get('transaction_id') is not None:
+                await asyncio.to_thread(restart_request.configuration_operation,'finalize',job['id'])
+            configuration.phase(job,'complete')
+        return True
+    restart_request.set_new_setting=True
     restart_node = await asyncio.to_thread(restart_request.check_node)
     if restart_node:
         crud.update_node(db, node_id, request)

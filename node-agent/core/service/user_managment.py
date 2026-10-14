@@ -2,6 +2,10 @@ import re
 import os
 import subprocess
 import csv
+import sys
+import importlib.util
+import stat
+from functools import lru_cache, wraps
 from pathlib import Path
 
 from core.service.client_profile import verify_profile
@@ -11,13 +15,42 @@ from core.config import settings
 from core.schema.all_schemas import UsersUsage
 
 
+@lru_cache(maxsize=1)
+def _runtime_manager():
+    path=Path(__file__).resolve().parents[2]/'resources/pvnetwork_node_install.py'
+    if not path.is_file():return None
+    info=path.lstat()
+    if path.is_symlink() or not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_mode&0o022:
+        raise ValueError('unsafe versioned user operation manager')
+    spec=importlib.util.spec_from_file_location('user_operation_manager',path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    return module
+
+
+def _serialized_user_mutation(function):
+    @wraps(function)
+    def mutate(*args,**kwargs):
+        try:
+            manager=_runtime_manager()
+            if manager is None:return function(*args,**kwargs)
+            with manager.operation_lock():
+                manager.require_configuration_complete()
+                return function(*args,**kwargs)
+        except (OSError,ValueError):
+            logger.error('User mutation requires an available native operation lock and completed configuration')
+            return False
+    return mutate
+
+
 def create_user_on_server(name) -> bool:
     name = str(name or "").strip()
     if not _pvnetwork_safe_name(name):
         return False
     try:
         versioned_builder = Path(__file__).resolve().parents[2] / 'resources/pvnetwork-build-client-profile'
-        command = ['/usr/bin/bash', str(versioned_builder), name] if versioned_builder.is_file() else ["/usr/local/sbin/pvnetwork-build-client-profile", name]
+        manager=versioned_builder.parent/'pvnetwork_node_install.py'
+        if manager.is_file():command=[sys.executable,str(manager),'--action','build-profile','--name',name]
+        else:command=['/usr/bin/bash',str(versioned_builder),name] if versioned_builder.is_file() else ["/usr/local/sbin/pvnetwork-build-client-profile",name]
         result = subprocess.run(
             command,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -268,6 +301,7 @@ def _pvnetwork_revoke_certificate(name: str) -> bool | str:
     return True if had_valid_cert else "not_found"
 
 
+@_serialized_user_mutation
 def delete_user_on_server(name) -> bool | str:
     name = str(name or "").strip()
     if not _pvnetwork_safe_name(name):
@@ -286,6 +320,7 @@ def delete_user_on_server(name) -> bool | str:
     return result
 
 
+@_serialized_user_mutation
 def change_user_status(name: str, status: str) -> bool:
     name = str(name or "").strip()
     if not _pvnetwork_safe_name(name):

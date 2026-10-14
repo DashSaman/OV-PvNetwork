@@ -315,6 +315,14 @@ def stage_resources(source,release):
         shutil.copyfile(source/'scripts'/name,resources/name);(resources/name).chmod(0o644)
 
 
+def require_configuration_complete():
+    path=STATE/'configuration-transaction.json'
+    if path.exists() or path.is_symlink():
+        root_owned_file(path)
+        if json.loads(path.read_text()).get('state') not in {'complete','rolled_back'}:
+            raise ValueError('pending native configuration; resolve its controller decision before another mutation')
+
+
 def legacy_units():
     result={}
     for name in ['ov-node','ov-domain-collector']:
@@ -733,10 +741,11 @@ def main():
     parser.add_argument('--configuration')
     parser.add_argument('--source')
     parser.add_argument('--preflight',action='store_true')
-    parser.add_argument('--action',choices=['install','finalize','rollback','status','upgrade','rollback-agent','recover-agent','backup','restore','recover-data'],default='install')
+    parser.add_argument('--action',choices=['install','finalize','rollback','status','upgrade','rollback-agent','recover-agent','backup','restore','recover-data','configure','finalize-configuration','rollback-configuration','recover-configuration','build-profile'],default='install')
     parser.add_argument('--transaction-id')
     parser.add_argument('--archive')
     parser.add_argument('--sha256')
+    parser.add_argument('--name')
     args=parser.parse_args()
     if os.geteuid()!=0:raise ValueError('root or approved passwordless sudo is required for node deployment')
     if args.preflight:
@@ -745,6 +754,24 @@ def main():
         facts=preflight(config);config_values(config)
         print(json.dumps({'state':'PREFLIGHT_OK','os':facts['os_id'],'version':facts['os_version'],'mode':config['mode']}));return 0
     with operation_lock():
+        if args.action in {'configure','finalize-configuration','rollback-configuration','recover-configuration'}:
+            import pvnetwork_node_configure as configure
+            if args.action=='configure':
+                request=json.loads(Path(args.configuration).read_text()) if args.configuration else json.load(sys.stdin)
+                result=configure.apply(request,transaction_id=args.transaction_id)
+            elif args.action=='finalize-configuration':
+                if not args.transaction_id:raise ValueError('configuration transaction ID required')
+                result=configure.finalize(args.transaction_id)
+            elif args.action=='rollback-configuration':
+                if not args.transaction_id:raise ValueError('explicit controller rollback transaction ID required')
+                result=configure.recover(args.transaction_id)
+            else:result=configure.recover()
+            print('PVNETWORK_RESULT|'+json.dumps(result));return 0
+        if args.action!='status':require_configuration_complete()
+        if args.action=='build-profile':
+            if not args.name or not re.fullmatch(r'[A-Za-z0-9_-]{1,64}',args.name):raise ValueError('safe client name required')
+            run(['/usr/bin/bash',Path(__file__).resolve().parent/'pvnetwork-build-client-profile',args.name],timeout=240)
+            print('PVNETWORK_RESULT|'+json.dumps({'state':'complete','profile_created':True}));return 0
         if args.action=='backup':
             from pvnetwork_node_backup import native_backup
             print('PVNETWORK_RESULT|'+json.dumps(native_backup()));return 0

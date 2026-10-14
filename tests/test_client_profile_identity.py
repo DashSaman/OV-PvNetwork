@@ -79,6 +79,12 @@ class ClientProfileIdentityTests(unittest.TestCase):
         for suffix in [b'remote other.example.com 443\n', b'<connection>\nremote other.example.com 443\n</connection>\n', b'proto tcp-client\n']:
             with self.assertRaises(ValueError): self.module.update_endpoint(self.content('alice')+suffix, 'vpn.example.com', 443, 'tcp')
 
+    def test_endpoint_only_preserves_equivalent_protocol_and_unchanged_header_spacing(self):
+        original=self.content('alice').replace(b'proto udp\n',b'proto\ttcp\n').replace(b'remote node.example.com 1194\n',b'remote\tnode.example.com\t1194\n')
+        self.assertEqual(self.module.update_endpoint(original,'node.example.com',1194,'tcp'),original)
+        changed=self.module.update_endpoint(original,'vpn.example.com',1194,'tcp')
+        self.assertIn(b'proto\ttcp\n',changed)
+
     def builder(self):
         # Relocate fixed production paths only in this disposable test script.
         source = (ROOT/'scripts/pvnetwork-build-client-profile').read_text()

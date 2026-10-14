@@ -101,9 +101,15 @@ def update_endpoint(value, host, port, protocol, *, require_identity=True):
         if not active and parts and parts[0] in {b'remote', b'proto'}:
             newline = b'\r\n' if line.endswith(b'\r\n') else b'\n' if line.endswith(b'\n') else b''
             if parts[0] == b'remote':
+                current_protocol='tcp' if len(parts)==4 and parts[3].startswith(b'tcp') else 'udp' if len(parts)==4 else protocol
+                if parts[1].decode('ascii')==host and int(parts[2])==port and current_protocol==protocol:
+                    output.append(line);continue
                 replacement = 'remote '+host+' '+str(port)
                 if len(parts) == 4: replacement += ' '+protocol
-            else: replacement = 'proto '+('tcp-client' if protocol == 'tcp' else 'udp')
+            else:
+                current_protocol='tcp' if parts[1].startswith(b'tcp') else 'udp'
+                if current_protocol==protocol:output.append(line);continue
+                replacement = 'proto '+('tcp-client' if protocol == 'tcp' else 'udp')
             output.append(replacement.encode('ascii') + newline)
         else: output.append(line)
     return b''.join(output)
