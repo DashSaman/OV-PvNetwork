@@ -746,6 +746,8 @@ def main():
     parser.add_argument('--archive')
     parser.add_argument('--sha256')
     parser.add_argument('--name')
+    parser.add_argument('--offline',action='store_true')
+    parser.add_argument('--start-recovered',action='store_true')
     args=parser.parse_args()
     if os.geteuid()!=0:raise ValueError('root or approved passwordless sudo is required for node deployment')
     if args.preflight:
@@ -779,7 +781,10 @@ def main():
             import pvnetwork_node_restore as data_restore
             if args.action=='restore':
                 if not args.archive or not args.sha256:raise ValueError('private archive and verified SHA256 required for node restore')
-                result=data_restore.restore(Path(args.archive),args.sha256)
+                if args.offline:result=data_restore.restore_offline(Path(args.archive),args.sha256,start_recovered=args.start_recovered)
+                else:
+                    if args.start_recovered:raise ValueError('start-recovered requires explicit offline restore')
+                    result=data_restore.restore(Path(args.archive),args.sha256)
             else:result=data_restore.recover()
             print('PVNETWORK_RESULT|'+json.dumps(result));return 0
         if args.action in {'upgrade','rollback-agent','recover-agent'}:

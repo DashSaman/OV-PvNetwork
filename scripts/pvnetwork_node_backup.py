@@ -11,6 +11,7 @@ import stat
 import tarfile
 import tempfile
 import re
+from contextlib import closing
 
 FORMAT='pvnetwork-node-backup-v1'
 LIMIT=240*1024**2
@@ -32,7 +33,7 @@ def regular(path):
 
 def sqlite_fingerprint(path):
     path=regular(path)
-    with sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True) as db:
+    with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True)) as db:
         if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('invalid node accounting database')
         tables={}
         for name,sql in db.execute("SELECT name,sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"):
@@ -46,7 +47,7 @@ def sqlite_fingerprint(path):
 
 def snapshot_sqlite(source,target):
     source=regular(source)
-    with sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True) as original,sqlite3.connect(target) as copy:original.backup(copy)
+    with closing(sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True)) as original,closing(sqlite3.connect(target)) as copy:original.backup(copy)
     Path(target).chmod(0o600)
     for path in [Path(target),Path(target).parent]:
         descriptor=os.open(path,os.O_RDONLY)
@@ -74,9 +75,9 @@ def merge_accounting(restored,current):
     """Merge into an isolated restored database; never write current counters."""
     restored=regular(restored);current=regular(current)
     if restored.resolve()==current.resolve():raise ValueError('accounting merge requires an isolated target')
-    with sqlite3.connect(current.resolve().as_uri()+'?mode=ro',uri=True) as source:
+    with closing(sqlite3.connect(current.resolve().as_uri()+'?mode=ro',uri=True)) as source:
         existing=accounting_rows(source)
-    with sqlite3.connect(restored) as target:
+    with closing(sqlite3.connect(restored)) as target, target:
         target.execute('PRAGMA synchronous=FULL')
         before={identity:name for identity,name,_,_ in accounting_rows(target)}
         if any(identity in before and before[identity]!=name for identity,name,_,_ in existing):
