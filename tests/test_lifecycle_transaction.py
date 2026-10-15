@@ -2,6 +2,8 @@ import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
+import socket
+import sys
 from unittest import mock
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -40,3 +42,22 @@ class LifecycleTransactionTests(unittest.TestCase):
             def verify():self.assertEqual(pointer.resolve(),new);events.append('verified')
             self.module.commit_release(pointer,new,build,lambda:events.append('restart'),verify)
             self.assertEqual(events,['prepared','restart','verified'])
+
+    @unittest.skipUnless(sys.platform=='linux','real Linux canary socket reuse regression')
+    def test_canary_retry_accepts_closed_socket_time_wait(self):
+        with socket.socket() as listener:
+            listener.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+            listener.bind(('127.0.0.1',0));port=listener.getsockname()[1];listener.listen()
+            with socket.create_connection(('127.0.0.1',port),timeout=2) as client:
+                accepted,_=listener.accept();accepted.close()
+                self.assertEqual(client.recv(1),b'')
+        # Reproduce the old inline bind: a dead canary is still in TIME_WAIT.
+        with socket.socket() as old_probe,self.assertRaises(OSError):old_probe.bind(('127.0.0.1',port))
+        self.module.canary_port_available(port)
+
+    @unittest.skipUnless(sys.platform=='linux','real Linux canary socket reuse regression')
+    def test_canary_retry_still_refuses_an_actual_listener(self):
+        with socket.socket() as listener:
+            listener.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+            listener.bind(('127.0.0.1',0));port=listener.getsockname()[1];listener.listen()
+            with self.assertRaises(OSError):self.module.canary_port_available(port)

@@ -577,6 +577,16 @@ def _runtime_links(stage, runtime):
         path.symlink_to(runtime/name,target_is_directory=name=='data')
 
 
+def canary_port_available(port=19002):
+    import socket
+    with socket.socket() as probe:
+        # Uvicorn uses SO_REUSEADDR. Match its bind semantics so a stopped
+        # canary's TIME_WAIT connections do not block immediate safe retry.
+        # SO_REUSEPORT is deliberately absent: a live listener remains a conflict.
+        probe.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+        probe.bind(('127.0.0.1',port))
+
+
 def install_lifecycle_entrypoints(source):
     # Keep the hardened recovery engine outside the active release so rolling
     # back to an older application never reinstalls its unsafe updater.
@@ -631,7 +641,7 @@ def update(archive, checksum, target_version, *, allow_adoption=False):
             target,drop,pg_env=postgres_clone(dburl,backup/'database.dump',prefix='pvnetwork_canary_',journal=transaction,record=record)
             clone_cleanup=(drop,pg_env);clone_env['DATABASE_URL']=target.render_as_string(hide_password=False)
         _write_env(stage/'.env',clone_env)
-        with __import__('socket').socket() as sock:sock.bind(('127.0.0.1',19002))
+        canary_port_available()
         run(['systemd-run','--unit='+unit,'--property=WorkingDirectory='+str(stage),stage/'.venv/bin/python','-m','uvicorn','backend.app:api','--host','127.0.0.1','--port','19002','--lifespan','off','--log-level','warning']);canary=True
         health(19002,target_version);checkpoint('canary_verified')
         run(['systemctl','stop',unit]);canary=False
