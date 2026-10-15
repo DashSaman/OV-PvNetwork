@@ -10,6 +10,71 @@ import paramiko
 from backend.security_ssh import configure_ssh_client, sha256_fingerprint
 
 
+PYTHON_BOOTSTRAP = r'''
+set -eu
+code=$1; mode=$2; api=$3; vpn=$4; protocol=$5
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import ssl,json,tarfile,urllib.request' >/dev/null 2>&1; then
+ exec python3 -c "$code"
+fi
+fail() { printf '%s\n' 'PVNETWORK_ERROR|{"message":"Python prerequisite preflight or package safety check failed; no VPN configuration was changed"}'; exit 1; }
+[ "$(id -u)" = 0 ] || fail
+[ -r /etc/os-release ] || fail
+. /etc/os-release
+case "$ID:$VERSION_ID" in ubuntu:22.04|ubuntu:24.04|debian:12) ;; *) fail ;; esac
+case "$(uname -m)" in x86_64|aarch64) ;; *) fail ;; esac
+[ -d /run/systemd/system ] && [ -c /dev/net/tun ] || fail
+awk '/^MemTotal:/ {found=1; if ($2 < 524288) exit 1} END {if (!found) exit 1}' /proc/meminfo || fail
+df -Pk /opt | awk 'NR==2 {found=1; if ($4 < 2097152) exit 1} END {if (!found) exit 1}' || fail
+[ ! -e /opt/pvnetwork-node ] && [ ! -L /opt/pvnetwork-node ] || fail
+if [ "$mode" = fresh ]; then
+ [ ! -e /sys/class/net/pvn0 ] || fail
+ for file in /etc/openvpn/server/*.conf; do [ ! -e "$file" ] || fail; done
+else
+ [ -f /etc/openvpn/server/server.conf ] || fail
+fi
+port_free() {
+ hex=$(printf '%04X' "$2")
+ for file in /proc/net/"$1" /proc/net/"$1"6; do
+  [ -r "$file" ] || continue
+  awk -v port="$hex" -v proto="$1" 'NR>1 {split($2,a,":"); if (a[2]==port && (proto!="tcp" || $4=="0A")) exit 1}' "$file" || return 1
+ done
+}
+port_free tcp "$api" || fail
+if [ "$mode" = fresh ]; then port_free "$protocol" "$vpn" || fail; fi
+for tool in apt-get dpkg dpkg-query mktemp; do command -v "$tool" >/dev/null 2>&1 || fail; done
+workspace=$(mktemp -d /tmp/pvnetwork-python.XXXXXXXX)
+case "$workspace" in /tmp/pvnetwork-python.*) ;; *) fail ;; esac
+chmod 700 "$workspace"
+trap 'result=$?; if [ "$result" = 0 ]; then rm -rf -- "$workspace"; fi' EXIT
+trap 'exit 1' HUP INT TERM
+export DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l
+dpkg --audit >"$workspace/audit" 2>&1 || fail
+[ ! -s "$workspace/audit" ] || fail
+dpkg-query -W -f='${binary:Package}\t${Status}\n' >"$workspace/packages" 2>"$workspace/error" || fail
+awk -F '\t' '$2=="install ok installed" {split($1,a,":"); print a[1]}' "$workspace/packages" >"$workspace/installed"
+[ -s "$workspace/installed" ] || fail
+printf '%s\n' 'PVNETWORK_STAGE|5|python_prerequisite|Installing missing Python prerequisite'
+apt-get update --error-on=any -y </dev/null >"$workspace/output" 2>&1 || fail
+apt-get -s --no-upgrade --no-remove --no-install-recommends install -y python3 </dev/null >"$workspace/plan" 2>"$workspace/error" || fail
+awk 'NR==FNR {installed[$1]=1; next} $1=="Remv" {exit 1} ($1=="Inst" || $1=="Conf") {split($2,a,":"); if (a[1] in installed) exit 1}' "$workspace/installed" "$workspace/plan" || fail
+apt-get --no-upgrade --no-remove --no-install-recommends install -y python3 </dev/null >"$workspace/output" 2>&1 || fail
+python3 -c 'import ssl,json,tarfile,urllib.request' >/dev/null 2>&1 || fail
+rm -rf -- "$workspace"
+trap - EXIT HUP INT TERM
+exec python3 -c "$code"
+'''
+
+
+def bootstrap_command(username, code, configuration):
+    mode=configuration.get('mode');protocol=configuration.get('protocol')
+    ports=[configuration.get('api_port'),configuration.get('ovpn_port')]
+    if mode not in {'fresh','adopt'} or protocol not in {'tcp','udp'} or any(type(port) is not int or not 1<=port<=65535 for port in ports):
+        raise ValueError('invalid Python prerequisite preflight arguments')
+    if protocol=='tcp' and ports[0]==ports[1]:raise ValueError('API and VPN cannot use the same TCP port')
+    prefix='' if username=='root' else 'sudo -n '
+    return prefix+'sh -c '+shlex.quote(PYTHON_BOOTSTRAP)+' pvnetwork-python '+shlex.join([code,mode,str(ports[0]),str(ports[1]),protocol])
+
+
 BOOTSTRAP = r'''
 import base64,hashlib,json,os,pathlib,subprocess,sys,tarfile,tempfile,io
 if os.geteuid()!=0:raise SystemExit('root or passwordless sudo required')
@@ -95,7 +160,7 @@ def install(*, host,ssh_port,username,password,key,passphrase,fingerprint,config
         observed=sha256_fingerprint(client.get_transport().get_remote_server_key())
         report(4,'ssh','Verified SSH host fingerprint '+observed,'ok')
         code='import base64;exec(base64.b64decode('+repr(base64.b64encode(BOOTSTRAP.encode()).decode())+'))'
-        command=('' if username=='root' else 'sudo -n ')+ 'python3 -c '+shlex.quote(code)
+        command=bootstrap_command(username,code,configuration)
         payload=json.dumps({'configuration':configuration,'source':base64.b64encode(source).decode(),'sha256':digest}).encode()
         result=execute(client,command,payload,report,timeout,[password,key,passphrase,configuration['api_key']])
         if not isinstance(result,dict) or result.get('state')!='ready' or not re.fullmatch('[a-f0-9]{24}',result.get('transaction_id','')):raise RuntimeError('native installer did not return authenticated readiness')
