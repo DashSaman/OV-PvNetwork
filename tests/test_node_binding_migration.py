@@ -68,8 +68,8 @@ class NodeBindingMigrationTests(unittest.TestCase):
         lifecycle=importlib.util.module_from_spec(spec);spec.loader.exec_module(lifecycle)
         root=Path(self.folder.name);stage=root/'candidate';stage.mkdir()
         (stage/'backend').symlink_to(ROOT/'backend',target_is_directory=True)
-        (stage/'.venv/bin').mkdir(parents=True)
-        (stage/'.venv/bin/python').symlink_to(sys.executable)
+        (stage/'.venv').symlink_to(Path(sys.prefix),target_is_directory=True)
+        lifecycle.STATE=root/'private-state'
         with self.engine.begin() as connection:
             connection.execute(text('CREATE TABLE alembic_version(version_num VARCHAR(32) PRIMARY KEY)'))
             connection.execute(text("INSERT INTO alembic_version VALUES ('h0a1b2c3d4e5')"))
@@ -89,12 +89,12 @@ class NodeBindingMigrationTests(unittest.TestCase):
     def test_actual_sigkill_after_schema_commit_replays_without_losing_rows(self):
         root=Path(self.folder.name);stage=root/'candidate';stage.mkdir()
         (stage/'backend').symlink_to(ROOT/'backend',target_is_directory=True)
-        (stage/'.venv/bin').mkdir(parents=True);(stage/'.venv/bin/python').symlink_to(sys.executable)
+        (stage/'.venv').symlink_to(Path(sys.prefix),target_is_directory=True)
         with self.engine.begin() as connection:
             connection.execute(text('CREATE TABLE alembic_version(version_num VARCHAR(32) PRIMARY KEY)'))
             connection.execute(text("INSERT INTO alembic_version VALUES ('h0a1b2c3d4e5')"))
         marker=root/'committed';program=root/'migrate_child.py'
-        program.write_text("import os,signal,sys\nfrom pathlib import Path\nsys.path.insert(0,sys.argv[1])\nimport pvnetwork_lifecycle as m\nenv={'DATABASE_URL':sys.argv[3]}\np=m.migration_plan(sys.argv[2],env)\nm.migrate_additive(sys.argv[2],env,p)\nPath(sys.argv[4]).write_text('committed')\nos.kill(os.getpid(),signal.SIGSTOP)\n")
+        program.write_text("import os,signal,sys\nfrom pathlib import Path\nsys.path.insert(0,sys.argv[1])\nimport pvnetwork_lifecycle as m\nm.STATE=Path(sys.argv[2]).parent/'private-state'\nenv={'DATABASE_URL':sys.argv[3]}\np=m.migration_plan(sys.argv[2],env)\nm.migrate_additive(sys.argv[2],env,p)\nPath(sys.argv[4]).write_text('committed')\nos.kill(os.getpid(),signal.SIGSTOP)\n")
         child=subprocess.Popen([sys.executable,program,str(ROOT/'scripts'),str(stage),str(self.engine.url),str(marker)],stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
         try:
             deadline=time.monotonic()+30
@@ -106,6 +106,7 @@ class NodeBindingMigrationTests(unittest.TestCase):
             self.assertEqual(child.returncode,-signal.SIGKILL)
             spec=importlib.util.spec_from_file_location('killed_binding_lifecycle',ROOT/'scripts/pvnetwork_lifecycle.py')
             m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+            m.STATE=root/'private-state'
             env={'DATABASE_URL':str(self.engine.url)};before=m.database_fingerprint(env)
             plan={'from':'h0a1b2c3d4e5','to':'i1b2c3d4e5f6','script_sha256':m.sha256(stage/'backend/alembic/versions/i1b2c3d4e5f6_native_node_tls_binding.py')}
             m.migrate_additive(stage,env,plan)

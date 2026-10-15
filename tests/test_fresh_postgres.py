@@ -62,7 +62,8 @@ class FreshPostgresTests(unittest.TestCase):
         environment={'DATABASE_URL':self.target.render_as_string(hide_password=False)}
         with tempfile.TemporaryDirectory() as folder:
             stage=Path(folder);(stage/'backend').symlink_to(ROOT/'backend',target_is_directory=True)
-            (stage/'.venv/bin').mkdir(parents=True);(stage/'.venv/bin/python').symlink_to(sys.executable)
+            (stage/'.venv').symlink_to(Path(sys.prefix),target_is_directory=True)
+            lifecycle.STATE=stage/'private-state'
             before=lifecycle.database_fingerprint(environment)
             plan=lifecycle.migration_plan(stage,environment)
             lifecycle.migrate_additive(stage,environment,plan)
