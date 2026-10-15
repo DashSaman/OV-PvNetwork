@@ -86,4 +86,6 @@ Eight privileged staging fixtures cover partial EasyRSA failure, operator change
 
 The staged-PKI source passed a fresh Linux regression of 586 tests (582 passes/four dedicated-PostgreSQL skips), 51 focused node lifecycle/backup/restore/preflight tests, and medium/high installer static checks. The staging fixtures are required in the root CI gate.
 
+The node deployment form passed actual browser interaction in English/Persian at 360, 375, 390, 430, 768, 1024, 1366, 1440 and 1920 px. Switching automatic/manual registration, password/private-key SSH and Fresh/Adopt keeps the correct fields and canonical selection; RTL/LTR and horizontal viewport bounds passed. All API calls were controlled demo mocks and no deployment request was submitted. This is a form regression gate, separate from the real SSH/registration/VPN tests. It is included in CI's browser matrix.
+
 The full MIT PrimeZ notice and exact source provenance are retained in [the node README](../node-agent/README.md) and [LICENSE](../node-agent/LICENSE). Task completion, exact commit CI, supported final installer snapshots, UI/CLI, privacy, authorized Production and publication gates remain open.
