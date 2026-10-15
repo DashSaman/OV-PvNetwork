@@ -449,19 +449,120 @@ def create_tls(config):
         if file.is_file():file.chmod(0o600)
 
 
+def vpn_directory_metadata(path):
+    path=Path(path);info=path.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid!=0 or info.st_mode&0o7022:
+        raise ValueError('unsafe fresh VPN directory; preservation required')
+    return {'device':info.st_dev,'inode':info.st_ino,'mode':stat.S_IMODE(info.st_mode),'uid':info.st_uid,'gid':info.st_gid}
+
+
+def check_empty_vpn_target(record):
+    target=SERVER.parent;original=record.get('vpn_target_original')
+    if target.exists() or target.is_symlink():
+        if not original or vpn_directory_metadata(target)!=original or any(target.iterdir()):
+            raise ValueError('fresh VPN target changed or appeared during private build')
+    elif original:
+        raise ValueError('original empty VPN directory changed during private build')
+
+
+def prepare_fresh_vpn(record):
+    if not re.fullmatch('[a-f0-9]{24}',record.get('id','')):raise ValueError('invalid fresh VPN transaction identity')
+    parent=SERVER.parent.parent
+    for path in [parent,*parent.parents]:
+        info=path.lstat()
+        if not stat.S_ISDIR(info.st_mode) or info.st_uid!=0 or (info.st_mode&0o022 and not info.st_mode&stat.S_ISVTX):
+            raise ValueError('unsafe fresh VPN parent directory')
+    original=vpn_directory_metadata(SERVER.parent) if SERVER.parent.exists() or SERVER.parent.is_symlink() else None
+    if original and any(SERVER.parent.iterdir()):raise ValueError('fresh VPN target changed before private build')
+    stage=parent/('.pvnetwork-fresh-'+record['id'])
+    if stage.exists() or stage.is_symlink():raise ValueError('existing private PKI staging must be preserved')
+    record.update(vpn_staging_directory=str(stage),vpn_target_original=original)
+    checkpoint(record,'build')
+    stage.mkdir(mode=0o700)
+    record['vpn_staging_identity']=vpn_directory_metadata(stage);checkpoint(record,'build')
+    return stage
+
+
+def publish_fresh_vpn(record,stage):
+    stage=Path(stage)
+    if str(stage)!=record.get('vpn_staging_directory') or vpn_directory_metadata(stage)!=record.get('vpn_staging_identity'):
+        raise ValueError('private PKI stage changed before publication')
+    check_empty_vpn_target(record)
+    # EasyRSA/OpenVPN are external writers; close() alone does not make their
+    # files durable. Sync regular owned files and directories before publication.
+    paths=list(stage.rglob('*'))
+    for path in paths:
+        info=path.lstat()
+        if stat.S_ISDIR(info.st_mode):vpn_directory_metadata(path);continue
+        if not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_nlink!=1 or info.st_mode&0o022:
+            raise ValueError('unsafe private PKI artifact before publication')
+        fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW)
+        try:os.fsync(fd)
+        finally:os.close(fd)
+    for path in sorted([stage,*[p for p in paths if p.is_dir()]],key=lambda p:len(p.parts),reverse=True):
+        fd=os.open(path,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        try:os.fsync(fd)
+        finally:os.close(fd)
+    # Inventory and intent are durable before the first change to the active
+    # directory. An incomplete private stage is retained, never recursively erased.
+    record['owned_vpn_directory']=str(SERVER.parent);record['owned_vpn_sha256']=vpn_inventory(stage)
+    checkpoint(record,'build')
+    stage.chmod(0o755)
+    fd=os.open(stage,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:os.fsync(fd)
+    finally:os.close(fd)
+    if SERVER.parent.exists():SERVER.parent.rmdir()
+    os.replace(stage,SERVER.parent)
+    fd=os.open(SERVER.parent.parent,os.O_RDONLY|os.O_DIRECTORY)
+    try:os.fsync(fd)
+    finally:os.close(fd)
+    record['vpn_published']=True;checkpoint(record,'build')
+
+
+def vpn_rollback_target(record):
+    stage_name=record.get('vpn_staging_directory')
+    stage=None
+    if stage_name:
+        stage=Path(stage_name)
+        if stage!=SERVER.parent.parent/('.pvnetwork-fresh-'+record.get('id','')):raise ValueError('invalid private PKI staging path')
+        if stage.exists() or stage.is_symlink():
+            actual=vpn_directory_metadata(stage);expected=record.get('vpn_staging_identity')
+            if expected and any(actual[name]!=expected[name] for name in ['device','inode','uid','gid']):
+                raise ValueError('private PKI staging identity changed; preservation required')
+            record['retained_vpn_staging']=str(stage)
+    if not record.get('owned_vpn_directory'):return None
+    target=Path(record['owned_vpn_directory'])
+    if target!=SERVER.parent:raise ValueError('invalid rollback VPN directory')
+    if stage and stage.exists():
+        # Publication was interrupted before rename; only the original empty
+        # directory may exist. Do not delete the partial CA or operator files.
+        if target.exists() or target.is_symlink():
+            if record.get('vpn_empty_restore_pending'):
+                vpn_directory_metadata(target)
+                if any(target.iterdir()):raise ValueError('empty VPN directory recovery contains operator files')
+            else:check_empty_vpn_target(record)
+        return None
+    if record.get('owned_vpn_sha256') is None or vpn_inventory(target)!=record['owned_vpn_sha256']:
+        raise ValueError('owned PKI inventory changed or is unverified; preserve it and inspect the pending transaction')
+    if stage_name:
+        actual=vpn_directory_metadata(target);expected=record['vpn_staging_identity']
+        if any(actual[name]!=expected[name] for name in ['device','inode','uid','gid']):raise ValueError('published PKI directory identity changed')
+    return target
+
+
 def fresh_vpn(config,record):
-    # Only called after preflight proved there is no existing OpenVPN configuration.
-    record['owned_vpn_directory']=str(SERVER.parent);checkpoint(record,'build')
-    SERVER.parent.mkdir(parents=True,exist_ok=True)
-    easy=SERVER.parent/'easy-rsa';shutil.copytree('/usr/share/easy-rsa',easy)
+    # Build on the same filesystem without exposing a partial live PKI.
+    stage=prepare_fresh_vpn(record)
+    easy=stage/'easy-rsa';shutil.copytree('/usr/share/easy-rsa',easy)
     env={**os.environ,'EASYRSA_BATCH':'1','EASYRSA_ALGO':'ec','EASYRSA_CURVE':'secp384r1'}
     for command in [['init-pki'],['build-ca','nopass'],['build-server-full','server','nopass'],['gen-crl']]:
         run([easy/'easyrsa','--batch',*command],cwd=easy,env={**env,**({'EASYRSA_REQ_CN':'PVNetwork CA'} if command[0]=='build-ca' else {})})
-    run(['openvpn','--genkey','secret',SERVER.parent/'tls-crypt.key'])
-    shutil.copy2(easy/'pki/crl.pem',SERVER.parent/'crl.pem');(SERVER.parent/'crl.pem').chmod(0o644)
+    run(['openvpn','--genkey','secret',stage/'tls-crypt.key'])
+    shutil.copy2(easy/'pki/crl.pem',stage/'crl.pem');(stage/'crl.pem').chmod(0o644)
     ccd=Path('/etc/openvpn/ccd');ccd.mkdir(exist_ok=True)
     network=ipaddress.ip_network(config.get('subnet','10.44.0.0/24'))
     group='pvnetwork-vpn'
+    easy=SERVER.parent/'easy-rsa'
     text=f'''port {config['ovpn_port']}
 proto {'tcp-server' if config['protocol']=='tcp' else 'udp'}
 dev pvn0
@@ -496,12 +597,12 @@ push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 1.1.1.1"
 verb 3
 '''
-    private(SERVER,text,0o644)
+    private(stage/'server.conf',text,0o644)
     # Runtime artifacts are kept outside the immutable agent release.
     template=f'client\ndev tun\nproto {config["protocol"]}\nremote {config["host"]} {config["ovpn_port"]}\nresolv-retry infinite\nnobind\npersist-key\npersist-tun\nremote-cert-tls server\ntls-version-min 1.2\nverb 3\n'
-    private(SERVER.parent/'client-template.txt',template,0o644)
-    private(SERVER.parent/'client-common.txt',template,0o644)
-    record['owned_vpn_sha256']=vpn_inventory(SERVER.parent);checkpoint(record,'build')
+    private(stage/'client-template.txt',template,0o644)
+    private(stage/'client-common.txt',template,0o644)
+    publish_fresh_vpn(record,stage)
 
 
 def vpn_inventory(root):
@@ -589,11 +690,7 @@ def health(config):
 def rollback(record):
     if record['phase']=='finalized':raise ValueError('finalized nodes require their managed lifecycle; installation rollback refused')
     validate_handover(record)
-    if record.get('owned_vpn_directory'):
-        target=Path(record['owned_vpn_directory'])
-        if target!=SERVER.parent:raise ValueError('invalid rollback VPN directory')
-        if record.get('owned_vpn_sha256') is None or vpn_inventory(target)!=record['owned_vpn_sha256']:
-            raise ValueError('owned PKI inventory changed or is unverified; preserve it and inspect the pending transaction')
+    vpn_target=vpn_rollback_target(record)
     # Validate owned files before stopping anything; an operator's changed file
     # cannot turn an installation rollback into an unrelated service mutation.
     for path in record['created_files']:
@@ -627,11 +724,28 @@ def rollback(record):
             target.unlink()
     for unit in ['pvnetwork-node','pvnetwork-domain-collector','pvnetwork-node-network']:
         # Unit names are exclusively owned by this installer; foreign units were refused before installation.
-        subprocess.run(['systemctl','disable',unit],capture_output=True)
-    if record.get('owned_vpn_directory'):
-        target=Path(record['owned_vpn_directory'])
-        if target!=SERVER.parent:raise ValueError('invalid rollback VPN directory')
-        shutil.rmtree(target,ignore_errors=True)
+        if '/etc/systemd/system/'+unit+'.service' in record['created_files']:
+            subprocess.run(['systemctl','disable',unit],capture_output=True)
+    if vpn_target:
+        if record.get('vpn_staging_directory'):
+            # Retain the complete unregistered PKI as well. A crash halfway
+            # through recursive deletion must never strand half a CA on retry.
+            stage=Path(record['vpn_staging_directory'])
+            record['retained_vpn_staging']=str(stage);checkpoint(record,record['phase'])
+            os.replace(vpn_target,stage);stage.chmod(0o700)
+            fd=os.open(stage.parent,os.O_RDONLY|os.O_DIRECTORY)
+            try:os.fsync(fd)
+            finally:os.close(fd)
+        else:shutil.rmtree(vpn_target)
+    original=record.get('vpn_target_original')
+    if original and (not SERVER.parent.exists() or record.get('vpn_empty_restore_pending')):
+        record['vpn_empty_restore_pending']=True;checkpoint(record,record['phase'])
+        if not SERVER.parent.exists():SERVER.parent.mkdir(mode=original['mode'])
+        vpn_directory_metadata(SERVER.parent)
+        if any(SERVER.parent.iterdir()):raise ValueError('empty VPN directory recovery contains operator files')
+        os.chown(SERVER.parent,original['uid'],original['gid']);SERVER.parent.chmod(original['mode'])
+        record['vpn_target_original']=vpn_directory_metadata(SERVER.parent)
+        record.pop('vpn_empty_restore_pending',None)
     if record.get('release'):
         target=Path(record['release'])
         if target.parent!=RELEASES:raise ValueError('invalid owned release')
