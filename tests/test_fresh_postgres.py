@@ -40,7 +40,7 @@ class FreshPostgresTests(unittest.TestCase):
         result=self.initialize();self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         tables=inspect(self.engine).get_table_names()
         self.assertIn('active_sessions',tables);self.assertIn('users',tables);self.assertIn('nodes',tables)
-        with self.engine.connect() as c:self.assertEqual(c.execute(text('SELECT version_num FROM alembic_version')).scalar_one(),'h0a1b2c3d4e5')
+        with self.engine.connect() as c:self.assertEqual(c.execute(text('SELECT version_num FROM alembic_version')).scalar_one(),'i1b2c3d4e5f6')
         constraints=inspect(self.engine).get_check_constraints('users')
         self.assertTrue(any('device_limit' in c['sqltext'] for c in constraints))
         again=self.initialize();self.assertNotEqual(again.returncode,0);self.assertIn('existing database schema refused',again.stderr)
@@ -49,6 +49,39 @@ class FreshPostgresTests(unittest.TestCase):
         result=self.initialize('after_create');self.assertNotEqual(result.returncode,0)
         self.assertIn('requested disposable schema fault injection',result.stderr)
         self.assertEqual(inspect(self.engine).get_table_names(),[])
+
+    def test_additive_legacy_head_upgrade_preserves_customer_data_and_attestations(self):
+        import importlib.util
+        result=self.initialize();self.assertEqual(result.returncode,0,result.stderr)
+        with self.engine.begin() as c:
+            c.execute(text("UPDATE alembic_version SET version_num='h0a1b2c3d4e5'"))
+            c.execute(text("INSERT INTO users(uuid,name,total,used,last_node_usage,expiry_date,is_active,owner,device_limit) VALUES ('demo-migration-uuid','demo-migration',1234567,7654,0,'2030-01-01',true,'demo-owner',1)"))
+            c.execute(text("INSERT INTO node_tls_bindings VALUES (:identity,'192.0.2.10',9443,:ca,:credential)"),{'identity':'a'*64,'ca':'b'*64,'credential':'c'*64})
+        spec=importlib.util.spec_from_file_location('pg_binding_lifecycle',ROOT/'scripts/pvnetwork_lifecycle.py')
+        lifecycle=importlib.util.module_from_spec(spec);spec.loader.exec_module(lifecycle)
+        environment={'DATABASE_URL':self.target.render_as_string(hide_password=False)}
+        with tempfile.TemporaryDirectory() as folder:
+            stage=Path(folder);(stage/'backend').symlink_to(ROOT/'backend',target_is_directory=True)
+            (stage/'.venv/bin').mkdir(parents=True);(stage/'.venv/bin/python').symlink_to(sys.executable)
+            before=lifecycle.database_fingerprint(environment)
+            plan=lifecycle.migration_plan(stage,environment)
+            lifecycle.migrate_additive(stage,environment,plan)
+            for table,signature in before.items():
+                if table!='alembic_version':self.assertEqual(lifecycle.database_fingerprint(environment)[table],signature)
+            lifecycle.migrate_additive(stage,environment,plan)
+            self.assertEqual(lifecycle._db_head(environment),'i1b2c3d4e5f6')
+            # The other supported predecessor has no runtime-created binding
+            # table. This is a dedicated disposable database, never Production.
+            with self.engine.begin() as c:
+                c.execute(text('DELETE FROM node_tls_bindings'))
+                c.execute(text('DROP TABLE node_tls_bindings'))
+                c.execute(text("UPDATE alembic_version SET version_num='h0a1b2c3d4e5'"))
+            before=lifecycle.database_fingerprint(environment)
+            lifecycle.migrate_additive(stage,environment,plan)
+            after=lifecycle.database_fingerprint(environment)
+            self.assertEqual(set(after)-set(before),{'node_tls_bindings'})
+            for table,signature in before.items():
+                if table!='alembic_version':self.assertEqual(after[table],signature)
 
     def test_owned_commit_before_journal_is_recoverable_but_data_is_never_reinitialized(self):
         with tempfile.TemporaryDirectory() as folder:

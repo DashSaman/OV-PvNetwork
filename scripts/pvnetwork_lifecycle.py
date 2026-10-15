@@ -567,6 +567,58 @@ def _db_head(environment):
     return heads[0]
 
 
+def schema_compatible_with_previous(previous_head, current_head):
+    # This single additive table neither modifies old columns nor affects old
+    # queries. Keep it (and its attestations) when rolling application code back.
+    return previous_head==current_head or (previous_head,current_head)==('h0a1b2c3d4e5','i1b2c3d4e5f6')
+
+
+def migration_plan(stage, environment):
+    stage=Path(stage)
+    old=_db_head(environment);new=_schema_head(stage,environment)
+    if old==new:return None
+    if (old,new)!=('h0a1b2c3d4e5','i1b2c3d4e5f6'):
+        raise ValueError('schema-changing update requires explicit validated migration; unknown revision refused')
+    import ast
+    script=Path(stage)/'backend/alembic/versions/i1b2c3d4e5f6_native_node_tls_binding.py'
+    values={}
+    for statement in ast.parse(script.read_text()).body:
+        if isinstance(statement,ast.Assign):
+            for target in statement.targets:
+                if isinstance(target,ast.Name) and target.id in {'revision','down_revision','branch_labels','depends_on'}:
+                    values[target.id]=ast.literal_eval(statement.value)
+    if values!={'revision':new,'down_revision':old,'branch_labels':None,'depends_on':None}:
+        raise ValueError('allowlisted migration parent or branch identity changed')
+    return {'from':old,'to':new,'script_sha256':sha256(script)}
+
+
+def database_fingerprint(environment):
+    from sqlalchemy.engine import make_url
+    url=make_url(environment['DATABASE_URL'])
+    if url.get_backend_name()=='sqlite':return sqlite_fingerprint(Path(url.database))
+    if url.get_backend_name()=='postgresql':return postgres_fingerprint(url)
+    raise ValueError('migration requires SQLite or PostgreSQL')
+
+
+def migrate_additive(stage, environment, plan):
+    if not plan:return
+    script=Path(stage)/'backend/alembic/versions/i1b2c3d4e5f6_native_node_tls_binding.py'
+    if plan.get('from')!='h0a1b2c3d4e5' or plan.get('to')!='i1b2c3d4e5f6' or sha256(script)!=plan.get('script_sha256'):
+        raise ValueError('prepared additive migration identity changed')
+    current=_db_head(environment)
+    if current not in {plan['from'],plan['to']}:raise ValueError('database revision changed after migration preflight')
+    before=database_fingerprint(environment)
+    # The verified candidate supplies its own locked interpreter and Alembic.
+    # Both clone rehearsal and the paused live database execute this same path.
+    run([Path(stage)/'.venv/bin/python','-m','alembic','-c','alembic.ini','upgrade',plan['to']],cwd=Path(stage)/'backend',env={**os.environ,**environment})
+    if _db_head(environment)!=plan['to']:raise ValueError('additive migration did not reach its attested revision')
+    after=database_fingerprint(environment)
+    for name,signature in before.items():
+        if name!='alembic_version' and after.get(name)!=signature:
+            raise ValueError('additive migration changed existing table data: '+name)
+    if set(after)-set(before) not in (set(),{'node_tls_bindings'}):raise ValueError('additive migration created unexpected tables')
+
+
 def _runtime_links(stage, runtime):
     for name in ['.env','data']:
         path=stage/name
@@ -618,9 +670,8 @@ def update(archive, checksum, target_version, *, allow_adoption=False):
         staged_environment=dict(dotenv_values(stage/'.env'))
         generation=staged_environment.get('MAIN_ADMIN_AUTH_GENERATION')
         if not generation:raise ValueError('staged admin generation initialization failed')
-        # Default patch updates are strictly schema-compatible. Changed schemas
-        # require a separately validated migration operation, never live guessing.
-        if _schema_head(stage,environment)!=_db_head(environment):raise ValueError('schema-changing update requires explicit validated migration; compatible patch update refused')
+        plan=migration_plan(stage,environment)
+        record['migration']=plan;durable_json(transaction,record)
         from sqlalchemy.engine import make_url
         dburl=make_url(environment['DATABASE_URL']);clone_env=dict(staged_environment)
         clone_cleanup=None
@@ -631,6 +682,7 @@ def update(archive, checksum, target_version, *, allow_adoption=False):
             target,drop,pg_env=postgres_clone(dburl,backup/'database.dump',prefix='pvnetwork_canary_',journal=transaction,record=record)
             clone_cleanup=(drop,pg_env);clone_env['DATABASE_URL']=target.render_as_string(hide_password=False)
         _write_env(stage/'.env',clone_env)
+        migrate_additive(stage,clone_env,plan)
         with __import__('socket').socket() as sock:sock.bind(('127.0.0.1',19002))
         run(['systemd-run','--unit='+unit,'--property=WorkingDirectory='+str(stage),stage/'.venv/bin/python','-m','uvicorn','backend.app:api','--host','127.0.0.1','--port','19002','--lifespan','off','--log-level','warning']);canary=True
         health(19002,target_version);checkpoint('canary_verified')
@@ -646,6 +698,12 @@ def update(archive, checksum, target_version, *, allow_adoption=False):
         # A second native snapshot captures the quiesced final writer state.
         final_backup=make_backup(environment);record['backup']=str(final_backup);(final_backup/'.PINNED_BY_TRANSACTION').touch(mode=0o600)
         record['environment_backup']=str(final_backup/'env');durable_json(transaction,record)
+        # Persist BEFORE DDL. Interruption recovery retains this backwards
+        # compatible table and every current customer row rather than restoring
+        # an older dump. Replay is idempotent for an already-committed revision.
+        checkpoint('migrating')
+        migrate_additive(stage,environment,plan)
+        checkpoint('migrated')
         if not environment.get('MAIN_ADMIN_AUTH_GENERATION'):
             # Add only the missing generation after the verified quiesced backup.
             # Existing sessions and unrelated configuration retain their values.
@@ -680,7 +738,7 @@ def update(archive, checksum, target_version, *, allow_adoption=False):
     except BaseException:
         if canary:run(['systemctl','stop',unit])
         if 'clone_cleanup' in locals() and clone_cleanup:run(clone_cleanup[0],env=clone_cleanup[1])
-        if record['state'] in {'maintenance','rooted_adopted','switching','health_verified'}:
+        if record['state'] in {'maintenance','migrating','migrated','rooted_adopted','switching','health_verified'}:
             if APP.is_symlink() and APP.resolve()!=previous:atomic_pointer(APP,previous)
             restore_recorded_environment(record)
             run(['systemctl','restart','pvnetwork-panel.service']);health(port,previous_version)
@@ -740,7 +798,7 @@ def rollback_release():
     environment=configured_environment();site=owned_site(int(environment['PORT']));original=site.read_text()
     current=APP.resolve();port=int(environment['PORT'])
     # This compatible-schema rollback retains current live data, not an old dump.
-    if _schema_head(previous,environment)!=_db_head(environment):raise ValueError('schema-incompatible rollback requires explicit native restore')
+    if not schema_compatible_with_previous(_schema_head(previous,environment),_db_head(environment)):raise ValueError('schema-incompatible rollback requires explicit native restore')
     if requires_native_node_transport(environment) and not (previous/'backend/node/tls_binding.py').is_file():
         raise ValueError('retained code predates managed HTTPS nodes; select a transport-compatible release before rollback')
     data_journal=STATE/'data-transaction.json'

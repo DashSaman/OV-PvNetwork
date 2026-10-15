@@ -22,7 +22,7 @@ class FreshDatabaseTests(unittest.TestCase):
             self.assertEqual(result.returncode,0,result.stderr)
             with sqlite3.connect(db) as connection:
                 head=connection.execute('SELECT version_num FROM alembic_version').fetchone()[0]
-                self.assertEqual(head,'h0a1b2c3d4e5')
+                self.assertEqual(head,'i1b2c3d4e5f6')
                 schema=connection.execute("SELECT sql FROM sqlite_master WHERE name='users'").fetchone()[0]
                 self.assertIn('ck_users_device_limit_nonnegative',schema)
                 info=connection.execute('PRAGMA table_info(active_sessions)').fetchall()
