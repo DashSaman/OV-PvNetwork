@@ -72,6 +72,8 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
+- `v1.0.51` — [~] IN_PROGRESS — `PVN-1035` readable theme-aware form values. Current Demo review found dark input wells combined with light-theme dark foreground text. First measure computed contrast in an owned browser, then correct the common form color pair with existing theme tokens; preserve dimensions, brand, behavior and dark-mode usability. Verify core EN/FA controls, themes, widths and native zoom; refresh affected Demo captures. No live mutation. Publication and separately authorized Production remain gates.
+
 - `v1.0.45` — [~] IN_PROGRESS — `PVN-1029` bilingual operational CLI and scoped management bridges.
   - Exactly 25 EN/FA menu entries, automation/help/exit codes, explicit mutation confirmation and dry-run. Doctor remains read-only; repairs target one owned service/timer or one registered node. Native backup/update/restore/rollback/recovery remain the lifecycle engines.
   - Hidden or bounded stdin-only credentials, fixed loopback API authentication without redirects/proxies, bounded subprocess output, recursive redaction and private allowlisted support bundles. Managed certificate renewal selects one cert-name and never forces renewal or restarts VPN.
