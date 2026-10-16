@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.45-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.46-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.46 نسبت به v1.0.45
+
+**PVN-1030 — جداسازی نماینده و کنترل ارسال Push.** UUIDهای presence و داشبورد به مالک محدودند، تشخیص کاربر فقط‌خواندنی است، reset به POST و مجوز نوشتن نیاز دارد و Push فقط به مقصدهای عمومی مجاز با سهمیهٔ تست ماندگار ارسال می‌شود. [سازگاری و آزمون‌ها](docs/RELEASE-NOTES-v1.0.46.fa.md). نسخهٔ عمومی 1.0.37 و Production برابر 1.0.40 است؛ gateهای انتشار و استقرار باز هستند.
 
 ## نامزد v1.0.45 نسبت به v1.0.44
 

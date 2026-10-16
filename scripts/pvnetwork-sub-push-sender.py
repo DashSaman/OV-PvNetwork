@@ -8,7 +8,8 @@ import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from pywebpush import webpush, WebPushException
+from pywebpush import WebPushException
+from backend.operations.push_transport import send_push as webpush
 from sqlalchemy import text
 
 from backend.config import config
@@ -220,7 +221,6 @@ def main():
 
                 print(
                     "PUSH_SENT "
-                    f"user={row['user_uuid']} "
                     f"slot={slot} "
                     f"days={days}",
                     flush=True,
@@ -238,7 +238,6 @@ def main():
 
                 print(
                     "PUSH_FAILED "
-                    f"user={row['user_uuid']} "
                     f"http={status_code or 0}",
                     flush=True,
                 )
@@ -248,9 +247,8 @@ def main():
 
                 print(
                     "PUSH_FAILED "
-                    f"user={row['user_uuid']} "
                     f"error={type(exc).__name__}:"
-                    f"{str(exc)[:120]}",
+                    "delivery failed",
                     flush=True,
                 )
 

@@ -26,6 +26,7 @@ class Setting(BaseSettings):
     SUBSCRIPTION_URL_PREFIX: Optional[str] = None
     SUBSCRIPTION_PATH: str = "sub"
     CORS_ORIGINS: str = ""
+    PUSH_ALLOWED_ORIGINS: str = ""
 
     class Config:
         env_file = os.path.join(os.path.dirname(__file__), "..", ".env")

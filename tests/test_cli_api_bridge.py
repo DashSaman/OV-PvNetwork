@@ -50,3 +50,9 @@ class CliApiBridgeTests(unittest.TestCase):
             result=self.module.settings(args)
         self.assertEqual(api.call_args.args,('/security/panel-settings/apply','POST',payload))
         self.assertNotIn('private-',json.dumps(result));self.assertEqual(result['change_id'],'demo-id')
+
+    def test_selected_session_diagnostic_uses_read_only_user_detail(self):
+        args=SimpleNamespace(user_id='demo-user')
+        with patch.object(self.module,'api',return_value={'success':True}) as api:
+            self.module.sessions(args)
+        self.assertEqual(api.call_args.args,('/users/demo-user/sessions',))

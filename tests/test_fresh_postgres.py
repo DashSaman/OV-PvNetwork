@@ -50,6 +50,40 @@ class FreshPostgresTests(unittest.TestCase):
         self.assertIn('requested disposable schema fault injection',result.stderr)
         self.assertEqual(inspect(self.engine).get_table_names(),[])
 
+    def test_push_budget_is_atomic_on_postgres_and_survives_delivery_failure(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from datetime import date
+        import threading
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from fastapi import HTTPException
+        from sqlalchemy.orm import sessionmaker
+        from backend.db.models import User
+        from backend.routers import push
+        result=self.initialize();self.assertEqual(result.returncode,0,result.stderr)
+        Session=sessionmaker(bind=self.engine)
+        endpoint='https://fcm.googleapis.com/fcm/send/demo'
+        with Session() as db:
+            db.add(User(uuid='push-demo-user',name='push-demo',owner='demo',total=1000,used=10,
+                expiry_date=date(2030,1,1),is_active=True,device_limit=1))
+            db.commit();push.ensure_push_table(db)
+            db.execute(text('INSERT INTO web_push_subscriptions (endpoint_hash,user_uuid,endpoint,p256dh,auth,enabled,created_at,updated_at) VALUES (:hash,:uuid,:url,:key,:auth,1,1,1)'),
+                {'hash':'demo-hash','uuid':'push-demo-user','url':endpoint,'key':'demo-key','auth':'demo-auth'})
+            db.commit()
+        barrier=threading.Barrier(2)
+        def run(_index):
+            with Session() as db:
+                barrier.wait(timeout=5)
+                try:
+                    push.test_push('push-demo-user',push.PushTestIn(endpoint=endpoint),db=db)
+                    return 200
+                except HTTPException as exc: return exc.status_code
+        with patch.object(push,'webpush',side_effect=ValueError('private demo provider failure')) as send, ThreadPoolExecutor(max_workers=2) as executor:
+            results=list(executor.map(run,range(2)))
+        self.assertEqual(sorted(results),[429,502]);send.assert_called_once()
+        with Session() as db:
+            self.assertEqual(db.execute(text('SELECT COUNT(*) FROM web_push_test_budget')).scalar_one(),1)
+
     def test_additive_legacy_head_upgrade_preserves_customer_data_and_attestations(self):
         import importlib.util
         result=self.initialize();self.assertEqual(result.returncode,0,result.stderr)

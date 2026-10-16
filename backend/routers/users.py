@@ -312,6 +312,7 @@ async def get_user_presence(
             for (uuid,) in db.query(User.uuid).filter(User.owner == user["username"]).all()
         }
         counts = {uuid: count for uuid, count in counts.items() if uuid in allowed}
+        rates = {uuid: rate for uuid, rate in rates.items() if uuid in allowed}
 
     return ResponseModel(
         success=True,
@@ -339,6 +340,15 @@ async def get_active_rename_jobs(
 
 
 @router.get("/{uuid}", response_model=ResponseModel)
+@router.get("/{uuid}/sessions", response_model=ResponseModel)
+async def get_user_detail(uuid: str, db: Session = Depends(get_db), actor: dict = Depends(get_current_user)):
+    target_user = _owned_user_or_404(db, uuid, actor)
+    presence = await get_display_live_presence()
+    detail = _users_with_live_state(db, [target_user], presence.get("counts_by_uuid", {}))[0]
+    return ResponseModel(success=True, msg="User retrieved successfully", data=detail)
+
+
+@router.post("/{uuid}/reset", response_model=ResponseModel)
 @_serialize_user_mutation("reset")
 async def reset_user_usage(uuid: str, db: Session = Depends(get_db), actor: dict = Depends(get_current_user)):
     # MULTINODE_RESET_ROUTE_V2

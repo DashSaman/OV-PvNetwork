@@ -435,7 +435,7 @@ const UserManagement = () => {
   const handleResetUsage = async user => {
     if (!window.confirm(`Are you sure you want to reset usage for user ${user.name}?`)) return;
     try {
-      const response = await apiClient.get(`/users/${user.uuid}`);
+      const response = await apiClient.post(`/users/${user.uuid}/reset`);
       if (response.data.success) {
         alert(`Usage for ${user.name} has been reset.`);
         fetchUsers();
@@ -575,7 +575,7 @@ const UserManagement = () => {
       // Reset first. For unlimited users this starts the existing fresh 30-day
       // cycle; the normal update below preserves that new unlimited expiry.
       if (draft.resetUsage) {
-        const resetResponse = await apiClient.get(`/users/${user.uuid}`);
+        const resetResponse = await apiClient.post(`/users/${user.uuid}/reset`);
         if (!resetResponse.data?.success) {
           throw new Error(resetResponse.data?.msg || 'Usage reset failed.');
         }

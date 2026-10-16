@@ -71,6 +71,26 @@ _dashboard_live_cache = {
 _dashboard_rate_state = {}
 
 
+def _visible_dashboard_payload(payload: dict, user: dict) -> dict:
+    if user.get("type") == "main_admin":
+        return payload
+    from backend.db.engine import sessionLocal
+    from backend.db.models import User
+    with sessionLocal() as db:
+        allowed = {str(uuid) for (uuid,) in db.query(User.uuid).filter(User.owner == user["username"]).all()}
+    snapshot = payload.get("presence") or {}
+    counts = {str(uuid): count for uuid, count in (snapshot.get("counts_by_uuid") or {}).items() if str(uuid) in allowed}
+    # Publish aggregate capacity fields explicitly. A new global per-user map
+    # must not become visible to resellers simply by being added to the cache.
+    presence = {key: snapshot[key] for key in (
+        "sample_time", "managed_online_by_node", "unmapped_clients",
+        "unmapped_clients_by_node", "failed_node_ids",
+    ) if key in snapshot}
+    presence["counts_by_uuid"] = counts
+    presence["online_users"] = sum(1 for count in counts.values() if count > 0)
+    return {**payload, "presence": presence}
+
+
 @router.get("/dashboard-live")
 async def get_dashboard_live(
     user: dict = Depends(get_current_user),
@@ -96,7 +116,7 @@ async def get_dashboard_live(
         return {
             "success": True,
             "msg": "Dashboard live metrics retrieved",
-            "data": cached,
+            "data": _visible_dashboard_payload(cached, user),
         }
 
     db = sessionLocal()
@@ -490,7 +510,7 @@ async def get_dashboard_live(
     return {
         "success": True,
         "msg": "Dashboard live metrics retrieved",
-        "data": payload,
+        "data": _visible_dashboard_payload(payload, user),
     }
 
 

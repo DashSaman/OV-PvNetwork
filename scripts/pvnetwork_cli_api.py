@@ -151,5 +151,7 @@ def settings(args):
 def sessions(args):
     if args.user_id:
         if not re.fullmatch('[A-Za-z0-9_-]{1,128}',args.user_id):raise ValueError('safe user identity required')
-        return api('/users/'+args.user_id)
+        # A distinct read route fails closed against an older panel after
+        # rollback; old GET /users/{uuid} performed a destructive usage reset.
+        return api('/users/'+args.user_id+'/sessions')
     return api('/users/presence')

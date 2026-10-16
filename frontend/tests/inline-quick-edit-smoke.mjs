@@ -105,7 +105,8 @@ for (const language of languages) {
       // confirms the real action completed; a fixed delay races slower runners.
       await form.waitFor({ state: 'hidden', timeout: 10000 });
 
-      const reset = requests.find(item => item.method === 'GET' && item.path === '/users/demo-user-v103');
+      const reset = requests.find(item => item.method === 'POST' && item.path === '/users/demo-user-v103/reset');
+      if (requests.some(item => item.method === 'GET' && item.path === '/users/demo-user-v103')) failures.push(`${language} ${width}: unsafe legacy reset GET`);
       const update = requests.find(item => item.method === 'PUT' && item.path === '/users/demo-user-v103/');
       const status = requests.find(item => item.method === 'PUT' && item.path === '/users/demo-user-v103/status');
       const nodes = requests.find(item => item.method === 'PUT' && item.path === '/users/demo-user-v103/nodes');

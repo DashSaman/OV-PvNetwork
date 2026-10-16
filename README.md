@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.45-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.46-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.46 candidate vs v1.0.45
+
+**PVN-1030 — tenant isolation and guarded Web Push.** Reseller presence/dashboard UUIDs are owner-scoped, diagnostics are read-only, reset requires POST/write permission, and push deliveries use approved public destinations with a persisted hourly test budget. [Compatibility and validation](docs/RELEASE-NOTES-v1.0.46.md). Public stable remains 1.0.37 and Production remains 1.0.40; final publication and deployment gates remain open.
 
 ## v1.0.45 candidate vs v1.0.44
 

@@ -73,6 +73,7 @@ Before implementation, record the task and target release here **and commit/push
 ### Active release ledger
 
 - `v1.0.45` — [~] IN_PROGRESS — `PVN-1029` bilingual operational CLI and scoped management bridges.
+- `v1.0.46` — [~] IN_PROGRESS — `PVN-1030` tenant-scoped live responses, read-only diagnostics and guarded Web Push delivery. ASGI, SQLite/PostgreSQL race and encrypted transport controls tested; exact CI/publication/Production gates remain open. Full responsive sweep also found pre-existing quick-edit overflow at intermediate desktop/tablet widths for the next UI task.
   - Exactly 25 EN/FA menu entries, automation/help/exit codes, explicit mutation confirmation and dry-run. Doctor remains read-only; repairs target one owned service/timer or one registered node. Native backup/update/restore/rollback/recovery remain the lifecycle engines.
   - Hidden or bounded stdin-only credentials, fixed loopback API authentication without redirects/proxies, bounded subprocess output, recursive redaction and private allowlisted support bundles. Managed certificate renewal selects one cert-name and never forces renewal or restarts VPN.
   - Node reconciliation preserves explicit assignments and drain/maintenance flags; queued API/Web jobs discard child output. Internal panel-port changes stage env/frontend, verify canary, retain exact proxy/env/build rollback and expose interrupted recovery through the common native operation lock.

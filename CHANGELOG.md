@@ -1,3 +1,11 @@
+## v1.0.46 candidate — PVN-1030: Tenant and push boundaries
+
+- Scope every reseller presence/dashboard UUID map, including cached responses.
+- Read-only user GET/session diagnostics; reset uses explicit POST with write scope.
+- Shared approved-origin, public-IP-pinned TLS push transport with redirects/proxies disabled.
+- One test route, atomic per-user hourly budget and bounded delivery outside the event loop.
+- SQLite/PostgreSQL, real ASGI, encrypted push/VAPID and Web regression coverage; final release and Production gates remain open.
+
 ## v1.0.45 candidate — PVN-1029: Bilingual operational CLI
 
 - 25 EN/FA operations, scoped services/node reconciliation, bounded read-only diagnostics and private structured support exports; hidden credentials, dry-run, confirmation and stable exit codes.
