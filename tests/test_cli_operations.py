@@ -8,7 +8,8 @@ import tarfile
 import tempfile
 import sqlite3
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch,Mock
+from contextlib import nullcontext
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -111,3 +112,19 @@ class CliOperationsTests(unittest.TestCase):
         file.unlink();foreign=self.root/'foreign';foreign.write_text('preserve');file.symlink_to(foreign)
         with self.assertRaises(ValueError):self.ops.set_language('en')
         self.assertEqual(foreign.read_text(),'preserve')
+
+    def test_service_change_is_allowlisted_and_refuses_pending_transaction(self):
+        engine=Mock(spec=['operation_lock','assert_transactions_idle']);engine.operation_lock.side_effect=lambda:nullcontext()
+        with patch.object(self.ops,'lifecycle',return_value=engine),patch.object(self.ops,'capture',return_value={'returncode':0,'output':'ActiveState=active'}) as capture:
+            with self.assertRaises(ValueError):self.ops.service_action('restart','openvpn-server@server.service')
+            capture.assert_not_called();engine.operation_lock.assert_not_called()
+            result=self.ops.service_action('restart','pvnetwork-panel.service')
+            self.assertTrue(result['changed']);self.assertEqual(capture.call_args_list[0].args[0],['systemctl','restart','pvnetwork-panel.service'])
+            capture.reset_mock();engine.assert_transactions_idle.side_effect=ValueError('private unfinished state')
+            with self.assertRaises(self.ops.OperationFailure) as busy:self.ops.service_action('start','pvnetwork-panel.service')
+            self.assertEqual(busy.exception.code,75);capture.assert_not_called()
+
+    def test_repair_healthy_panel_does_not_restart_it(self):
+        with patch.object(self.ops,'services',return_value={'ActiveState':'active'}),patch.object(self.ops,'service_action') as change:
+            self.assertFalse(self.ops.repair('panel-service')['changed'])
+        change.assert_not_called()

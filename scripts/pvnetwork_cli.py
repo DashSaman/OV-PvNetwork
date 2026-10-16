@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import re
 import sys
 
 MENU=[
@@ -63,7 +64,8 @@ def parser():
         if command=='services':
             child.add_argument('action',nargs='?',default='status',choices=['status','start','stop','restart','enable','disable'])
             child.add_argument('--unit',choices=UNITS,default='pvnetwork-panel.service')
-        elif command=='repair':child.add_argument('--scope',required=True,choices=REPAIR_SCOPES)
+        elif command=='repair':
+            child.add_argument('--scope',required=True,choices=REPAIR_SCOPES);child.add_argument('--unit',choices=[unit for unit in UNITS if unit.endswith('.timer')])
         elif command in {'update','restore'}:
             child.add_argument('selection',nargs='?');child.add_argument('--archive');child.add_argument('--sha256')
             if command=='update':child.add_argument('--adopt-rooted',action='store_true')
@@ -129,13 +131,21 @@ def emit(value,args):
 def execute(args):
     if args.command=='logs' and not 1<=args.lines<=500:raise UsageError('--lines must be between 1 and 500')
     if args.command=='nodes' and args.action not in {'list','health','deploy'} and (args.node_id is None or args.node_id<1):raise UsageError('a positive --node-id is required')
+    if args.command=='repair' and args.scope=='panel-timers' and not args.unit:raise UsageError('choose exactly one timer unit')
+    if args.command=='language' and args.action=='set' and not args.preference:raise UsageError('choose en or fa')
+    if args.command=='restore' and (not args.selection or not re.fullmatch(r'[0-9]{8}-[0-9]{6}',args.selection)):raise UsageError('select a native verified backup ID')
+    if args.command=='update' and bool(args.archive)!=bool(args.sha256):raise UsageError('offline archive and SHA256 must be supplied together')
     proposal=plan(args)
     if args.dry_run:
         emit({'success':True,'dry_run':True,'plan':proposal},args);return 0
     if mutation(args):
         if os.geteuid()!=0:raise PermissionError('root access is required')
         if args.command not in {'backup','support','language'} and not confirm(args,proposal):raise PermissionError('explicit confirmation required; use --yes for automation')
-    result=dispatch(args);emit({'success':True,'data':result},args);return 0
+    result=dispatch(args)
+    if args.json and args.command in {'backup','restore','restore-upload','update','rollback','recover','version','status'}:
+        print(json.dumps(result,ensure_ascii=False));return 0
+    healthy=not (args.command=='doctor' and isinstance(result,dict) and result.get('healthy') is False)
+    emit({'success':healthy,'data':result},args);return 0 if healthy else 69
 
 
 def interactive(args):
@@ -175,6 +185,8 @@ def main(argv=None):
         print('[PVNetwork] Invalid command or arguments; use pvnetwork --help',file=sys.stderr);return 64
     except PermissionError:
         print(json.dumps({'success':False,'error':'Permission or explicit confirmation required','code':77}),file=sys.stderr);return 77
+    except BlockingIOError:
+        print(json.dumps({'success':False,'error':'An owned operation is already running; inspect recovery state','code':75}),file=sys.stderr);return 75
     except (RuntimeError,OSError,ImportError,ValueError):
         print(json.dumps({'success':False,'error':'Operation unavailable or failed; inspect private diagnostics','code':69}),file=sys.stderr);return 69
     except KeyboardInterrupt:return 130

@@ -69,3 +69,17 @@ class CliCoreTests(unittest.TestCase):
         with patch.object(self.cli,'dispatch',side_effect=TypeError('private-fixture-value')):
             status,out,error=self.invoke(['doctor','--json'])
         self.assertEqual(status,70);self.assertNotIn('private-fixture-value',out+error)
+
+    def test_unhealthy_doctor_exits_nonzero_and_invalid_restore_never_dispatches(self):
+        with patch.object(self.cli,'dispatch',return_value={'healthy':False}):
+            status,out,_=self.invoke(['doctor','--json'])
+        self.assertEqual(status,69);self.assertFalse(json.loads(out)['success'])
+        with patch.object(self.cli,'dispatch') as dispatch:
+            status,_,_=self.invoke(['restore','../../foreign','--yes'])
+        self.assertEqual(status,64);dispatch.assert_not_called()
+
+    def test_existing_native_json_result_shape_is_preserved(self):
+        for command,result in [('backup',{'backup':'/private/native-backup','verified':True}),('version',{'version':'1.0.44'})]:
+            with self.subTest(command=command),patch.object(self.cli,'dispatch',return_value=result),patch.object(self.cli.os,'geteuid',return_value=0):
+                status,out,error=self.invoke([command,'--json'])
+            self.assertEqual(status,0,error);self.assertEqual(json.loads(out),result)

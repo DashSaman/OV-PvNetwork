@@ -12,6 +12,7 @@ import secrets
 import sqlite3
 import stat
 import subprocess
+import tempfile
 import tarfile
 import time
 import urllib.error
@@ -22,6 +23,70 @@ APP=Path('/opt/pvnetwork-panel')
 STATE=Path('/etc/pvnetwork-panel')
 SITE=Path('/etc/nginx/conf.d/pvnetwork-panel.conf')
 SECRET_NAMES={'key','api_key','database_url','env','profile','ovpn','authorization','credential_sha256'}
+
+
+class OperationFailure(Exception):
+    def __init__(self,code=70):self.code=code;super().__init__('Scoped operation did not complete')
+
+
+def lifecycle():
+    import pvnetwork_lifecycle
+    return pvnetwork_lifecycle
+
+
+def idle(engine):
+    try:engine.assert_transactions_idle()
+    except ValueError:raise OperationFailure(75) from None
+
+
+def service_action(action,unit):
+    from pvnetwork_cli import UNITS
+    if action not in {'start','stop','restart','enable','disable'} or unit not in UNITS:raise ValueError('unsupported controller service change')
+    engine=lifecycle()
+    with engine.operation_lock():
+        idle(engine)
+        reply=capture(['systemctl',action,unit],timeout=45)
+        if reply['returncode']!=0:raise OperationFailure()
+    return {'changed':True,'service':services(unit)}
+
+
+def repair(scope,unit=None):
+    if scope=='panel-service':
+        status=services()
+        if status['ActiveState']=='active':return {'changed':False,'service':status}
+        return service_action('start','pvnetwork-panel.service')
+    if scope=='panel-timers':
+        from pvnetwork_cli import UNITS
+        if unit not in UNITS or not unit.endswith('.timer'):raise ValueError('choose exactly one owned timer')
+        return service_action('start',unit)
+    if scope=='node-reconcile':
+        engine=lifecycle()
+        with engine.operation_lock():
+            idle(engine);reply=capture(['systemctl','start','pvnetwork-node-user-reconcile.service'],timeout=60)
+            if reply['returncode']!=0:raise OperationFailure()
+        return {'queued':True,'scope':'existing-assignment-reconciliation'}
+    raise ValueError('explicit repair scope required')
+
+
+def native_operation(args):
+    engine=lifecycle()
+    if args.command=='restore-upload':return engine.restore_upload(args.selection,args.archive)
+    with engine.operation_lock():
+        if args.command!='recover':idle(engine)
+        if args.command=='backup':return {'backup':str(engine.make_backup()),'verified':True}
+        if args.command=='restore':
+            if not args.selection or not re.fullmatch(r'[0-9]{8}-[0-9]{6}',args.selection):raise ValueError('select a native verified backup ID')
+            return engine.restore_database(engine.BACKUPS/args.selection)
+        if args.command=='update':
+            release=engine.published_version(args.selection);engine.validate_upgrade_version((engine.APP/'VERSION').read_text().strip(),release)
+            if bool(args.archive)!=bool(args.sha256):raise ValueError('offline archive and SHA256 must be supplied together')
+            if args.archive:return engine.update(args.archive,args.sha256,release,allow_adoption=args.adopt_rooted)
+            with tempfile.TemporaryDirectory(prefix='pvnetwork-release-',dir=engine.STATE) as directory:
+                archive,digest=engine.download_published_release(release,directory)
+                return engine.update(archive,digest,release,allow_adoption=args.adopt_rooted)
+        if args.command=='rollback':return engine.rollback_release()
+        if args.command=='recover':return engine.recover_transaction()
+    raise ValueError('unsupported native lifecycle operation')
 
 
 def redact(value,secrets=()):
@@ -319,5 +384,8 @@ def execute(args):
     elif args.command=='tls' and args.action=='inspect':values=environment();result=tls()
     elif args.command=='jobs':result=jobs()
     elif args.command=='language':result=set_language(args.preference) if args.action=='set' else {'language':preferred_language()}
+    elif args.command=='services':result=service_action(args.action,args.unit)
+    elif args.command=='repair':result=repair(args.scope,args.unit)
+    elif args.command in {'backup','restore','update','rollback','recover','restore-upload'}:result=native_operation(args)
     else:raise RuntimeError('selected operation is not available in this implementation stage')
     return redact(result,private_values(values or {}))
