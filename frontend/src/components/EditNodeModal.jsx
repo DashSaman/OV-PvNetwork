@@ -100,6 +100,7 @@ const EditNodeModal = ({
           <div className="input-group">
             <label htmlFor="edit-name">{t('nodeName')}</label>
             <input type="text" id="edit-name" name="name" value={formData.name} onChange={handleChange} required />
+            <small>{t('editNodeNameIdentity')}</small>
           </div>
 
           {/* */}

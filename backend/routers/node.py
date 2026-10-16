@@ -14,6 +14,7 @@ from backend.node.health import (
     update_node_control,
 )
 from backend.node.task import (
+    NodeNameIdentityError,
     add_node_handler,
     update_node_handler,
     delete_node_handler,
@@ -144,7 +145,10 @@ async def update_node(
     if user["type"] != "main_admin":
         return ResponseModel(success=False, msg="Unauthorized access", data=None)
 
-    result = await update_node_handler(node_id, request, db)
+    try:
+        result = await update_node_handler(node_id, request, db)
+    except NodeNameIdentityError as exc:
+        raise HTTPException(status_code=409,detail=str(exc)) from None
     return ResponseModel(
         success=result,
         msg="Node updated successfully" if result else "Failed to update node",

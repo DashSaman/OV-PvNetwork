@@ -4,6 +4,8 @@ Open **Nodes → Actions → Node backup / restore** as the main administrator. 
 
 Ordinary node edits now keep the stored private API key when its replacement field is blank, omitted or null. The list still never exports that key. Both tunnel-address field spellings remain compatible, so opening an edit no longer loses an existing tunnel endpoint. An explicit replacement still requires remote verification before it is saved.
 
+Keep the existing name of a node with customer assignments or sessions: this name is embedded in existing client CNs. The API refuses that rename before remote work or SQL changes (409); an empty node remains renameable. Legacy all-node customers also count as references. Other node settings still use the existing verified configuration transaction.
+
 1. Select **Create verified backup**, enter SSH username/port and a password or private key. For an unknown host, independently verify the reported SSH fingerprint before retrying. Approved non-root users need passwordless sudo for the fixed native helper.
 2. Follow progress. The native engine verifies its backup before the controller receives it; transfer size and SHA256 must match before publication. Download the verified archive into trusted storage: it contains private keys and configuration.
 3. For restore, select an uploaded native `.tar.gz` file or the current verified controller copy. Re-enter SSH credentials. The controller binds the archive to the node ID, address, API port and credential hash; changing this identity invalidates access. Renaming the display name does not change the binding.
@@ -18,6 +20,8 @@ Controller copies use private directories/files (0700/0600). Access expires afte
 The remote upload is removed only after a verified successful restore and an exact metadata/inode/size/SHA256 check. Failed/uncertain restores preserve private staging and the durable journal. A cleanup failure does not undo an already verified restore; its receipt reports retained private staging. Original verified node backups are retained by the native backup policy.
 
 ## Evidence and remaining gates
+
+The edit readiness correction at `7375e74` passed exact CI `38930757788` completely. The subsequent name-identity guard passed three real-SQLite tests in a separate frozen Windows environment (assigned customer and legacy all-node refusals; empty target with customers assigned elsewhere remains editable), plus 18 EN/FA cases against the production frontend preview. Current build/lint passed, largest JS 986266 bytes; focused static checks found no medium/high findings. The new guard still needs its exact Linux CI.
 
 - Focused tests cover main-admin/missing-node authorization, SQLite-backed identity binding, upload limits, SHA256/download headers, invalid flags, worker identity recheck, secret-free persisted errors, symlinks, modes, interrupted transfers, guarded cleanup and source/argument scope.
 - Actual loopback Paramiko tests use a pinned host key and the fixed binary helper. A separate owned Ubuntu node exercised actual native backup → private SSH download → upload → compatible restore → cleanup. VPN PID, configuration/environment/TLS hashes and monotonic accounting were preserved. An already connected TCP client retained its PID and transferred 4,320,000 download / 2,860,000 upload bytes through the TUN after restore. The old demo profile's Docker endpoint was refreshed after the lab network changed; its inline crypto bytes were preserved. These are actual engine/transport checks, separate from mocked API orchestration tests.

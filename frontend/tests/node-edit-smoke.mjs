@@ -35,6 +35,9 @@ try {
       assert.ok(changes[0].key === undefined || changes[0].key === null); assert.equal(changes[0].protocol, 'udp');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true);
       assert.deepEqual(errors, []); console.log(`PASS node credential-preserving edit ${language}/${width}`);
+    } catch (error) {
+      console.error('Node edit fixture failure:', language, width, page.url(), errors, (await page.locator('body').innerText()).slice(0, 1200));
+      throw error;
     } finally { await context.close(); }
   }
 } finally { await browser.close(); }
