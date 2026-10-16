@@ -1,3 +1,10 @@
+## v1.0.47 candidate — PVN-1031: Responsive editor and header
+
+- One stable quick-edit form outside table scrolling; drafts survive breakpoint changes.
+- Narrow header rows, touch-sized controls, accessible logout and bundled logo assets.
+- Native Chromium zoom regression, keyboard/mouse saves and synthetic EN/FA screenshots.
+- Remains a candidate with final CI, full mission, publication and Production gates open.
+
 ## v1.0.46 candidate — PVN-1030: Tenant and push boundaries
 
 - Scope every reseller presence/dashboard UUID map, including cached responses.

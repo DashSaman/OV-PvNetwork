@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.46-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.47-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.47 نسبت به v1.0.46
+
+**PVN-1031 — ویرایش سریع و سربرگ واکنش‌گرا.** فرم بیرون از اسکرول جدول قرار دارد و با تغییر اندازه پیش‌نویس را حفظ می‌کند. کنترل‌های سربرگ در موبایل و زوم قابل دسترس‌اند، لوگو در build است و آزمون از زوم واقعی Chromium استفاده می‌کند. [تصاویر Demo و اعتبارسنجی](docs/RELEASE-NOTES-v1.0.47.fa.md). نسخهٔ عمومی 1.0.37 و Production برابر 1.0.40 است؛ gateهای انتشار و استقرار باز هستند.
 
 ## نامزد v1.0.46 نسبت به v1.0.45
 

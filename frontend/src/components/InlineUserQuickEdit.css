@@ -139,11 +139,6 @@
   margin: 12px 0 0;
 }
 
-tr.user-quick-edit-row > td {
-  padding: 0 10px 14px !important;
-  background: rgba(2, 10, 20, 0.35);
-}
-
 @media (max-width: 1100px) {
   .quick-edit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -181,11 +176,12 @@ tr.user-quick-edit-row > td {
   }
 }
 
-/* On narrow layouts the management table intentionally keeps a scrollable
-   desktop-sized minimum width. Render a second, viewport-width editor outside
-   the table so the edit workflow never inherits that wide table geometry. */
-.mobile-user-quick-edit-panel {
-  display: none;
+/* Keep the editor outside the table's horizontal scrolling region at every
+   width. Resizing/zooming never remounts it or discards an unsaved draft. */
+.pv-user-table-editor { min-width: 0; max-width: 100%; }
+.user-quick-edit-panel { min-width: 0; max-width: 100%; }
+.user-quick-edit-panel .quick-edit-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
 }
 
 .inline-user-quick-edit {
@@ -197,20 +193,4 @@ tr.user-quick-edit-row > td {
 
 .quick-edit-footer .btn {
   min-height: 44px !important;
-}
-
-@media (max-width: 992px) {
-  .desktop-user-quick-edit-row {
-    display: none;
-  }
-
-  .mobile-user-quick-edit-panel {
-    display: block;
-    position: sticky;
-    inset-inline-start: 0;
-    width: 100%;
-    max-width: 100%;
-    padding: 0 10px 14px;
-    background: rgba(2, 10, 20, 0.35);
-  }
 }

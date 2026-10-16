@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import panelLogo from '../../sub_clients/private-network.webp';
 import Sidebar from '../components/Sidebar';
 import MobileNav from '../components/MobileNav';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +22,7 @@ const DashboardLayout = () => {
           <div className="header-logo-container">
             <div className="pn-admin-brand">
   <img
-    src="/sub-clients/private-network.webp"
+    src={panelLogo}
     className="pn-admin-logo"
     alt="Private Network"
   />
@@ -50,7 +51,7 @@ const DashboardLayout = () => {
               <FiRefreshCw size={18} />
             </button>
 
-            <button onClick={logout} className="btn btn-danger logout-button">
+            <button onClick={logout} className="btn btn-danger logout-button" aria-label={t('logout')} title={t('logout')}>
               <FiLogOut />
               <span className="logout-text">
                 {t('logout')}

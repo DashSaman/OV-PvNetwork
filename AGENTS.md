@@ -73,11 +73,13 @@ Before implementation, record the task and target release here **and commit/push
 ### Active release ledger
 
 - `v1.0.45` — [~] IN_PROGRESS — `PVN-1029` bilingual operational CLI and scoped management bridges.
-- `v1.0.46` — [~] IN_PROGRESS — `PVN-1030` tenant-scoped live responses, read-only diagnostics and guarded Web Push delivery. ASGI, SQLite/PostgreSQL race and encrypted transport controls tested; exact CI/publication/Production gates remain open. Full responsive sweep also found pre-existing quick-edit overflow at intermediate desktop/tablet widths for the next UI task.
   - Exactly 25 EN/FA menu entries, automation/help/exit codes, explicit mutation confirmation and dry-run. Doctor remains read-only; repairs target one owned service/timer or one registered node. Native backup/update/restore/rollback/recovery remain the lifecycle engines.
   - Hidden or bounded stdin-only credentials, fixed loopback API authentication without redirects/proxies, bounded subprocess output, recursive redaction and private allowlisted support bundles. Managed certificate renewal selects one cert-name and never forces renewal or restarts VPN.
   - Node reconciliation preserves explicit assignments and drain/maintenance flags; queued API/Web jobs discard child output. Internal panel-port changes stage env/frontend, verify canary, retain exact proxy/env/build rollback and expose interrupted recovery through the common native operation lock.
   - Candidate verification and installation checks are recorded in the CLI guide. Exact final CI, real systemd/PTY/API integration, full mission, public release and authorized Production remain open; do not mark complete prematurely.
+
+- `v1.0.46` — [~] IN_PROGRESS — `PVN-1030` tenant-scoped live responses, read-only diagnostics and guarded Web Push delivery. Exact commit `50eb1f5038e07a8ebc3897b85f31503a05a64fb8` CI `38947574882` passed all frozen audits, PostgreSQL/unit/root fixtures, real VPN handshake and browser/public guards. Publication/Production gates remain open. Quick-edit overflow found in the expanded sweep is handled under PVN-1031.
+- `v1.0.47` — [~] IN_PROGRESS — `PVN-1031` stable responsive quick edit, accessible unclipped header actions and bundled admin logos. Native Chromium zoom/draft/keyboard regression and sanitized Demo captures added. Final CI and whole-project/publication/Production gates remain open.
 
 - `v1.0.44` — [~] IN_PROGRESS — `PVN-1028` private node archive workflow from Web management.
   - Main-admin and exact-node identity authorization precede storage/SSH. Root-private bounded stream transfer verifies SHA256; SSH password/key/passphrase stay request-local. Uploaded restore uses a generated root inbox identity, checked native source and existing PKI/counter/operation guards.

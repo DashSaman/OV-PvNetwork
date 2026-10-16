@@ -114,6 +114,35 @@
   min-width: 0;
 }
 
+/* PVN-1031: header actions remain visible and touchable at narrow CSS widths,
+   including native browser zoom. The brand occupies its own row on phones. */
+.header-actions .language-picker,
+.header-actions .language-picker select,
+.header-actions .logout-button {
+  min-height: 44px;
+}
+
+@media (max-width: 640px) {
+  header.main-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .header-logo-container {
+    flex: 1 0 100%;
+    justify-content: center;
+  }
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .content-wrapper { padding-top: 134px; }
+  .user-quick-edit-panel :is(button, input, select) {
+    scroll-margin-block: 140px 96px;
+  }
+}
+
 .table-container table {
   min-width: max-content;
 }

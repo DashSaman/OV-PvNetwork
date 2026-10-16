@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.46-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.47-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.47 candidate vs v1.0.46
+
+**PVN-1031 — responsive quick edit and header.** The editor fits outside table scrolling and retains drafts when resizing. Header actions stay reachable on phones/zoom, logos are bundled, and regression uses native Chromium zoom. [Demo screenshots and validation](docs/RELEASE-NOTES-v1.0.47.md). Public stable remains 1.0.37 and Production remains 1.0.40; final release/deployment gates remain open.
 
 ## v1.0.46 candidate vs v1.0.45
 
