@@ -7,7 +7,7 @@ const SelectNodeForDownloadModal = ({
   onClose
 }) => {
   const [nodes, setNodes] = useState([]);
-  const [selectedNodeId, setSelectedNodeAddress] = useState('');
+  const [selectedNodeId, setSelectedNodeId] = useState('');
   const [isLoadingNodes, setIsLoadingNodes] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState('');
@@ -21,7 +21,7 @@ const SelectNodeForDownloadModal = ({
         if (response.data.success && response.data.data) {
           const available = response.data.data.filter(node => node.status);
           setNodes(available);
-          if (available.length > 0) setSelectedNodeAddress(available[0].address);
+          if (available.length > 0) setSelectedNodeId(String(available[0].id));
         }
       } catch {
         setError(t('downloadNodesFailed', 'Failed to load available nodes.'));
@@ -82,7 +82,7 @@ const SelectNodeForDownloadModal = ({
         <form onSubmit={handleDownload}>
           <div className="input-group">
             <label htmlFor="node-select">{t('downloadSource', 'Download Source')}</label>
-            {isLoadingNodes ? <p>{t("ui.f2d6d1cca604")}</p> : nodes.length === 0 ? <p>{t('noNodesAvailable', 'No nodes available for download.')}</p> : <select id="node-select" value={selectedNodeId} onChange={e => setSelectedNodeAddress(e.target.value)} style={{
+            {isLoadingNodes ? <p>{t("ui.f2d6d1cca604")}</p> : nodes.length === 0 ? <p>{t('noNodesAvailable', 'No nodes available for download.')}</p> : <select id="node-select" value={selectedNodeId} onChange={e => setSelectedNodeId(e.target.value)} style={{
             width: '100%',
             padding: '10px',
             backgroundColor: 'var(--background-secondary)',

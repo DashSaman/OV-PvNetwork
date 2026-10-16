@@ -1,3 +1,10 @@
+## v1.0.54 candidate — PVN-1038: Default profile node identity
+
+- Match initial profile-download selection to the string node ID used by options and the existing scoped download handler.
+- Reproduce the real built-preview failure: visible default node, zero outbound profile requests and "Selected node not found."
+- Add real browser default/explicit download and empty/failed-list regressions in English/Persian, both themes and supported width/native-zoom matrices.
+- v1.0.53 official public bootstrap passed Ubuntu 22.04/24.04 and Debian 12; this core workflow correction keeps it QA. Final v1.0.54 CI/artifact/public bootstrap and authorized Production remain gated.
+
 ## v1.0.53 candidate — PVN-1037: Verified existing credential alias
 
 - Recognize only the fixed canonical-to-legacy PVNetwork credential-key link after strict root/permission/ancestor checks.

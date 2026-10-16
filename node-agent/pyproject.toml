@@ -1,6 +1,6 @@
 [project]
 name = "pvnetwork-node"
-version = "1.0.53"
+version = "1.0.54"
 description = "PVNetwork TLS node control plane"
 requires-python = ">=3.12,<3.13"
 dependencies = [

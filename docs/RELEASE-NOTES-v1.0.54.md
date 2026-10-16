@@ -1,0 +1,9 @@
+# v1.0.54 candidate — PVN-1038
+
+The real browser displayed the first active node in the profile-download chooser, but the untouched submit stored its address and searched by ID. It sent no profile request and showed "Selected node not found." Initialize the selection with String(node.id), matching existing option values and per-node download path. Keep explicit selection, active-node filtering, filename/content behavior and backend assignment authorization.
+
+An actual built-preview regression failed before the correction and passed its four EN/FA/theme probe cases afterward: eight real browser downloads, with exact requested IDs/filenames/content, and no profile requests for empty/failed node lists. The full nine-width/native 100/125/150% zoom matrix also passed: 108 cases and 216 actual browser downloads. Quiet lint and the production build passed. No layout or visible text changed; current v1.0.51 Demo screenshots remain applicable, and browser interaction tests demonstrate the new behavior.
+
+Previous source v1.0.53 passed exact CI 38976683135 and the official public bootstrap on all three supported systemd distributions in run 38978281323. Its source/tag/assets remain immutable and QA because this newly reproduced core workflow needs v1.0.54. All task commits are integrated into main through PR #68; superseded stacked reviews were closed with ancestry evidence.
+
+Final v1.0.54 artifact/CI, public download/bootstrap, native backup/canary and scoped Production maintenance authorization remain gates. No live activation has occurred; Production remains 1.0.40. Public ACME/ARM/external VPS networking are NOT TESTED without required infrastructure. The original v1.0.45 security workbench remains partial/unsealed; five validated findings and corrections in v1.0.46/v1.0.50 are preserved. There is no new DB migration, key rotation, node adoption or firewall change in this patch.
