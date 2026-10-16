@@ -11,10 +11,12 @@ import re
 import socket
 import stat
 import signal
+import platform
 import shutil
 import subprocess
 import sys
 import time
+import traceback
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -42,6 +44,7 @@ CANARY_PORT = 19002
 REDIRECT_GRACE_SECONDS = 300
 ALLOWED_RESTARTS = {"pvnetwork-panel.service"}
 PROXY_DIRS={Path('/etc/nginx/conf.d'),Path('/etc/nginx/sites-enabled'),Path('/etc/nginx/sites-available')}
+TOOLS=Path('/opt/pvnetwork-panel-tools')
 
 
 def parse_env(path: Path) -> dict[str, str]:
@@ -124,6 +127,20 @@ def exchange_directories(left: Path, right: Path) -> None:
     _rename_exchange(left, right)
 
 
+def frontend_runtime():
+    pins=json.loads((APP_DIR/'ops/toolchain.json').read_text())
+    name=pins['platforms'][platform.machine()]['node']['filename'].removesuffix('.tar.xz')
+    if not re.fullmatch('node-v[0-9.]+-linux-(x64|arm64)',name):raise ValueError('invalid checked Node runtime identity')
+    node=TOOLS/name/'bin/node'
+    for path in [node,*node.parents]:
+        info=path.lstat()
+        sticky_directory=stat.S_ISDIR(info.st_mode) and bool(info.st_mode&stat.S_ISVTX)
+        if path.is_symlink() or info.st_uid not in {0,os.geteuid()} or (info.st_mode&0o022 and not sticky_directory):raise ValueError('checked Node runtime ownership required')
+    actual=subprocess.run([str(node),'--version'],check=True,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,timeout=5)
+    if actual.stdout.strip()!='v'+pins['node_version']:raise ValueError('installed Node runtime version mismatch')
+    return node,{**os.environ,'PATH':str(node.parent)+os.pathsep+os.environ.get('PATH','/usr/bin:/bin')}
+
+
 def build_frontend(candidate_env: Path, staging_dir: Path) -> Path:
     frontend = APP_DIR / "frontend"
     vite = frontend / "node_modules/.bin/vite"
@@ -133,13 +150,13 @@ def build_frontend(candidate_env: Path, staging_dir: Path) -> Path:
     out_dir = staging_dir / "dist"
     if out_dir.exists():
         shutil.rmtree(out_dir)
-    env = os.environ.copy()
+    node,env = frontend_runtime()
     env.update(values)
     env["URLPATH"] = values["URLPATH"]
     env["VITE_URLPATH"] = values.get("VITE_URLPATH", values["URLPATH"])
     env["PVNETWORK_BUILD_OUTDIR"] = str(out_dir)
     subprocess.run(
-        ["npm", "run", "build"],
+        [str(node),str(frontend/'node_modules/vite/bin/vite.js'),'build'],
         cwd=frontend,
         env=env,
         check=True,
@@ -340,6 +357,14 @@ def reload_proxy():
 
 def _safe_failure_reason(exc: BaseException) -> str:
     return 'Panel settings verification failed; inspect private diagnostics and recovery state'
+
+
+def record_private_failure(change_id):
+    if not runtime.JOB_ID_RE.fullmatch(change_id):return
+    path=runtime.JOB_DIR/(change_id+'.failure.log')
+    fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_APPEND|os.O_NOFOLLOW,0o600)
+    with os.fdopen(fd,'w') as handle:
+        os.fchmod(handle.fileno(),0o600);handle.write(traceback.format_exc());handle.flush();os.fsync(handle.fileno())
 
 
 def _copy_private(src: Path, dst: Path) -> None:
@@ -556,6 +581,7 @@ def run_change(change_id: str, staging_dir: Path, lock_fd: int) -> dict:
             proxy_switched=True
             write_proxy(proxy,port_proxy_candidate(proxy_original,old_port,new_port));reload_proxy()
 
+        stop_candidate(candidate);candidate=None
         result = update_job(change_id, status="complete", failure_reason=None)
         try:
             write_terminal_audit(result, "complete")
@@ -564,6 +590,8 @@ def run_change(change_id: str, staging_dir: Path, lock_fd: int) -> dict:
         return result
     except Exception as exc:
         failure = _safe_failure_reason(exc)
+        try:record_private_failure(change_id)
+        except OSError:pass
         rollback_ok=True
         if backup is not None and (dist_switched or env_switched):
             try:
@@ -582,6 +610,8 @@ def run_change(change_id: str, staging_dir: Path, lock_fd: int) -> dict:
                 restart_service("pvnetwork-panel.service")
                 if not verify_canonical({"old_path": job.get("old_path")}):rollback_ok=False
             except Exception as rollback_exc:
+                try:record_private_failure(change_id)
+                except OSError:pass
                 failure = f"{failure}; rollback failure: {_safe_failure_reason(rollback_exc)}"
                 rollback_ok=False
         result = update_job(change_id, status="rolled_back" if rollback_ok else 'recovery_required', failure_reason=failure)
@@ -631,8 +661,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Apply a staged PVNetwork panel runtime settings change")
     parser.add_argument("--change-id", required=True)
     parser.add_argument("--staging-dir", required=True)
-    parser.add_argument("--lock-fd", required=True, type=int)
+    locking=parser.add_mutually_exclusive_group(required=True)
+    locking.add_argument('--lock-fd',type=int)
+    locking.add_argument('--acquire-lock',action='store_true')
     args = parser.parse_args()
+    if args.acquire_lock:
+        deadline=time.monotonic()+10
+        while True:
+            try:args.lock_fd=runtime.acquire_apply_lock();break
+            except runtime.ApplyBusy:
+                if time.monotonic()>=deadline:raise RuntimeError('Settings operation lock handoff did not complete') from None
+                time.sleep(.1)
 
     try:
         actual=os.fstat(args.lock_fd);expected=runtime.LOCK_FILE.stat()

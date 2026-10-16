@@ -385,7 +385,7 @@ def set_language(language):
     if language not in {'en','fa'}:raise ValueError('supported language required')
     for parent in [STATE,*STATE.parents]:
         info=parent.lstat()
-        if not stat.S_ISDIR(info.st_mode) or info.st_uid!=os.geteuid() or (info.st_mode&0o022 and not info.st_mode&stat.S_ISVTX):raise ValueError('owned CLI state required')
+        if not stat.S_ISDIR(info.st_mode) or info.st_uid not in {0,os.geteuid()} or (info.st_mode&0o022 and not info.st_mode&stat.S_ISVTX):raise ValueError('owned CLI state required')
     path=STATE/'cli-language.json'
     if path.exists() or path.is_symlink():
         info=path.lstat()

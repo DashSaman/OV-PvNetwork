@@ -223,6 +223,15 @@ class PanelSettingsWorkerTests(unittest.TestCase):
     def test_failure_text_cannot_export_arbitrary_secret_exception(self):
         self.assertNotIn('private-demo-secret',self.worker._safe_failure_reason(RuntimeError('private-demo-secret')))
 
+    def test_settings_build_uses_pinned_node_when_service_path_has_no_npm(self):
+        import json
+        from types import SimpleNamespace
+        tools=self.harness.root/'tools';node=tools/'node-v22.23.3-linux-x64/bin/node';node.parent.mkdir(parents=True);node.write_text('fixture');node.chmod(0o755)
+        ops=self.harness.app/'ops';ops.mkdir();(ops/'toolchain.json').write_text(json.dumps({'node_version':'22.23.3','platforms':{'x86_64':{'node':{'filename':'node-v22.23.3-linux-x64.tar.xz'}}}}))
+        with patch.object(self.worker,'TOOLS',tools),patch.object(self.worker.platform,'machine',return_value='x86_64'),patch.object(self.worker.subprocess,'run',return_value=SimpleNamespace(stdout='v22.23.3\n',returncode=0)):
+            actual,environment=self.worker.frontend_runtime()
+        self.assertEqual(actual,node);self.assertEqual(environment['PATH'].split(os.pathsep)[0],str(node.parent))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -158,6 +158,7 @@ jobs:
           node tests/node-reconcile-smoke.mjs
           node tests/router-openvpn-smoke.mjs
           node tests/panel-settings-smoke.mjs
+          node tests/panel-port-smoke.mjs
           node tests/security-regression-smoke.mjs
           PV_PYTHON=python3 node tests/subscription-responsive-smoke.mjs
 

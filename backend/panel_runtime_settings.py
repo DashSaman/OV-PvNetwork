@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -201,31 +202,20 @@ def acquire_apply_lock() -> int:
     return fd
 
 
-def spawn_apply_helper(change_id: str, staging_dir: Path, lock_fd: int) -> int:
+def spawn_apply_helper(change_id: str, staging_dir: Path, lock_fd: int) -> str:
     if not JOB_ID_RE.fullmatch(change_id):
         raise ValueError("Invalid change id")
     JOB_DIR.mkdir(parents=True, exist_ok=True)
     log_path = JOB_DIR / f"{change_id}.log"
-    log_fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
-    log_handle = os.fdopen(log_fd, "ab", buffering=0)
-    command = [
-        APPLY_HELPER,
-        "--change-id",
-        change_id,
-        "--staging-dir",
-        str(staging_dir),
-        "--lock-fd",
-        str(lock_fd),
-    ]
-    try:
-        process = subprocess.Popen(
-            command,
-            pass_fds=(lock_fd,),
-            start_new_session=True,
-            stdout=log_handle,
-            stderr=subprocess.STDOUT,
-            close_fds=True,
-        )
-    finally:
-        log_handle.close()
-    return int(process.pid)
+    log_fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW, 0o600)
+    os.close(log_fd)
+    unit='pvnetwork-panel-settings-'+hashlib.sha256(change_id.encode()).hexdigest()[:16]
+    # A new session still shares the panel's cgroup and is killed by its
+    # restart. A separately owned transient unit survives that narrow restart.
+    # The queued journal prevents other native work during lock handoff.
+    command=['systemd-run','--quiet','--collect','--unit='+unit,'--service-type=exec',
+        '--property=WorkingDirectory='+str(LIVE_ENV.parent),
+        '--property=StandardOutput=append:'+str(log_path),'--property=StandardError=append:'+str(log_path),
+        APPLY_HELPER,'--change-id',change_id,'--staging-dir',str(staging_dir),'--acquire-lock']
+    subprocess.run(command,check=True,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=15)
+    return unit

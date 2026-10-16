@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import apiClient from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +26,25 @@ const readChangeEnvelope = () => {
     return null;
   }
 };
+
+function SettingsConfirmation({ children, onCancel }) {
+  const dialog = useRef(null);
+  useEffect(() => {
+    const previous = document.activeElement;
+    dialog.current?.focus();
+    const keyboard = event => {
+      if (event.key === 'Escape') { event.preventDefault(); onCancel(); }
+      if (event.key !== 'Tab') return;
+      const buttons = [...dialog.current.querySelectorAll('button:not(:disabled)')];
+      const first = buttons[0]; const last = buttons.at(-1);
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog.current)) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', keyboard);
+    return () => { document.removeEventListener('keydown', keyboard); previous?.focus(); };
+  }, [onCancel]);
+  return createPortal(<div className="modal-overlay"><div ref={dialog} tabIndex={-1} className="modal" role="dialog" aria-modal="true" aria-labelledby="panel-confirm-title">{children}</div></div>, document.body);
+}
 
 function PanelRuntimeCard() {
   const { t } = useTranslation();
@@ -151,13 +171,13 @@ function PanelRuntimeCard() {
       </div>
       <div className="monitor-actions"><button type="button" className="btn" disabled={applying} onClick={openConfirmation}>{t('panelSettings.apply')}</button></div>
     </>}
-    {confirming && <div className="modal-overlay"><div className="modal" role="dialog" aria-modal="true" aria-labelledby="panel-confirm-title">
+    {confirming && <SettingsConfirmation onCancel={() => setConfirming(false)}>
       <div className="modal-header"><h3 id="panel-confirm-title">{t('panelSettings.confirmTitle')}</h3></div>
       <p>{t('panelSettings.summaryUser', { old: info?.username, next: form.newUsername || info?.username })}</p>
       <p>{t('panelSettings.summaryPath', { old: info?.panel_path, next: form.newPath || info?.panel_path })}</p>
       <p>{t('panelSettings.summaryPort', { old: info?.panel_port, next: form.newPort || info?.panel_port })}</p>
       <div className="modal-footer"><button type="button" className="btn-secondary" onClick={() => setConfirming(false)}>{t('panelSettings.cancel')}</button><button type="button" className="btn" onClick={applyChanges}>{t('panelSettings.confirm')}</button></div>
-    </div></div>}
+    </SettingsConfirmation>}
   </section>;
 }
 

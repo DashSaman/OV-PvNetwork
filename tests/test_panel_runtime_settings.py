@@ -128,19 +128,14 @@ class PanelRuntimeTokenLockTests(unittest.TestCase):
             job_dir = Path(tmp) / "jobs"
             staging = Path(tmp) / "stage"
             staging.mkdir()
-            with patch.object(runtime, "JOB_DIR", job_dir), patch.object(runtime, "APPLY_HELPER", "/usr/local/sbin/pvnetwork-panel-settings-apply"), patch("subprocess.Popen") as popen:
-                popen.return_value.pid = 4242
-                pid = runtime.spawn_apply_helper("change-1", staging, 9)
-            self.assertEqual(pid, 4242)
-            args = popen.call_args.args[0]
-            self.assertEqual(args, [
-                "/usr/local/sbin/pvnetwork-panel-settings-apply",
-                "--change-id", "change-1",
-                "--staging-dir", str(staging),
-                "--lock-fd", "9",
-            ])
-            self.assertEqual(popen.call_args.kwargs["pass_fds"], (9,))
-            self.assertTrue(popen.call_args.kwargs["start_new_session"])
+            with patch.object(runtime, "JOB_DIR", job_dir), patch.object(runtime, "APPLY_HELPER", "/usr/local/sbin/pvnetwork-panel-settings-apply"), patch("subprocess.run") as run:
+                unit = runtime.spawn_apply_helper("change-1", staging, 9)
+            self.assertTrue(unit.startswith('pvnetwork-panel-settings-'))
+            args = run.call_args.args[0]
+            self.assertEqual(args[0],'systemd-run');self.assertIn('--collect',args)
+            self.assertIn('--acquire-lock',args);self.assertNotIn('--lock-fd',args)
+            self.assertIn('--property=StandardOutput=append:'+str(job_dir/'change-1.log'),args)
+            self.assertEqual((job_dir/'change-1.log').stat().st_mode&0o777,0o600)
             joined = " ".join(args).lower()
             for word in ["password", "jwt", "token", "secret", "env="]:
                 self.assertNotIn(word, joined)
