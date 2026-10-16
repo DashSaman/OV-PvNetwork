@@ -12,6 +12,7 @@ import secrets
 import shutil
 import signal
 import sqlite3
+import stat
 import subprocess
 import sys
 import tarfile
@@ -25,6 +26,7 @@ STATE=Path('/etc/pvnetwork-panel')
 RELEASES=Path('/opt/pvnetwork-panel-releases')
 BACKUPS=Path('/var/backups/pvnetwork-panel')
 LEGACY_BACKUPS=BACKUPS/'lifecycle'
+LEGACY_CREDENTIAL_KEY=Path('/etc/pvnetwork/anyconnect-credential-fernet.key')
 REPO='DashSaman/OV-PvNetwork'
 
 
@@ -202,6 +204,33 @@ def verify_backup_files(directory):
     return metadata
 
 
+def checked_credential_key_alias(key, *, restore=False):
+    """Only the existing PVNetwork state alias; arbitrary links stay refused."""
+    key=Path(key);legacy=LEGACY_CREDENTIAL_KEY
+    if key!=STATE/'anyconnect-credential-fernet.key' or not key.is_absolute() or not legacy.is_absolute():
+        raise ValueError('custom credential key alias requires an explicit backup policy')
+    try:
+        link=key.lstat()
+        try:target=legacy.lstat()
+        except FileNotFoundError:
+            if not restore:raise
+            target=None
+        if not stat.S_ISLNK(link.st_mode) or link.st_uid!=0 or key.resolve(strict=not restore)!=legacy:
+            raise ValueError('credential key alias identity changed')
+        minimum_size=0 if restore else 1
+        if target is not None and (not stat.S_ISREG(target.st_mode) or target.st_uid!=0 or target.st_mode&0o077 or not minimum_size<=target.st_size<=4096):
+            raise ValueError('credential key alias target must be root-owned private regular data')
+        for parent in {key.parent,*key.parent.parents,legacy.parent,*legacy.parent.parents}:
+            info=parent.lstat()
+            if not stat.S_ISDIR(info.st_mode) or info.st_uid!=0 or info.st_mode&0o022:
+                raise ValueError('credential key alias ancestor is not protected')
+        if legacy.parent.stat().st_mode&0o077:
+            raise ValueError('credential key alias target directory must be private')
+    except OSError as exc:
+        raise ValueError('credential key alias target is unavailable') from exc
+    return legacy
+
+
 def runtime_files(environment):
     data=(APP/'data').resolve();files={}
     from sqlalchemy.engine import make_url
@@ -216,9 +245,9 @@ def runtime_files(environment):
             if database and (p==database or str(p) in {str(database)+'-wal',str(database)+'-shm',str(database)+'-journal'}):continue
             files['data/'+relative.as_posix()]=p
     key=Path(environment.get('PVNETWORK_ANYCONNECT_CREDENTIAL_KEY_FILE') or STATE/'anyconnect-credential-fernet.key')
-    if key.exists():
-        if key!=STATE/'anyconnect-credential-fernet.key' or key.is_symlink():raise ValueError('custom credential key location needs an explicit backup policy')
-        files['state/anyconnect-credential-fernet.key']=key
+    if key.exists() or key.is_symlink():
+        if key!=STATE/'anyconnect-credential-fernet.key':raise ValueError('custom credential key location needs an explicit backup policy')
+        files['state/anyconnect-credential-fernet.key']=checked_credential_key_alias(key) if key.is_symlink() else key
     push=STATE/'push'
     if push.is_dir():
         for p in push.rglob('*'):
@@ -261,11 +290,18 @@ def restore_runtime_files(archive, expected):
     if set(payload)!=set(expected):raise ValueError('runtime snapshot file set mismatch')
     for name,value in payload.items():
         p=Path(name);base=(APP/'data').resolve() if p.parts[0]=='data' else STATE
-        target=base/Path(*p.parts[1:])
-        if base not in target.resolve().parents or target.is_symlink():raise ValueError('runtime target escapes owned root')
+        target=base/Path(*p.parts[1:]);alias=None
+        if name=='state/anyconnect-credential-fernet.key' and target.is_symlink():
+            alias=target;target=checked_credential_key_alias(alias,restore=True)
+        elif base not in target.resolve().parents or target.is_symlink():raise ValueError('runtime target escapes owned root')
         target.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
         temporary=target.with_name('.'+target.name+'.restore-'+secrets.token_hex(6))
         with temporary.open('wb') as out:temporary.chmod(0o600);out.write(value);out.flush();os.fsync(out.fileno())
+        if alias is not None:
+            try:
+                if checked_credential_key_alias(alias,restore=True)!=target:raise ValueError('credential key alias changed during restore')
+            except BaseException:
+                temporary.unlink(missing_ok=True);raise
         os.replace(temporary,target)
         fsync_directory(target.parent)
 

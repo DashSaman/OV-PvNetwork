@@ -104,7 +104,7 @@ jobs:
       - name: Root-owned adoption fixtures in disposable runner
         # These fixtures write only private temporary files; all service commands
         # are mocked. Ownership/security checks remain strict in the installer.
-        run: sudo -E env TMPDIR=/tmp "$PWD/.venv/bin/python" -m unittest tests.test_node_adoption_handover tests.test_node_restore tests.test_node_offline_restore tests.test_node_operation_lock tests.test_node_configuration_transaction tests.test_node_fresh_pki_staging tests.test_node_archive_remote tests.test_node_archive_ssh tests.test_node_archive_native_control.NodeArchiveBootstrapScopeTests -v
+        run: sudo -E env TMPDIR=/tmp "$PWD/.venv/bin/python" -m unittest tests.test_node_adoption_handover tests.test_node_restore tests.test_node_offline_restore tests.test_node_operation_lock tests.test_node_configuration_transaction tests.test_node_fresh_pki_staging tests.test_node_archive_remote tests.test_node_archive_ssh tests.test_node_archive_native_control.NodeArchiveBootstrapScopeTests tests.test_lifecycle_credential_alias -v
 
       - name: Security regression suite
         run: |

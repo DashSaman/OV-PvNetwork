@@ -1,3 +1,10 @@
+## v1.0.53 candidate — PVN-1037: Verified existing credential alias
+
+- Recognize only the fixed canonical-to-legacy PVNetwork credential-key link after strict root/permission/ancestor checks.
+- Archive regular key bytes under the existing logical v2 name; restore the verified target atomically while preserving the existing link.
+- Reject arbitrary, broken, redirected, permissive or non-root aliases; recheck identity before replacing the target.
+- Add ten real root POSIX fixtures, including actual Fernet decrypt/restore; exact CI/backup/canary and publication/Production gates remain pending.
+
 ## v1.0.52 candidate — PVN-1036: Portable release line endings
 
 - Explicit LF text export policy; binary image/archive/font assets remain byte-identical.

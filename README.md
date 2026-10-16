@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.52-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.53-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.53 candidate vs v1.0.52
+
+**PVN-1037 — existing credential-key alias recovery.** Native backups recognize the fixed older PVNetwork state-key alias only after root ownership, private permissions, regular target and protected ancestors pass. Same-host restore preserves the link and key material. Arbitrary or unsafe links remain refused. [Policy and validation](docs/RELEASE-NOTES-v1.0.53.md). No key rotation or UI change; final CI, backup/canary, publication and scoped Production gates remain open.
 
 ## v1.0.52 candidate vs v1.0.51
 
