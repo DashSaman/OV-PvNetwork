@@ -15,6 +15,20 @@ env:
   JWT_SECRET_KEY: ci-jwt-secret-key-not-production-32chars
 
 jobs:
+  native-installer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution: [ubuntu2204, ubuntu2404, debian12]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Fresh native install and repeat on disposable systemd guest
+        run: python3 tests/native_installer_systemd.py ${{ matrix.distribution }}
+
   validate:
     runs-on: ubuntu-latest
     services:

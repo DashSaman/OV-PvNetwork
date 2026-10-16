@@ -27,10 +27,12 @@ class ReleaseArchiveLineEndingTests(unittest.TestCase):
         if attributes.exists():
             (cls.repo / '.gitattributes').write_bytes(attributes.read_bytes())
         (cls.repo / 'entry.sh').write_bytes(SHELL)
+        (cls.repo / 'pvnetwork').write_bytes(SHELL)
         (cls.repo / 'demo.png').write_bytes(BINARY)
         (cls.repo / 'guide.md').write_text('PVNetwork Demo / فارسی\n', encoding='utf-8', newline='\n')
         git('-c', 'core.autocrlf=false', 'add', '.')
         git('update-index', '--chmod=+x', 'entry.sh')
+        git('update-index', '--chmod=+x', 'pvnetwork')
         git('-c', 'user.name=PVNetwork Demo', '-c', 'user.email=demo@example.invalid', 'commit', '-qm', 'Demo export fixture')
         cls.archive = git('-c', 'core.autocrlf=true', 'archive', '--format=tar', 'HEAD')
 
@@ -40,9 +42,10 @@ class ReleaseArchiveLineEndingTests(unittest.TestCase):
 
     def test_windows_style_git_exports_exact_executable_lf_bytes(self):
         with tarfile.open(fileobj=io.BytesIO(self.archive)) as archive:
-            script = archive.extractfile('entry.sh').read()
-            self.assertEqual(script, SHELL, 'Git export converted executable source to CRLF')
-            self.assertEqual(archive.getmember('entry.sh').mode & 0o111, 0o111)
+            for name in ['entry.sh', 'pvnetwork']:
+                script = archive.extractfile(name).read()
+                self.assertEqual(script, SHELL, 'Git export converted executable source to CRLF')
+                self.assertEqual(archive.getmember(name).mode & 0o111, 0o111)
 
     def test_binary_asset_hash_is_unchanged(self):
         with tarfile.open(fileobj=io.BytesIO(self.archive)) as archive:
