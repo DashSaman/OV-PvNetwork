@@ -1,0 +1,18 @@
+# Release archives must execute identically with Windows or Unix Git settings.
+* text=auto eol=lf
+
+# Binary assets must retain their exact published bytes.
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.gif -text
+*.webp -text
+*.ico -text
+*.pdf -text
+*.woff -text
+*.woff2 -text
+*.ttf -text
+*.zip -text
+*.gz -text
+*.xz -text
+*.tar -text

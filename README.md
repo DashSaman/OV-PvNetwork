@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.51-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.52-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.52 candidate vs v1.0.51
+
+**PVN-1036 — portable source archives.** Repository attributes keep executable/text exports on LF even when a Windows contributor uses Git autocrlf. Binary assets retain their bytes. This fixes the exact private archive that failed fresh Bash startup. [Regression and release boundary](docs/RELEASE-NOTES-v1.0.52.md). No UI change; the [current Demo](docs/CURRENT-DEMO.md) remains applicable. Final native artifact, publication and authorized Production gates remain open.
 
 ## v1.0.51 candidate vs v1.0.50
 

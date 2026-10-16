@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 umask 077
 REPO="DashSaman/OV-PvNetwork"
-REF="${PVNETWORK_REF:-v1.0.51}"
+REF="${PVNETWORK_REF:-v1.0.52}"
 [[ "$REF" =~ ^v1\.0\.[0-9]+$ ]] || { echo '[PVNetwork] immutable release version required' >&2; exit 2; }
 [[ "${EUID:-$(id -u)}" -eq 0 ]] || { echo '[PVNetwork] run as root' >&2; exit 2; }
 for tool in curl python3; do

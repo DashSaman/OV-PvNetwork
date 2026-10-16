@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.51-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.52-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.52 نسبت به v1.0.51
+
+**PVN-1036 — آرشیو منبع قابل اجرا.** ویژگی‌های مخزن، خروجی فایل متنی و اجرایی را حتی با Git autocrlf ویندوز روی LF نگه می‌دارند و بایت‌های تصویر و فایل باینری حفظ می‌شود. این اصلاح، توقف Bash در بستهٔ خصوصیِ آزمون نصب تازه را برطرف می‌کند. [آزمون و مرز انتشار](docs/RELEASE-NOTES-v1.0.52.fa.md). رابط تغییر نکرده و [Demo فعلی](docs/CURRENT-DEMO.fa.md) معتبر است. gateهای بستهٔ نهایی، انتشار و Production مجاز باز هستند.
 
 ## نامزد v1.0.51 نسبت به v1.0.50
 

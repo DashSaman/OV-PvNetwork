@@ -1,3 +1,10 @@
+## v1.0.52 candidate — PVN-1036: Portable release line endings
+
+- Explicit LF text export policy; binary image/archive/font assets remain byte-identical.
+- Reproduce actual Windows-style Git archive conversion, preserve executable bits and execute exported entry points in Linux Bash.
+- Four archive regressions and twelve related Linux contracts passed; final exact artifact/native/CI/publication and authorized Production gates remain open.
+- UI is unchanged from v1.0.51; its current synthetic captures remain applicable.
+
 ## v1.0.51 candidate — PVN-1035: Theme-aware form contrast
 
 - Pair form value text with an opaque surface from the same theme, including focus and select options.
