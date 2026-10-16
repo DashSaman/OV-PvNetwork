@@ -1516,3 +1516,7 @@ The public-bootstrap QA helper and ancestry-only merge preserve the separately r
 PVN-1038 validation: actual old built-preview failure reproduced; corrected full EN/FA x two themes x nine widths x native 100/125/150% zoom matrix PASS (108 cases, 216 actual browser downloads), with empty/failed-list no-request checks. Quiet lint/build, both frozen locks and public material guard PASS. Exact frozen-source CI/public artifact/native preparation/Production remain gates.
 
 PVN-1038 release metadata correction: initial CI caught backend/version.py and three current-version contract expectations still at 1.0.53; aligned them with 1.0.54. Two applicable metadata contracts pass on Windows UTF-8; the POSIX-only settings module remains Linux CI coverage. Bilingual primary installer commands now pin this patch rather than obsolete v1.0.40. No old tag/assets changed.
+
+## Final v1.0.54 QA checkpoint
+
+Exact source `83badfdf05b3101e6b61a909ea4a667fd3fb0583`, archive SHA256 `f64bf8b0d93485334aaf30262fdd5fc1e9808a7ee12ecfd350ef4b28cb499ed8`, complete CI `38979371833`, public bootstrap `38980569129` on all three supported systemd distributions, anonymous asset verification and native backup/clone-canary PASS. Main includes all prior tasks and PR69 without source-tree changes. [Evidence and explicit limits](docs/VALIDATION-v1.0.54.md). Production remains 1.0.40; owner-authorized maintenance/activation and final stable promotion remain open. Native scanner metadata remains partial/unsealed. No task is marked DONE from QA publication alone.
