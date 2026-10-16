@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.48-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.49-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.49 نسبت به v1.0.48
+
+**PVN-1033 — مقصد کانفیگ دانلودشده.** پیش از درج مقصد فعلی نود، خط‌های قدیمی آدرس و پروتکل حذف می‌شوند؛ هویت درون فایل و سربرگ‌های خصوصی دانلود حفظ می‌شوند. [آزمون و سازگاری](docs/RELEASE-NOTES-v1.0.49.fa.md). نسخهٔ عمومی 1.0.37 و Production برابر 1.0.40 است؛ gateهای نهایی باز هستند.
 
 ## نامزد v1.0.48 نسبت به v1.0.47
 

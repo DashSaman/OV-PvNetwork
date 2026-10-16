@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.48-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.49-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.49 candidate vs v1.0.48
+
+**PVN-1033 — downloaded profile endpoint.** Downloads now remove stale remote/protocol lines before adding the current node endpoint, preserving cached inline identity and private response headers. [Regression and compatibility](docs/RELEASE-NOTES-v1.0.49.md). Public stable remains 1.0.37 and Production remains 1.0.40; final gates remain open.
 
 ## v1.0.48 candidate vs v1.0.47
 

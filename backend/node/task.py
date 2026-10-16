@@ -374,14 +374,14 @@ async def download_ovpn_client_from_node(
     for line in text.splitlines():
 
         if re.match(
-            r"^\\s*remote\\s+",
+            r"^\s*remote\s+",
             line,
             flags=re.I,
         ):
             continue
 
         if re.match(
-            r"^\\s*proto\\s+",
+            r"^\s*proto\s+",
             line,
             flags=re.I,
         ):

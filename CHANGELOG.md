@@ -1,3 +1,9 @@
+## v1.0.49 candidate — PVN-1033: Downloaded profile endpoint
+
+- Remove stale remote/protocol directives before returning the current endpoint.
+- Preserve inline identity, private download headers and invalid-profile retry.
+- Real handler regression and full Linux suite passed; final CI/release gates open.
+
 ## v1.0.48 candidate — PVN-1032: SQLite domain ingestion
 
 - Fix the real collector ingest failure on supported SQLite installations.
