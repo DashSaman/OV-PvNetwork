@@ -1,7 +1,10 @@
 #!/opt/pvnetwork-panel/.venv/bin/python3
 
 import sys
-sys.path.insert(0, "/opt/pvnetwork-panel")
+import argparse
+from pathlib import Path
+source_root=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(source_root) if (source_root/'backend').is_dir() else "/opt/pvnetwork-panel")
 
 from backend.db.engine import SessionLocal
 from backend.db.models import Node, User, UserNode
@@ -57,7 +60,10 @@ def profile_valid(req, client):
         return False
 
 
-def main():
+def main(node_id=None):
+
+    if node_id is not None and (type(node_id) is not int or node_id<1):
+        raise ValueError('positive explicit node ID required')
 
     db = SessionLocal()
 
@@ -69,16 +75,21 @@ def main():
             .all()
         )
 
-        nodes = (
-            db.query(Node)
-            .filter(
+        node_query=db.query(Node)
+        if node_id is not None:
+            # Manual repair can prepare an assigned drained/disabled node;
+            # it never changes its eligibility flags or the target scope.
+            node_query=node_query.filter(Node.id==node_id)
+        else:
+            node_query=node_query.filter(
                 Node.status.is_(True),
                 Node.drain.is_(False),
                 Node.maintenance.is_(False),
             )
-            .order_by(Node.id)
-            .all()
-        )
+        nodes=node_query.order_by(Node.id).all()
+        if node_id is not None and not nodes:
+            print('RECONCILE_RESULT=FAIL REASON=target_unavailable',flush=True)
+            return 1
 
         assignment_rows = db.query(
             UserNode.user_uuid, UserNode.node_id
@@ -124,7 +135,7 @@ def main():
                     f"NODE={node.name} REACHABLE=NO DESIRED={len(desired_users)}",
                     flush=True,
                 )
-                total_failed += len(desired_users)
+                total_failed += max(1,len(desired_users))
                 continue
 
             ok = 0
@@ -169,6 +180,10 @@ def main():
 
 
 if __name__ == "__main__":
+    parser=argparse.ArgumentParser(description='Reconcile existing user assignments; optional explicit node scope')
+    parser.add_argument('--node-id',type=int)
+    arguments=parser.parse_args()
+    if arguments.node_id is not None and arguments.node_id<1:parser.error('positive --node-id required')
     raise SystemExit(
-        main()
+        main(arguments.node_id)
     )

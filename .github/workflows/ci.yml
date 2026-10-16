@@ -155,6 +155,7 @@ jobs:
           node tests/node-deploy-form-smoke.mjs
           node tests/node-edit-smoke.mjs
           node tests/node-archive-smoke.mjs
+          node tests/node-reconcile-smoke.mjs
           node tests/router-openvpn-smoke.mjs
           node tests/panel-settings-smoke.mjs
           node tests/security-regression-smoke.mjs

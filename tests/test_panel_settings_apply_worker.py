@@ -100,6 +100,7 @@ class PanelSettingsWorkerTests(unittest.TestCase):
         self.worker = load_worker(self)
         self.harness = WorkerHarness(self)
         self.harness.prepare(self.worker)
+        self.worker.PROXY_DIRS={self.harness.root}
 
     def tearDown(self):
         self.harness.close()
@@ -140,7 +141,7 @@ class PanelSettingsWorkerTests(unittest.TestCase):
     def test_post_switch_failure_restores_exact_env_and_dist(self):
         before = self.harness.snapshot_live()
         restarts = []
-        with patch.object(self.worker, "build_frontend", side_effect=lambda *_: self.harness.fake_build(self.worker)), patch.object(self.worker, "start_candidate", return_value=object()), patch.object(self.worker, "verify_candidate", return_value=True), patch.object(self.worker, "stop_candidate"), patch.object(self.worker, "verify_canonical", return_value=False), patch.object(self.worker, "restart_service", side_effect=lambda name: restarts.append(name)):
+        with patch.object(self.worker, "build_frontend", side_effect=lambda *_: self.harness.fake_build(self.worker)), patch.object(self.worker, "start_candidate", return_value=object()), patch.object(self.worker, "verify_candidate", return_value=True), patch.object(self.worker, "stop_candidate"), patch.object(self.worker, "verify_canonical", side_effect=[False,True]), patch.object(self.worker, "restart_service", side_effect=lambda name: restarts.append(name)):
             result = self.worker.run_change(self.harness.change_id, self.harness.staging, 9)
         self.assertEqual(result["status"], "rolled_back")
         self.assertEqual(self.harness.snapshot_live(), before)
@@ -167,6 +168,60 @@ class PanelSettingsWorkerTests(unittest.TestCase):
     def test_runtime_installer_installs_worker(self):
         source = (ROOT / "scripts/install-runtime-tools.sh").read_text(encoding="utf-8")
         self.assertIn("pvnetwork-panel-settings-apply", source)
+
+    def test_port_proxy_patch_is_exact_and_refuses_ambiguous_upstream(self):
+        source='server { location / { proxy_pass http://127.0.0.1:19001; } }\n'
+        self.assertEqual(self.worker.port_proxy_candidate(source,19001,19443),source.replace(':19001;',':19443;'))
+        with self.assertRaises(ValueError):self.worker.port_proxy_candidate(source.replace(':19001;',':19999;'),19001,19443)
+        with self.assertRaises(ValueError):self.worker.port_proxy_candidate(source+source,19001,19443)
+
+    def test_port_health_failure_restores_exact_proxy_environment_and_build(self):
+        before=self.harness.snapshot_live();proxy=self.harness.root/'pvnetwork-panel.conf'
+        original='server { location / { proxy_pass http://127.0.0.1:19001; } }\n';proxy.write_text(original)
+        candidate=self.harness.staging/'candidate.env';candidate.write_text(candidate.read_text().replace('PORT=19001','PORT=19443'))
+        job=runtime.read_job_state(self.harness.change_id);job.update(old_port=19001,new_port=19443);runtime.write_job_state(self.harness.change_id,job)
+        with patch.object(self.worker,'build_frontend',side_effect=lambda *_:self.harness.fake_build(self.worker)),patch.object(self.worker,'start_candidate',return_value=object()),patch.object(self.worker,'verify_candidate',return_value=True),patch.object(self.worker,'stop_candidate'),patch.object(self.worker,'verify_canonical',side_effect=[False,True]),patch.object(self.worker,'restart_service'),patch.object(self.worker,'port_available'),patch.object(self.worker,'managed_proxy',return_value=proxy),patch.object(self.worker,'reload_proxy') as reload:
+            result=self.worker.run_change(self.harness.change_id,self.harness.staging,9)
+        self.assertEqual(result['status'],'rolled_back');self.assertEqual(proxy.read_text(),original)
+        self.assertEqual(self.harness.snapshot_live(),before);reload.assert_not_called()
+
+    def test_port_proxy_reload_failure_restores_proxy_and_previous_listener(self):
+        before=self.harness.snapshot_live();proxy=self.harness.root/'pvnetwork-panel.conf'
+        original='server { location / { proxy_pass http://127.0.0.1:19001; } }\n';proxy.write_text(original)
+        candidate=self.harness.staging/'candidate.env';candidate.write_text(candidate.read_text().replace('PORT=19001','PORT=19443'))
+        job=runtime.read_job_state(self.harness.change_id);job.update(old_port=19001,new_port=19443);runtime.write_job_state(self.harness.change_id,job)
+        seen=[]
+        def reload():
+            seen.append(proxy.read_text())
+            if len(seen)==1:raise RuntimeError('synthetic proxy verification failure')
+        with patch.object(self.worker,'build_frontend',side_effect=lambda *_:self.harness.fake_build(self.worker)),patch.object(self.worker,'start_candidate',return_value=object()),patch.object(self.worker,'verify_candidate',return_value=True),patch.object(self.worker,'stop_candidate'),patch.object(self.worker,'verify_canonical',return_value=True),patch.object(self.worker,'restart_service'),patch.object(self.worker,'port_available'),patch.object(self.worker,'managed_proxy',return_value=proxy),patch.object(self.worker,'reload_proxy',side_effect=reload):
+            result=self.worker.run_change(self.harness.change_id,self.harness.staging,9)
+        self.assertEqual(result['status'],'rolled_back');self.assertEqual(proxy.read_text(),original)
+        self.assertEqual(self.harness.snapshot_live(),before)
+        self.assertEqual(seen,[original.replace(':19001;',':19443;'),original],result)
+
+    def test_busy_port_refuses_before_build_or_any_restart(self):
+        job=runtime.read_job_state(self.harness.change_id);job.update(old_port=19001,new_port=19443);runtime.write_job_state(self.harness.change_id,job)
+        before=self.harness.snapshot_live()
+        with patch.object(self.worker,'port_available',side_effect=OSError('synthetic address busy')),patch.object(self.worker,'build_frontend') as build,patch.object(self.worker,'restart_service') as restart:
+            result=self.worker.run_change(self.harness.change_id,self.harness.staging,9)
+        self.assertEqual(result['status'],'rolled_back');self.assertEqual(self.harness.snapshot_live(),before)
+        build.assert_not_called();restart.assert_not_called()
+
+    def test_interrupted_switch_recovers_previous_env_dist_and_proxy(self):
+        before=self.harness.snapshot_live();proxy=self.harness.root/'pvnetwork-panel.conf'
+        original='server { location / { proxy_pass http://127.0.0.1:19001; } }\n';proxy.write_text(original)
+        candidate=self.harness.staging/'candidate.env';candidate.write_text(candidate.read_text().replace('PORT=19001','PORT=19443'))
+        job=runtime.read_job_state(self.harness.change_id);job.update(old_port=19001,new_port=19443);runtime.write_job_state(self.harness.change_id,job)
+        with patch.object(self.worker,'build_frontend',side_effect=lambda *_:self.harness.fake_build(self.worker)),patch.object(self.worker,'start_candidate',return_value=object()),patch.object(self.worker,'verify_candidate',return_value=True),patch.object(self.worker,'stop_candidate'),patch.object(self.worker,'verify_canonical',side_effect=KeyboardInterrupt),patch.object(self.worker,'restart_service'),patch.object(self.worker,'port_available'),patch.object(self.worker,'managed_proxy',return_value=proxy),patch.object(self.worker,'reload_proxy'):
+            with self.assertRaises(KeyboardInterrupt):self.worker.run_change(self.harness.change_id,self.harness.staging,9)
+        self.assertNotEqual(self.harness.snapshot_live(),before)
+        with patch.object(self.worker,'restart_service'),patch.object(self.worker,'verify_canonical',return_value=True),patch.object(self.worker,'reload_proxy'):
+            result=self.worker.recover_change(self.harness.change_id,self.harness.staging)
+        self.assertEqual(result['status'],'rolled_back');self.assertEqual(self.harness.snapshot_live(),before);self.assertEqual(proxy.read_text(),original)
+
+    def test_failure_text_cannot_export_arbitrary_secret_exception(self):
+        self.assertNotIn('private-demo-secret',self.worker._safe_failure_reason(RuntimeError('private-demo-secret')))
 
 
 if __name__ == "__main__":

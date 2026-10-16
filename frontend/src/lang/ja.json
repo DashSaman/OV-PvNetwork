@@ -742,5 +742,20 @@
     "discard": "Remove controller copy"
   },
   "editNodeKeepKey": "Leave blank to keep the stored private API key.",
-  "editNodeNameIdentity": "Keep the name of a node with customers or sessions; existing client identities depend on it."
+  "editNodeNameIdentity": "Keep the name of a node with customers or sessions; existing client identities depend on it.",
+  "nodeReconcile": {
+    "title": "Reconcile assigned users",
+    "scope": "Check and repair missing profiles on this node only. Existing assignments and drain settings are preserved. This operation does not restart the VPN.",
+    "start": "Reconcile this node",
+    "queued": "Queued",
+    "running": "Checking profiles",
+    "succeeded": "Selected node profiles verified",
+    "failed": "Reconciliation did not complete. Check node connectivity and retry."
+  },
+  "panelSettings": {
+    "currentPort": "Current internal panel port",
+    "newPort": "New internal panel port",
+    "portHelp": "Choose a free port from 1024 to 65535, excluding reserved canary port 19002. Public HTTPS port and firewall stay unchanged.",
+    "summaryPort": "Internal port: {{old}} → {{next}}"
+  }
 }

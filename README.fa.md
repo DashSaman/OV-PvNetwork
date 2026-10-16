@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.44-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.45-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.45 نسبت به v1.0.44
+
+**PVN-1029 — کنسول عملیاتی فارسی/انگلیسی.** منوی ۲۵ گزینه‌ای، عیب‌یابی محدود، ترمیم انتخابی سرویس و نود، بستهٔ خصوصی پشتیبانی و فرمان‌های چرخهٔ عمر بومی را ارائه می‌کند. ترمیم نود در وب نیز پیشرفت را نشان می‌دهد. تغییر پورت داخلی پنل از build و canary جدا، بازگشت دقیق پراکسی و بازیابی عملیات قطع‌شده استفاده می‌کند. [راهنمای CLI](docs/CLI.fa.md). نسخهٔ عمومی 1.0.37 و Production برابر 1.0.40 است؛ gateهای نهایی، انتشار و استقرار باز هستند.
 
 ## نامزد v1.0.44 نسبت به v1.0.43
 

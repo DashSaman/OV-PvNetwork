@@ -144,6 +144,22 @@ class PanelSettingsApiTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.staging.exists())
         spawn.assert_not_called()
 
+    async def test_port_only_change_is_staged_without_touching_live_environment(self):
+        before=self.live_env.read_bytes()
+        with patch.object(runtime,'spawn_apply_helper',return_value=2222):
+            response=await self.router.apply_panel_settings(self.request(new_port=19443),db=self.db,user=self.main_user)
+        self.assertEqual(self.live_env.read_bytes(),before)
+        job=runtime.read_job_state(response.data['change_id'])
+        self.assertEqual((job['old_port'],job['new_port']),(19001,19443));self.assertEqual(job['changed_fields'],['port'])
+        candidate=runtime.STAGING_ROOT/response.data['change_id']/'candidate.env'
+        self.assertIn('PORT=19443',candidate.read_text())
+        self.assertEqual(response.data['target_port'],19443)
+
+    async def test_canary_port_is_reserved_and_cannot_be_selected(self):
+        with patch.object(runtime,'spawn_apply_helper') as spawn:
+            await self.assert_http(422,self.request(new_port=19002),self.main_user)
+        spawn.assert_not_called()
+
     async def test_noop_and_validation_errors_are_422(self):
         cases = [
             self.request(new_path="OLDPATH"),

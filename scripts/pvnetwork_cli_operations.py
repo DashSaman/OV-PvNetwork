@@ -22,6 +22,7 @@ import urllib.request
 APP=Path('/opt/pvnetwork-panel')
 STATE=Path('/etc/pvnetwork-panel')
 SITE=Path('/etc/nginx/conf.d/pvnetwork-panel.conf')
+SETTINGS_JOBS=Path('/var/lib/pvnetwork-panel/panel-settings-jobs')
 SECRET_NAMES={'key','api_key','database_url','env','profile','ovpn','authorization','credential_sha256'}
 
 
@@ -50,7 +51,7 @@ def service_action(action,unit):
     return {'changed':True,'service':services(unit)}
 
 
-def repair(scope,unit=None):
+def repair(scope,unit=None,node_id=None):
     if scope=='panel-service':
         status=services()
         if status['ActiveState']=='active':return {'changed':False,'service':status}
@@ -60,11 +61,8 @@ def repair(scope,unit=None):
         if unit not in UNITS or not unit.endswith('.timer'):raise ValueError('choose exactly one owned timer')
         return service_action('start',unit)
     if scope=='node-reconcile':
-        engine=lifecycle()
-        with engine.operation_lock():
-            idle(engine);reply=capture(['systemctl','start','pvnetwork-node-user-reconcile.service'],timeout=60)
-            if reply['returncode']!=0:raise OperationFailure()
-        return {'queued':True,'scope':'existing-assignment-reconciliation'}
+        if type(node_id) is not int or node_id<1:raise ValueError('choose one registered node')
+        return api('/nodes/'+str(node_id)+'/reconcile','POST',{})
     raise ValueError('explicit repair scope required')
 
 
@@ -202,14 +200,30 @@ def resources():
             'disk_bytes':{'total':usage.total,'free':usage.free}}
 
 
+def status():
+    values=environment();service=services()
+    result={'version':version(),'panel':service['ActiveState'],'port':int(values.get('PORT') or 19000),'service':service}
+    for name,probe in [('health',health),('dashboard',lambda:api('/operations/dashboard'))]:
+        try:result[name]=probe()
+        except (OSError,ValueError,RuntimeError,KeyError):result[name]={'available':False}
+    return result
+
+
 def transactions():
     result={}
     for name in ['install-transaction.json','lifecycle-transaction.json','data-transaction.json']:
         path=STATE/name
         if not path.exists():result[name]='absent';continue
         if path.is_symlink() or not path.is_file() or path.stat().st_size>2*1024**2:result[name]='unsafe';continue
-        try:result[name]=str(json.loads(path.read_text()).get('state','unknown'))
+        try:
+            content=json.loads(path.read_text());result[name]=str(content.get('phase','unknown') if name=='install-transaction.json' else content.get('state','unknown'))
         except (ValueError,OSError):result[name]='unreadable'
+    result['panel-settings']='complete'
+    for path in SETTINGS_JOBS.glob('*.json'):
+        try:
+            if path.is_symlink() or not path.is_file() or path.stat().st_size>65536:raise ValueError('unsafe settings checkpoint')
+            if json.loads(path.read_text()).get('status') not in {'complete','rolled_back'}:result['panel-settings']='pending'
+        except (ValueError,OSError):result['panel-settings']='unreadable';break
     return result
 
 
@@ -315,16 +329,41 @@ def proxy(action='inspect'):
         'tls_configured':bool(re.search(r'(?m)^\s*ssl_certificate\s+',source))}
 
 
-def tls():
+def managed_certificate():
+    info=SITE.lstat()
+    if not stat.S_ISREG(info.st_mode) or info.st_uid!=os.geteuid() or info.st_mode&0o022 or info.st_size>128*1024:
+        raise ValueError('owned managed proxy site required')
     source=SITE.read_text()
     matches=re.findall(r'(?m)^\s*ssl_certificate\s+([^;]+);',source)
-    if not matches:return {'read_only':True,'configured':False,'setup_mode':True}
+    if not matches:return None
     if len(set(matches))!=1:raise ValueError('ambiguous managed TLS certificate')
     certificate=Path(matches[0].strip().strip('"'))
     if not certificate.is_absolute() or not certificate.is_file() or certificate.stat().st_size>1024**2:raise ValueError('managed certificate unavailable')
+    return certificate
+
+
+def tls():
+    certificate=managed_certificate()
+    if certificate is None:return {'read_only':True,'configured':False,'setup_mode':True}
     reply=capture(['openssl','x509','-in',str(certificate),'-noout','-dates','-subject','-issuer','-fingerprint','-sha256'])
     expiry=capture(['openssl','x509','-in',str(certificate),'-noout','-checkend','0'])
     return {'read_only':True,'configured':True,'readable':reply['returncode']==0,'expired':expiry['returncode']!=0,'certificate':reply['output']}
+
+
+def renew_tls():
+    engine=lifecycle()
+    with engine.operation_lock():
+        idle(engine);certificate=managed_certificate()
+        if certificate is None or certificate.parent.parent!=Path('/etc/letsencrypt/live') or certificate.name!='fullchain.pem':
+            raise ValueError('the selected panel must use one managed ACME certificate')
+        name=certificate.parent.name
+        if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.-]{0,252}',name):raise ValueError('safe managed certificate identity required')
+        for arguments,timeout in [(['certbot','renew','--cert-name',name,'--non-interactive','--no-random-sleep-on-renew'],240),
+                                  (['nginx','-t'],10),(['systemctl','reload','nginx.service'],30)]:
+            if capture(arguments,timeout=timeout)['returncode']!=0:raise OperationFailure()
+        result=tls()
+        if not result.get('readable') or result.get('expired'):raise OperationFailure()
+        return {'verified':True,'certificate':result,'forced_renewal':False}
 
 
 def jobs():
@@ -371,7 +410,7 @@ def execute(args):
     elif args.command=='version':result={'version':version()}
     elif args.command=='support':result=support(args.output)
     elif args.command=='services' and args.action=='status':result=services(args.unit)
-    elif args.command=='status':result={'version':version(),'panel':services(),'health':health(),'dashboard':api('/operations/dashboard')}
+    elif args.command=='status':values=environment();result=status()
     elif args.command=='logs':
         from pvnetwork_cli import UNITS
         if args.unit not in UNITS or not 1<=args.lines<=500:raise ValueError('unsupported bounded log scope')
@@ -382,10 +421,17 @@ def execute(args):
     elif args.command=='firewall':result=firewall()
     elif args.command=='nginx':values=environment();result=proxy(args.action)
     elif args.command=='tls' and args.action=='inspect':values=environment();result=tls()
+    elif args.command=='tls' and args.action=='renew':result=renew_tls()
     elif args.command=='jobs':result=jobs()
     elif args.command=='language':result=set_language(args.preference) if args.action=='set' else {'language':preferred_language()}
     elif args.command=='services':result=service_action(args.action,args.unit)
-    elif args.command=='repair':result=repair(args.scope,args.unit)
+    elif args.command=='repair':result=repair(args.scope,args.unit,args.node_id)
     elif args.command in {'backup','restore','update','rollback','recover','restore-upload'}:result=native_operation(args)
+    elif args.command in {'nodes','sessions','settings','credentials'}:
+        import pvnetwork_cli_api as bridge
+        values=environment()
+        if args.command=='nodes':result=bridge.nodes(args)
+        elif args.command=='sessions':result=bridge.sessions(args)
+        else:result=bridge.settings(args)
     else:raise RuntimeError('selected operation is not available in this implementation stage')
     return redact(result,private_values(values or {}))

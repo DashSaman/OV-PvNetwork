@@ -1,3 +1,10 @@
+## v1.0.45 candidate — PVN-1029: Bilingual operational CLI
+
+- 25 EN/FA operations, scoped services/node reconciliation, bounded read-only diagnostics and private structured support exports; hidden credentials, dry-run, confirmation and stable exit codes.
+- Existing native lifecycle engines retained; CLI resources installed with recovery entry points. Managed TLS renewal selects only the panel certificate.
+- Web node-reconciliation progress and internal panel-port settings, staged canary/proxy verification, exact rollback and interrupted settings recovery.
+- Candidate only. Final integration/CI, full mission, immutable public assets and owner-authorized Production gates remain open.
+
 ## v1.0.44 candidate — PVN-1028: Private node archive Web workflow
 
 - Main-admin backup, download, upload, compatible restore and interrupted-restore recovery over existing pinned SSH password/key authentication.

@@ -28,6 +28,7 @@ class PanelSettingsApplyIn(BaseModel):
     new_username: str | None = None
     new_password: str | None = None
     new_path: str | None = None
+    new_port: int | None = Field(default=None,ge=1024,le=65535,strict=True)
 
 
 def _parse_env(path: Path) -> dict[str, str]:
@@ -61,7 +62,7 @@ def _active_change() -> str | None:
         files = sorted(runtime.JOB_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     except OSError:
         return None
-    for path in files[:20]:
+    for path in files:
         try:
             state = runtime.read_job_state(path.stem)
         except Exception:
@@ -85,6 +86,7 @@ async def get_panel_settings(user: dict = Depends(get_current_user)):
     return ResponseModel(success=True, msg="Panel settings", data={
         "username": config.ADMIN_USERNAME,
         "panel_path": config.URLPATH,
+        "panel_port": config.PORT,
         "redirect": redirect,
         "active_change": _active_change(),
     })
@@ -106,7 +108,7 @@ async def get_panel_settings_job(
         key: state.get(key)
         for key in (
             "change_id", "status", "old_path", "new_path", "old_username",
-            "new_username", "changed_fields", "failure_reason", "created_at", "updated_at",
+            "new_username", "old_port", "new_port", "changed_fields", "failure_reason", "created_at", "updated_at",
         )
         if key in state
     }
@@ -128,6 +130,7 @@ async def apply_panel_settings(
     staging_dir: Path | None = None
     spawned = False
     try:
+        if _active_change():raise HTTPException(409,'An unfinished panel settings change requires recovery before another apply')
         live = _parse_env(runtime.LIVE_ENV)
         current_hash = live.get("ADMIN_PASSWORD_HASH", "")
         if not current_hash or not verify_password(request.current_password, current_hash):
@@ -135,6 +138,11 @@ async def apply_panel_settings(
 
         old_username = live.get("ADMIN_USERNAME", config.ADMIN_USERNAME)
         old_path = live.get("URLPATH", config.URLPATH)
+        old_port = int(live.get('PORT') or config.PORT)
+        new_port = None
+        if request.new_port is not None:
+            if request.new_port==19002:raise _http422('Port 19002 is reserved for the panel canary')
+            if request.new_port!=old_port:new_port=request.new_port
         old_generation = live.get("MAIN_ADMIN_AUTH_GENERATION", config.MAIN_ADMIN_AUTH_GENERATION)
         subscription_path = live.get("SUBSCRIPTION_PATH", config.SUBSCRIPTION_PATH)
         delegated_names = {row[0] for row in db.query(Admin.username).all()}
@@ -170,7 +178,7 @@ async def apply_panel_settings(
             new_password_hash = hash_password(new_password)
 
         credentials_changed = bool(new_username is not None or password_changed)
-        if new_username is None and new_path is None and not password_changed:
+        if new_username is None and new_path is None and new_port is None and not password_changed:
             raise _http422("No settings change requested")
 
         target_username = new_username or old_username
@@ -182,6 +190,7 @@ async def apply_panel_settings(
             new_password_hash=new_password_hash,
             new_path=new_path,
             new_generation=target_generation if credentials_changed else None,
+            new_port=new_port,
         )
 
         change_id = secrets.token_urlsafe(18)
@@ -204,6 +213,7 @@ async def apply_panel_settings(
             changed_fields.append("password")
         if new_path is not None:
             changed_fields.append("path")
+        if new_port is not None:changed_fields.append('port')
 
         job = {
             "change_id": change_id,
@@ -213,6 +223,8 @@ async def apply_panel_settings(
             "expected_env_sha256": _sha256(runtime.LIVE_ENV),
             "old_path": old_path,
             "new_path": target_path,
+            "old_port": old_port,
+            "new_port": new_port or old_port,
             "old_username": old_username,
             "new_username": target_username,
             "username_changed": new_username is not None,
@@ -235,6 +247,7 @@ async def apply_panel_settings(
                 if credentials_changed else None
             ),
             "target_path": target_path,
+            "target_port": new_port or old_port,
         }
         return ResponseModel(success=True, msg="Panel settings change started", data=data)
     except HTTPException:
@@ -248,4 +261,8 @@ async def apply_panel_settings(
             except OSError:
                 pass
             if staging_dir is not None:
+                state=runtime.read_job_state(staging_dir.name)
+                if state:
+                    state.update(status='rolled_back',failure_reason='Settings helper could not be started; active configuration was not changed')
+                    runtime.write_job_state(staging_dir.name,state)
                 shutil.rmtree(staging_dir, ignore_errors=True)

@@ -241,7 +241,8 @@ def restore_install_files(record):
         subprocess.run(['systemctl','disable','--now','pvnetwork-panel.service'],capture_output=True)
     for item in reversed(record.get('owned_files',[])):
         path=Path(item['path']);saved=Path(item['saved']) if item.get('saved') else None
-        allowed=(path==SITE or path==STATE/'version' or (path.parent in {Path('/usr/local/sbin'),Path('/etc/systemd/system')} and path.name.startswith('pvnetwork')))
+        allowed=(path==SITE or path==STATE/'version' or (path.parent in {Path('/usr/local/sbin'),Path('/etc/systemd/system')} and path.name.startswith('pvnetwork')) or
+            (path.parent==Path('/usr/local/lib/pvnetwork-panel') and path.name in {'pvnetwork_lifecycle.py','pvnetwork_install.py','pvnetwork_cli.py','pvnetwork_cli_operations.py','pvnetwork_cli_api.py'}))
         if not allowed or (saved and saved.parent!=STATE/'install-originals'):raise ValueError('unsafe recovery file')
         if saved:shutil.copy2(saved,path)
         elif path.is_file():path.unlink()
@@ -367,7 +368,7 @@ def install(args):
         # Save pre-existing tool/unit contents; rollback never deletes unrelated files.
         helper_names=[]
         for line in (release/'scripts/install-runtime-tools.sh').read_text().splitlines():
-            if line.startswith('install -m ') and '/usr/local/sbin/' in line:helper_names.append(Path(line.rsplit(' ',1)[-1]))
+            if line.startswith('install -m ') and ('/usr/local/sbin/' in line or '/usr/local/lib/pvnetwork-panel/' in line):helper_names.append(Path(line.rsplit(' ',1)[-1]))
         destinations=helper_names+[Path('/etc/systemd/system')/p.name for p in (release/'ops/systemd').glob('pvnetwork-*')]+[STATE/'version',SITE]
         backups=STATE/'install-originals';backups.mkdir(exist_ok=True,mode=0o700)
         for i,path in enumerate(destinations):

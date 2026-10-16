@@ -4,6 +4,8 @@
 
 ## Current candidate
 
+- `v1.0.45` / `PVN-1029` — bilingual 25-item operational CLI, scoped node repair and staged internal panel-port management. Candidate only; final integration/CI, full mission, publication and authorized Production remain open. [CLI guide](docs/CLI.md).
+
 - `v1.0.44` / `PVN-1028` — private node backup/download/upload/restore in Web management, node identity binding and explicit offline recovery choices. Candidate only; full mission, public artifact and authorized Production gates remain open. [Evidence](docs/NODE-ARCHIVES-CANDIDATE.md).
 
 ## Released

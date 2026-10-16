@@ -643,10 +643,11 @@ def install_lifecycle_entrypoints(source):
     # Keep the hardened recovery engine outside the active release so rolling
     # back to an older application never reinstalls its unsafe updater.
     library=Path('/usr/local/lib/pvnetwork-panel');library.mkdir(parents=True,exist_ok=True,mode=0o755)
-    for name in ['pvnetwork_lifecycle.py','pvnetwork_install.py']:
+    for name in ['pvnetwork_lifecycle.py','pvnetwork_install.py','pvnetwork_cli.py','pvnetwork_cli_operations.py','pvnetwork_cli_api.py']:
+        if not (source/'scripts'/name).is_file():continue
         target=library/name;temporary=library/('.'+name+'.new')
         shutil.copyfile(source/'scripts'/name,temporary);temporary.chmod(0o644);os.replace(temporary,target)
-    for name,destination in [('manage.sh','pvnetwork'),('pvnetwork-panel-backup','pvnetwork-panel-backup'),('pvnetwork-panel-restore-job','pvnetwork-panel-restore-job'),('pvnetwork-panel-postgres-restore-job','pvnetwork-panel-postgres-restore-job')]:
+    for name,destination in [('manage.sh','pvnetwork'),('pvnetwork-panel-backup','pvnetwork-panel-backup'),('pvnetwork-panel-restore-job','pvnetwork-panel-restore-job'),('pvnetwork-panel-postgres-restore-job','pvnetwork-panel-postgres-restore-job'),('pvnetwork-panel-settings-apply.py','pvnetwork-panel-settings-apply')]:
         target=Path('/usr/local/sbin')/destination;temporary=target.with_name('.'+target.name+'.new')
         shutil.copyfile(source/'scripts'/name,temporary);temporary.chmod(0o755);os.replace(temporary,target)
 
@@ -758,6 +759,16 @@ def update(archive, checksum, target_version, *, allow_adoption=False):
 
 
 def recover_transaction():
+    settings=pending_settings_changes()
+    if settings:
+        import importlib.util
+        if str(APP) not in sys.path:sys.path.insert(0,str(APP))
+        worker=Path('/usr/local/sbin/pvnetwork-panel-settings-apply')
+        if not worker.is_file():worker=APP/'scripts/pvnetwork-panel-settings-apply.py'
+        spec=importlib.util.spec_from_loader('pvnetwork_settings_recover',__import__('importlib.machinery',fromlist=['SourceFileLoader']).SourceFileLoader('pvnetwork_settings_recover',str(worker)))
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        results=[module.recover_change(change_id,module.runtime.STAGING_ROOT/change_id)['status'] for change_id in settings]
+        return {'state':'recovered','settings_changes':len(results),'statuses':results}
     # An interrupted standalone PostgreSQL backup can leave only its unique
     # rehearsal database. Its identity is persisted before creation.
     rehearsals=0
@@ -1007,9 +1018,19 @@ def upgrade_legacy_backup(payload):
 
 
 def assert_transactions_idle():
+    if pending_settings_changes():raise ValueError('unfinished panel settings change; run recover before another operation')
     for name in ['data-transaction.json','lifecycle-transaction.json']:
         journal=STATE/name
         if journal.exists() and json.loads(journal.read_text()).get('state') not in {'complete','rolled_back'}:raise ValueError('unfinished lifecycle transaction; run recover before another operation')
+
+
+def pending_settings_changes():
+    directory=Path(os.getenv('PVNETWORK_STATE_DIR','/var/lib/pvnetwork-panel'))/'panel-settings-jobs'
+    result=[]
+    for path in sorted(directory.glob('*.json')):
+        if not re.fullmatch('[A-Za-z0-9_-]{1,128}',path.stem) or path.is_symlink():raise ValueError('unsafe settings recovery checkpoint')
+        if json.loads(path.read_text()).get('status') not in {'complete','rolled_back'}:result.append(path.stem)
+    return result
 
 
 def main():

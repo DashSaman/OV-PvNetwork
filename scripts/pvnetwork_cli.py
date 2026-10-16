@@ -53,7 +53,7 @@ def common(parser,*,child=False):
     options={'default':argparse.SUPPRESS} if child else {}
     for flag in ['json','yes','dry-run']:
         parser.add_argument('--'+flag,action='store_true',**options)
-    parser.add_argument('--lang',choices=['en','fa'],**({'default':argparse.SUPPRESS} if child else {'default':'fa' if os.getenv('LANG','').startswith('fa') else 'en'}))
+    parser.add_argument('--lang',choices=['en','fa'],**({'default':argparse.SUPPRESS} if child else {'default':None}))
 
 
 def parser():
@@ -66,6 +66,7 @@ def parser():
             child.add_argument('--unit',choices=UNITS,default='pvnetwork-panel.service')
         elif command=='repair':
             child.add_argument('--scope',required=True,choices=REPAIR_SCOPES);child.add_argument('--unit',choices=[unit for unit in UNITS if unit.endswith('.timer')])
+            child.add_argument('--node-id',type=int)
         elif command in {'update','restore'}:
             child.add_argument('selection',nargs='?');child.add_argument('--archive');child.add_argument('--sha256')
             if command=='update':child.add_argument('--adopt-rooted',action='store_true')
@@ -73,7 +74,7 @@ def parser():
             child.add_argument('--unit',choices=UNITS,default='pvnetwork-panel.service');child.add_argument('--lines',type=int,default=80)
         elif command=='nodes':
             child.add_argument('action',nargs='?',default='list',choices=['list','health','deploy','edit','drain','undrain','enable','disable','reconcile','remove','backup','restore','recover','job'])
-            child.add_argument('--node-id',type=int);child.add_argument('--job-id');child.add_argument('--input-json-stdin',action='store_true')
+            child.add_argument('--node-id',type=int);child.add_argument('--job-id');child.add_argument('--job-type',choices=['archive','deploy','reconcile'],default='archive');child.add_argument('--input-json-stdin',action='store_true')
         elif command in {'settings','credentials'}:
             child.add_argument('action',nargs='?',default='show',choices=['show','apply']);child.add_argument('--input-json-stdin',action='store_true')
         elif command=='tls':
@@ -130,8 +131,9 @@ def emit(value,args):
 
 def execute(args):
     if args.command=='logs' and not 1<=args.lines<=500:raise UsageError('--lines must be between 1 and 500')
-    if args.command=='nodes' and args.action not in {'list','health','deploy'} and (args.node_id is None or args.node_id<1):raise UsageError('a positive --node-id is required')
+    if args.command=='nodes' and args.action not in {'list','health','deploy'} and not (args.action=='job' and args.job_type=='deploy') and (args.node_id is None or args.node_id<1):raise UsageError('a positive --node-id is required')
     if args.command=='repair' and args.scope=='panel-timers' and not args.unit:raise UsageError('choose exactly one timer unit')
+    if args.command=='repair' and args.scope=='node-reconcile' and (args.node_id is None or args.node_id<1):raise UsageError('choose one positive --node-id')
     if args.command=='language' and args.action=='set' and not args.preference:raise UsageError('choose en or fa')
     if args.command=='restore' and (not args.selection or not re.fullmatch(r'[0-9]{8}-[0-9]{6}',args.selection)):raise UsageError('select a native verified backup ID')
     if args.command=='update' and bool(args.archive)!=bool(args.sha256):raise UsageError('offline archive and SHA256 must be supplied together')
@@ -159,7 +161,14 @@ def interactive(args):
         item=MENU[int(choice)-1]
         if item['command']=='exit':return 0
         if item['command']=='language':
-            args.lang='fa' if args.lang=='en' else 'en';continue
+            selected='fa' if args.lang=='en' else 'en'
+            try:
+                from pvnetwork_cli_operations import set_language
+                if os.geteuid()!=0:raise PermissionError()
+                set_language(selected);args.lang=selected
+            except (PermissionError,ValueError,OSError):
+                print('ذخیرهٔ زبان به دسترسی root نیاز دارد.' if args.lang=='fa' else 'Saving the language requires root and private CLI state.')
+            continue
         try:
             # Command help exposes the concrete operations before collecting input.
             options=input((item[args.lang]+' — ') + ('آرگومان‌ها (برای راهنما --help): ' if args.lang=='fa' else 'arguments (--help for choices): '))
@@ -176,6 +185,9 @@ def main(argv=None):
     args=None
     try:
         args=parser().parse_args(argv)
+        if args.lang is None:
+            from pvnetwork_cli_operations import preferred_language
+            args.lang=preferred_language()
         if not args.command:
             if sys.stdin.isatty():return interactive(args)
             parser().print_help();return 64

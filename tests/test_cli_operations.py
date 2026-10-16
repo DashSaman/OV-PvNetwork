@@ -48,6 +48,12 @@ class CliOperationsTests(unittest.TestCase):
         after={str(p.relative_to(self.root)):p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
         self.assertEqual(before,after)
 
+    def test_completed_installer_phase_is_healthy_and_pending_settings_are_visible(self):
+        (self.state/'install-transaction.json').write_text(json.dumps({'phase':'complete'}))
+        self.assertEqual(self.ops.transactions()['install-transaction.json'],'complete')
+        jobs=self.root/'settings-jobs';jobs.mkdir();(jobs/'demo.json').write_text(json.dumps({'status':'recovery_required'}))
+        with patch.object(self.ops,'SETTINGS_JOBS',jobs):self.assertEqual(self.ops.transactions()['panel-settings'],'pending')
+
     def test_support_export_contains_only_structured_allowlisted_facts(self):
         file=self.root/'support.tar.gz'
         with patch.object(self.ops,'support_facts',return_value={'format':'pvnetwork-support-v1','version':'1.0.44','services':{'panel':'active'}}):
@@ -128,3 +134,24 @@ class CliOperationsTests(unittest.TestCase):
         with patch.object(self.ops,'services',return_value={'ActiveState':'active'}),patch.object(self.ops,'service_action') as change:
             self.assertFalse(self.ops.repair('panel-service')['changed'])
         change.assert_not_called()
+
+    def test_status_preserves_legacy_fields_when_http_api_is_unavailable(self):
+        from types import SimpleNamespace
+        with patch.object(self.ops,'version',return_value='1.0.44'),patch.object(self.ops,'environment',return_value={'PORT':'19000'}),patch.object(self.ops,'services',return_value={'ActiveState':'active'}),patch.object(self.ops,'health',side_effect=RuntimeError('offline')),patch.object(self.ops,'api',side_effect=RuntimeError('offline')):
+            result=self.ops.execute(SimpleNamespace(command='status'))
+        self.assertEqual(result['version'],'1.0.44');self.assertEqual(result['panel'],'active');self.assertEqual(result['port'],19000)
+
+    def test_tls_renew_selects_only_managed_certificate_and_never_forces_or_restarts(self):
+        engine=Mock(spec=['operation_lock','assert_transactions_idle']);engine.operation_lock.side_effect=lambda:nullcontext()
+        with patch.object(self.ops,'lifecycle',return_value=engine),patch.object(self.ops,'managed_certificate',return_value=Path('/etc/letsencrypt/live/demo.example.invalid/fullchain.pem')),patch.object(self.ops,'capture',return_value={'returncode':0,'output':'ok'}) as run,patch.object(self.ops,'tls',return_value={'configured':True,'readable':True,'expired':False}):
+            self.assertTrue(self.ops.renew_tls()['verified'])
+        self.assertEqual(run.call_args_list[0].args[0],['certbot','renew','--cert-name','demo.example.invalid','--non-interactive','--no-random-sleep-on-renew'])
+        self.assertEqual(run.call_args_list[1].args[0],['nginx','-t'])
+        self.assertEqual(run.call_args_list[2].args[0],['systemctl','reload','nginx.service'])
+        self.assertNotIn('restart',str(run.call_args_list));self.assertNotIn('--force-renewal',str(run.call_args_list))
+
+    def test_tls_renew_refuses_unmanaged_certificate_before_command(self):
+        engine=Mock(spec=['operation_lock','assert_transactions_idle']);engine.operation_lock.side_effect=lambda:nullcontext()
+        with patch.object(self.ops,'lifecycle',return_value=engine),patch.object(self.ops,'managed_certificate',return_value=Path('/etc/foreign/fullchain.pem')),patch.object(self.ops,'capture') as run:
+            with self.assertRaises(ValueError):self.ops.renew_tls()
+        run.assert_not_called()

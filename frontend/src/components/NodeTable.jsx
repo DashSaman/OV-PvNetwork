@@ -14,7 +14,8 @@ const NodeTable = ({
   onCheckStatus,
   onEdit,
   onRouterOpenVpn,
-  onArchive
+  onArchive,
+  onReconcile
 }) => {
   const {
     t
@@ -88,6 +89,9 @@ const NodeTable = ({
                 }, {
                   label: t('nodeArchive.title'),
                   onClick: () => onArchive?.(node)
+                }, {
+                  label: t('nodeReconcile.title'),
+                  onClick: () => onReconcile?.(node)
                 }]} />
                     </div>
                   </td>

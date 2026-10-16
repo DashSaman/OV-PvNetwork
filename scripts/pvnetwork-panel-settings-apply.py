@@ -8,6 +8,9 @@ import hashlib
 import json
 import os
 import re
+import socket
+import stat
+import signal
 import shutil
 import subprocess
 import sys
@@ -22,6 +25,9 @@ if __name__ == "__main__" and VENV_PYTHON.is_file() and Path(sys.prefix).resolve
     os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), str(Path(__file__).resolve()), *sys.argv[1:]])
 if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
+LIFECYCLE_LIBRARY=Path('/usr/local/lib/pvnetwork-panel')
+if not (LIFECYCLE_LIBRARY/'pvnetwork_lifecycle.py').is_file():LIFECYCLE_LIBRARY=Path(__file__).resolve().parent
+sys.path.insert(0,str(LIFECYCLE_LIBRARY))
 
 import jwt
 from backend import panel_runtime_settings as runtime
@@ -35,6 +41,7 @@ BACKUP_ROOT = Path(
 CANARY_PORT = 19002
 REDIRECT_GRACE_SECONDS = 300
 ALLOWED_RESTARTS = {"pvnetwork-panel.service"}
+PROXY_DIRS={Path('/etc/nginx/conf.d'),Path('/etc/nginx/sites-enabled'),Path('/etc/nginx/sites-available')}
 
 
 def parse_env(path: Path) -> dict[str, str]:
@@ -143,6 +150,12 @@ def build_frontend(candidate_env: Path, staging_dir: Path) -> Path:
     )
     if not (out_dir / "index.html").is_file():
         raise RuntimeError("candidate frontend build did not produce index.html")
+    # StaticFiles validates this sibling directory during application import.
+    # The canary must serve the same checked public QR assets as the live panel.
+    public=frontend/'sub_clients'
+    if not (public/'qr/qrcode.js').is_file() or any(path.is_symlink() for path in public.rglob('*')):
+        raise RuntimeError('candidate public subscription assets unavailable')
+    shutil.copytree(public,staging_dir/'sub_clients',dirs_exist_ok=True)
     return out_dir
 
 
@@ -164,7 +177,7 @@ def start_candidate(candidate_env: Path, dist: Path, staging_dir: Path):
     log_handle = os.fdopen(log_fd, "ab", buffering=0)
     try:
         process = subprocess.Popen(
-            [str(python), str(APP_DIR / "main.py")],
+            [str(python),'-m','uvicorn','backend.app:api','--host','127.0.0.1','--port',str(CANARY_PORT),'--lifespan','off'],
             cwd=APP_DIR,
             env=env,
             stdout=log_handle,
@@ -188,6 +201,32 @@ def stop_candidate(process) -> None:
     except subprocess.TimeoutExpired:
         process.kill()
         process.wait(timeout=5)
+
+
+def remember_candidate(change_id,process):
+    if not isinstance(getattr(process,'pid',None),int):return
+    birth=Path('/proc')/str(process.pid)/'stat'
+    # Field 22 follows the parenthesized process name; names may contain spaces.
+    started=birth.read_text().rsplit(')',1)[1].split()[19]
+    update_job(change_id,canary_pid=process.pid,canary_started=started)
+
+
+def stop_recorded_candidate(job,staging_dir):
+    pid=job.get('canary_pid')
+    if type(pid) is not int or pid<=1:return
+    process=Path('/proc')/str(pid)
+    try:
+        started=(process/'stat').read_text().rsplit(')',1)[1].split()[19]
+        if started!=job.get('canary_started'):return
+        command=(process/'cmdline').read_bytes().split(b'\0')
+        expected=[b'-m',b'uvicorn',b'backend.app:api',b'--host',b'127.0.0.1',b'--port',str(CANARY_PORT).encode(),b'--lifespan',b'off']
+        if command[1:1+len(expected)]!=expected or (process/'cwd').resolve()!=APP_DIR.resolve():
+            raise ValueError('Recorded canary identity changed; process preserved')
+        os.kill(pid,signal.SIGTERM)
+        deadline=time.monotonic()+8
+        while process.exists() and time.monotonic()<deadline:time.sleep(.1)
+        if process.exists() and (process/'stat').read_text().rsplit(')',1)[1].split()[19]==started:os.kill(pid,signal.SIGKILL)
+    except FileNotFoundError:return
 
 
 def _http_get(url: str, headers: dict[str, str] | None = None, timeout: float = 2.0):
@@ -267,9 +306,40 @@ def verify_canonical(job: dict) -> bool:
     return _wait_verify(port, values, 30.0)
 
 
+def port_available(port):
+    if type(port) is not int or not 1024<=port<=65535 or port==CANARY_PORT:raise ValueError('invalid or reserved panel port')
+    with socket.socket() as probe:
+        probe.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+        probe.bind(('127.0.0.1',port))
+
+
+def port_proxy_candidate(source,old_port,new_port):
+    old='proxy_pass http://127.0.0.1:'+str(old_port)+';'
+    if source.count(old)!=1:raise ValueError('canonical panel upstream is missing or ambiguous')
+    return source.replace(old,'proxy_pass http://127.0.0.1:'+str(new_port)+';')
+
+
+def managed_proxy(old_port):
+    from pvnetwork_lifecycle import owned_site
+    path=owned_site(old_port)
+    info=path.lstat()
+    if not stat.S_ISREG(info.st_mode) or info.st_uid!=os.geteuid() or info.st_mode&0o022 or info.st_size>128*1024:
+        raise ValueError('owned canonical panel proxy required')
+    return path
+
+
+def write_proxy(path,source):
+    from pvnetwork_install import write_private
+    write_private(path,source,0o644)
+
+
+def reload_proxy():
+    for arguments in [['nginx','-t'],['systemctl','reload','nginx.service']]:
+        subprocess.run(arguments,check=True,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30)
+
+
 def _safe_failure_reason(exc: BaseException) -> str:
-    text = str(exc).replace("\r", " ").replace("\n", " ").strip()
-    return text[:300] or exc.__class__.__name__
+    return 'Panel settings verification failed; inspect private diagnostics and recovery state'
 
 
 def _copy_private(src: Path, dst: Path) -> None:
@@ -429,23 +499,35 @@ def run_change(change_id: str, staging_dir: Path, lock_fd: int) -> dict:
     dist_switched = False
     env_switched = False
     principal_migrated = False
+    proxy=None;proxy_original=None;proxy_switched=False
+    old_port=int(job.get('old_port') or parse_env(live_env).get('PORT') or 19000)
+    new_port=int(job.get('new_port') or old_port)
 
     try:
         if sha256_file(live_env) != str(job.get("expected_env_sha256") or ""):
             raise RuntimeError("live environment changed before apply")
+        if new_port!=old_port:
+            port_available(new_port);proxy=managed_proxy(old_port);proxy_original=proxy.read_text()
+            port_proxy_candidate(proxy_original,old_port,new_port)
         update_job(change_id, status="building")
         candidate_dist = build_frontend(candidate_env, staging_dir)
 
         update_job(change_id, status="canary")
         candidate = start_candidate(candidate_env, candidate_dist, staging_dir)
+        remember_candidate(change_id,candidate)
         if not verify_candidate(candidate, candidate_env, candidate_dist):
             raise RuntimeError("candidate panel verification failed")
 
         if sha256_file(live_env) != str(job.get("expected_env_sha256") or ""):
             raise RuntimeError("live environment changed during candidate build")
         backup = create_backup(change_id, live_env, live_dist)
-
-        update_job(change_id, status="switching")
+        if proxy is not None:
+            _copy_private(proxy,backup/'proxy.conf')
+        update_job(change_id,status='switching',old_env_sha256=sha256_file(live_env),
+            candidate_env_sha256=sha256_file(candidate_env),old_dist_sha256=sha256_tree(live_dist),
+            candidate_dist_sha256=sha256_tree(candidate_dist),proxy_path=str(proxy) if proxy else None,
+            proxy_old_sha256=hashlib.sha256(proxy_original.encode()).hexdigest() if proxy else None,
+            proxy_candidate_sha256=hashlib.sha256(port_proxy_candidate(proxy_original,old_port,new_port).encode()).hexdigest() if proxy else None)
         exchange_directories(live_dist, candidate_dist)
         dist_switched = True
         os.chmod(candidate_env, 0o600)
@@ -469,6 +551,10 @@ def run_change(change_id: str, staging_dir: Path, lock_fd: int) -> dict:
         update_job(change_id, status="verifying")
         if not verify_canonical(job):
             raise RuntimeError("canonical panel verification failed")
+        if proxy is not None:
+            if proxy.read_text()!=proxy_original:raise RuntimeError('canonical proxy changed concurrently; automatic overwrite refused')
+            proxy_switched=True
+            write_proxy(proxy,port_proxy_candidate(proxy_original,old_port,new_port));reload_proxy()
 
         result = update_job(change_id, status="complete", failure_reason=None)
         try:
@@ -478,6 +564,7 @@ def run_change(change_id: str, staging_dir: Path, lock_fd: int) -> dict:
         return result
     except Exception as exc:
         failure = _safe_failure_reason(exc)
+        rollback_ok=True
         if backup is not None and (dist_switched or env_switched):
             try:
                 if dist_switched:
@@ -490,11 +577,14 @@ def run_change(change_id: str, staging_dir: Path, lock_fd: int) -> dict:
                 if principal_migrated:
                     migrate_principal_security(job, forward=False)
                     principal_migrated = False
+                if proxy_switched:
+                    write_proxy(proxy,proxy_original);reload_proxy()
                 restart_service("pvnetwork-panel.service")
-                verify_canonical({"old_path": job.get("old_path")})
+                if not verify_canonical({"old_path": job.get("old_path")}):rollback_ok=False
             except Exception as rollback_exc:
                 failure = f"{failure}; rollback failure: {_safe_failure_reason(rollback_exc)}"
-        result = update_job(change_id, status="rolled_back", failure_reason=failure)
+                rollback_ok=False
+        result = update_job(change_id, status="rolled_back" if rollback_ok else 'recovery_required', failure_reason=failure)
         try:
             write_terminal_audit(result, "rolled_back")
         except Exception:
@@ -502,6 +592,39 @@ def run_change(change_id: str, staging_dir: Path, lock_fd: int) -> dict:
         return result
     finally:
         stop_candidate(candidate)
+
+
+def recover_change(change_id,staging_dir):
+    """Called while the common native operation lock is held; preserve unknown edits."""
+    job=runtime.read_job_state(change_id)
+    if not job:raise ValueError('Panel settings change unavailable')
+    if job.get('status') in {'complete','rolled_back'}:return job
+    stop_recorded_candidate(job,staging_dir)
+    if job.get('status') in {'queued','building','canary'}:
+        return update_job(change_id,status='rolled_back',failure_reason='Interrupted before active switch')
+    backup=BACKUP_ROOT/change_id
+    live_env=APP_DIR/'.env';live_dist=APP_DIR/'frontend/dist';candidate_dist=Path(staging_dir)/'dist'
+    old_env=job.get('old_env_sha256');new_env=job.get('candidate_env_sha256')
+    old_dist=job.get('old_dist_sha256');new_dist=job.get('candidate_dist_sha256')
+    if not all(isinstance(item,str) and re.fullmatch('[a-f0-9]{64}',item) for item in [old_env,new_env,old_dist,new_dist]):
+        raise ValueError('Interrupted settings checkpoint needs private operator recovery')
+    if sha256_file(backup/'.env')!=old_env or sha256_tree(backup/'dist')!=old_dist:raise ValueError('Settings rollback copy changed')
+    env_hash=sha256_file(live_env);dist_hash=sha256_tree(live_dist)
+    if env_hash not in {old_env,new_env} or dist_hash not in {old_dist,new_dist}:raise ValueError('Unknown live settings edits preserved')
+    if dist_hash!=old_dist and (not candidate_dist.is_dir() or sha256_tree(candidate_dist)!=old_dist):raise ValueError('Retained settings build changed')
+    proxy=Path(job['proxy_path']) if job.get('proxy_path') else None
+    if proxy is not None:
+        if proxy.parent not in PROXY_DIRS:
+            raise ValueError('Unsafe settings recovery proxy path')
+        if sha256_file(backup/'proxy.conf')!=job.get('proxy_old_sha256') or sha256_file(proxy) not in {job.get('proxy_old_sha256'),job.get('proxy_candidate_sha256')}:
+            raise ValueError('Unknown proxy edits preserved')
+    if dist_hash!=old_dist:exchange_directories(live_dist,candidate_dist)
+    if env_hash!=old_env:_restore_env(backup/'.env',live_env)
+    migrate_principal_security(job,forward=False);_restore_transition(backup)
+    restart_service('pvnetwork-panel.service')
+    if not verify_canonical(job):raise RuntimeError('Previous settings health could not be verified')
+    if proxy is not None:write_proxy(proxy,(backup/'proxy.conf').read_text());reload_proxy()
+    return update_job(change_id,status='rolled_back',failure_reason='Interrupted settings change recovered and previous access verified')
 
 
 def main() -> int:
@@ -512,7 +635,8 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        os.fstat(args.lock_fd)
+        actual=os.fstat(args.lock_fd);expected=runtime.LOCK_FILE.stat()
+        if (actual.st_ino,actual.st_dev,actual.st_uid)!=(expected.st_ino,expected.st_dev,os.geteuid()):raise ValueError('inherited common operation lock mismatch')
     except OSError as exc:
         raise SystemExit(f"invalid inherited lock fd: {exc}") from exc
 
@@ -520,6 +644,12 @@ def main() -> int:
     if not staging.is_dir():
         raise SystemExit(f"staging directory not found: {staging}")
     try:
+        # The inherited common operation lock excludes all native lifecycle
+        # mutations. This helper owns its current settings job only.
+        for name in ['data-transaction.json','lifecycle-transaction.json']:
+            native=Path('/etc/pvnetwork-panel')/name
+            if native.exists() and json.loads(native.read_text()).get('state') not in {'complete','rolled_back'}:
+                raise RuntimeError('Unfinished native lifecycle transaction requires recovery')
         result = run_change(args.change_id, staging, args.lock_fd)
         print(json.dumps({"change_id": args.change_id, "status": result.get("status")}))
         return 0 if result.get("status") == "complete" else 1

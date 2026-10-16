@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.44-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.45-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.45 candidate vs v1.0.44
+
+**PVN-1029 — English/Persian operational CLI.** The 25-item console adds bounded diagnostics, scoped service/node repair, private support exports and existing native lifecycle commands. Node repair also has a Web progress view. Panel internal-port changes use staged build/canary verification with exact proxy rollback and interrupted-change recovery. [CLI guide](docs/CLI.md). Public stable remains 1.0.37 and Production remains 1.0.40; final candidate, publication and deployment gates remain open.
 
 ## v1.0.44 candidate vs v1.0.43
 

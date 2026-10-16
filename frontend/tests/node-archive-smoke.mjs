@@ -29,7 +29,7 @@ try {
     });
     try {
       await page.goto(`${base}/nodes`, { waitUntil: 'networkidle' });
-      await page.locator('.actions-dropdown-trigger').click(); await page.getByRole('menuitem').last().click();
+      await page.locator('.actions-dropdown-trigger').click(); await page.getByRole('menuitem', { name: language === 'fa' ? 'بکاپ / بازیابی نود' : 'Node backup / restore', exact: true }).click();
       const modal = page.getByRole('dialog'); await modal.waitFor();
       assert.equal(await page.locator('html').getAttribute('dir'), language === 'fa' ? 'rtl' : 'ltr');
       await modal.locator('[name=ssh_password]').fill('demo-ssh-secret');

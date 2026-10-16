@@ -72,6 +72,12 @@ Before implementation, record the task and target release here **and commit/push
 
 ### Active release ledger
 
+- `v1.0.45` — [~] IN_PROGRESS — `PVN-1029` bilingual operational CLI and scoped management bridges.
+  - Exactly 25 EN/FA menu entries, automation/help/exit codes, explicit mutation confirmation and dry-run. Doctor remains read-only; repairs target one owned service/timer or one registered node. Native backup/update/restore/rollback/recovery remain the lifecycle engines.
+  - Hidden or bounded stdin-only credentials, fixed loopback API authentication without redirects/proxies, bounded subprocess output, recursive redaction and private allowlisted support bundles. Managed certificate renewal selects one cert-name and never forces renewal or restarts VPN.
+  - Node reconciliation preserves explicit assignments and drain/maintenance flags; queued API/Web jobs discard child output. Internal panel-port changes stage env/frontend, verify canary, retain exact proxy/env/build rollback and expose interrupted recovery through the common native operation lock.
+  - Candidate verification and installation checks are recorded in the CLI guide. Exact final CI, real systemd/PTY/API integration, full mission, public release and authorized Production remain open; do not mark complete prematurely.
+
 - `v1.0.44` — [~] IN_PROGRESS — `PVN-1028` private node archive workflow from Web management.
   - Main-admin and exact-node identity authorization precede storage/SSH. Root-private bounded stream transfer verifies SHA256; SSH password/key/passphrase stay request-local. Uploaded restore uses a generated root inbox identity, checked native source and existing PKI/counter/operation guards.
   - One-hour controller archive access, guarded cleanup every five minutes, 60 MiB Web upload and 240 MiB native transfer limits; private capacity reservations prevent unbounded staging. Explicit offline/downtime/start confirmation is required for PKI recovery.

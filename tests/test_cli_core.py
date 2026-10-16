@@ -44,10 +44,10 @@ class CliCoreTests(unittest.TestCase):
         value=json.loads(out);self.assertTrue(value['dry_run']);self.assertEqual(value['plan']['unit'],'pvnetwork-panel.service')
 
     def test_no_confirmation_or_root_fails_before_dispatch(self):
-        with patch.object(self.cli,'dispatch') as dispatch,patch.object(self.cli.os,'geteuid',return_value=0):
+        with patch.object(self.cli,'dispatch') as dispatch,patch.object(self.cli.os,'geteuid',return_value=0,create=True):
             status,_,_=self.invoke(['services','restart','--unit','pvnetwork-panel.service'])
         self.assertEqual(status,77);dispatch.assert_not_called()
-        with patch.object(self.cli,'dispatch') as dispatch,patch.object(self.cli.os,'geteuid',return_value=1000):
+        with patch.object(self.cli,'dispatch') as dispatch,patch.object(self.cli.os,'geteuid',return_value=1000,create=True):
             status,_,_=self.invoke(['services','restart','--unit','pvnetwork-panel.service','--yes'])
         self.assertEqual(status,77);dispatch.assert_not_called()
 
@@ -80,6 +80,13 @@ class CliCoreTests(unittest.TestCase):
 
     def test_existing_native_json_result_shape_is_preserved(self):
         for command,result in [('backup',{'backup':'/private/native-backup','verified':True}),('version',{'version':'1.0.44'})]:
-            with self.subTest(command=command),patch.object(self.cli,'dispatch',return_value=result),patch.object(self.cli.os,'geteuid',return_value=0):
+            with self.subTest(command=command),patch.object(self.cli,'dispatch',return_value=result),patch.object(self.cli.os,'geteuid',return_value=0,create=True):
                 status,out,error=self.invoke([command,'--json'])
             self.assertEqual(status,0,error);self.assertEqual(json.loads(out),result)
+
+    def test_node_repair_requires_explicit_positive_target_even_for_dry_run(self):
+        with patch.object(self.cli,'dispatch') as dispatch:
+            status,_,_=self.invoke(['repair','--scope','node-reconcile','--dry-run'])
+        self.assertEqual(status,64);dispatch.assert_not_called()
+        status,out,error=self.invoke(['repair','--scope','node-reconcile','--node-id','7','--dry-run','--json'])
+        self.assertEqual(status,0,error);self.assertEqual(json.loads(out)['plan']['node_id'],7)

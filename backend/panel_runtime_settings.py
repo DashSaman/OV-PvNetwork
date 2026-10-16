@@ -19,7 +19,7 @@ LIVE_ENV = Path(os.getenv("PVNETWORK_ENV_PATH", "/opt/pvnetwork-panel/.env"))
 STAGING_ROOT = STATE_ROOT / "panel-settings-staging"
 JOB_DIR = STATE_ROOT / "panel-settings-jobs"
 TRANSITION_FILE = STATE_ROOT / "panel-path-transition.json"
-LOCK_FILE = STATE_ROOT / "panel-settings.lock"
+LOCK_FILE = Path('/etc/pvnetwork-panel/operation.lock')
 APPLY_HELPER = os.getenv(
     "PVNETWORK_PANEL_SETTINGS_HELPER",
     "/usr/local/sbin/pvnetwork-panel-settings-apply",
@@ -68,8 +68,12 @@ def build_candidate_env(
     new_password_hash: str | None,
     new_path: str | None,
     new_generation: str | None,
+    new_port: int | None = None,
 ) -> str:
     updates: dict[str, str] = {}
+    if new_port is not None:
+        if type(new_port) is not int or not 1024<=new_port<=65535 or new_port==19002:raise ValueError('select an unprivileged panel port other than reserved canary port 19002')
+        updates['PORT']=str(new_port)
     if new_username is not None:
         updates["ADMIN_USERNAME"] = new_username
     if new_password_hash is not None:
