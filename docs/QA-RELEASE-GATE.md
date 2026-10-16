@@ -2,6 +2,16 @@
 
 This file is blocking. A release is not publishable while any applicable item below is incomplete or unsupported by evidence.
 
+The native CI matrix tests exact Git-archive fresh/repeat installation on pinned
+Ubuntu 22.04/24.04 and Debian 12 systemd guests. After publishing an explicitly
+labelled QA prerelease with immutable assets, a temporary `qa/public-v1.0.N`
+branch at the **same fully checked commit** runs those three guests through the
+official tag's bootstrap and public release downloads. It verifies checksum,
+wrapper/archive identity, real services/UI/SQLite/CLI and repeat preservation.
+The branch cannot select another repository or arbitrary URL. Only this
+additional public-download run skips the already-passed main validation suite.
+Public bootstrap success does not certify public ACME or external VPS reachability.
+
 ## 0. Production safety — mandatory
 
 - [ ] Treat Production as live and under load throughout the change.

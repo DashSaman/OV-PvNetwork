@@ -50,7 +50,11 @@ def inside(expected):
     version = (source / 'VERSION').read_text().strip()
     environment = {**os.environ, 'PVNETWORK_RELEASE_VERSION': version,
                    'PVNETWORK_SOURCE_SHA256': expected, 'DEBIAN_FRONTEND': 'noninteractive'}
-    installed = subprocess.run(['bash', str(source / 'install-local.sh'), '--non-interactive'],
+    bootstrap = Path('/input/verified-bootstrap.sh')
+    if bootstrap.exists():
+        environment['PVNETWORK_REF'] = 'v' + version
+    entry = bootstrap if bootstrap.exists() else source / 'install-local.sh'
+    installed = subprocess.run(['bash', str(entry), '--non-interactive'],
                                env=environment, capture_output=True, text=True, timeout=2400)
     # Do not upload raw logs or generated credentials/PKI to a public CI artifact.
     diagnostic = Path('/root/pvnetwork-native-install.log')
@@ -102,7 +106,7 @@ def inside(expected):
         assert isinstance(json.loads(result.stdout), dict)
     print(json.dumps({'native_fresh': 'PASS', 'repeat_env_DB_PIDs_preserved': 'PASS',
                       'systemd_proxy_UI_assets_SQLite_permissions': 'PASS', 'installed_CLI': 'PASS',
-                      'version': version, 'source_sha256': expected,
+                      'version': version, 'source_sha256': expected, 'public_bootstrap': bootstrap.exists(),
                       'limits': 'Container Setup Mode; public ACME and external VPS networking not tested'}), flush=True)
 
 
@@ -113,11 +117,39 @@ def host(system):
     image = 'pvnetwork-native-test:' + system + '-' + os.urandom(6).hex()
     with tempfile.TemporaryDirectory(prefix='pvnetwork-native-ci-') as temporary:
         folder = Path(temporary)
-        raw = subprocess.check_output(['git', '-c', 'core.autocrlf=true', 'archive', '--format=tar', 'HEAD'], cwd=ROOT)
         archive = folder / 'source.tar.gz'
-        with archive.open('wb') as target:
-            with gzip.GzipFile(filename='', mode='wb', fileobj=target, mtime=0) as zipped:
-                zipped.write(raw)
+        branch = os.environ.get('GITHUB_REF_NAME', '')
+        if branch.startswith('qa/public-'):
+            tag = branch.removeprefix('qa/public-')
+            if not re.fullmatch(r'v1\.0\.\d+', tag) or tag != 'v' + (ROOT / 'VERSION').read_text().strip():
+                raise ValueError('Public bootstrap QA requires the exact immutable source version')
+            asset = 'pvnetwork-panel-' + tag + '.tar.gz'
+            base = 'https://github.com/DashSaman/OV-PvNetwork/releases/download/' + tag + '/'
+            with urllib.request.urlopen(base + asset + '.sha256', timeout=30) as response:
+                checksum = response.read(4097).decode('ascii').strip()
+            match = re.fullmatch(r'([a-fA-F0-9]{64})\s+\*?' + re.escape(asset), checksum)
+            if not match:
+                raise ValueError('Official checksum must bind the exact immutable asset')
+            with urllib.request.urlopen(base + asset, timeout=120) as response, archive.open('wb') as output:
+                size = 0
+                while chunk := response.read(1024 ** 2):
+                    size += len(chunk)
+                    if size > 128 * 1024 ** 2:
+                        raise ValueError('Public source archive exceeds the release bound')
+                    output.write(chunk)
+            if hashlib.sha256(archive.read_bytes()).hexdigest() != match.group(1).lower():
+                raise ValueError('Public release checksum mismatch')
+            with urllib.request.urlopen('https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/' + tag + '/install.sh', timeout=30) as response:
+                wrapper = response.read(1024 ** 2)
+            with tarfile.open(archive) as bundle:
+                if wrapper != bundle.extractfile('install.sh').read():
+                    raise ValueError('Published tag bootstrap differs from the checked release archive')
+            (folder / 'verified-bootstrap.sh').write_bytes(wrapper)
+        else:
+            raw = subprocess.check_output(['git', '-c', 'core.autocrlf=true', 'archive', '--format=tar', 'HEAD'], cwd=ROOT)
+            with archive.open('wb') as target:
+                with gzip.GzipFile(filename='', mode='wb', fileobj=target, mtime=0) as zipped:
+                    zipped.write(raw)
         expected = hashlib.sha256(archive.read_bytes()).hexdigest()
         shutil.copyfile(__file__, folder / 'runner.py')
         context = folder / 'image'

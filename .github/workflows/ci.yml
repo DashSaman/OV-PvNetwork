@@ -30,6 +30,9 @@ jobs:
         run: python3 tests/native_installer_systemd.py ${{ matrix.distribution }}
 
   validate:
+    # The temporary public-bootstrap branch reuses the identical checked SHA.
+    # Its three native jobs verify public downloads without repeating this suite.
+    if: ${{ !startsWith(github.ref_name, 'qa/public-v') }}
     runs-on: ubuntu-latest
     services:
       pvnetwork-test-postgres:
