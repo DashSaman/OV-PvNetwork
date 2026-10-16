@@ -3,7 +3,7 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from backend.logger import logger
-from backend.schema._input import NodeCreate
+from backend.schema._input import NodeCreate, NodeUpdate
 from .requests import NodeRequests
 from backend.db import crud
 from backend.db.models import Node, RouterOpenVpnCredential
@@ -29,10 +29,12 @@ async def add_node_handler(request: NodeCreate, db: Session) -> bool:
         return False
 
 
-async def update_node_handler(node_id: int, request: NodeCreate, db: Session) -> bool:
+async def update_node_handler(node_id: int, request: NodeUpdate, db: Session) -> bool:
     """Update a node"""
     node=crud.get_node_by_id(db,node_id)
     if node is None:return False
+    if request.key is None or request.key=='':
+        request=request.model_copy(update={'key':node.key})
     restart_request = NodeRequests(
         address=request.address,
         port=request.port,
@@ -110,6 +112,7 @@ async def list_nodes_handler(db: Session) -> list:
             "name": node.name,
             "address": node.address,
             "tunnel-address": node.tunnel_address,
+            "tunnel_address": node.tunnel_address,
             "ovpn_port": node.ovpn_port,
             "protocol": node.protocol,
             "port": node.port,

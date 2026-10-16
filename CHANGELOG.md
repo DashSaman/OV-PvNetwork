@@ -1,6 +1,7 @@
 ## v1.0.44 candidate — PVN-1028: Private node archive Web workflow
 
 - Main-admin backup, download, upload, compatible restore and interrupted-restore recovery over existing pinned SSH password/key authentication.
+- Node edits preserve an omitted/blank stored private key instead of requiring its export/re-entry; canonical and legacy tunnel-address fields remain compatible.
 - Fixed root-private stream helpers, bounded transfers and SHA256 receipts; no caller filesystem paths or SSH credentials in persisted jobs.
 - Private one-hour controller copies bind to the registered node identity; bounded storage, guarded cleanup and explicit offline/downtime/start choices. EN/FA modal supports progress, retry, keyboard/touch and nine widths.
 - Actual owned native SSH backup/download/upload/compatible restore preserved OpenVPN PID/configuration/secrets and monotonic accounting. Exact final-source CI, full mission and Production/public release gates remain open.
