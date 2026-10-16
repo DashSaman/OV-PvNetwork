@@ -1,5 +1,7 @@
 # PVNetwork UI/UX Audit — sequential 1.0.x hardening
 
+The tables below are the original baseline, retained as historical evidence. Current measured scope and explicit deferred whole-site audits are recorded in [v1.0.54 validation](VALIDATION-v1.0.54.md); baseline OPEN rows must not be read as fresh test results or silently converted to PASS.
+
 Status values: `PASS`, `PARTIAL`, `OPEN`, `N/A`. A page cannot be marked PASS from code inspection alone when interaction or viewport behavior needs browser verification.
 
 ## Global requirements
