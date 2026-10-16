@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.53-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.54-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.54 نسبت به v1.0.53
+
+**PVN-1038 — انتخاب پیش‌فرض نود برای دانلود.** مقدار اولیهٔ انتخاب‌گر پروفایل اکنون همان شناسهٔ نود در گزینه‌ها و مسیر درخواست است؛ دانلود نود پیش‌فرض بدون تغییر دستی انتخاب کار می‌کند. انتخاب نود دیگر و کنترل دسترسی سرور حفظ شده‌اند. [شواهد و محدودیت‌ها](docs/RELEASE-NOTES-v1.0.54.fa.md).
 
 ## نامزد v1.0.53 نسبت به v1.0.52
 
@@ -386,7 +390,7 @@ CI مسیرهای اصلی را روی عرض‌های `360`, `375`, `390`, `430
 روی یک سرور **تازه** و با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.40/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.54/install.sh)
 ```
 
 Installer از Tag ثابت Release استفاده می‌کند و نباید برای Production موجود کورکورانه اجرا شود.

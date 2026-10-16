@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.53-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.54-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.54 candidate vs v1.0.53
+
+**PVN-1038 — default profile node selection.** The download chooser now initializes the same node ID used by its options and request path. Downloading the displayed default no longer requires changing the selector first. Explicit selection and server-side assignment authorization remain unchanged. [Evidence and limits](docs/RELEASE-NOTES-v1.0.54.md).
 
 ## v1.0.53 candidate vs v1.0.52
 
@@ -388,7 +392,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.40/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.54/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

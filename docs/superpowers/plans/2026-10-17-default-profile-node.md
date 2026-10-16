@@ -1,0 +1,5 @@
+# PVN-1038 / v1.0.54: default profile node identity
+
+Reproduced real browser failure: a fresh download chooser visually selects the first available node but its React state contains the address; the submit handler searches IDs and aborts without an API request. Use String(available[0].id), matching option values and existing handler. Keep later choices and scoped backend permissions. Do not rewrite the global LoadingButton or unrelated workflows.
+
+Add an actual built-preview browser regression using synthetic data, asserting untouched-default and explicit selection issue the exact per-node request and produce a browser download, while empty/failed node lists cannot send a request. Check EN/FA, nine widths, dark/light and native zoom for changed UI. Run lint/build, focused/full CI, fresh public artifact and native backup/canary gates before final publication or requesting scoped Production maintenance approval. Existing screenshots remain valid because geometry/text do not change; record the new interaction evidence explicitly.
