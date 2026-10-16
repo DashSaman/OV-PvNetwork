@@ -85,3 +85,9 @@ class NodeArchiveRemoteTests(unittest.TestCase):
         with patch.object(self.m,'INBOX',inbox),self.assertRaises(ValueError):
             self.m.receive_upload({'id':identity,'size':1,'sha256':'a'*64},ChangedInput())
         self.assertEqual((inbox/identity/'archive.tar.gz').stat().st_mode&0o777,0o640)
+
+    def test_failed_upload_cleanup_supports_older_system_python(self):
+        inbox=Path(self.folder.name)/'inbox'
+        with patch.object(self.m,'INBOX',inbox),patch.object(self.m.hashlib,'file_digest',None),self.assertRaises(ValueError):
+            self.m.receive_upload({'id':'a'*24,'size':1,'sha256':'a'*64},io.BytesIO(b'x'))
+        self.assertFalse((inbox/('a'*24)).exists())

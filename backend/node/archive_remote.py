@@ -95,7 +95,10 @@ def receive_upload(message,source):
                 current=path.lstat()
                 if stat.S_ISREG(current.st_mode) and (current.st_dev,current.st_ino,current.st_size,current.st_uid,current.st_gid,stat.S_IMODE(current.st_mode))==(created.st_dev,created.st_ino,size,created.st_uid,created.st_gid,stat.S_IMODE(created.st_mode)):
                     fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW)
-                    with os.fdopen(fd,'rb') as handle:actual=hashlib.file_digest(handle,'sha256').hexdigest()
+                    with os.fdopen(fd,'rb') as handle:
+                        hasher=hashlib.sha256()
+                        for chunk in iter(lambda:handle.read(65536),b''):hasher.update(chunk)
+                        actual=hasher.hexdigest()
                     if actual==digest.hexdigest() and not (directory/'metadata.json').exists():path.unlink()
                 if not any(directory.iterdir()):directory.rmdir()
             except OSError:pass

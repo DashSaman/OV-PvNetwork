@@ -76,7 +76,7 @@ def bootstrap_command(username, code, configuration):
 
 
 BOOTSTRAP = r'''
-import base64,hashlib,json,os,pathlib,subprocess,sys,tarfile,tempfile,io
+import base64,hashlib,json,os,pathlib,subprocess,sys,tarfile,tempfile,io,re,stat
 if os.geteuid()!=0:raise SystemExit('root or passwordless sudo required')
 message=json.load(sys.stdin)
 configuration=message.get('configuration',{})
@@ -94,7 +94,26 @@ with tempfile.TemporaryDirectory(prefix='pvnetwork-node-source-') as directory:
    names.add(member.name)
   archive.extractall(source)
  file=root/'configuration.json';file.write_text(json.dumps(configuration));file.chmod(0o600)
- arguments=['--configuration',str(file),'--source',str(source)] if message.get('action','install')=='install' else ['--action',message['action'],'--source',str(source),'--transaction-id',message.get('transaction_id','')]
+ action=message.get('action','install')
+ arguments=['--configuration',str(file),'--source',str(source)] if action=='install' else ['--action',action,'--source',str(source),'--transaction-id',message.get('transaction_id','')]
+ if action=='restore':
+  identity=message.get('archive_id','');digest=message.get('archive_sha256','')
+  if not isinstance(identity,str) or not re.fullmatch('[a-f0-9]{24}',identity) or not isinstance(digest,str) or not re.fullmatch('[a-f0-9]{64}',digest):raise SystemExit('invalid native upload identity')
+  offline=message.get('offline',False);start=message.get('start_recovered',False)
+  if type(offline) is not bool or type(start) is not bool or (start and not offline):raise SystemExit('explicit offline recovery flags required')
+  inbox=pathlib.Path('/var/lib/pvnetwork-node/archive-inbox')/identity;archive=inbox/'archive.tar.gz';metadata=inbox/'metadata.json'
+  for parent in [inbox,*inbox.parents]:
+   info=parent.lstat()
+   if not stat.S_ISDIR(info.st_mode) or info.st_uid!=0 or info.st_mode&0o022:raise SystemExit('unsafe native upload directory')
+  for path in [archive,metadata]:
+   info=path.lstat()
+   if not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_nlink!=1 or info.st_mode&0o077:raise SystemExit('unsafe native upload file')
+  if metadata.stat().st_size>4096:raise SystemExit('native upload metadata limit exceeded')
+  saved=json.loads(metadata.read_text());info=archive.stat()
+  if saved.get('format')!='pvnetwork-node-upload-v1' or saved.get('id')!=identity or saved.get('sha256')!=digest or saved.get('size')!=info.st_size or saved.get('inode')!=info.st_ino or saved.get('device')!=info.st_dev or saved.get('removing'):raise SystemExit('native upload ownership mismatch')
+  arguments.extend(['--archive',str(archive),'--sha256',digest])
+  if offline:arguments.append('--offline')
+  if start:arguments.append('--start-recovered')
  code=subprocess.call(['python3',str(source/'scripts/pvnetwork_node_install.py'),*arguments])
  raise SystemExit(code)
 '''
@@ -197,3 +216,27 @@ def agent_operation(*,action,host,ssh_port,username,password=None,key=None,passp
         if not result or result.get('state') not in {'complete','rolled_back'}:raise ValueError('agent lifecycle result was not verified')
         return result
     finally:client.close()
+
+
+def archive_operation(*,client,username,action,upload_id=None,archive_sha256=None,offline=False,start_recovered=False,report=None,secret_values=()):
+    if action not in {'backup','restore','recover-data'} or type(offline) is not bool or type(start_recovered) is not bool:
+        raise ValueError('invalid native archive action')
+    if action=='restore':
+        if not isinstance(upload_id,str) or not re.fullmatch('[a-f0-9]{24}',upload_id) or not isinstance(archive_sha256,str) or not re.fullmatch('[a-f0-9]{64}',archive_sha256):
+            raise ValueError('verified private upload identity and SHA256 required')
+        if start_recovered and not offline:raise ValueError('start-recovered requires explicit offline restore')
+    elif upload_id is not None or archive_sha256 is not None or offline or start_recovered:
+        raise ValueError('archive recovery flags require an explicit restore')
+    from backend.node.deploy import build_native_node_bundle
+    source,digest=build_native_node_bundle()
+    code='import base64;exec(base64.b64decode('+repr(base64.b64encode(BOOTSTRAP.encode()).decode())+'))'
+    command=('' if username=='root' else 'sudo -n ')+'python3 -c '+shlex.quote(code)
+    message={'action':action,'source':base64.b64encode(source).decode(),'sha256':digest}
+    if action=='restore':message.update(archive_id=upload_id,archive_sha256=archive_sha256,offline=offline,start_recovered=start_recovered)
+    result=execute(client,command,json.dumps(message).encode(),report or (lambda *_:None),1200,secret_values)
+    if action=='backup':
+        from backend.node.archive_transport import validate_receipt
+        validate_receipt(result)
+    elif not isinstance(result,dict) or result.get('state') not in ({'complete'} if action=='restore' else {'complete','rolled_back'}):
+        raise ValueError('native archive operation was not verified')
+    return result
