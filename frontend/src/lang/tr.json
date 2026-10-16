@@ -741,5 +741,6 @@
     "stagingRetained": "Restore succeeded; private upload cleanup is pending on the node. Inspect its private staging before retrying.",
     "discard": "Remove controller copy"
   },
-  "editNodeKeepKey": "Leave blank to keep the stored private API key."
+  "editNodeKeepKey": "Leave blank to keep the stored private API key.",
+  "editNodeNameIdentity": "Keep the name of a node with customers or sessions; existing client identities depend on it."
 }

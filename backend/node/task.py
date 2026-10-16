@@ -1,13 +1,25 @@
 import asyncio
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
+from sqlalchemy import exists
 
 from backend.logger import logger
 from backend.schema._input import NodeCreate, NodeUpdate
 from .requests import NodeRequests
 from backend.db import crud
-from backend.db.models import Node, RouterOpenVpnCredential
+from backend.db.models import Node, User, UserNode, ActiveSession, RouterOpenVpnCredential
 from . import configuration
+
+
+class NodeNameIdentityError(ValueError):
+    """A display edit cannot change a name embedded in existing client CNs."""
+
+
+def node_name_in_use(db, node_id):
+    for model in [UserNode, ActiveSession, RouterOpenVpnCredential]:
+        if db.query(model).filter(model.node_id==node_id).first() is not None:return True
+    # Customers without explicit assignment rows retain all-node semantics.
+    return db.query(User.uuid).filter(~exists().where(UserNode.user_uuid==User.uuid)).first() is not None
 
 
 async def add_node_handler(request: NodeCreate, db: Session) -> bool:
@@ -33,6 +45,8 @@ async def update_node_handler(node_id: int, request: NodeUpdate, db: Session) ->
     """Update a node"""
     node=crud.get_node_by_id(db,node_id)
     if node is None:return False
+    if request.name!=node.name and node_name_in_use(db,node_id):
+        raise NodeNameIdentityError('Node name is part of existing client identities; preserve it while customers or sessions are assigned')
     if request.key is None or request.key=='':
         request=request.model_copy(update={'key':node.key})
     restart_request = NodeRequests(
@@ -98,7 +112,7 @@ async def delete_node_handler(node_id: int, db: Session) -> bool:
         logger.info(f"Node deleted successfully: {node.name}")
         return True
     else:
-        logger.warning(f"Failed to delete node: {node.name}")
+        logger.warning('Node removal skipped because the node no longer exists')
         return False
 
 
