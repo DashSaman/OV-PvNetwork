@@ -22,6 +22,10 @@ try {
       await page.goto(`${base}/nodes`, { waitUntil: 'networkidle' });
       await page.locator('.actions-dropdown-trigger').click(); await page.getByRole('menuitem').first().click();
       const modal = page.locator('.modal-overlay .modal'); await modal.waitFor();
+      // The existing form loads its selected node in a React effect. Visibility
+      // alone can precede that update on a fast runner; still require the exact
+      // preserved endpoint before exercising any edit or submission.
+      await page.waitForFunction(() => document.getElementById('edit-tunnel_address')?.value === 'vpn.example.invalid');
       assert.equal(await modal.locator('#edit-key').getAttribute('required'), null, 'Unchanged private key must not be requested');
       assert.equal(await modal.locator('#edit-key').getAttribute('type'), 'password');
       assert.equal(await modal.locator('#edit-tunnel_address').inputValue(), 'vpn.example.invalid');
