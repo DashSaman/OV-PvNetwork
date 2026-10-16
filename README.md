@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.49-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.50-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.50 candidate vs v1.0.49
+
+**PVN-1034 — subscription QR context safety.** Node labels and download URLs remain inert HTML data; fixed event listeners open the QR without embedding those values in JavaScript. Real browser regressions cover mouse, Enter and Space, both core languages, themes and native zoom. [Validation and compatibility](docs/RELEASE-NOTES-v1.0.50.md). [Current Demo walkthrough](docs/CURRENT-DEMO.md). Public stable remains 1.0.37 and Production remains 1.0.40; final release gates remain open.
 
 ## v1.0.49 candidate vs v1.0.48
 

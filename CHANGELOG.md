@@ -1,3 +1,11 @@
+## v1.0.50 candidate — PVN-1034: Inert subscription QR data
+
+- Move node labels/URLs out of inline JavaScript into escaped data attributes.
+- Preserve QR payload, mouse/keyboard operation and download navigation suppression.
+- Real Jinja/browser attack regression: 24 cases passed; full Linux 712 tests, 706 passes/six PostgreSQL skips.
+- Preserve 13 languages; a 6,318-view layout sweep passed on the preceding frontend and the 108-case quick-edit sweep passed on this build. Add its manual reproducer and current synthetic Demo captures.
+- Final exact CI/artifact, publication and authorized Production gates remain open.
+
 ## v1.0.49 candidate — PVN-1033: Downloaded profile endpoint
 
 - Remove stale remote/protocol directives before returning the current endpoint.

@@ -1,9 +1,9 @@
 {
   "project": "PVNetwork Panel",
-  "version": "1.0.49",
+  "version": "1.0.50",
   "channel": "candidate",
   "project_repo": "DashSaman/OV-PvNetwork",
-  "release_asset": "pvnetwork-panel-v1.0.49.tar.gz",
+  "release_asset": "pvnetwork-panel-v1.0.50.tar.gz",
   "base_node": {
     "repo": "primeZdev/ov-node",
     "tag": "v1.3.6",
@@ -40,7 +40,7 @@
   },
   "native_node": {
     "source": "node-agent",
-    "version": "1.0.49",
+    "version": "1.0.50",
     "transport": "HTTPS",
     "bundle_format": "pvnetwork-node-source-v1",
     "license_notice": "node-agent/LICENSE"

@@ -6,9 +6,11 @@
 
 > تصاویر برای انتشار عمومی Sanitized شده‌اند و داده‌های واقعی کاربران و زیرساخت در آن‌ها نمایش داده نمی‌شود.
 
+> تصاویر و مسیرهای فعلی: [راهنمای Demo نامزد ۱.۰.۵۰](CURRENT-DEMO.fa.md). بخش‌های نسخه‌دار زیر تاریخچهٔ قابلیت‌ها هستند.
+
 ## 1) داشبورد
 
-![Dashboard](./images/ui/dashboard.jpg)
+![Dashboard](./images/v1.0.50/fa/desktop/dashboard.png)
 
 داشبورد برای دید سریع از وضعیت کل Fleet است.
 
@@ -27,7 +29,7 @@
 Rate از اختلاف Sampleها محاسبه می‌شود؛ Counter تجمعی مستقیماً به Mbps تبدیل نمی‌شود.
 ## 2) مدیریت کاربران
 
-![Users](./images/ui/users.jpg)
+![Users](./images/v1.0.50/fa/desktop/users.png)
 
 صفحه Users چرخه کامل اکانت را مدیریت می‌کند.
 
@@ -93,7 +95,7 @@ Renew از همان UUID و Username استفاده می‌کند. برای سر
 
 ## 3) مدیریت نودها
 
-![Nodes](./images/ui/nodes.jpg)
+![Nodes](./images/v1.0.50/fa/desktop/nodes.png)
 
 Node Management وضعیت پایه و Health نودهای OpenVPN را نشان می‌دهد.
 
@@ -114,7 +116,7 @@ Node Management وضعیت پایه و Health نودهای OpenVPN را نشان
 Auto Deploy نباید Firewall را Flush کند، Default Route را عوض کند یا سرویس‌های نامرتبط سرور را حذف کند.
 ## 4) مدیریت ادمین‌ها و نمایندگان
 
-![Admins](./images/ui/admins.jpg)
+![Admins](./images/v1.0.50/fa/desktop/admins.png)
 
 این صفحه برای Main Admin است و مدیریت ادمین/Reseller را انجام می‌دهد.
 
@@ -133,7 +135,7 @@ Auto Deploy نباید Firewall را Flush کند، Default Route را عوض ک
 
 ## 5) مرکز عملیات
 
-![Operations](./images/ui/operations.jpg)
+![Operations](./images/v1.0.50/fa/desktop/operations.png)
 
 Operations Center ابزارهای عملیاتی چندکاربره و چندنودی را کنار هم قرار می‌دهد.
 | ابزار | کاربرد |
@@ -152,7 +154,7 @@ Restore نیازمند فایل معتبر و تأیید صریح است و Prog
 
 ## 6) امنیت پنل
 
-![Security](./images/ui/security.jpg)
+![Security](./images/v1.0.50/fa/desktop/security.png)
 
 | کنترل | کاربرد |
 |---|---|
@@ -165,7 +167,7 @@ Restore نیازمند فایل معتبر و تأیید صریح است و Prog
 مقادیر امنیتی در Screenshotهای عمومی Blur شده‌اند و نباید در Issue/README منتشر شوند.
 ## 7) مدیریت پیشرفته نودها / Fleet
 
-![Fleet](./images/ui/fleet.jpg)
+![Fleet](./images/v1.0.50/fa/desktop/fleet.png)
 
 Fleet Management برای عملیات مرحله‌ای روی چند نود طراحی شده است.
 
@@ -184,12 +186,12 @@ Health، Mode، CPU، RAM، API latency، Online Users، Sessions، Weight و Sc
 
 ## 8) تنظیمات مانیتورینگ
 
-![Monitoring](./images/ui/monitoring.jpg)
+![Monitoring](./images/v1.0.50/fa/desktop/monitoring.png)
 
 Monitoring Settings تنظیم Alertها و Telegram monitoring را مدیریت می‌کند. Save تنظیمات را ثبت می‌کند، Test Telegram یک پیام آزمایشی می‌فرستد و Retry/Refresh وضعیت را دوباره می‌خواند.
 ## 9) کنترل پهنای‌باند
 
-![Bandwidth](./images/ui/bandwidth.jpg)
+![Bandwidth](./images/v1.0.50/fa/desktop/bandwidth.png)
 
 Bandwidth Control برای اعمال Policy اضطراری یا مرحله‌ای طراحی شده است.
 

@@ -4,9 +4,11 @@ This guide documents the main pages, controls and operator workflows in the v1.0
 
 > Every screenshot is sanitized for public documentation. Real user and infrastructure data is not shown.
 
+> Current controls/captures: [v1.0.50 candidate Demo walkthrough](CURRENT-DEMO.md). Version-labelled sections below document historical feature introductions.
+
 ## 1. Dashboard
 
-![Dashboard](./images/ui/dashboard.jpg)
+![Dashboard](./images/v1.0.50/en/desktop/dashboard.png)
 
 The dashboard gives a fleet-wide realtime view.
 
@@ -25,7 +27,7 @@ The dashboard gives a fleet-wide realtime view.
 Traffic rate is calculated from counter deltas between samples rather than treating cumulative counters as Mbps.
 ## 2. User Management
 
-![Users](./images/ui/users.jpg)
+![Users](./images/v1.0.50/en/desktop/users.png)
 
 User Management covers the full account lifecycle.
 
@@ -90,7 +92,7 @@ The public Subscription page presents status/usage, expiry, simultaneous-device 
 
 ## 3. Node Management
 
-![Nodes](./images/ui/nodes.jpg)
+![Nodes](./images/v1.0.50/en/desktop/nodes.png)
 
 Node Management provides base CRUD and health visibility for OpenVPN nodes.
 
@@ -110,7 +112,7 @@ The dialog supports automatic and manual modes. API port, OpenVPN port, protocol
 
 ## 4. Admin / Reseller Management
 
-![Admins](./images/ui/admins.jpg)
+![Admins](./images/v1.0.50/en/desktop/admins.png)
 Main admins can create, edit and remove reseller/admin accounts. Search and quota/permission controls are available; removal can transfer owned users instead of deleting them.
 
 ### Add admin
@@ -121,7 +123,7 @@ Use the reseller/admin dialog to define the supported permissions and quotas. Tr
 
 ## 5. Operations Center
 
-![Operations](./images/ui/operations.jpg)
+![Operations](./images/v1.0.50/en/desktop/operations.png)
 
 | Tool | Purpose |
 |---|---|
@@ -137,7 +139,7 @@ Use the reseller/admin dialog to define the supported permissions and quotas. Tr
 Restore is confirmation-gated and exposes progress/status while it runs.
 ## 6. Panel Security
 
-![Security](./images/ui/security.jpg)
+![Security](./images/v1.0.50/en/desktop/security.png)
 
 | Control | Purpose |
 |---|---|
@@ -151,7 +153,7 @@ Security values are deliberately obscured in public screenshots.
 
 ## 7. Advanced Node / Fleet Management
 
-![Fleet](./images/ui/fleet.jpg)
+![Fleet](./images/v1.0.50/en/desktop/fleet.png)
 
 | Control | Purpose |
 |---|---|
@@ -167,13 +169,13 @@ Fleet rows expose health, mode, CPU, RAM, API latency, online users, sessions, w
 
 ## 8. Monitoring Settings
 
-![Monitoring](./images/ui/monitoring.jpg)
+![Monitoring](./images/v1.0.50/en/desktop/monitoring.png)
 
 Monitoring Settings manages alerting and Telegram monitoring. Save persists settings, Test Telegram sends a verification message, and Retry/Refresh reloads current state.
 
 ## 9. Bandwidth Control
 
-![Bandwidth](./images/ui/bandwidth.jpg)
+![Bandwidth](./images/v1.0.50/en/desktop/bandwidth.png)
 
 | Control | Purpose |
 |---|---|
