@@ -392,7 +392,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.40/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.54/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.
