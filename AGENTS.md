@@ -1504,3 +1504,9 @@ This section intentionally mirrors the complete permanent task registry so an ag
 ## Rule
 
 Every applicable capability discovered later receives an unused stable ID in the correct range. Never recycle an ID from a completed, rejected, deferred or superseded item. Competitor-derived tasks remain research inputs until Product fit and Production safety are confirmed.
+
+## PVN-1037 final immutable-artifact preparation
+
+Implementation `7db59e14b09ba7c1bccabb80d6d6dda214d72e80` passed CI [38973202731](https://github.com/DashSaman/OV-PvNetwork/actions/runs/38973202731): 726 discovered tests plus separate root/native/security/browser gates; all three Ubuntu 22.04/24.04 and Debian 12 fresh/repeat systemd jobs installed the same source SHA256 `a8556397a0c6d79ad5a1047187d874d02ab169ea27327740a93ad721522bbc26`. Native same-host backup restored/fingerprinted 32 PostgreSQL tables and verified six runtime files and five checksums. An isolated clone restored, migrated and served the candidate health/UI assets successfully; the live environment, proxy and protected service PIDs stayed unchanged. Production remains 1.0.40. These preparation results do not authorize deployment. The final source commit and official public bootstrap require their own exact CI/download checks.
+
+The public-bootstrap QA helper and ancestry-only merge preserve the separately reviewed sequential task commits. Manifest channel is the intended promotion destination; the GitHub release remains explicitly QA/prerelease until applicable gates pass. No public stable promotion or new Production activation has occurred. Native security scan metadata remains partial/unsealed; five validated findings and their fixes remain recorded.

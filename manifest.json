@@ -1,7 +1,7 @@
 {
   "project": "PVNetwork Panel",
   "version": "1.0.53",
-  "channel": "candidate",
+  "channel": "stable",
   "project_repo": "DashSaman/OV-PvNetwork",
   "release_asset": "pvnetwork-panel-v1.0.53.tar.gz",
   "base_node": {

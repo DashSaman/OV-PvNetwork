@@ -14,7 +14,7 @@
 
 ## v1.0.53 candidate vs v1.0.52
 
-**PVN-1037 — existing credential-key alias recovery.** Native backups recognize the fixed older PVNetwork state-key alias only after root ownership, private permissions, regular target and protected ancestors pass. Same-host restore preserves the link and key material. Arbitrary or unsafe links remain refused. [Policy and validation](docs/RELEASE-NOTES-v1.0.53.md). No key rotation or UI change; final CI, backup/canary, publication and scoped Production gates remain open.
+**PVN-1037 — existing credential-key alias recovery.** Native backups recognize the fixed older PVNetwork state-key alias only after root ownership, private permissions, regular target and protected ancestors pass. Same-host restore preserves the link and key material. Arbitrary or unsafe links remain refused. [Policy and validation](docs/RELEASE-NOTES-v1.0.53.md). No key rotation or UI change. Implementation CI and native backup/clone-canary passed; final immutable-source/public-bootstrap CI, publication and scoped Production remain gates.
 
 ## v1.0.52 candidate vs v1.0.51
 
