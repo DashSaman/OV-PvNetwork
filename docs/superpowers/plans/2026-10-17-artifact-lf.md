@@ -1,0 +1,5 @@
+# PVN-1036 / 1.0.52: portable release source
+
+Native fresh acceptance exposed a real packaging failure: Git's Windows autocrlf conversion changes archived executable text to CRLF although blobs are LF. Bash cannot execute the immutable archive. A repository attribute must make release exports deterministic across contributor platforms. Set LF for text source while leaving detected/explicit binary assets unchanged; verify the actual Git archive under core.autocrlf=true, executable modes and binary hashes. No runtime feature or dependency change.
+
+Before patching, reproduce with the exact v1.0.51 archive. Add a regression that builds a small real Git repository with the project's attributes, archives a shell entry point under Windows-style Git settings and executes that archived script in Bash on Linux. Also assert the actual project archive's shell/shebang entry points are LF. Then create an exact clean artifact and repeat actual fresh/repeat and update/rollback tests. Prior v1.0.51 lifecycle PASS remains valid; its failed fresh artifact is private and must not be published as installable.
