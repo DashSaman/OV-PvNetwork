@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.50-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.51-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.51 نسبت به v1.0.50
+
+**PVN-1035 — خوانایی مقدار فرم‌ها.** پس‌زمینهٔ ورودی، انتخاب‌گر و کادر متن با پوستهٔ متن هماهنگ شده و placeholder و حالت فوکوس خوانا هستند. [آزمون اندازه‌گیری‌شده](docs/RELEASE-NOTES-v1.0.51.fa.md) · [Demo فعلی](docs/CURRENT-DEMO.fa.md). نسخهٔ عمومی 1.0.37 و Production برابر 1.0.40 است؛ gateهای نهایی باز هستند.
 
 ## نامزد v1.0.50 نسبت به v1.0.49
 

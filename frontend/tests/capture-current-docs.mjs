@@ -90,7 +90,7 @@ function demoToken() {
 
 
 
-const root=path.resolve(import.meta.dirname,'../../docs/images/v1.0.50');
+const root=path.resolve(import.meta.dirname,'../../docs/images/v1.0.51');
 const browser=await chromium.launch({headless:true});let captures=0;
 try {
 for(const language of ['en','fa']) for(const width of [390,1440]) {

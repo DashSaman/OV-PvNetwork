@@ -1,3 +1,10 @@
+## v1.0.51 candidate — PVN-1035: Theme-aware form contrast
+
+- Pair form value text with an opaque surface from the same theme, including focus and select options.
+- Give light/dark placeholders explicit readable colors; preserve dimensions and form behavior.
+- Old build reproduced 1.13–2.16 contrast bounds; new rendered matrix passed 108 EN/FA/theme/width/native-zoom cases and 7,128 control observations at a 4.5:1 floor.
+- Focused 20 Linux contracts passed; final CI/artifact/publication and authorized Production gates remain open.
+
 ## v1.0.50 candidate — PVN-1034: Inert subscription QR data
 
 - Move node labels/URLs out of inline JavaScript into escaped data attributes.

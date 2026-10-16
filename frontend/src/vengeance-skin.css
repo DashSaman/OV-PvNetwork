@@ -104,15 +104,43 @@ a:focus-visible,
   box-shadow: var(--focus-ring);
 }
 
-/* --- Inputs: dark wells with focus accent --- */
+/* --- Inputs: pair foreground and opaque surface from the same theme. --- */
 input,
 select,
 textarea {
-  background: rgba(8, 10, 15, 0.72) !important;
+  background: var(--background-primary) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: var(--radius-control) !important;
   color: var(--text-primary) !important;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+html[data-ov-theme='light'] input::placeholder,
+html[data-ov-theme='light'] textarea::placeholder {
+  color: #475569;
+}
+
+/* A focused field retains the same readable surface; borders supply focus. */
+input:focus,
+select:focus,
+textarea:focus {
+  background: var(--background-primary) !important;
+}
+
+select option {
+  color: var(--text-primary);
+  background: var(--background-primary);
+}
+
+/* View title bars retain dark gradients in either theme. */
+html[data-ov-theme] .view-header h2 {
+  color: #f4f7fc !important;
 }
 
 input:focus,
