@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import panelLogo from '../../sub_clients/private-network.webp';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +29,7 @@ const LoginPage = () => {
       <div className="login-box">
         <div className="pn-admin-brand">
   <img
-    src="/sub-clients/private-network.webp"
+    src={panelLogo}
     className="pn-admin-logo"
     alt="Private Network"
   />

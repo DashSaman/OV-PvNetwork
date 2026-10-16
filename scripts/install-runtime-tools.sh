@@ -5,10 +5,17 @@ APP="${PVNETWORK_APP_DIR:-/opt/pvnetwork-panel}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo '[PVNetwork] runtime-tool install requires root' >&2; exit 1; }
 install -d -m 0755 /usr/local/sbin /etc/pvnetwork-panel /var/lib/pvnetwork-panel /var/backups/pvnetwork-panel/lifecycle
+install -d -m 0755 /usr/local/lib/pvnetwork-panel
+install -m 0644 "$ROOT/scripts/pvnetwork_lifecycle.py" /usr/local/lib/pvnetwork-panel/pvnetwork_lifecycle.py
+install -m 0644 "$ROOT/scripts/pvnetwork_install.py" /usr/local/lib/pvnetwork-panel/pvnetwork_install.py
+install -m 0644 "$ROOT/scripts/pvnetwork_cli.py" /usr/local/lib/pvnetwork-panel/pvnetwork_cli.py
+install -m 0644 "$ROOT/scripts/pvnetwork_cli_operations.py" /usr/local/lib/pvnetwork-panel/pvnetwork_cli_operations.py
+install -m 0644 "$ROOT/scripts/pvnetwork_cli_api.py" /usr/local/lib/pvnetwork-panel/pvnetwork_cli_api.py
 install -m 0755 "$ROOT/scripts/manage.sh" /usr/local/sbin/pvnetwork
 install -m 0755 "$ROOT/scripts/healthcheck.sh" /usr/local/sbin/pvnetwork-panel-healthcheck
 install -m 0755 "$ROOT/scripts/pvnetwork-panel-backup" /usr/local/sbin/pvnetwork-panel-backup
 install -m 0755 "$ROOT/scripts/pvnetwork-panel-restore-job" /usr/local/sbin/pvnetwork-panel-restore-job
+install -m 0755 "$ROOT/scripts/pvnetwork-panel-postgres-restore-job" /usr/local/sbin/pvnetwork-panel-postgres-restore-job
 install -m 0755 "$ROOT/scripts/pvnetwork-panel-settings-apply.py" /usr/local/sbin/pvnetwork-panel-settings-apply
 install -m 0755 "$ROOT/scripts/pvnetwork-panel-smoke-test" /usr/local/sbin/pvnetwork-panel-smoke-test
 install -m 0755 "$ROOT/scripts/pvnetwork-canary-retire-guard.py" /usr/local/sbin/pvnetwork-canary-retire-guard

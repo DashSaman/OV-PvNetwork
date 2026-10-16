@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { FiGrid, FiUsers, FiServer, FiSettings, FiShield, FiActivity, FiSliders } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import panelLogo from '../../sub_clients/private-network.webp';
 const SidebarLink = ({
   to,
   end,
@@ -24,7 +25,7 @@ const Sidebar = () => {
       <div className="sidebar-header">
         <div className="pn-admin-brand">
   <img
-    src="/sub-clients/private-network.webp"
+    src={panelLogo}
     className="pn-admin-logo"
     alt="Private Network"
   />

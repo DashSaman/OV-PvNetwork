@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiCopy } from 'react-icons/fi';
 import ActionsDropdown from './ActionsDropdown';
@@ -31,20 +31,13 @@ const UserTable = ({ ratesByUuid = {},
     t
   } = useTranslation();
   const [expandedUserUuid, setExpandedUserUuid] = useState('');
-  const [compactQuickEdit, setCompactQuickEdit] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia
-      ? window.matchMedia('(max-width: 992px)').matches
-      : false
-  );
-
+  const quickEditPanel = useRef(null);
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
-    const media = window.matchMedia('(max-width: 992px)');
-    const sync = event => setCompactQuickEdit(event.matches);
-    setCompactQuickEdit(media.matches);
-    media.addEventListener?.('change', sync);
-    return () => media.removeEventListener?.('change', sync);
-  }, []);
+    if (!expandedUserUuid) return;
+    const panel = quickEditPanel.current;
+    panel?.querySelector('.quick-edit-traffic')?.focus({ preventScroll: true });
+    panel?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+  }, [expandedUserUuid]);
   const formatTrafficGB = bytes => {
     if (bytes === null || bytes === undefined) {
       return '-';
@@ -113,7 +106,8 @@ const UserTable = ({ ratesByUuid = {},
     }
     document.body.removeChild(textArea);
   }
-  return <div className="table-container">
+  return <div className="pv-user-table-editor">
+      <div className="table-container">
 
       <table className="pv-mobile-cards pv-users-table">
 
@@ -368,28 +362,18 @@ const UserTable = ({ ratesByUuid = {},
                 </td>
 
               </tr>
-              {expandedUserUuid === user.uuid && !compactQuickEdit && !renameBusy && <tr className="user-quick-edit-row desktop-user-quick-edit-row">
-                <td colSpan="10">
-                  <InlineUserQuickEdit
-                    user={user}
-                    nodes={availableNodes}
-                    userRole={userRole}
-                    onSave={onQuickSave}
-                    onCancel={() => setExpandedUserUuid('')}
-                  />
-                </td>
-              </tr>}
             </Fragment>;
             })}
 
         </tbody>
 
       </table>
+      </div>
 
-      {expandedUserUuid && compactQuickEdit && (() => {
+      {expandedUserUuid && (() => {
         const expandedUser = users.find(item => item.uuid === expandedUserUuid);
-        return expandedUser ? (
-          <div className="mobile-user-quick-edit-panel">
+        return expandedUser && !busyUserUuids.includes(expandedUserUuid) ? (
+          <div className="user-quick-edit-panel" ref={quickEditPanel}>
             <InlineUserQuickEdit
               user={expandedUser}
               nodes={availableNodes}

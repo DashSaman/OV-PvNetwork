@@ -14,6 +14,7 @@ REQ="$PKI/reqs/${NAME}.req"
 INDEX="$PKI/index.txt"
 TMP_PROFILE=""
 TLS_TMP=""
+PROFILE_VERIFIER="/opt/pvnetwork-node/core/service/client_profile.py"
 
 cleanup() {
   [[ -z "$TMP_PROFILE" ]] || rm -f "$TMP_PROFILE"
@@ -27,15 +28,7 @@ if ! [[ "$NAME" =~ ^[A-Za-z0-9_-]{1,64}$ ]]; then
 fi
 
 valid_profile() {
-  [[ -s "$PROFILE" ]] || return 1
-  [[ "$(stat -c %s "$PROFILE")" -gt 500 ]] || return 1
-  grep -qi '^<ca>$' "$PROFILE" || return 1
-  grep -qi '^</ca>$' "$PROFILE" || return 1
-  grep -qi '^<cert>$' "$PROFILE" || return 1
-  grep -qi '^</cert>$' "$PROFILE" || return 1
-  grep -qi '^<key>$' "$PROFILE" || return 1
-  grep -qi '^</key>$' "$PROFILE" || return 1
-  grep -qi '^remote ' "$PROFILE" || return 1
+  /usr/bin/python3 "$PROFILE_VERIFIER" "${1:-$PROFILE}" "$NAME" "$PKI"
 }
 
 valid_pki_entry() {
@@ -49,10 +42,17 @@ resolve_server_file() {
 }
 
 ensure_ccd() {
+  local target
+  for target in "$BASE/ccd/$NAME" "/etc/openvpn/ccd/$NAME"; do
+    [[ ! -L "$target" && ( ! -e "$target" || -f "$target" ) ]] || return 1
+  done
   mkdir -p "$BASE/ccd" /etc/openvpn/ccd
-  : >"$BASE/ccd/$NAME"
-  : >"/etc/openvpn/ccd/$NAME"
-  chmod 644 "$BASE/ccd/$NAME" "/etc/openvpn/ccd/$NAME"
+  for target in "$BASE/ccd/$NAME" "/etc/openvpn/ccd/$NAME"; do
+    if [[ ! -e "$target" ]]; then
+      ( set -o noclobber; : >"$target" )
+      chmod 644 "$target"
+    fi
+  done
 }
 
 build_profile() {
@@ -114,13 +114,18 @@ build_profile() {
   fi
 
   chmod 600 "$TMP_PROFILE"
+  valid_profile "$TMP_PROFILE"
   mv -f "$TMP_PROFILE" "$PROFILE"
   TMP_PROFILE=""
   ensure_ccd
   valid_profile
 }
 
-if valid_profile; then
+if [[ -e "$PROFILE" || -L "$PROFILE" ]]; then
+  if ! valid_profile; then
+    echo 'Existing client profile identity is not verified; file preserved' >&2
+    exit 13
+  fi
   ensure_ccd
   exit 0
 fi

@@ -1,12 +1,25 @@
 import asyncio
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
+from sqlalchemy import exists
 
 from backend.logger import logger
-from backend.schema._input import NodeCreate
+from backend.schema._input import NodeCreate, NodeUpdate
 from .requests import NodeRequests
 from backend.db import crud
-from backend.db.models import Node, RouterOpenVpnCredential
+from backend.db.models import Node, User, UserNode, ActiveSession, RouterOpenVpnCredential
+from . import configuration
+
+
+class NodeNameIdentityError(ValueError):
+    """A display edit cannot change a name embedded in existing client CNs."""
+
+
+def node_name_in_use(db, node_id):
+    for model in [UserNode, ActiveSession, RouterOpenVpnCredential]:
+        if db.query(model).filter(model.node_id==node_id).first() is not None:return True
+    # Customers without explicit assignment rows retain all-node semantics.
+    return db.query(User.uuid).filter(~exists().where(UserNode.user_uuid==User.uuid)).first() is not None
 
 
 async def add_node_handler(request: NodeCreate, db: Session) -> bool:
@@ -28,9 +41,14 @@ async def add_node_handler(request: NodeCreate, db: Session) -> bool:
         return False
 
 
-async def update_node_handler(node_id: int, request: NodeCreate, db: Session) -> bool:
+async def update_node_handler(node_id: int, request: NodeUpdate, db: Session) -> bool:
     """Update a node"""
-    crud.update_node(db, node_id, request)
+    node=crud.get_node_by_id(db,node_id)
+    if node is None:return False
+    if request.name!=node.name and node_name_in_use(db,node_id):
+        raise NodeNameIdentityError('Node name is part of existing client identities; preserve it while customers or sessions are assigned')
+    if request.key is None or request.key=='':
+        request=request.model_copy(update={'key':node.key})
     restart_request = NodeRequests(
         address=request.address,
         port=request.port,
@@ -38,11 +56,51 @@ async def update_node_handler(node_id: int, request: NodeCreate, db: Session) ->
         tunnel_address=request.tunnel_address,
         protocol=request.protocol,
         ovpn_port=request.ovpn_port,
-        set_new_setting=True,
+        set_new_setting=False,
     )
+    info=await asyncio.to_thread(restart_request.get_node_info)
+    if info.get('configuration_transaction')=='v1':
+        job=configuration.create(node,request)
+        with configuration.running(job):
+            try:
+                prepared=await asyncio.to_thread(restart_request.configuration_operation,'prepare',job['id'])
+                if prepared['state'] not in {'ready','complete'}:raise ValueError('native configuration did not become ready')
+                configuration.phase(job,'ready')
+                crud.update_node(db,node_id,request)
+            except Exception:
+                db.rollback()
+                with Session(bind=db.get_bind()) as persisted:
+                    saved=crud.get_node_by_id(persisted,node_id)
+                    resolved={**job,'in_flight':False}
+                    decision=configuration.decision(resolved,saved)
+                if decision=='finalize':
+                    configuration.phase(job,'committed')
+                    try:
+                        await asyncio.to_thread(restart_request.configuration_operation,'finalize',job['id'])
+                        configuration.phase(job,'complete')
+                    except Exception:logger.error('Committed native node edit finalization remains pending; private decision retained')
+                    raise
+                if decision!='rollback':
+                    logger.error('Native node edit SQL outcome is unresolved; private state preserved')
+                    raise
+                configuration.phase(job,'rollback')
+                try:
+                    await asyncio.to_thread(restart_request.configuration_operation,'rollback',job['id'])
+                    configuration.phase(job,'rolled_back')
+                except Exception:logger.error('Native node edit rollback remains pending; private decision retained')
+                raise
+            configuration.phase(job,'committed')
+            if prepared.get('transaction_id') is not None:
+                await asyncio.to_thread(restart_request.configuration_operation,'finalize',job['id'])
+            configuration.phase(job,'complete')
+        return True
+    restart_request.set_new_setting=True
     restart_node = await asyncio.to_thread(restart_request.check_node)
-
-    logger.info(f"Node updated successfully: {request.address}:{request.port}")
+    if restart_node:
+        crud.update_node(db, node_id, request)
+        logger.info(f"Node updated successfully: {request.address}:{request.port}")
+    else:
+        logger.warning('Node edit refused because the remote operation was not verified')
     return restart_node
 
 
@@ -54,7 +112,7 @@ async def delete_node_handler(node_id: int, db: Session) -> bool:
         logger.info(f"Node deleted successfully: {node.name}")
         return True
     else:
-        logger.warning(f"Failed to delete node: {node.name}")
+        logger.warning('Node removal skipped because the node no longer exists')
         return False
 
 
@@ -68,6 +126,7 @@ async def list_nodes_handler(db: Session) -> list:
             "name": node.name,
             "address": node.address,
             "tunnel-address": node.tunnel_address,
+            "tunnel_address": node.tunnel_address,
             "ovpn_port": node.ovpn_port,
             "protocol": node.protocol,
             "port": node.port,
@@ -315,14 +374,14 @@ async def download_ovpn_client_from_node(
     for line in text.splitlines():
 
         if re.match(
-            r"^\\s*remote\\s+",
+            r"^\s*remote\s+",
             line,
             flags=re.I,
         ):
             continue
 
         if re.match(
-            r"^\\s*proto\\s+",
+            r"^\s*proto\s+",
             line,
             flags=re.I,
         ):

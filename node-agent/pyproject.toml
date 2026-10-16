@@ -1,0 +1,12 @@
+[project]
+name = "pvnetwork-node"
+version = "1.0.53"
+description = "PVNetwork TLS node control plane"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi", "uvicorn", "psutil", "pydantic-settings",
+    "python-dotenv>=1.2.2,<2", "colorama", "requests>=2.33,<3",
+]
+
+[tool.uv]
+package = false

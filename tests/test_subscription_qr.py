@@ -27,7 +27,8 @@ class SubscriptionQrTests(unittest.TestCase):
         self.assertIn('PVNETWORK_SUB_QR_V1', self.tpl)
         self.assertIn('window.qrcode(0,"M")', self.tpl)
         self.assertIn('PNQR.show(location.origin+location.pathname,"")', self.tpl)
-        self.assertIn("PNQR.show('{{ link }}','{{ node_name }}')", self.tpl)
+        self.assertIn('data-qr-link="{{ link }}"', self.tpl)
+        self.assertIn('data-qr-name="{{ node_name }}"', self.tpl)
 
     def test_qr_overlay_exists_with_close_and_hint(self):
         for marker in ('id="qrOverlay"', 'id="qrClose"', 'id="qrHolder"', 'data-i18n="qrHint"', 'data-i18n="qrClose"'):
@@ -49,7 +50,8 @@ class SubscriptionQrTests(unittest.TestCase):
         self.assertIn('Kazuhiko Arase', notice)
 
     def test_per_server_qr_button_stops_anchor_navigation(self):
-        self.assertIn('event.preventDefault();event.stopPropagation();PNQR.show', self.tpl)
+        self.assertIn('event.preventDefault();event.stopPropagation();', self.tpl)
+        self.assertIn('button.addEventListener(\'click\',activate)', self.tpl)
 
 
 if __name__ == '__main__':

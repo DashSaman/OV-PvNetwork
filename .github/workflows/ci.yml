@@ -15,8 +15,40 @@ env:
   JWT_SECRET_KEY: ci-jwt-secret-key-not-production-32chars
 
 jobs:
-  validate:
+  native-installer:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution: [ubuntu2204, ubuntu2404, debian12]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Fresh native install and repeat on disposable systemd guest
+        run: python3 tests/native_installer_systemd.py ${{ matrix.distribution }}
+
+  validate:
+    # The temporary public-bootstrap branch reuses the identical checked SHA.
+    # Its three native jobs verify public downloads without repeating this suite.
+    if: ${{ !startsWith(github.ref_name, 'qa/public-v') }}
+    runs-on: ubuntu-latest
+    services:
+      pvnetwork-test-postgres:
+        image: postgres@sha256:75adc2a65806c96bc0e59030230bfe3f1c1b0d6d8f8181a8913e2b8b53bdc166
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 25432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # Dedicated ephemeral QA database; this is not a Production auth test.
+      PVNETWORK_TEST_POSTGRES_URL: postgresql+psycopg://postgres@127.0.0.1:25432/postgres
     steps:
       - uses: actions/checkout@v5
 
@@ -35,12 +67,9 @@ jobs:
 
       - name: Install backend test dependencies
         run: |
-          python - <<'PYDEPS'
-          import subprocess, sys, tomllib
-          with open('pyproject.toml', 'rb') as handle:
-              deps = tomllib.load(handle)['project']['dependencies']
-          subprocess.check_call([sys.executable, '-m', 'pip', 'install', *deps])
-          PYDEPS
+          python -m pip install --disable-pip-version-check uv==0.13.0
+          uv sync --frozen --no-dev --python 3.12
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Install OpenVPN integration dependencies
         run: |
@@ -49,31 +78,36 @@ jobs:
 
       - name: Backend dependency and static security audit
         run: |
-          python -m pip install --disable-pip-version-check pip-audit bandit
-          python - <<'PYSEC'
-          import tomllib
-          with open('pyproject.toml', 'rb') as handle:
-              deps = tomllib.load(handle)['project']['dependencies']
-          with open('/tmp/pvnetwork-audit-requirements.txt', 'w') as handle:
-              handle.write('\n'.join(deps) + '\n')
-          PYSEC
-          pip-audit -r /tmp/pvnetwork-audit-requirements.txt
-          bandit -q -r backend -ll -x backend/alembic/versions
+          uv export --frozen --no-dev --no-emit-project -q > /tmp/pvnetwork-audit-requirements.txt
+          uv tool run pip-audit --no-deps --disable-pip -r /tmp/pvnetwork-audit-requirements.txt
+          uv tool run bandit -q -r backend -ll -x backend/alembic/versions
+
+      - name: Native node frozen dependencies and security audit
+        run: |
+          uv sync --project node-agent --frozen --no-dev --python 3.12
+          uv export --project node-agent --frozen --no-dev --no-emit-project -q > /tmp/pvnetwork-node-audit-requirements.txt
+          uv tool run pip-audit --no-deps --disable-pip -r /tmp/pvnetwork-node-audit-requirements.txt
+          uv tool run bandit -q -r node-agent/core scripts/pvnetwork_node_install.py scripts/pvnetwork_node_lifecycle.py scripts/pvnetwork_node_backup.py scripts/pvnetwork_node_restore.py scripts/pvnetwork_node_configure.py scripts/pvnetwork_install.py scripts/pvnetwork_lifecycle.py -ll
 
       - name: Bash syntax
         run: |
           set -e
-          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening scripts/pvnetwork-firewall-boot scripts/pvnetwork-router-openvpn; do
+          for f in install.sh install-local.sh scripts/*.sh scripts/pvnetwork-build-client-profile scripts/pvnetwork-panel-backup scripts/pvnetwork-panel-restore-job scripts/pvnetwork-panel-postgres-restore-job scripts/pvnetwork-panel-smoke-test scripts/pvnetwork-firewall-hardening scripts/pvnetwork-firewall-boot scripts/pvnetwork-router-openvpn; do
             [ -f "$f" ] && bash -n "$f"
           done
 
       - name: Python syntax
         run: |
-          python3 -m compileall -q backend tests
+          python3 -m compileall -q backend tests node-agent/core node-agent/main.py
           python3 -m py_compile scripts/*.py
 
       - name: Unit and governance tests
         run: python3 -m unittest discover -s tests -v
+
+      - name: Root-owned adoption fixtures in disposable runner
+        # These fixtures write only private temporary files; all service commands
+        # are mocked. Ownership/security checks remain strict in the installer.
+        run: sudo -E env TMPDIR=/tmp "$PWD/.venv/bin/python" -m unittest tests.test_node_adoption_handover tests.test_node_restore tests.test_node_offline_restore tests.test_node_operation_lock tests.test_node_configuration_transaction tests.test_node_fresh_pki_staging tests.test_node_archive_remote tests.test_node_archive_ssh tests.test_node_archive_native_control.NodeArchiveBootstrapScopeTests tests.test_lifecycle_credential_alias -v
 
       - name: Security regression suite
         run: |
@@ -121,7 +155,7 @@ jobs:
         env:
           PV_UI_BASE_URL: http://127.0.0.1:4173/panel
         run: |
-          python3 -m pip install --disable-pip-version-check jinja2
+          python3 -c 'import jinja2'
           npx playwright install --with-deps chromium
           npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/pvnetwork-vite.log 2>&1 &
           VITE_PID=$!
@@ -135,10 +169,17 @@ jobs:
           node tests/responsive-smoke.mjs
           node tests/inline-quick-edit-smoke.mjs
           node tests/user-create-node-selector-smoke.mjs
+          node tests/node-deploy-form-smoke.mjs
+          node tests/node-edit-smoke.mjs
+          node tests/node-archive-smoke.mjs
+          node tests/node-reconcile-smoke.mjs
           node tests/router-openvpn-smoke.mjs
           node tests/panel-settings-smoke.mjs
+          node tests/panel-port-smoke.mjs
           node tests/security-regression-smoke.mjs
           PV_PYTHON=python3 node tests/subscription-responsive-smoke.mjs
+          PV_PYTHON=python3 node tests/subscription-qr-security.mjs
+          PV_CONTRAST_PROBE=1 node tests/control-contrast.mjs
 
       - name: JSON syntax
         run: |
@@ -152,13 +193,17 @@ jobs:
             echo 'Forbidden tracked private material detected.' >&2
             exit 1
           fi
-          ! grep -RInE \
-            --exclude-dir=.git \
-            --exclude-dir=node_modules \
-            --exclude-dir=dist \
-            --exclude='.env.example' \
-            --exclude='ci.yml' \
-            '(^|[^A-Z_])(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD=[^$<]|JWT_SECRET_KEY=[^$<])' .
+          set +e
+          git grep -l -I -E \
+            '(^|[^A-Z_])(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|ADMIN_PASSWORD=[^$<]|JWT_SECRET_KEY=[^$<])' \
+            -- . ':!.env.example' ':!**/.env.example' ':!.github/workflows/ci.yml'
+          SCAN_RC=$?
+          set -e
+          if [ "$SCAN_RC" -eq 0 ]; then
+            echo 'Possible tracked credential content; review the named files privately.' >&2
+            exit 1
+          fi
+          test "$SCAN_RC" -eq 1
 
       - name: Governance files present
         run: |

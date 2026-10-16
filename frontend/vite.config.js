@@ -16,5 +16,11 @@ export default defineConfig({
   base: `/${urlPath}/`,
   build: {
     outDir,
+    rollupOptions: {
+      output: {
+        // Keep the patched HTTP client within the existing per-chunk budget.
+        manualChunks: { 'http-client': ['axios'] },
+      },
+    },
   },
 })

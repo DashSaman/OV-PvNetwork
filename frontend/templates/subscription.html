@@ -1783,7 +1783,7 @@ html[data-theme="light"] .pn-notify-test{
           <div class="bar"><div class="fill" style="width:{{ item.load }}%"></div></div>
           <div class="node-bottom">
             <span>{% if item.online %}<span data-i18n="liveLoad">بار لحظه‌ای شبکه</span> · {{ item.mbps }} Mbps{% else %}<span data-i18n="offlineHint">موقتاً خارج از دسترس</span>{% endif %}</span>
-            {% if link %}<span class="download" data-i18n="downloadConfig">دانلود کانفیگ ↓</span><span class="node-qr" role="button" tabindex="0" onclick="event.preventDefault();event.stopPropagation();PNQR.show('{{ link }}','{{ node_name }}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();PNQR.show('{{ link }}','{{ node_name }}')}" data-i18n-attr="qrTag">QR</span>{% endif %}
+            {% if link %}<span class="download" data-i18n="downloadConfig">دانلود کانفیگ ↓</span><span class="node-qr" role="button" tabindex="0" data-qr-link="{{ link }}" data-qr-name="{{ node_name }}" data-i18n-attr="qrTag">QR</span>{% endif %}
           </div>
         {% if link %}</a>{% else %}</div>{% endif %}
       {% endfor %}
@@ -1967,6 +1967,15 @@ window.PNQR=(function(){
  document.addEventListener("keydown",function(e){if(e.key==="Escape")overlay.hidden=true});
  return {show:show};
 })();
+document.querySelectorAll('.node-qr').forEach(function(button){
+ function activate(event){
+  if(event.type==='keydown'&&event.key!=='Enter'&&event.key!==' ')return;
+  event.preventDefault();event.stopPropagation();
+  PNQR.show(button.dataset.qrLink,button.dataset.qrName);
+ }
+ button.addEventListener('click',activate);
+ button.addEventListener('keydown',activate);
+});
 (function(){
  var btn=document.getElementById("pageQrBtn");
  if(btn){btn.onclick=function(){PNQR.show(location.origin+location.pathname,"");};}

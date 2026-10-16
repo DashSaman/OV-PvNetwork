@@ -1,23 +1,22 @@
 {
   "project": "PVNetwork Panel",
-  "version": "1.0.37",
+  "version": "1.0.53",
   "channel": "stable",
   "project_repo": "DashSaman/OV-PvNetwork",
-  "release_asset": "pvnetwork-panel-v1.0.37.tar.gz",
+  "release_asset": "pvnetwork-panel-v1.0.53.tar.gz",
   "base_node": {
     "repo": "primeZdev/ov-node",
-    "tag": "v1.3.6"
-  },
-  "openvpn_installer": {
-    "repo": "angristan/openvpn-install",
-    "commit": "ad22fd9eb0c8569a885f836ef6e37576d8702e9f"
+    "tag": "v1.3.6",
+    "commit": "fd540b2acfeeac0031e1cf945fc4599fed8e434a",
+    "license": "MIT",
+    "usage": "source foundation; not a remote installer"
   },
   "defaults": {
     "panel_port": 19000,
     "panel_path": "panel",
     "subscription_path": "sub",
     "node_api_port": 9090,
-    "openvpn_port": 1197,
+    "openvpn_port": 1194,
     "openvpn_protocol": "udp"
   },
   "supported_os": [
@@ -33,5 +32,17 @@
   "foundation_attribution": {
     "license": "MIT",
     "copyright": "Copyright (c) 2025 PrimeZ"
+  },
+  "legacy_openvpn_installer": {
+    "repo": "angristan/openvpn-install",
+    "commit": "ad22fd9eb0c8569a885f836ef6e37576d8702e9f",
+    "legacy_only": true
+  },
+  "native_node": {
+    "source": "node-agent",
+    "version": "1.0.53",
+    "transport": "HTTPS",
+    "bundle_format": "pvnetwork-node-source-v1",
+    "license_notice": "node-agent/LICENSE"
   }
 }

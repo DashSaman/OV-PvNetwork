@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+APP=/opt/pvnetwork-panel
+JOB_ID="${1:-}"
+ARCHIVE="${2:-}"
+[[ "$JOB_ID" =~ ^[a-f0-9]{24}$ ]] || exit 64
+[[ "$ARCHIVE" == "/var/lib/pvnetwork-panel/restore-jobs/$JOB_ID/upload.tar.gz" && -f "$ARCHIVE" && ! -L "$ARCHIVE" ]] || exit 66
+# v1 PostgreSQL and v2 SQLite/PostgreSQL payloads share native verification,
+# scoped settings restore, writer locking and durable failure recovery.
+exec "$APP/.venv/bin/python" /usr/local/lib/pvnetwork-panel/pvnetwork_lifecycle.py restore-upload "$JOB_ID" --archive "$ARCHIVE" --yes --json

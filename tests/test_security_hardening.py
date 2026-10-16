@@ -1,4 +1,6 @@
 import pathlib
+import re
+import tomllib
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -18,7 +20,7 @@ class SecurityHardeningContractTests(unittest.TestCase):
     def test_main_admin_uses_hash_not_plaintext_comparison(self):
         auth = text("backend/auth/auth.py")
         env = text(".env.example")
-        installer = text("install-local.sh")
+        installer = text("scripts/pvnetwork_install.py")
         self.assertNotIn("password == main_admin_password", auth)
         self.assertIn("ADMIN_PASSWORD_HASH", auth)
         self.assertIn("ADMIN_PASSWORD_HASH=", env)
@@ -55,7 +57,12 @@ class SecurityHardeningContractTests(unittest.TestCase):
         self.assertIn("pip-audit", workflow)
         self.assertIn("bandit", workflow)
         self.assertNotIn("python-jose", pyproject)
-        self.assertIn("pyjwt>=2.13", pyproject)
+        dependencies=tomllib.loads(text('pyproject.toml'))['project']['dependencies']
+        requirement=next(value.lower() for value in dependencies if value.lower().startswith('pyjwt'))
+        minimum=re.fullmatch(r'pyjwt>=([0-9]+(?:\.[0-9]+){1,2}),<3',requirement)
+        self.assertIsNotNone(minimum,'a patched PyJWT minimum and compatible major bound are required')
+        version=tuple(int(part) for part in minimum[1].split('.'))
+        self.assertGreaterEqual(version+(0,)*(3-len(version)),(2,15,0))
         self.assertIn("python-dotenv>=1.2.2", pyproject)
 
     def test_anyconnect_secret_key_requires_private_permissions(self):
@@ -72,6 +79,12 @@ class SecurityHardeningContractTests(unittest.TestCase):
         ]
         for path in panel_paths:
             body = text(path)
+            if path=="install-local.sh":
+                self.assertIn("pvnetwork_install.py", body)
+                body += text("scripts/pvnetwork_install.py")
+            if path in {'scripts/manage.sh','scripts/pvnetwork-panel-restore-job'}:
+                self.assertIn('pvnetwork_lifecycle.py', body)
+                body += text('scripts/pvnetwork_lifecycle.py')
             self.assertIn("/healthz", body, path)
             self.assertNotIn("/openapi.json", body, path)
 

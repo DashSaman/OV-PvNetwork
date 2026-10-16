@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import apiClient from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -26,11 +27,30 @@ const readChangeEnvelope = () => {
   }
 };
 
+function SettingsConfirmation({ children, onCancel }) {
+  const dialog = useRef(null);
+  useEffect(() => {
+    const previous = document.activeElement;
+    dialog.current?.focus();
+    const keyboard = event => {
+      if (event.key === 'Escape') { event.preventDefault(); onCancel(); }
+      if (event.key !== 'Tab') return;
+      const buttons = [...dialog.current.querySelectorAll('button:not(:disabled)')];
+      const first = buttons[0]; const last = buttons.at(-1);
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog.current)) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', keyboard);
+    return () => { document.removeEventListener('keydown', keyboard); previous?.focus(); };
+  }, [onCancel]);
+  return createPortal(<div className="modal-overlay"><div ref={dialog} tabIndex={-1} className="modal" role="dialog" aria-modal="true" aria-labelledby="panel-confirm-title">{children}</div></div>, document.body);
+}
+
 function PanelRuntimeCard() {
   const { t } = useTranslation();
   const { stageReplacementToken, promoteReplacementToken, discardReplacementToken } = useAuth();
   const [info, setInfo] = useState(null);
-  const [form, setForm] = useState({ currentPassword: '', newUsername: '', newPassword: '', confirmPassword: '', newPath: '' });
+  const [form, setForm] = useState({ currentPassword: '', newUsername: '', newPassword: '', confirmPassword: '', newPath: '', newPort: '' });
   const [confirming, setConfirming] = useState(false);
   const [applying, setApplying] = useState(false);
   const [progress, setProgress] = useState('');
@@ -97,7 +117,8 @@ function PanelRuntimeCard() {
     setPanelError(''); setPanelMessage('');
     if (!form.currentPassword) return setPanelError(t('panelSettings.currentRequired'));
     if (form.newPassword && form.newPassword !== form.confirmPassword) return setPanelError(t('panelSettings.passwordMismatch'));
-    if (!form.newUsername.trim() && !form.newPassword && !form.newPath.trim()) return setPanelError(t('panelSettings.noChanges'));
+    if (!form.newUsername.trim() && !form.newPassword && !form.newPath.trim() && !form.newPort) return setPanelError(t('panelSettings.noChanges'));
+    if (form.newPort && (!Number.isInteger(Number(form.newPort)) || Number(form.newPort) < 1024 || Number(form.newPort) > 65535 || Number(form.newPort) === 19002)) return setPanelError(t('panelSettings.portHelp'));
     setConfirming(true);
   };
 
@@ -108,6 +129,7 @@ function PanelRuntimeCard() {
       if (form.newUsername.trim()) payload.new_username = form.newUsername.trim();
       if (form.newPassword) payload.new_password = form.newPassword;
       if (form.newPath.trim()) payload.new_path = form.newPath.trim();
+      if (form.newPort) payload.new_port = Number(form.newPort);
       const response = await apiClient.post('/security/panel-settings/apply', payload, { timeout: 15000 });
       const data = response.data.data;
       stageReplacementToken(data.pending_access_token || null);
@@ -138,21 +160,24 @@ function PanelRuntimeCard() {
     {!info ? <p>{t('feature.loading')}</p> : <>
       <p>{t('panelSettings.currentUsername')}: <span className="ltr-number">{info.username}</span></p>
       <p>{t('panelSettings.currentPath')}: <span className="ltr-number">/{info.panel_path}</span></p>
+      <p>{t('panelSettings.currentPort')}: <span className="ltr-number">{info.panel_port}</span></p>
       <div className="monitor-grid">
         <label htmlFor="pvn-new-username">{t('panelSettings.newUsername')}<input id="pvn-new-username" value={form.newUsername} onChange={e => setForm({...form, newUsername:e.target.value})}/></label>
         <label htmlFor="pvn-new-path">{t('panelSettings.panelPath')}<input id="pvn-new-path" value={form.newPath} onChange={e => setForm({...form, newPath:e.target.value})}/></label>
+        <label htmlFor="pvn-new-port">{t('panelSettings.newPort')}<input id="pvn-new-port" type="number" min="1024" max="65535" value={form.newPort} onChange={e => setForm({...form, newPort:e.target.value})} aria-describedby="pvn-port-help"/><small id="pvn-port-help">{t('panelSettings.portHelp')}</small></label>
         <label htmlFor="pvn-new-password">{t('panelSettings.newPassword')}<input id="pvn-new-password" type="password" value={form.newPassword} onChange={e => setForm({...form, newPassword:e.target.value})}/></label>
         <label htmlFor="pvn-confirm-password">{t('panelSettings.confirmPassword')}<input id="pvn-confirm-password" type="password" value={form.confirmPassword} onChange={e => setForm({...form, confirmPassword:e.target.value})}/></label>
         <label htmlFor="pvn-current-password">{t('panelSettings.currentPassword')}<input id="pvn-current-password" type="password" autoComplete="current-password" value={form.currentPassword} onChange={e => setForm({...form, currentPassword:e.target.value})}/></label>
       </div>
       <div className="monitor-actions"><button type="button" className="btn" disabled={applying} onClick={openConfirmation}>{t('panelSettings.apply')}</button></div>
     </>}
-    {confirming && <div className="modal-overlay"><div className="modal" role="dialog" aria-modal="true" aria-labelledby="panel-confirm-title">
+    {confirming && <SettingsConfirmation onCancel={() => setConfirming(false)}>
       <div className="modal-header"><h3 id="panel-confirm-title">{t('panelSettings.confirmTitle')}</h3></div>
       <p>{t('panelSettings.summaryUser', { old: info?.username, next: form.newUsername || info?.username })}</p>
       <p>{t('panelSettings.summaryPath', { old: info?.panel_path, next: form.newPath || info?.panel_path })}</p>
+      <p>{t('panelSettings.summaryPort', { old: info?.panel_port, next: form.newPort || info?.panel_port })}</p>
       <div className="modal-footer"><button type="button" className="btn-secondary" onClick={() => setConfirming(false)}>{t('panelSettings.cancel')}</button><button type="button" className="btn" onClick={applyChanges}>{t('panelSettings.confirm')}</button></div>
-    </div></div>}
+    </SettingsConfirmation>}
   </section>;
 }
 

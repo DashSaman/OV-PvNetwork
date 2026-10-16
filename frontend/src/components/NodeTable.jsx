@@ -13,7 +13,9 @@ const NodeTable = ({
   onDelete,
   onCheckStatus,
   onEdit,
-  onRouterOpenVpn
+  onRouterOpenVpn,
+  onArchive,
+  onReconcile
 }) => {
   const {
     t
@@ -84,6 +86,12 @@ const NodeTable = ({
                 }, {
                   label: t('routerOpenVpn.action', 'Router / MikroTik'),
                   onClick: () => onRouterOpenVpn && onRouterOpenVpn(node)
+                }, {
+                  label: t('nodeArchive.title'),
+                  onClick: () => onArchive?.(node)
+                }, {
+                  label: t('nodeReconcile.title'),
+                  onClick: () => onReconcile?.(node)
                 }]} />
                     </div>
                   </td>

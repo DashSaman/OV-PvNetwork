@@ -1,19 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.orm import Session
 
 from backend.auth.auth import get_current_user
 from backend.db.engine import get_db
 from backend.db import crud
 from backend.schema.output import ResponseModel
-from backend.schema._input import NodeCreate
+from backend.schema._input import NodeCreate, NodeUpdate
 from backend.node.health import (
     build_nodes_health,
     decorate_node_list,
     update_node_control,
 )
 from backend.node.task import (
+    NodeNameIdentityError,
     add_node_handler,
     update_node_handler,
     delete_node_handler,
@@ -137,14 +138,17 @@ async def add_node(
 @router.put("/{node_id}", response_model=ResponseModel)
 async def update_node(
     node_id: int,
-    request: NodeCreate,
+    request: NodeUpdate,
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
     if user["type"] != "main_admin":
         return ResponseModel(success=False, msg="Unauthorized access", data=None)
 
-    result = await update_node_handler(node_id, request, db)
+    try:
+        result = await update_node_handler(node_id, request, db)
+    except NodeNameIdentityError as exc:
+        raise HTTPException(status_code=409,detail=str(exc)) from None
     return ResponseModel(
         success=result,
         msg="Node updated successfully" if result else "Failed to update node",
@@ -358,7 +362,9 @@ class AutoNodeDeployRequest(BaseModel):
     address: str
     ssh_port: int = Field(default=22, ge=1, le=65535)
     ssh_username: str = Field(default="root", min_length=1, max_length=64)
-    ssh_password: str = Field(min_length=1, max_length=512)
+    ssh_password: Optional[str] = Field(default=None, max_length=512)
+    ssh_private_key: Optional[str] = Field(default=None, max_length=32768)
+    ssh_key_passphrase: Optional[str] = Field(default=None, max_length=512)
     ssh_fingerprint: Optional[str] = Field(default=None, max_length=160)
     # Optional node-side allowlist source. Empty, hostname (panel behind a
     # proxy/CDN) or malformed values fall back to auto-detection from the
@@ -368,6 +374,18 @@ class AutoNodeDeployRequest(BaseModel):
     ovpn_port: int = Field(default=1194, ge=1, le=65535)
     node_port: int = Field(default=9090, ge=1, le=65535)
     tunnel_address: Optional[str] = None
+    mode: str = 'fresh'
+    existing_node_id: Optional[int] = Field(default=None, ge=1)
+    controller_url: str = Field(min_length=1,max_length=1024)
+    controller_ca_pem: Optional[str] = Field(default=None,max_length=32768)
+
+    @model_validator(mode='after')
+    def deployment_mode(self):
+        if self.mode not in {'fresh','adopt'}:raise ValueError('explicit fresh/adopt mode required')
+        if not self.ssh_password and not self.ssh_private_key:raise ValueError('SSH password or private key required')
+        if self.mode=='fresh' and self.existing_node_id:raise ValueError('fresh install cannot replace an existing node')
+        if self.mode=='adopt' and not self.existing_node_id:raise ValueError('adopt requires the existing node ID to preserve identities and assignments')
+        return self
 
 def _verify_node_from_panel(
     address: str,
@@ -387,7 +405,7 @@ def _verify_node_from_panel(
         tunnel_address=tunnel_address or address,
         protocol=protocol,
         ovpn_port=ovpn_port,
-        set_new_setting=True,
+        set_new_setting=False,
     )
 
     if not client.check_node():
@@ -507,6 +525,14 @@ def _run_deploy_job(job, request_data: dict) -> None:
         fail_job(job, RuntimeError("Another deployment is already running for this address"))
         return
     db = SessionLocal()
+    result = None
+    registered = False
+    def remote_control(action):
+        from backend.node.native_deploy import control
+        return control(action=action,transaction_id=result.transaction_id,host=result.address,
+                       ssh_port=request_data['ssh_port'],username=request_data['ssh_username'],
+                       password=request_data.get('ssh_password'),key=request_data.get('ssh_private_key'),
+                       passphrase=request_data.get('ssh_key_passphrase'),fingerprint=result.fingerprint)
     try:
         job.state = "running"
 
@@ -520,14 +546,24 @@ def _run_deploy_job(job, request_data: dict) -> None:
             (Node.address == request_data["address"]) |
             (Node.name == request_data["name"])
         ).first()
-        if duplicate:
+        adopting = request_data.get('mode')=='adopt'
+        existing=db.query(Node).filter(Node.id==request_data.get('existing_node_id')).first() if adopting else None
+        if adopting and (not existing or existing.address!=request_data['address'] or existing.name!=request_data['name'] or existing.protocol!=request_data['protocol'] or existing.ovpn_port!=request_data['ovpn_port']):
+            raise RuntimeError('Adopt must preserve the existing node name, address, VPN port and protocol')
+        if duplicate and (not adopting or duplicate.id!=existing.id):
             raise RuntimeError("A node with this name or address already exists")
 
         result = deploy_node(
             host=request_data["address"],
             ssh_port=request_data["ssh_port"],
             username=request_data["ssh_username"],
-            password=request_data["ssh_password"],
+            password=request_data.get("ssh_password"),
+            ssh_private_key=request_data.get('ssh_private_key'),
+            ssh_key_passphrase=request_data.get('ssh_key_passphrase'),
+            mode=request_data.get('mode','fresh'),
+            adopted_api_key=existing.key if adopting else None,
+            panel_url=request_data['controller_url'],
+            panel_ca_pem=request_data.get('controller_ca_pem'),
             expected_fingerprint=request_data.get("ssh_fingerprint"),
             api_port=request_data["node_port"],
             ovpn_port=request_data["ovpn_port"],
@@ -535,8 +571,6 @@ def _run_deploy_job(job, request_data: dict) -> None:
             panel_ip=request_data["panel_ip"],
             reporter=lambda p, s, m, level="info": update_job(job, p, s, m, level),
         )
-        # Drop the password reference as soon as SSH work is complete.
-        request_data["ssh_password"] = ""
         update_job(job, 96, "panel_health", "Verifying /sync/status from the panel")
         try:
             _verify_node_from_panel(
@@ -557,19 +591,28 @@ def _run_deploy_job(job, request_data: dict) -> None:
             ) from verify_exc
 
         update_job(job, 98, "database", "Registering verified node")
-        node_request = NodeCreate(
-            name=request_data["name"], address=result.address,
-            tunnel_address=(request_data.get("tunnel_address") or result.address),
-            protocol=result.protocol, ovpn_port=result.ovpn_port,
-            port=result.api_port, key=result.api_key,
-            status=True, set_new_setting=False,
-        )
-        created = crud.create_node(db, node_request)
-
-        if created is False:
-            raise RuntimeError("Database registration failed")
-
+        if adopting:
+            created=existing
+            created.port=result.api_port
+        else:
+            node_request = NodeCreate(
+                name=request_data["name"], address=result.address,
+                tunnel_address=(request_data.get("tunnel_address") or result.address),
+                protocol=result.protocol, ovpn_port=result.ovpn_port,
+                port=result.api_port, key=result.api_key,
+                status=True, set_new_setting=False,
+            )
+            created=Node(name=node_request.name,address=node_request.address,tunnel_address=node_request.tunnel_address,
+                         protocol=node_request.protocol,ovpn_port=node_request.ovpn_port,port=node_request.port,key=node_request.key,status=True)
+            db.add(created)
         db.commit()
+        registered=True
+        db.refresh(created)
+        finalization_warning=None
+        try:remote_control('finalize')
+        except Exception:
+            finalization_warning='Node is registered and healthy; SSH finalization is pending. Recover this owned transaction before agent changes.'
+            update_job(job,98,'finalization_pending',finalization_warning,'warning')
 
         update_job(
             job,
@@ -579,10 +622,7 @@ def _run_deploy_job(job, request_data: dict) -> None:
         )
 
         try:
-            sync_summary = _sync_existing_assignments_to_node(
-                db,
-                created,
-            )
+            sync_summary = {'preserved_existing_identities':True,'attempted':0} if adopting else _sync_existing_assignments_to_node(db,created)
         except Exception as sync_exc:
             db.rollback()
 
@@ -631,12 +671,26 @@ def _run_deploy_job(job, request_data: dict) -> None:
             "fingerprint": result.fingerprint,
             "name": created.name,
             "user_sync": sync_summary,
+            "transaction_id": result.transaction_id,
+            "finalization_warning": finalization_warning,
+            "mode": request_data.get('mode','fresh'),
         })
     except Exception as exc:
         db.rollback()
-        fail_job(job, exc)
+        if result is not None and not registered:
+            # A commit can succeed before the client sees an exception. Confirm
+            # durable registration before considering any remote rollback.
+            with SessionLocal() as proof:
+                registered=proof.query(Node).filter(Node.address==result.address,Node.port==result.api_port,Node.key==result.api_key).first() is not None
+            if not registered:
+                try:remote_control('rollback')
+                except Exception:
+                    exc=RuntimeError('Registration failed and remote recovery is pending; inspect the owned node transaction before retry')
+        fail_job(job, exc, [request_data.get('ssh_password'),request_data.get('ssh_private_key'),request_data.get('ssh_key_passphrase'),result.api_key if result else None])
     finally:
         request_data["ssh_password"] = ""
+        request_data['ssh_private_key']=''
+        request_data['ssh_key_passphrase']=''
         db.close()
         lock.release()
 
@@ -644,7 +698,7 @@ def _run_deploy_job(job, request_data: dict) -> None:
 @router.post("/deploy/", response_model=ResponseModel)
 async def auto_deploy_node(request: AutoNodeDeployRequest, user: dict = Depends(get_current_user)):
     if user["type"] != "main_admin":
-        return ResponseModel(success=False, msg="Unauthorized access", data=None)
+        raise HTTPException(status_code=403,detail='Main administrator access is required')
     data = request.model_dump()
     job = new_deploy_job(request.address)
     threading.Thread(target=_run_deploy_job, args=(job, data), daemon=True).start()

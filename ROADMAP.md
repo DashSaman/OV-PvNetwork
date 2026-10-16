@@ -2,6 +2,12 @@
 
 > Production is live and under load. `AGENTS.md` is the execution source of truth. This public roadmap is a sanitized summary only.
 
+## Current candidate
+
+- `v1.0.45` / `PVN-1029` — bilingual 25-item operational CLI, scoped node repair and staged internal panel-port management. Candidate only; final integration/CI, full mission, publication and authorized Production remain open. [CLI guide](docs/CLI.md).
+
+- `v1.0.44` / `PVN-1028` — private node backup/download/upload/restore in Web management, node identity binding and explicit offline recovery choices. Candidate only; full mission, public artifact and authorized Production gates remain open. [Evidence](docs/NODE-ARCHIVES-CANDIDATE.md).
+
 ## Released
 
 ### v1.0.0
@@ -108,3 +114,21 @@ The permanent numbered backlog remains in `docs/FEATURE-BACKLOG.md` and covers: 
 ## Release rule
 
 Released tags/assets are immutable. Every new Production-visible `PVN-xxx` task ships as the next sequential `1.0.x` GitHub Release after applicable tests, sanitization, verified backup, narrow deployment, health verification, bilingual documentation and release-asset verification pass.
+
+## v1.0.38 candidate — PVN-1023
+
+Frontend dependency security refresh. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
+
+Limited Production deployment and targeted verification passed on 2026-10-13. Public merge/tag/release gates remain open; see [the sanitized checkpoint](docs/HARDENING-CHECKPOINT-2026-10-13.md).
+
+## v1.0.39 candidate — PVN-1022
+
+Alphanumeric migration smoke validation. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
+
+Limited Production deployment passed; the official smoke helper and oneshot now accept the existing migration revision without modifying the database.
+
+## v1.0.40 candidate — PVN-1024
+
+Bounded configuration-aware self-healing. Targeted gates and owner-authorized Production deployment precede publication; overall final hardening remains open.
+
+Limited Production deployment passed; the next existing timer invocation succeeded with protected service PIDs unchanged. Fresh-install, lifecycle recovery and independent node bootstrap/traffic gates remain open.

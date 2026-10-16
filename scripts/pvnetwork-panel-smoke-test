@@ -17,7 +17,7 @@ read_env_value() {
 PORT="$(read_env_value PORT)"
 URLPATH="$(read_env_value URLPATH)"
 PORT="${PORT:-19000}"
-URLPATH="${URLPATH:-hajsaman}"
+URLPATH="${URLPATH:-panel}"
 BASE="http://127.0.0.1:${PORT}"
 
 OPENAPI_TMP=""
@@ -58,7 +58,7 @@ mapfile -t HEADS < <(
     ../.venv/bin/alembic \
         -c alembic.ini heads 2>/dev/null |
     awk '{print $1}' |
-    grep -E '^[0-9a-f]+$'
+    grep -E '^[A-Za-z0-9_]+$'
 )
 
 if [[ "${#HEADS[@]}" -ne 1 ]]; then
@@ -72,7 +72,7 @@ EXPECTED_HEAD="${HEADS[0]}"
 CURRENT_HEAD="$(
     ../.venv/bin/alembic \
         -c alembic.ini current 2>/dev/null |
-    awk '/^[0-9a-f]+/{print $1; exit}'
+    awk '$1 ~ /^[A-Za-z0-9_]+$/ {print $1; exit}'
 )"
 
 if [[ -z "$CURRENT_HEAD" ]]; then

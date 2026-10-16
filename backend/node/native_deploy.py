@@ -1,0 +1,242 @@
+"""Pinned SSH carries a checked source bundle; no remote installer is fetched."""
+import base64
+import io
+import json
+import re
+import shlex
+import time
+
+import paramiko
+from backend.security_ssh import configure_ssh_client, sha256_fingerprint
+
+
+PYTHON_BOOTSTRAP = r'''
+set -eu
+code=$1; mode=$2; api=$3; vpn=$4; protocol=$5
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import ssl,json,tarfile,urllib.request' >/dev/null 2>&1; then
+ exec python3 -c "$code"
+fi
+fail() { printf '%s\n' 'PVNETWORK_ERROR|{"message":"Python prerequisite preflight or package safety check failed; no VPN configuration was changed"}'; exit 1; }
+[ "$(id -u)" = 0 ] || fail
+[ -r /etc/os-release ] || fail
+. /etc/os-release
+case "$ID:$VERSION_ID" in ubuntu:22.04|ubuntu:24.04|debian:12) ;; *) fail ;; esac
+case "$(uname -m)" in x86_64|aarch64) ;; *) fail ;; esac
+[ -d /run/systemd/system ] && [ -c /dev/net/tun ] || fail
+awk '/^MemTotal:/ {found=1; if ($2 < 524288) exit 1} END {if (!found) exit 1}' /proc/meminfo || fail
+df -Pk /opt | awk 'NR==2 {found=1; if ($4 < 2097152) exit 1} END {if (!found) exit 1}' || fail
+[ ! -e /opt/pvnetwork-node ] && [ ! -L /opt/pvnetwork-node ] || fail
+if [ "$mode" = fresh ]; then
+ [ ! -e /sys/class/net/pvn0 ] || fail
+ for file in /etc/openvpn/server/*.conf; do [ ! -e "$file" ] || fail; done
+else
+ [ -f /etc/openvpn/server/server.conf ] || fail
+fi
+port_free() {
+ hex=$(printf '%04X' "$2")
+ for file in /proc/net/"$1" /proc/net/"$1"6; do
+  [ -r "$file" ] || continue
+  awk -v port="$hex" -v proto="$1" 'NR>1 {split($2,a,":"); if (a[2]==port && (proto!="tcp" || $4=="0A")) exit 1}' "$file" || return 1
+ done
+}
+port_free tcp "$api" || fail
+if [ "$mode" = fresh ]; then port_free "$protocol" "$vpn" || fail; fi
+for tool in apt-get dpkg dpkg-query mktemp; do command -v "$tool" >/dev/null 2>&1 || fail; done
+workspace=$(mktemp -d /tmp/pvnetwork-python.XXXXXXXX)
+case "$workspace" in /tmp/pvnetwork-python.*) ;; *) fail ;; esac
+chmod 700 "$workspace"
+trap 'result=$?; if [ "$result" = 0 ]; then rm -rf -- "$workspace"; fi' EXIT
+trap 'exit 1' HUP INT TERM
+export DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l
+dpkg --audit >"$workspace/audit" 2>&1 || fail
+[ ! -s "$workspace/audit" ] || fail
+dpkg-query -W -f='${binary:Package}\t${Status}\n' >"$workspace/packages" 2>"$workspace/error" || fail
+awk -F '\t' '$2=="install ok installed" {split($1,a,":"); print a[1]}' "$workspace/packages" >"$workspace/installed"
+[ -s "$workspace/installed" ] || fail
+printf '%s\n' 'PVNETWORK_STAGE|5|python_prerequisite|Installing missing Python prerequisite'
+apt-get update --error-on=any -y </dev/null >"$workspace/output" 2>&1 || fail
+apt-get -s --no-upgrade --no-remove --no-install-recommends install -y python3 </dev/null >"$workspace/plan" 2>"$workspace/error" || fail
+awk 'NR==FNR {installed[$1]=1; next} $1=="Remv" {exit 1} ($1=="Inst" || $1=="Conf") {split($2,a,":"); if (a[1] in installed) exit 1}' "$workspace/installed" "$workspace/plan" || fail
+apt-get --no-upgrade --no-remove --no-install-recommends install -y python3 </dev/null >"$workspace/output" 2>&1 || fail
+python3 -c 'import ssl,json,tarfile,urllib.request' >/dev/null 2>&1 || fail
+rm -rf -- "$workspace"
+trap - EXIT HUP INT TERM
+exec python3 -c "$code"
+'''
+
+
+def bootstrap_command(username, code, configuration):
+    mode=configuration.get('mode');protocol=configuration.get('protocol')
+    ports=[configuration.get('api_port'),configuration.get('ovpn_port')]
+    if mode not in {'fresh','adopt'} or protocol not in {'tcp','udp'} or any(type(port) is not int or not 1<=port<=65535 for port in ports):
+        raise ValueError('invalid Python prerequisite preflight arguments')
+    if protocol=='tcp' and ports[0]==ports[1]:raise ValueError('API and VPN cannot use the same TCP port')
+    prefix='' if username=='root' else 'sudo -n '
+    return prefix+'sh -c '+shlex.quote(PYTHON_BOOTSTRAP)+' pvnetwork-python '+shlex.join([code,mode,str(ports[0]),str(ports[1]),protocol])
+
+
+BOOTSTRAP = r'''
+import base64,hashlib,json,os,pathlib,subprocess,sys,tarfile,tempfile,io,re,stat
+if os.geteuid()!=0:raise SystemExit('root or passwordless sudo required')
+message=json.load(sys.stdin)
+configuration=message.get('configuration',{})
+if message.get('action','install')=='install' and not configuration.get('panel_source_ip'):
+ configuration['panel_source_ip']=os.getenv('SSH_CONNECTION',os.getenv('SSH_CLIENT','')).split(' ')[0]
+payload=base64.b64decode(message['source'],validate=True)
+if len(payload)>16*1024**2 or hashlib.sha256(payload).hexdigest()!=message['sha256']:raise SystemExit('node source checksum mismatch')
+with tempfile.TemporaryDirectory(prefix='pvnetwork-node-source-') as directory:
+ root=pathlib.Path(directory);root.chmod(0o700);source=root/'source';source.mkdir()
+ with tarfile.open(fileobj=io.BytesIO(payload),mode='r:gz') as archive:
+  members=archive.getmembers();names=set();total=0
+  for member in members:
+   p=pathlib.PurePosixPath(member.name);total+=member.size
+   if not member.isfile() or p.is_absolute() or '..' in p.parts or '\\' in member.name or member.name in names or total>64*1024**2:raise SystemExit('unsafe node source archive')
+   names.add(member.name)
+  archive.extractall(source)
+ file=root/'configuration.json';file.write_text(json.dumps(configuration));file.chmod(0o600)
+ action=message.get('action','install')
+ arguments=['--configuration',str(file),'--source',str(source)] if action=='install' else ['--action',action,'--source',str(source),'--transaction-id',message.get('transaction_id','')]
+ if action=='restore':
+  identity=message.get('archive_id','');digest=message.get('archive_sha256','')
+  if not isinstance(identity,str) or not re.fullmatch('[a-f0-9]{24}',identity) or not isinstance(digest,str) or not re.fullmatch('[a-f0-9]{64}',digest):raise SystemExit('invalid native upload identity')
+  offline=message.get('offline',False);start=message.get('start_recovered',False)
+  if type(offline) is not bool or type(start) is not bool or (start and not offline):raise SystemExit('explicit offline recovery flags required')
+  inbox=pathlib.Path('/var/lib/pvnetwork-node/archive-inbox')/identity;archive=inbox/'archive.tar.gz';metadata=inbox/'metadata.json'
+  for parent in [inbox,*inbox.parents]:
+   info=parent.lstat()
+   if not stat.S_ISDIR(info.st_mode) or info.st_uid!=0 or info.st_mode&0o022:raise SystemExit('unsafe native upload directory')
+  for path in [archive,metadata]:
+   info=path.lstat()
+   if not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_nlink!=1 or info.st_mode&0o077:raise SystemExit('unsafe native upload file')
+  if metadata.stat().st_size>4096:raise SystemExit('native upload metadata limit exceeded')
+  saved=json.loads(metadata.read_text());info=archive.stat()
+  if saved.get('format')!='pvnetwork-node-upload-v1' or saved.get('id')!=identity or saved.get('sha256')!=digest or saved.get('size')!=info.st_size or saved.get('inode')!=info.st_ino or saved.get('device')!=info.st_dev or saved.get('removing'):raise SystemExit('native upload ownership mismatch')
+  arguments.extend(['--archive',str(archive),'--sha256',digest])
+  if offline:arguments.append('--offline')
+  if start:arguments.append('--start-recovered')
+ code=subprocess.call(['python3',str(source/'scripts/pvnetwork_node_install.py'),*arguments])
+ raise SystemExit(code)
+'''
+
+
+def private_key(value, passphrase=None):
+    for kind in [paramiko.Ed25519Key,paramiko.ECDSAKey,paramiko.RSAKey]:
+        try:return kind.from_private_key(io.StringIO(value),password=passphrase)
+        except (paramiko.SSHException,ValueError):continue
+    raise ValueError('SSH private key could not be parsed; verify its format and passphrase')
+
+
+def connect(host,port,username,password=None,key=None,passphrase=None,fingerprint=None):
+    client=paramiko.SSHClient();configure_ssh_client(client,expected_fingerprint=fingerprint)
+    client.connect(hostname=host,port=port,username=username,password=password or None,
+                   pkey=private_key(key,passphrase) if key else None,
+                   timeout=20,banner_timeout=20,auth_timeout=20,allow_agent=False,look_for_keys=False)
+    return client
+
+
+def execute(client, command, payload, report, timeout, secret_values=()):
+    transport=client.get_transport()
+    if transport is None:raise RuntimeError('SSH transport unavailable')
+    channel=transport.open_session(timeout=20);channel.settimeout(30)
+    # Callers build a fixed, shlex-quoted bootstrap; all user fields travel as stdin JSON.
+    channel.exec_command(command)  # nosec B601
+    if payload:channel.sendall(payload)
+    channel.shutdown_write();deadline=time.monotonic()+timeout
+    buffer='';result=None;error=None
+    try:
+        while not channel.exit_status_ready() or channel.recv_ready() or channel.recv_stderr_ready():
+            if time.monotonic()>deadline:raise TimeoutError('node installation timed out; inspect the owned remote transaction before retry')
+            if channel.recv_stderr_ready():
+                # Remote diagnostics may contain secrets; they remain in root-private state.
+                channel.recv_stderr(65536)
+            if channel.recv_ready():
+                buffer+=channel.recv(65536).decode('utf-8',errors='replace')
+                if len(buffer)>512*1024:raise ValueError('node output size limit exceeded')
+                lines=buffer.split('\n');buffer=lines.pop()
+                for line in lines:
+                    if line.startswith('PVNETWORK_STAGE|'):
+                        fields=line.split('|',3)
+                        if len(fields)==4 and fields[1].isdigit() and re.fullmatch('[a-z_]{1,32}',fields[2]):
+                            # Emit fixed stage labels, never arbitrary remote strings.
+                            report(min(94,int(fields[1])),fields[2],'Native node '+fields[2],'info')
+                    elif line.startswith('PVNETWORK_RESULT|'):
+                        result=json.loads(line.partition('|')[2])
+                    elif line.startswith('PVNETWORK_ERROR|'):
+                        body=json.loads(line.partition('|')[2])
+                        error=str(body.get('message','Native node operation failed'))[:640]
+                        for secret in secret_values:
+                            if secret:error=error.replace(str(secret),'[REDACTED]')
+                        error=re.sub(r'pvn_tls_v1_[A-Za-z0-9_-]+','[REDACTED]',error)
+            time.sleep(.05)
+        if channel.recv_exit_status()!=0:raise RuntimeError(error or 'native node operation failed; inspect root-private /etc/pvnetwork-node/last-error.log and transaction.json')
+        return result
+    finally:channel.close()
+
+
+def install(*, host,ssh_port,username,password,key,passphrase,fingerprint,configuration,source,digest,report,timeout):
+    client=connect(host,ssh_port,username,password,key,passphrase,fingerprint)
+    try:
+        observed=sha256_fingerprint(client.get_transport().get_remote_server_key())
+        report(4,'ssh','Verified SSH host fingerprint '+observed,'ok')
+        code='import base64;exec(base64.b64decode('+repr(base64.b64encode(BOOTSTRAP.encode()).decode())+'))'
+        command=bootstrap_command(username,code,configuration)
+        payload=json.dumps({'configuration':configuration,'source':base64.b64encode(source).decode(),'sha256':digest}).encode()
+        result=execute(client,command,payload,report,timeout,[password,key,passphrase,configuration['api_key']])
+        if not isinstance(result,dict) or result.get('state')!='ready' or not re.fullmatch('[a-f0-9]{24}',result.get('transaction_id','')):raise RuntimeError('native installer did not return authenticated readiness')
+        return result,observed
+    finally:client.close()
+
+
+def control(*, action,transaction_id,host,ssh_port,username,password=None,key=None,passphrase=None,fingerprint=None):
+    if action not in {'finalize','rollback','status'} or not re.fullmatch('[a-f0-9]{24}',transaction_id):raise ValueError('invalid owned node operation')
+    client=connect(host,ssh_port,username,password,key,passphrase,fingerprint)
+    try:
+        from backend.node.deploy import build_native_node_bundle
+        source,digest=build_native_node_bundle()
+        code='import base64;exec(base64.b64decode('+repr(base64.b64encode(BOOTSTRAP.encode()).decode())+'))'
+        command=('' if username=='root' else 'sudo -n ')+'python3 -c '+shlex.quote(code)
+        payload=json.dumps({'action':action,'transaction_id':transaction_id,'source':base64.b64encode(source).decode(),'sha256':digest}).encode()
+        result=execute(client,command,payload,lambda *_:None,120)
+        expected={'finalize':'finalized','rollback':'rolled_back'}
+        if not result or result.get('transaction_id')!=transaction_id or (action in expected and result.get('state')!=expected[action]):raise ValueError('owned node operation was not verified')
+        return result
+    finally:client.close()
+
+
+def agent_operation(*,action,host,ssh_port,username,password=None,key=None,passphrase=None,fingerprint=None):
+    if action not in {'upgrade','rollback-agent','recover-agent'}:raise ValueError('invalid agent lifecycle action')
+    from backend.node.deploy import build_native_node_bundle
+    source,digest=build_native_node_bundle()
+    client=connect(host,ssh_port,username,password,key,passphrase,fingerprint)
+    try:
+        code='import base64;exec(base64.b64decode('+repr(base64.b64encode(BOOTSTRAP.encode()).decode())+'))'
+        command=('' if username=='root' else 'sudo -n ')+'python3 -c '+shlex.quote(code)
+        payload=json.dumps({'action':action,'source':base64.b64encode(source).decode(),'sha256':digest}).encode()
+        result=execute(client,command,payload,lambda *_:None,1200,[password,key,passphrase])
+        if not result or result.get('state') not in {'complete','rolled_back'}:raise ValueError('agent lifecycle result was not verified')
+        return result
+    finally:client.close()
+
+
+def archive_operation(*,client,username,action,upload_id=None,archive_sha256=None,offline=False,start_recovered=False,report=None,secret_values=()):
+    if action not in {'backup','restore','recover-data'} or type(offline) is not bool or type(start_recovered) is not bool:
+        raise ValueError('invalid native archive action')
+    if action=='restore':
+        if not isinstance(upload_id,str) or not re.fullmatch('[a-f0-9]{24}',upload_id) or not isinstance(archive_sha256,str) or not re.fullmatch('[a-f0-9]{64}',archive_sha256):
+            raise ValueError('verified private upload identity and SHA256 required')
+        if start_recovered and not offline:raise ValueError('start-recovered requires explicit offline restore')
+    elif upload_id is not None or archive_sha256 is not None or offline or start_recovered:
+        raise ValueError('archive recovery flags require an explicit restore')
+    from backend.node.deploy import build_native_node_bundle
+    source,digest=build_native_node_bundle()
+    code='import base64;exec(base64.b64decode('+repr(base64.b64encode(BOOTSTRAP.encode()).decode())+'))'
+    command=('' if username=='root' else 'sudo -n ')+'python3 -c '+shlex.quote(code)
+    message={'action':action,'source':base64.b64encode(source).decode(),'sha256':digest}
+    if action=='restore':message.update(archive_id=upload_id,archive_sha256=archive_sha256,offline=offline,start_recovered=start_recovered)
+    result=execute(client,command,json.dumps(message).encode(),report or (lambda *_:None),1200,secret_values)
+    if action=='backup':
+        from backend.node.archive_transport import validate_receipt
+        validate_receipt(result)
+    elif not isinstance(result,dict) or result.get('state') not in ({'complete'} if action=='restore' else {'complete','rolled_back'}):
+        raise ValueError('native archive operation was not verified')
+    return result

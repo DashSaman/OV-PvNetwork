@@ -1,0 +1,16 @@
+.node-archive-modal { width: min(640px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto; overflow-x: hidden; box-sizing: border-box; }
+.node-archive-modal .modal-header { gap: 12px; align-items: flex-start; }
+.node-archive-modal h3 { min-width: 0; overflow-wrap: anywhere; }
+.node-archive-modal fieldset { border: 0; padding: 0; min-width: 0; display: grid; gap: 14px; }
+.node-archive-modal label { display: grid; gap: 6px; min-width: 0; }
+.node-archive-modal input:not([type=checkbox]), .node-archive-modal select, .node-archive-modal textarea { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; min-height: 44px; }
+.node-archive-modal button { min-height: 44px; }
+.node-archive-modal .node-archive-check { display: flex; gap: 10px; align-items: flex-start; }
+.node-archive-check input { min-width: 20px; min-height: 20px; }
+.node-archive-fields { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+.node-archive-modal progress { width: 100%; }
+.node-archive-modal p, .node-archive-modal code { overflow-wrap: anywhere; }
+.node-archive-warning { padding: 12px; border-inline-start: 4px solid var(--accent-color, #d97706); }
+.node-archive-receipt { margin-block: 12px; padding: 12px; border: 1px solid var(--border-color, #64748b); border-radius: 8px; }
+.node-archive-modal :focus-visible { outline: 2px solid var(--primary-color, #3b82f6); outline-offset: 3px; }
+@media (max-width: 430px) { .node-archive-fields { grid-template-columns: 1fr; } }

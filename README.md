@@ -4,7 +4,7 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.37-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.53-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
@@ -12,11 +12,77 @@
 
 </div>
 
+## v1.0.53 candidate vs v1.0.52
+
+**PVN-1037 — existing credential-key alias recovery.** Native backups recognize the fixed older PVNetwork state-key alias only after root ownership, private permissions, regular target and protected ancestors pass. Same-host restore preserves the link and key material. Arbitrary or unsafe links remain refused. [Policy and validation](docs/RELEASE-NOTES-v1.0.53.md). No key rotation or UI change. Implementation CI and native backup/clone-canary passed; final immutable-source/public-bootstrap CI, publication and scoped Production remain gates.
+
+## v1.0.52 candidate vs v1.0.51
+
+**PVN-1036 — portable source archives.** Repository attributes keep executable/text exports on LF even when a Windows contributor uses Git autocrlf. Binary assets retain their bytes. This fixes the exact private archive that failed fresh Bash startup. [Regression and release boundary](docs/RELEASE-NOTES-v1.0.52.md). No UI change; the [current Demo](docs/CURRENT-DEMO.md) remains applicable. Final native artifact, publication and authorized Production gates remain open.
+
+## v1.0.51 candidate vs v1.0.50
+
+**PVN-1035 — readable form values.** Input, select and textarea surfaces now use the same theme as their text, with readable placeholders and focused fields. [Measured regression](docs/RELEASE-NOTES-v1.0.51.md) · [Current Demo](docs/CURRENT-DEMO.md). Public stable remains 1.0.37 and Production remains 1.0.40; final gates remain open.
+
+## v1.0.50 candidate vs v1.0.49
+
+**PVN-1034 — subscription QR context safety.** Node labels and download URLs remain inert HTML data; fixed event listeners open the QR without embedding those values in JavaScript. Real browser regressions cover mouse, Enter and Space, both core languages, themes and native zoom. [Validation and compatibility](docs/RELEASE-NOTES-v1.0.50.md). [Current Demo walkthrough](docs/CURRENT-DEMO.md). Public stable remains 1.0.37 and Production remains 1.0.40; final release gates remain open.
+
+## v1.0.49 candidate vs v1.0.48
+
+**PVN-1033 — downloaded profile endpoint.** Downloads now remove stale remote/protocol lines before adding the current node endpoint, preserving cached inline identity and private response headers. [Regression and compatibility](docs/RELEASE-NOTES-v1.0.49.md). Public stable remains 1.0.37 and Production remains 1.0.40; final gates remain open.
+
+## v1.0.48 candidate vs v1.0.47
+
+**PVN-1032 — SQLite domain history.** Collector ingestion now merges domains on both supported database backends, including existing SQLite BIGINT-ID tables. Atomic counters and node/assignment/privacy guards remain enforced. [Validation and compatibility](docs/RELEASE-NOTES-v1.0.48.md). Public stable remains 1.0.37 and Production remains 1.0.40; publication/deployment gates remain open.
+
+## v1.0.47 candidate vs v1.0.46
+
+**PVN-1031 — responsive quick edit and header.** The editor fits outside table scrolling and retains drafts when resizing. Header actions stay reachable on phones/zoom, logos are bundled, and regression uses native Chromium zoom. [Demo screenshots and validation](docs/RELEASE-NOTES-v1.0.47.md). Public stable remains 1.0.37 and Production remains 1.0.40; final release/deployment gates remain open.
+
+## v1.0.46 candidate vs v1.0.45
+
+**PVN-1030 — tenant isolation and guarded Web Push.** Reseller presence/dashboard UUIDs are owner-scoped, diagnostics are read-only, reset requires POST/write permission, and push deliveries use approved public destinations with a persisted hourly test budget. [Compatibility and validation](docs/RELEASE-NOTES-v1.0.46.md). Public stable remains 1.0.37 and Production remains 1.0.40; final publication and deployment gates remain open.
+
+## v1.0.45 candidate vs v1.0.44
+
+**PVN-1029 — English/Persian operational CLI.** The 25-item console adds bounded diagnostics, scoped service/node repair, private support exports and existing native lifecycle commands. Node repair also has a Web progress view. Panel internal-port changes use staged build/canary verification with exact proxy rollback and interrupted-change recovery. [CLI guide](docs/CLI.md). Public stable remains 1.0.37 and Production remains 1.0.40; final candidate, publication and deployment gates remain open.
+
+## v1.0.44 candidate vs v1.0.43
+
+**PVN-1028 — private node backups and same-node restore from the Web panel.** Main administrators use pinned SSH, verified byte transfers, expiring node-bound archives and explicit offline recovery confirmation. English/Persian controls passed the nine-width browser matrix; actual native SSH backup/transfer/compatible restore preserved the VPN PID, secrets and counters. [Workflow and evidence](docs/NODE-ARCHIVES-CANDIDATE.md). Public stable remains 1.0.37; Production remains 1.0.40. This candidate has separate final release and deployment gates.
+
+## v1.0.43 candidate vs v1.0.42
+
+**PVN-1027 — independent HTTPS node source.** Verified SSH/source delivery, protected TLS trust, callback identity and persistent accounting replace the legacy fresh-node bootstrap. Real demo TUN/traffic and target-only controls have been exercised; exact final artifact, complete adoption/fleet, UI/CLI and release gates remain open. [Evidence and limits](docs/NODE-CANDIDATE.md). Public stable remains 1.0.37 and authorized Production remains 1.0.40.
+
+## v1.0.42 candidate vs v1.0.41
+
+**PVN-1026 — verified native lifecycle.** Updates build and check a database clone before an atomic release switch. Backups actually restore SQLite/PostgreSQL snapshots and cover owned crypto/trust files; failure and interruption recovery preserve the final pre-operation state. [Commands, validation and boundaries](docs/LIFECYCLE-CANDIDATE.md). Public stable remains 1.0.37 and the previously authorized Production checkpoint remains 1.0.40. Final node, CLI, publication and external-network gates remain open.
+
+## v1.0.41 candidate vs v1.0.40
+
+**PVN-1025 — verified fresh installation.** The bootstrap validates the official versioned release asset/checksum and archive before execution. Private pinned Python/Node/uv tools and immutable release directories replace remote setup-script execution. Fresh SQLite initialization uses the current constrained schema; existing databases are refused. Secure Setup Mode verifies loopback proxy/UI access and requires SSH forwarding; public HTTPS is announced only after ACME and proxy checks succeed. Credentials stay in a root-only file.
+
+This candidate is not a published release. See [installer validation and recovery](docs/INSTALLER-CANDIDATE.md). Lifecycle, node, final privacy/publication and external-network gates remain open. Do not use the old lifecycle updater for these candidates.
+
+## Candidate v1.0.38 vs v1.0.37
+
+**PVN-1023 — Frontend dependency security refresh.** [Candidate notes](./docs/RELEASE-NOTES-v1.0.38.md). Publication and the overall final-hardening sign-off remain gated; this is a targeted patch candidate.
+
+## Candidate v1.0.39 vs v1.0.38
+
+**PVN-1022 — Alphanumeric migration smoke validation.** [Candidate notes](./docs/RELEASE-NOTES-v1.0.39.md). Publication and the overall final-hardening sign-off remain gated; this is a targeted patch candidate.
+
+## Candidate v1.0.40 vs v1.0.39
+
+**PVN-1024 — Bounded configuration-aware self-healing.** [Candidate notes](./docs/RELEASE-NOTES-v1.0.40.md). Publication and the overall final-hardening sign-off remain gated; this is a targeted patch candidate.
+
 ## What changed in v1.0.35 vs v1.0.34
 
 **PVN-1019 — presence rate hotfix.** Fixes the /users/presence 500s (float coercion of the new rate dicts) that kept live ↓/↑ speeds from appearing in the Users table.
 
-Current release line: **v1.0.35** — [release notes](./docs/RELEASE-NOTES-v1.0.35.md).
+Previous release: **v1.0.35** — [release notes](./docs/RELEASE-NOTES-v1.0.35.md).
 
 ## What changed in v1.0.34 vs v1.0.33
 
@@ -140,7 +206,7 @@ Previous release: **v1.0.16** — [release notes](./docs/RELEASE-NOTES-v1.0.16.m
 
 Existing Node upgrades now install the user-lifecycle patch as well as Router compatibility. Delete no longer depends on an optional interactive installer: it revokes the target certificate with EasyRSA, regenerates/publishes the CRL atomically, and removes only that client's stale PKI leaf artifacts after a successful revoke. No database migration is required.
 
-Current release line: **v1.0.15** — [release notes](./docs/RELEASE-NOTES-v1.0.15.md).
+Previous release: **v1.0.15** — [release notes](./docs/RELEASE-NOTES-v1.0.15.md).
 
 ## What changed in v1.0.14 vs v1.0.13
 
@@ -322,7 +388,7 @@ CI checks the major routes at `360`, `375`, `390`, `430`, `768`, `1024`, `1366`,
 Run on a **fresh** supported server as `root`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.37/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.40/install.sh)
 ```
 
 The installer uses the tagged release source instead of following an unpinned development branch.

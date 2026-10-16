@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hmac
+import hashlib
 import os
 import re
 from datetime import datetime, timezone
@@ -9,6 +10,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel, Field
+from backend.protocol_compat import node_key_header
 from sqlalchemy.orm import Session
 
 from backend.config import config
@@ -33,6 +35,30 @@ router = APIRouter(
     prefix="/integrations/mirza",
     tags=["Mirza Integration"],
 )
+
+
+class _DeploymentProof(BaseModel):
+    nonce: str = Field(min_length=16,max_length=128)
+
+
+@router.post('/deployment-proof')
+def deployment_proof(request:_DeploymentProof,node_key:str=Depends(node_key_header)):
+    from backend.node.deploy_probe import matches
+    if not matches(node_key,request.nonce):raise HTTPException(status_code=401,detail='Invalid deployment proof')
+    return {'status':'verified','controller':'pvnetwork-panel'}
+
+
+@router.get('/configuration-decision/{transaction_id}')
+def node_configuration_decision(transaction_id:str,node_key:str=Depends(node_key_header),db:Session=Depends(get_db)):
+    from backend.node import configuration
+    try:job=configuration.load(transaction_id)
+    except (OSError,ValueError):raise HTTPException(status_code=401,detail='Invalid node configuration proof') from None
+    digest=hashlib.sha256(node_key.encode()).hexdigest()
+    if not hmac.compare_digest(digest,job['credential_sha256']):
+        raise HTTPException(status_code=401,detail='Invalid node configuration proof')
+    node=crud.get_node_by_id(db,job['node_id'])
+    decision=configuration.decision(job,node)
+    return {'transaction_id':transaction_id,'decision':decision,'controller':'pvnetwork-panel'}
 
 
 class MirzaCreateUser(BaseModel):

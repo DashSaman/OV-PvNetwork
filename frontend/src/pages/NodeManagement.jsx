@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState, useCallback } from 'react';
 import { FiServer, FiCheckCircle, FiXCircle, FiSearch } from 'react-icons/fi';
 import apiClient from '../services/api';
 import AddNodeModal from '../components/AddNodeModal';
@@ -10,6 +10,8 @@ import UserStatCard from '../components/UserStatCard';
 import Pagination from '../components/Pagination';
 import { useTranslation } from 'react-i18next';
 const ITEMS_PER_PAGE = 10;
+const NodeReconcilePanel = lazy(() => import('../components/NodeReconcilePanel'));
+const NodeArchiveModal = lazy(() => import('../components/NodeArchiveModal'));
 const NodeManagement = () => {
   const [nodes, setNodes] = useState([]);
   const [nodeInfo, setNodeInfo] = useState({});
@@ -17,6 +19,8 @@ const NodeManagement = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
   const [routerNode, setRouterNode] = useState(null);
+  const [archiveNode, setArchiveNode] = useState(null);
+  const [reconcileNode, setReconcileNode] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [nodesError, setNodesError] = useState('');
   const [nodeStatusError, setNodeStatusError] = useState('');
@@ -212,13 +216,15 @@ const NodeManagement = () => {
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
 
-      <NodeTable nodes={paginatedNodes} isLoading={isLoading} nodeInfo={nodeInfo} onDelete={handleDelete} onCheckStatus={handleCheckStatus} onEdit={handleOpenEditModal} onRouterOpenVpn={setRouterNode} />
+      <NodeTable nodes={paginatedNodes} isLoading={isLoading} nodeInfo={nodeInfo} onDelete={handleDelete} onCheckStatus={handleCheckStatus} onEdit={handleOpenEditModal} onRouterOpenVpn={setRouterNode} onArchive={setArchiveNode} onReconcile={setReconcileNode} />
 
       {isAddModalOpen && <AddNodeModal onClose={() => setIsAddModalOpen(false)} onNodeCreated={handleNodeCreated} />}
 
       {isEditModalOpen && <EditNodeModal node={selectedNode} onClose={() => setIsEditModalOpen(false)} onNodeUpdated={handleNodeUpdated} />}
 
       {routerNode && <RouterOpenVpnNodeModal node={routerNode} onClose={() => setRouterNode(null)} onChanged={() => { fetchNodeHealth(); fetchNodes(); }} />}
+      {archiveNode && <Suspense fallback={<p role="status">{t('nodeArchive.title')}</p>}><NodeArchiveModal key={archiveNode.id} node={archiveNode} onClose={() => setArchiveNode(null)} onChanged={() => { fetchNodeHealth(); fetchNodes(); }} /></Suspense>}
+      {reconcileNode && <Suspense fallback={<p role="status">{t('nodeReconcile.queued')}</p>}><NodeReconcilePanel key={reconcileNode.id} node={reconcileNode} onClose={() => setReconcileNode(null)} /></Suspense>}
 
     </div>;
 };

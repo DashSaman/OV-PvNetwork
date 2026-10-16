@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -11,7 +12,8 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from pywebpush import webpush, WebPushException
+from pywebpush import WebPushException
+from backend.operations.push_transport import send_push as webpush, validate_endpoint
 
 from backend.config import config
 from backend.db.engine import get_db
@@ -24,6 +26,8 @@ router = APIRouter(
 )
 
 SW_PATH = Path("/opt/pvnetwork-panel/frontend/push/pn-sw.js")
+_TEST_DELIVERIES = threading.BoundedSemaphore(4)
+
 VAPID_PUBLIC_PATH = Path("/etc/pvnetwork-panel/push/vapid-public.txt")
 
 
@@ -79,6 +83,15 @@ def ensure_push_table(db: Session) -> None:
             """
         )
     )
+    # Separate per-user budget survives unsubscribe/re-subscribe and endpoint
+    # changes. CREATE IF NOT EXISTS supports existing SQLite/PostgreSQL installs
+    # without depending on an optional legacy last_test_at column.
+    db.execute(text("""
+        CREATE TABLE IF NOT EXISTS web_push_test_budget (
+            user_uuid VARCHAR(255) PRIMARY KEY,
+            last_test_at BIGINT NOT NULL
+        )
+    """))
     db.commit()
 
 
@@ -122,11 +135,10 @@ async def subscribe(
 
     endpoint = payload.endpoint.strip()
 
-    if not endpoint.startswith("https://"):
-        raise HTTPException(
-            status_code=422,
-            detail="Push endpoint must use HTTPS",
-        )
+    try:
+        validate_endpoint(endpoint)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Push provider endpoint is not approved") from None
 
     ensure_push_table(db)
 
@@ -260,9 +272,19 @@ async def unsubscribe(
 
 
 
-# PN_PUSH_TEST_V643
 @router.post("/test/{uuid}")
-async def test_push(uuid: str, payload: PushTestIn, db: Session = Depends(get_db)):
+def test_push(uuid: str, payload: PushTestIn, db: Session = Depends(get_db)):
+    # A sync endpoint executes blocking crypto/DNS/network I/O in the bounded
+    # application thread pool, keeping the ASGI event loop responsive.
+    if not _TEST_DELIVERIES.acquire(blocking=False):
+        raise HTTPException(503, "Push delivery capacity is busy", headers={"Retry-After": "12"})
+    try:
+        return _test_push(uuid, payload, db)
+    finally:
+        _TEST_DELIVERIES.release()
+
+
+def _test_push(uuid: str, payload: PushTestIn, db: Session):
     user = crud.get_user_by_uuid(db, uuid)
     if not user:
         raise HTTPException(status_code=404)
@@ -276,65 +298,20 @@ async def test_push(uuid: str, payload: PushTestIn, db: Session = Depends(get_db
     if not row:
         raise HTTPException(status_code=404, detail="Active push subscription not found")
     now = int(time.time())
+    # Both engines serialize a conflicting UPSERT at the primary key. Reserve
+    # before delivery (also on provider failure); a SELECT then UPDATE races.
+    reserved = db.execute(text("""
+        INSERT INTO web_push_test_budget (user_uuid, last_test_at)
+        VALUES (:uuid, :now)
+        ON CONFLICT (user_uuid) DO UPDATE SET last_test_at = :now
+        WHERE web_push_test_budget.last_test_at <= :cutoff
+    """), {"uuid": str(user.uuid), "now": now, "cutoff": now - 3600}).rowcount
+    db.commit()
+    if reserved != 1:
+        raise HTTPException(429, "Push test is limited to once per hour", headers={"Retry-After": "3600"})
     data = {
-        "title": "Private Network · تست نوتیفیکیشن",
-        "body": "تست Push واقعی با موفقیت از سرور ارسال شد. برای تمدید یا خرید سرویس به فروشنده خود مراجعه کنید.",
-        "icon": "/sub-clients/private-network.webp",
-        "badge": "/sub-clients/private-network.webp",
-        "tag": f"pn-real-test-{user.uuid}-{now}",
-        "timestamp": now * 1000,
-        "url": _subscription_url(str(user.uuid)),
-    }
-    try:
-        response = webpush(
-            subscription_info={"endpoint": row["endpoint"], "keys": {"p256dh": row["p256dh"], "auth": row["auth"]}},
-            data=json.dumps(data, ensure_ascii=False),
-            vapid_private_key="/etc/pvnetwork-panel/push/vapid-private.pem",
-            vapid_claims={"sub": _public_origin()},
-            headers={"Urgency": "high"}, ttl=300, timeout=12,
-        )
-        return {"success": True, "provider_status": int(getattr(response, "status_code", 0) or 0)}
-    except WebPushException as exc:
-        response=getattr(exc,"response",None)
-        code=getattr(response,"status_code",None)
-        if code in {404,410}:
-            db.execute(text("UPDATE web_push_subscriptions SET enabled=0, updated_at=:now WHERE endpoint_hash=:h"), {"now":now,"h":row["endpoint_hash"]})
-            db.commit()
-        raise HTTPException(status_code=502, detail=f"Push provider rejected request (HTTP {code or 0})")
-
-
-
-# PN_PUSH_TEST_V644
-@router.post("/test/{uuid}")
-async def test_push(uuid: str, payload: PushTestIn, db: Session = Depends(get_db)):
-    user = crud.get_user_by_uuid(db, uuid)
-    if not user:
-        raise HTTPException(status_code=404)
-    ensure_push_table(db)
-    row = db.execute(text("""
-        SELECT endpoint_hash, endpoint, p256dh, auth, last_test_at
-        FROM web_push_subscriptions
-        WHERE user_uuid = :user_uuid AND endpoint = :endpoint AND enabled = 1
-        LIMIT 1
-    """), {"user_uuid": str(user.uuid), "endpoint": payload.endpoint.strip()}).mappings().first()
-    if not row:
-        raise HTTPException(status_code=404, detail="Active push subscription not found")
-
-    now = int(time.time())
-
-    # Anti-spam: a real server test can be sent at most once every 1 hour
-    # for this push subscription. Scheduled renewal reminders are separate.
-    last_test_at = int(row["last_test_at"] or 0)
-    if last_test_at and (now - last_test_at) < (60 * 60):
-        remaining = (60 * 60) - (now - last_test_at)
-        hours = max(1, (remaining + 3599) // 3600)
-        raise HTTPException(
-            status_code=429,
-            detail=f"تست اعلان برای جلوگیری از اسپم هر ۱ ساعت یک‌بار مجاز است. حدود {hours} ساعت دیگر دوباره تست کنید.",
-        )
-    data = {
-        "title": "Private Network · اعلان سرویس",
-        "body": "اعلان‌های سرویس روی این دستگاه فعال است. برای تمدید یا خرید سرویس به فروشنده خود مراجعه کنید.",
+        "title": "PVNetwork · اعلان سرویس",
+        "body": "اعلان‌های سرویس روی این دستگاه فعال است. برای تمدید سرویس به فروشندهٔ خود مراجعه کنید.",
         "icon": "/sub-clients/private-network.webp",
         "badge": "/sub-clients/private-network.webp",
         "tag": f"pn-real-test-{user.uuid}-{now}",
@@ -349,25 +326,17 @@ async def test_push(uuid: str, payload: PushTestIn, db: Session = Depends(get_db
             vapid_claims={"sub": _public_origin()},
             headers={"Urgency": "normal"}, ttl=120, timeout=12,
         )
-
-        db.execute(
-            text(
-                "UPDATE web_push_subscriptions "
-                "SET last_test_at=:now, updated_at=:now "
-                "WHERE endpoint_hash=:h"
-            ),
-            {"now": now, "h": row["endpoint_hash"]},
-        )
-        db.commit()
-
         return {"success": True, "provider_status": int(getattr(response, "status_code", 0) or 0)}
     except WebPushException as exc:
-        response=getattr(exc,"response",None)
-        code=getattr(response,"status_code",None)
-        if code in {404,410}:
+        response = getattr(exc, "response", None)
+        code = getattr(response, "status_code", None)
+        if code in {404, 410}:
             db.execute(text("UPDATE web_push_subscriptions SET enabled=0, updated_at=:now WHERE endpoint_hash=:h"), {"now":now,"h":row["endpoint_hash"]})
             db.commit()
-        raise HTTPException(status_code=502, detail=f"Push provider rejected request (HTTP {code or 0})")
+        raise HTTPException(502, f"Push provider rejected request (HTTP {code or 0})") from None
+    except Exception:
+        # Endpoint capabilities, encrypted payloads and provider text are private.
+        raise HTTPException(502, "Push delivery failed") from None
 
 
 @router.get("/status/{uuid}")

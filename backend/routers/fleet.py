@@ -94,84 +94,57 @@ def ssh(node, user, password, port, script, expected_fingerprint=None):
     finally:
         client.close()
 
-SCRIPT='''set -Eeuo pipefail
-. /opt/ov-node/.env
-STAMP=$(date +%s); B=/opt/ov-node.rollback; N=/opt/ov-node.new.$STAMP
-DOMAIN_PRESENT=0
-rm -rf "$N"; mkdir -p "$N"
-curl -fsSL --retry 3 https://api.github.com/repos/primeZdev/ov-node/releases/latest -o /tmp/ovrel.json
-URL=$(sed -n 's/.*"tarball_url":[[:space:]]*"\\([^"]*\\)".*/\\1/p' /tmp/ovrel.json|head -1)
-TAG=$(sed -n 's/.*"tag_name":[[:space:]]*"\\([^"]*\\)".*/\\1/p' /tmp/ovrel.json|head -1)
-curl -fL --retry 3 "$URL" -o /tmp/ovnode.tgz; tar -xzf /tmp/ovnode.tgz -C "$N" --strip-components=1
-cp /opt/ov-node/.env "$N/.env"
-if [ -f /opt/ov-node/core/routers/domain_history.py ]; then
-  DOMAIN_PRESENT=1
-  install -D -m 640 /opt/ov-node/core/routers/domain_history.py "$N/core/routers/domain_history.py"
-  if ! grep -q '^# PVNETWORK_DOMAIN_HISTORY_INCLUDE_V1$' "$N/core/routers/router.py"; then
-    cat >> "$N/core/routers/router.py" <<'PVNETWORK_DOMAIN_INCLUDE'
-
-
-# PVNETWORK_DOMAIN_HISTORY_INCLUDE_V1
-from core.routers.domain_history import router as domain_history_router
-
-router.include_router(domain_history_router)
-PVNETWORK_DOMAIN_INCLUDE
-  fi
-fi
-cd "$N"; /root/.local/bin/uv sync
-rm -rf "$B"; cp -a /opt/ov-node "$B"; systemctl stop ov-node; rm -rf /opt/ov-node; mv "$N" /opt/ov-node
-sed -i 's/host="127.0.0.1"/host="0.0.0.0"/' /opt/ov-node/main.py; echo "${TAG:-unknown}" >/opt/ov-node/VERSION
-systemctl restart ov-node
-ready=0
-for i in $(seq 1 30);do curl -fsS http://127.0.0.1:${SERVICE_PORT:-9090}/openapi.json >/dev/null&&ready=1&&break;sleep 2;done
-if [ "$ready" = 1 ] && [ "$DOMAIN_PRESENT" = 1 ]; then
-  curl -fsS http://127.0.0.1:${SERVICE_PORT:-9090}/openapi.json | grep -q '/sync/local-domain-activity' || ready=0
-  systemctl restart ov-domain-collector.service
-  systemctl is-active --quiet ov-domain-collector.service || ready=0
-  collector_capture_ready=0
-  for collector_attempt in $(seq 1 15); do
-    collector_pid="$(systemctl show ov-domain-collector.service -p MainPID --value)"
-    if [[ "$collector_pid" =~ ^[0-9]+$ ]] && pgrep -P "$collector_pid" -a 2>/dev/null | grep -Fq 'tcpdump -Z root'; then
-      collector_capture_ready=1
-      break
-    fi
-    sleep 1
-  done
-  if [ "$collector_capture_ready" != 1 ]; then
-    ready=0
-  fi
-fi
-if [ "$ready" = 1 ]; then echo "${TAG:-latest}"; exit 0; fi
-systemctl stop ov-node;rm -rf /opt/ov-node;mv "$B" /opt/ov-node;systemctl restart ov-node;exit 1
-'''
-
 def router_capability_install_script(node_root='/opt/ov-node'):
  return _router_capability_install_script(node_root)
 
 def build_upgrade_script():
- capability=router_capability_install_script('/opt/ov-node')
- marker='systemctl restart ov-node\nready=0'
- if marker not in SCRIPT:
-  raise RuntimeError('Fleet upgrade restart marker not found')
- return SCRIPT.replace(marker,capability+'\nsystemctl restart ov-node\nready=0',1)
+ raise ValueError('Legacy updates require explicit Adopt Existing Node with a verified native source bundle')
+
+
+def is_native(node):
+ from backend.node import tls
+ return node.key.startswith(tls.KEY_PREFIX) or tls.has_trust(node.address,node.port) or bool(tls.binding(node.address,node.port))
+
+
+def native_operation(node,action,user,password,port,fingerprint):
+ from backend.node.native_deploy import agent_operation
+ return agent_operation(action=action,host=node.address,ssh_port=port,username=user,password=password,fingerprint=fingerprint)
+
+def require_verified_nodes(db,ids,canary=None):
+ if not ids or (canary is not None and canary not in ids):
+  raise ValueError('Canary must be one of the requested nodes')
+ for node_id in ids:
+  node=db.query(Node).filter(Node.id==node_id).first()
+  if not node:raise ValueError('Requested node not found')
+  if not is_native(node):
+   raise ValueError('Legacy fleet operations require explicit Adopt Existing Node before verified native upgrade or rollback')
 
 def run(job,password):
  db=SessionLocal();job['state']='running';save(job)
  try:
-  ids=job['node_ids'];canary=job.get('canary_node_id') or ids[0];order=[canary]+[x for x in ids if x!=canary]
+  ids=list(dict.fromkeys(job['node_ids']));canary=job.get('canary_node_id') or (ids[0] if ids else None)
+  require_verified_nodes(db,ids,canary)
+  order=[canary]+[x for x in ids if x!=canary]
   for pos,i in enumerate(order):
    if str(i) in job['completed']:continue
    n=db.query(Node).filter(Node.id==i).first()
    if not n:raise RuntimeError(f'Node {i} not found')
-   n.maintenance=True;n.drain=True;n.last_upgrade_status='running';db.commit();job['stage']=f'upgrading:{n.name}';save(job)
-   out=ssh(n,job['ssh_username'],password,job['ssh_port'],build_upgrade_script(),job.get('ssh_fingerprints',{}).get(str(i)))
+   prior_flags=(n.maintenance,n.drain)
+   n.last_upgrade_status='running';db.commit();job['stage']=f'upgrading:{n.name}';save(job)
+   fingerprint=job.get('ssh_fingerprints',{}).get(str(i))
+   from backend.version import __version__
+   current=NodeRequests(n.address,n.port,n.key,n.tunnel_address or n.address,n.protocol,n.ovpn_port).get_node_info()
+   result={'version':__version__,'changed':False} if current.get('version')==__version__ else native_operation(n,'upgrade',job['ssh_username'],password,job['ssh_port'],fingerprint)
+   out=result['version']
    info=NodeRequests(n.address,n.port,n.key,n.tunnel_address or n.address,n.protocol,n.ovpn_port).get_node_info()
    if not info or info.get('status')!='running':raise RuntimeError(f'Health check failed: {n.name}')
-   n.version=(out.strip().splitlines()[-1] if out.strip() else 'latest')[:128];n.last_upgrade_at=int(time.time());n.last_upgrade_status='succeeded';n.maintenance=False;n.drain=False;db.commit();job['completed'][str(i)]='succeeded';save(job)
+   n.version=(out.strip().splitlines()[-1] if out.strip() else 'unknown')[:128];n.last_upgrade_at=int(time.time());n.last_upgrade_status='succeeded';n.maintenance,n.drain=prior_flags;db.commit();job['completed'][str(i)]='succeeded';save(job)
    if pos==0:job['stage']='canary_passed';save(job)
   job['state']='succeeded';job['stage']='complete';save(job)
  except Exception as e:
-  db.rollback();job['state']='failed';job['error']=str(e)[:1500];save(job)
+  db.rollback();job['state']='failed';message=str(e).replace(password,'[REDACTED]') if password else str(e)
+  for known in db.query(Node).filter(Node.id.in_(job['node_ids'])).all():message=message.replace(known.key,'[REDACTED]')
+  job['error']=message[:1500];save(job)
  finally:
   password=''
   db.close()
@@ -191,10 +164,13 @@ def launch(job,password):
    _ACTIVE_JOBS.discard(job['id'])
   raise
 @router.post('/upgrade',response_model=ResponseModel)
-async def upgrade(q:Upgrade,u:dict=Depends(get_current_user)):
- admin(u);i=str(uuid.uuid4());j={'id':i,'state':'queued','stage':'queued','error':None,'node_ids':q.node_ids,'canary_node_id':q.canary_node_id,'ssh_username':q.ssh_username,'ssh_port':q.ssh_port,'ssh_fingerprints':{str(k):v for k,v in q.ssh_fingerprints.items()},'completed':{},'created_at':int(time.time())};save(j)
- if not launch(j,q.ssh_password):raise HTTPException(409,'Job is already running')
- return ResponseModel(success=True,msg='Canary upgrade started',data={'job_id':i})
+async def upgrade(q:Upgrade,u:dict=Depends(get_current_user),db:Session=Depends(get_db)):
+  admin(u)
+  try:require_verified_nodes(db,q.node_ids,q.canary_node_id)
+  except ValueError as exc:raise HTTPException(409,str(exc)) from None
+  i=str(uuid.uuid4());j={'id':i,'state':'queued','stage':'queued','error':None,'node_ids':q.node_ids,'canary_node_id':q.canary_node_id,'ssh_username':q.ssh_username,'ssh_port':q.ssh_port,'ssh_fingerprints':{str(k):v for k,v in q.ssh_fingerprints.items()},'completed':{},'created_at':int(time.time())};save(j)
+  if not launch(j,q.ssh_password):raise HTTPException(409,'Job is already running')
+  return ResponseModel(success=True,msg='Canary upgrade started',data={'job_id':i})
 @router.get('/jobs/{job_id}',response_model=ResponseModel)
 async def job(job_id:str,u:dict=Depends(get_current_user)):
  admin(u);j=load(job_id)
@@ -220,36 +196,6 @@ class RollbackRequest(BaseModel):
     ssh_port: int = Field(22, ge=1, le=65535)
     ssh_fingerprint: str | None = Field(default=None, max_length=160)
 
-ROLLBACK_SCRIPT = r'''set -Eeuo pipefail
-test -d /opt/ov-node.rollback
-. /opt/ov-node/.env
-PORT="${SERVICE_PORT:-9090}"
-CURRENT="/opt/ov-node.failed.$(date +%s)"
-systemctl stop ov-node
-mv /opt/ov-node "$CURRENT"
-mv /opt/ov-node.rollback /opt/ov-node
-systemctl daemon-reload
-systemctl restart ov-node
-ready=0
-for i in $(seq 1 30); do
-  if curl -fsS --max-time 5 \
-    "http://127.0.0.1:${PORT}/openapi.json" >/dev/null; then
-    ready=1
-    break
-  fi
-  sleep 2
-done
-if [ "$ready" != 1 ]; then
-  systemctl stop ov-node || true
-  mv /opt/ov-node /opt/ov-node.rollback.failed
-  mv "$CURRENT" /opt/ov-node
-  systemctl restart ov-node
-  exit 1
-fi
-rm -rf "$CURRENT"
-cat /opt/ov-node/VERSION 2>/dev/null || echo rollback
-'''
-
 @router.post("/{node_id}/rollback", response_model=ResponseModel)
 async def rollback_node(
     node_id: int,
@@ -262,21 +208,16 @@ async def rollback_node(
     if not node:
         raise HTTPException(404, "Node not found")
 
-    node.maintenance = True
-    node.drain = True
+    if not is_native(node):
+        request.ssh_password=''
+        raise HTTPException(409,'Legacy rollback requires a verified native lifecycle; use explicit Adopt Existing Node first')
+    prior_flags=(node.maintenance,node.drain)
     node.last_upgrade_status = "rollback_running"
     db.commit()
 
     try:
-        output = await __import__("asyncio").to_thread(
-            ssh,
-            node,
-            request.ssh_username,
-            request.ssh_password,
-            request.ssh_port,
-            ROLLBACK_SCRIPT,
-            request.ssh_fingerprint,
-        )
+        result=await __import__('asyncio').to_thread(native_operation,node,'rollback-agent',request.ssh_username,request.ssh_password,request.ssh_port,request.ssh_fingerprint)
+        output=result['version']
         info = await __import__("asyncio").to_thread(
             NodeRequests(
                 node.address,
@@ -296,8 +237,7 @@ async def rollback_node(
         )[:128]
         node.last_upgrade_status = "rolled_back"
         node.last_upgrade_at = int(time.time())
-        node.maintenance = False
-        node.drain = False
+        node.maintenance,node.drain=prior_flags
         db.commit()
 
         return ResponseModel(
@@ -313,6 +253,9 @@ async def rollback_node(
         node = db.query(Node).filter(Node.id == node_id).first()
         node.last_upgrade_status = "rollback_failed"
         db.commit()
-        raise HTTPException(502, str(exc)[:500])
+        message=str(exc)
+        for secret in [request.ssh_password,node.key]:
+            if secret:message=message.replace(secret,'[REDACTED]')
+        raise HTTPException(502, message[:500])
     finally:
         request.ssh_password = ""

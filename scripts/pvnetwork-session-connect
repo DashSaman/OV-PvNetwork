@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+# These public endpoint/certificate settings contain no node API credential.
+. /usr/local/libexec/pvnetwork-node/hooks.env
+CN="${common_name:-}"
+IP="${trusted_ip:-${trusted_ip6:-}}"
+PORT="${trusted_port:-}"
+[[ "$CN" =~ ^[A-Za-z0-9_-]{1,128}$ && "$IP" =~ ^[0-9A-Fa-f:.]+$ && "$PORT" =~ ^[0-9]{1,5}$ ]] || exit 1
+REMOTE="${IP}:${PORT}"
+[[ "$IP" != *:* ]] || REMOTE="[${IP}]:${PORT}"
+TMP="$(mktemp /tmp/pvnetwork-session-connect.XXXXXX)" || exit 0
+trap 'rm -f "$TMP"' EXIT
+# The distinct local hook token stays in a protected header file, never argv.
+HTTP="$(curl -sS --cacert "$CA_FILE" --header @/usr/local/libexec/pvnetwork-node/hook-header --connect-timeout 2 --max-time 6 -o "$TMP" -w '%{http_code}' -X POST "$LOCAL_URL/acquire" -H 'Content-Type: application/json' --data "{\"common_name\":\"$CN\",\"remote_addr\":\"$REMOTE\"}")" || HTTP=000
+case "$HTTP" in
+  200) exit 0 ;;
+  000|408|429|500|502|503|504) exit 0 ;;
+  *) exit 1 ;;
+esac

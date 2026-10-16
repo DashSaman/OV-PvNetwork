@@ -1,3 +1,106 @@
+## v1.0.53 candidate — PVN-1037: Verified existing credential alias
+
+- Recognize only the fixed canonical-to-legacy PVNetwork credential-key link after strict root/permission/ancestor checks.
+- Archive regular key bytes under the existing logical v2 name; restore the verified target atomically while preserving the existing link.
+- Reject arbitrary, broken, redirected, permissive or non-root aliases; recheck identity before replacing the target.
+- Add ten real root POSIX fixtures, including actual Fernet decrypt/restore; exact CI/backup/canary and publication/Production gates remain pending.
+
+## v1.0.52 candidate — PVN-1036: Portable release line endings
+
+- Explicit LF text export policy; binary image/archive/font assets remain byte-identical.
+- Reproduce actual Windows-style Git archive conversion, preserve executable bits and execute exported entry points in Linux Bash.
+- Four archive regressions and twelve related Linux contracts passed; final exact artifact/native/CI/publication and authorized Production gates remain open.
+- UI is unchanged from v1.0.51; its current synthetic captures remain applicable.
+
+## v1.0.51 candidate — PVN-1035: Theme-aware form contrast
+
+- Pair form value text with an opaque surface from the same theme, including focus and select options.
+- Give light/dark placeholders explicit readable colors; preserve dimensions and form behavior.
+- Old build reproduced 1.13–2.16 contrast bounds; new rendered matrix passed 108 EN/FA/theme/width/native-zoom cases and 7,128 control observations at a 4.5:1 floor.
+- Focused 20 Linux contracts passed; final CI/artifact/publication and authorized Production gates remain open.
+
+## v1.0.50 candidate — PVN-1034: Inert subscription QR data
+
+- Move node labels/URLs out of inline JavaScript into escaped data attributes.
+- Preserve QR payload, mouse/keyboard operation and download navigation suppression.
+- Real Jinja/browser attack regression: 24 cases passed; full Linux 712 tests, 706 passes/six PostgreSQL skips.
+- Preserve 13 languages; a 6,318-view layout sweep passed on the preceding frontend and the 108-case quick-edit sweep passed on this build. Add its manual reproducer and current synthetic Demo captures.
+- Final exact CI/artifact, publication and authorized Production gates remain open.
+
+## v1.0.49 candidate — PVN-1033: Downloaded profile endpoint
+
+- Remove stale remote/protocol directives before returning the current endpoint.
+- Preserve inline identity, private download headers and invalid-profile retry.
+- Real handler regression and full Linux suite passed; final CI/release gates open.
+
+## v1.0.48 candidate — PVN-1032: SQLite domain ingestion
+
+- Fix the real collector ingest failure on supported SQLite installations.
+- Preserve existing schemas/IDs, atomic hit aggregation and PostgreSQL behavior.
+- Add real database, concurrent writer, maximum payload and rollback regressions.
+- Candidate publication and authorized Production gates remain open.
+
+## v1.0.47 candidate — PVN-1031: Responsive editor and header
+
+- One stable quick-edit form outside table scrolling; drafts survive breakpoint changes.
+- Narrow header rows, touch-sized controls, accessible logout and bundled logo assets.
+- Native Chromium zoom regression, keyboard/mouse saves and synthetic EN/FA screenshots.
+- Remains a candidate with final CI, full mission, publication and Production gates open.
+
+## v1.0.46 candidate — PVN-1030: Tenant and push boundaries
+
+- Scope every reseller presence/dashboard UUID map, including cached responses.
+- Read-only user GET/session diagnostics; reset uses explicit POST with write scope.
+- Shared approved-origin, public-IP-pinned TLS push transport with redirects/proxies disabled.
+- One test route, atomic per-user hourly budget and bounded delivery outside the event loop.
+- SQLite/PostgreSQL, real ASGI, encrypted push/VAPID and Web regression coverage; final release and Production gates remain open.
+
+## v1.0.45 candidate — PVN-1029: Bilingual operational CLI
+
+- 25 EN/FA operations, scoped services/node reconciliation, bounded read-only diagnostics and private structured support exports; hidden credentials, dry-run, confirmation and stable exit codes.
+- Existing native lifecycle engines retained; CLI resources installed with recovery entry points. Managed TLS renewal selects only the panel certificate.
+- Web node-reconciliation progress and internal panel-port settings, staged canary/proxy verification, exact rollback and interrupted settings recovery.
+- Candidate only. Final integration/CI, full mission, immutable public assets and owner-authorized Production gates remain open.
+
+## v1.0.44 candidate — PVN-1028: Private node archive Web workflow
+
+- Main-admin backup, download, upload, compatible restore and interrupted-restore recovery over existing pinned SSH password/key authentication.
+- Node edits preserve an omitted/blank stored private key instead of requiring its export/re-entry; canonical and legacy tunnel-address fields remain compatible.
+- Refuse renaming a node whose name is embedded in customer/session identities; empty nodes remain renameable and existing clients are preserved.
+- Fixed root-private stream helpers, bounded transfers and SHA256 receipts; no caller filesystem paths or SSH credentials in persisted jobs.
+- Private one-hour controller copies bind to the registered node identity; bounded storage, guarded cleanup and explicit offline/downtime/start choices. EN/FA modal supports progress, retry, keyboard/touch and nine widths.
+- Actual owned native SSH backup/download/upload/compatible restore preserved OpenVPN PID/configuration/secrets and monotonic accounting. Exact final-source CI, full mission and Production/public release gates remain open.
+
+## v1.0.43 candidate — PVN-1027: Independent HTTPS node source
+
+- Self-contained manifest/checksum source bundle, pinned SSH and frozen private agent tools; no dependency on an installed controller-local node or unverified remote setup script.
+- Authenticated HTTPS, issuing-controller callback proof, durable CA/credential digests and preserved legacy compatibility. Registration failure rolls back only owned provisioning; public job validation errors exclude secret input values.
+- Integer multi-session accounting with durable reconnect/final-disconnect samples; periodic device leases and identity-safe management commands. Identical settings do not restart OpenVPN.
+- Staged agent-only upgrades, durable recovery and retained code rollback; prospective fixtures survived injected failures/SIGKILL while preserving active VPN. Callback redirects/environment proxies and runtime-file bundle collection are refused.
+- Real corrected demo TLS/TUN/upload/download, controller accounting, targeted disable, duplicate-device denial and direct Internet HTTPS evidence recorded in `docs/NODE-CANDIDATE.md`. Exact final source matrix, adoption, agent management, UI/CLI, authorized Production and publication gates remain open.
+
+## v1.0.42 candidate — PVN-1026: Verified native lifecycle
+
+- Native SQLite/PostgreSQL snapshots with actual restore and row/file checksums; owned encryption/trust files included and transaction backups pinned.
+- Isolated frozen build, compatible-schema clone canary, atomic release pointer, retained code/live data and durable update/restore/rollback recovery.
+- Existing v1 PostgreSQL uploads use the staged native restore engine; missing old-format crypto keys are explicitly outside that format.
+- Real local systemd and native database evidence recorded in `docs/LIFECYCLE-CANDIDATE.md`; candidate CI, authorized Production and publication gates remain open.
+
+## v1.0.40 candidate — PVN-1024: Bounded configuration-aware self-healing
+
+- Targeted, independently tested patch; publication/deployment evidence remains governed by the active ledger.
+- No database migration, certificate or VPN configuration changes.
+
+## v1.0.39 candidate — PVN-1022: Alphanumeric migration smoke validation
+
+- Targeted, independently tested patch; publication/deployment evidence remains governed by the active ledger.
+- No database migration, certificate or VPN configuration changes.
+
+## v1.0.38 candidate — PVN-1023: Frontend dependency security refresh
+
+- Targeted, independently tested patch; publication/deployment evidence remains governed by the active ledger.
+- No database migration, certificate or VPN configuration changes.
+
 ## v1.0.35 — PVN-1019 presence rate-dict hotfix
 
 - /users/presence was returning 500 since the split-rate change: the endpoint still coerced each rate to float while the payload had become {down, up, total} dicts — the very reason live speeds stopped appearing in the panel. Rates now pass through as dicts with a type guard; verified live (all presence requests 200 after deploy).
@@ -243,6 +346,15 @@ PVN-026 user-creation node-selection release.
 - Firewall, routing, tunnels and unrelated services remain outside scope.
 
 # Changelog
+
+## v1.0.41 — Candidate / PVN-1025
+
+- Verify immutable official release archives, SHA256, metadata and safe member types before executing the fresh installer.
+- Pin private uv/Node/Python toolchains; use frozen project/frontend locks and signed OS repositories instead of piping remote setup scripts into a shell.
+- Add supported-OS/architecture/resource/port/existing-install preflight, durable recovery, immutable staging and atomic panel pointer activation.
+- Add truthful loopback Setup Mode, root-only credentials and public HTTPS gating on successful ACME/proxy validation.
+- Initialize empty SQLite from the current constrained schema without altering existing databases or historical PostgreSQL migration files; use isolated atomic schema staging.
+- Generalize the smoke helper's public path fallback. Existing Production remains on the separately verified 1.0.40 candidate until additional deployment approval.
 
 ## 1.0.4 — 2026-09-19
 

@@ -28,11 +28,11 @@ const EditNodeModal = ({
       setFormData({
         name: node.name || '',
         address: node.address || '',
-        tunnel_address: node.tunnel_address || '',
+        tunnel_address: node.tunnel_address || node['tunnel-address'] || '',
         protocol: node.protocol || 'tcp',
         ovpn_port: node.ovpn_port || 1194,
         port: node.port || 0,
-        key: node.key || '',
+        key: '',
         status: node.status === 'active' || node.status === true,
         set_new_setting: true
       });
@@ -60,6 +60,7 @@ const EditNodeModal = ({
       port: Number(formData.port),
       status: Boolean(formData.status)
     };
+    if (!formData.key.trim()) delete payload.key;
     try {
       const response = await apiClient.put(`/nodes/${node.id}`, payload);
       if (response.data.success) {
@@ -99,6 +100,7 @@ const EditNodeModal = ({
           <div className="input-group">
             <label htmlFor="edit-name">{t('nodeName')}</label>
             <input type="text" id="edit-name" name="name" value={formData.name} onChange={handleChange} required />
+            <small>{t('editNodeNameIdentity')}</small>
           </div>
 
           {/* */}
@@ -137,7 +139,8 @@ const EditNodeModal = ({
           </div>
           <div className="input-group">
             <label htmlFor="edit-key">{t('key')}</label>
-            <input type="text" id="edit-key" name="key" value={formData.key} onChange={handleChange} required />
+            <input type="password" id="edit-key" name="key" value={formData.key} onChange={handleChange} autoComplete="new-password" placeholder={t('editNodeKeepKey')} />
+            <small>{t('editNodeKeepKey')}</small>
           </div>
           <div className="input-group" style={{
           flexDirection: 'row',

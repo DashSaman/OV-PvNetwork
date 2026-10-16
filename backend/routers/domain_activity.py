@@ -6,8 +6,9 @@ import time
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
 from backend.auth.auth import get_current_user
@@ -202,17 +203,26 @@ async def ingest_domain_activity(
     rows = list(merged.values())
 
     if rows:
-        statement = pg_insert(DomainActivity).values(rows)
+        sqlite = db.get_bind().dialect.name == 'sqlite'
+        if sqlite:
+            # Existing SQLite tables have a BIGINT PK, not a rowid alias. Keep
+            # that schema and allocate IDs within this atomic write statement,
+            # never from a separate SELECT racing another collector connection.
+            # Positive offsets remain distinct whether a scalar subquery sees
+            # earlier rows from this statement or the pre-statement maximum.
+            rows = [{**row, 'id': select(func.coalesce(func.max(DomainActivity.id), 0) + index)
+                     .scalar_subquery()} for index, row in enumerate(rows, 1)]
+        statement = (sqlite_insert if sqlite else pg_insert)(DomainActivity).values(rows)
         excluded = statement.excluded
 
         statement = statement.on_conflict_do_update(
-            constraint="uq_domain_activity_user_node_domain",
+            index_elements=['user_uuid', 'node_id', 'domain'],
             set_={
-                "first_seen": func.least(
+                "first_seen": (func.min if sqlite else func.least)(
                     DomainActivity.first_seen,
                     excluded.first_seen,
                 ),
-                "last_seen": func.greatest(
+                "last_seen": (func.max if sqlite else func.greatest)(
                     DomainActivity.last_seen,
                     excluded.last_seen,
                 ),
