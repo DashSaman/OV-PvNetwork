@@ -76,7 +76,7 @@ def private_destination(destination):
 
 
 def helper_command(username,action):
-    if action not in {'read','upload'}:raise ValueError('unsupported node archive stream action')
+    if action not in {'read','upload','remove'}:raise ValueError('unsupported node archive stream action')
     source=Path(__file__).with_name('archive_remote.py').read_bytes()
     compile(source,'native-archive-helper','exec')
     code='import base64,sys;sys.argv=["native-archive-helper",'+repr(action)+'];exec(base64.b64decode('+repr(base64.b64encode(source).decode())+'))'
@@ -150,3 +150,17 @@ def upload_archive(client,username,source,identity):
             if reply!=expected:raise ValueError('private archive upload receipt does not match the requested file')
             return reply
         finally:channel.close()
+
+
+def remove_upload(client,username,receipt):
+    if not isinstance(receipt,dict) or set(receipt)!={'state','id','size','sha256'} or receipt['state']!='uploaded' or not re.fullmatch('[a-f0-9]{24}',str(receipt['id'])) or type(receipt['size']) is not int or not 0<receipt['size']<=LIMIT or not re.fullmatch('[a-f0-9]{64}',str(receipt['sha256'])):
+        raise ValueError('verified private upload receipt required for cleanup')
+    message={key:receipt[key] for key in ['id','size','sha256']}
+    command=helper_command(username,'remove');transport=client.get_transport()
+    if transport is None:raise RuntimeError('authenticated SSH transport unavailable')
+    channel=transport.open_session(timeout=20)
+    try:
+        channel.settimeout(30);channel.exec_command(command)  # nosec B601
+        channel.sendall(json.dumps(message).encode()+b'\n');channel.shutdown_write()
+        if read_reply(channel)!={'state':'removed',**message}:raise ValueError('private upload cleanup was not confirmed')
+    finally:channel.close()

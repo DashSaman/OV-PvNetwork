@@ -153,6 +153,7 @@ jobs:
           node tests/inline-quick-edit-smoke.mjs
           node tests/user-create-node-selector-smoke.mjs
           node tests/node-deploy-form-smoke.mjs
+          node tests/node-archive-smoke.mjs
           node tests/router-openvpn-smoke.mjs
           node tests/panel-settings-smoke.mjs
           node tests/security-regression-smoke.mjs

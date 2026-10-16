@@ -104,13 +104,38 @@ def receive_upload(message,source):
             except OSError:pass
 
 
+def remove_upload(message):
+    if not isinstance(message,dict) or set(message)!={'id','size','sha256'} or not isinstance(message['id'],str) or not re.fullmatch('[a-f0-9]{24}',message['id']):
+        raise ValueError('invalid private archive cleanup identity')
+    directory=INBOX/message['id'];private_directory(INBOX);private_directory(directory)
+    if {path.name for path in directory.iterdir()}!={'archive.tar.gz','metadata.json'}:raise ValueError('changed upload staging preserved')
+    archive=directory/'archive.tar.gz';metadata=directory/'metadata.json'
+    for file in [archive,metadata]:
+        info=file.lstat()
+        if not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_nlink!=1 or info.st_mode&0o7077:raise ValueError('changed private upload preserved')
+    if metadata.stat().st_size>4096:raise ValueError('changed upload metadata preserved')
+    saved=json.loads(metadata.read_text());info=archive.stat()
+    if saved!={'format':'pvnetwork-node-upload-v1',**message,'device':info.st_dev,'inode':info.st_ino} or info.st_size!=message['size']:
+        raise ValueError('upload cleanup receipt mismatch')
+    fd=os.open(archive,os.O_RDONLY|os.O_NOFOLLOW)
+    with os.fdopen(fd,'rb') as handle:
+        opened=os.fstat(handle.fileno());digest=hashlib.sha256()
+        for chunk in iter(lambda:handle.read(65536),b''):digest.update(chunk)
+        if (opened.st_dev,opened.st_ino)!=(info.st_dev,info.st_ino) or digest.hexdigest()!=message['sha256']:raise ValueError('changed upload bytes preserved')
+    archive.unlink();metadata.unlink();directory.rmdir()
+    fd=os.open(INBOX,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:os.fsync(fd)
+    finally:os.close(fd)
+    return {'state':'removed',**message}
+
+
 def main():
-    if os.geteuid()!=0 or len(sys.argv)!=2 or sys.argv[1] not in {'read','upload'}:raise ValueError('approved root archive action required')
+    if os.geteuid()!=0 or len(sys.argv)!=2 or sys.argv[1] not in {'read','upload','remove'}:raise ValueError('approved root archive action required')
     header=sys.stdin.buffer.readline(4097)
     if len(header)>4096 or not header.endswith(b'\n'):raise ValueError('bounded archive metadata required')
     message=json.loads(header)
     if sys.argv[1]=='read':read_archive(message,sys.stdout.buffer);sys.stdout.buffer.flush()
-    else:print('PVNETWORK_RESULT|'+json.dumps(receive_upload(message,sys.stdin.buffer)),flush=True)
+    else:print('PVNETWORK_RESULT|'+json.dumps(remove_upload(message) if sys.argv[1]=='remove' else receive_upload(message,sys.stdin.buffer)),flush=True)
 
 
 if __name__=='__main__':

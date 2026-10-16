@@ -8,6 +8,7 @@ from .audit import router as audit_router
 from .users import router as user_router
 from .admins import router as admin_router
 from .node import router as node_router
+from .node_archives import router as node_archives_router
 from .setting import router as setting_router
 from .mirza import router as mirza_router
 from .mirza_nodes import router as mirza_nodes_router
@@ -25,6 +26,7 @@ all_routers = [
     user_router,
     setting_router,
     node_router,
+    node_archives_router,
     admin_router,
     mirza_router,
     mirza_nodes_router,

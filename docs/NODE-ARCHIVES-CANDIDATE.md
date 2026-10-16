@@ -1,0 +1,26 @@
+# Native node archives — candidate 1.0.44 / PVN-1028
+
+Open **Nodes → Actions → Node backup / restore** as the main administrator. The target address comes from the registered node. Resellers cannot access this workflow.
+
+1. Select **Create verified backup**, enter SSH username/port and a password or private key. For an unknown host, independently verify the reported SSH fingerprint before retrying. Approved non-root users need passwordless sudo for the fixed native helper.
+2. Follow progress. The native engine verifies its backup before the controller receives it; transfer size and SHA256 must match before publication. Download the verified archive into trusted storage: it contains private keys and configuration.
+3. For restore, select an uploaded native `.tar.gz` file or the current verified controller copy. Re-enter SSH credentials. The controller binds the archive to the node ID, address, API port and credential hash; changing this identity invalidates access. Renaming the display name does not change the binding.
+4. Compatible restore is the default and preserves the running VPN. It retains current identity, certificate/revocation protections and monotonic accounting. An archive from a different native node is refused by the node engine.
+5. Choose offline PKI recovery only for missing/damaged PKI. Explicitly confirm the owned VPN service downtime. Starting previously stopped recovered services is a separate checkbox. Newer certificate/revocation/operator changes remain protected.
+6. After an interruption, use **Recover interrupted restore** with fresh SSH credentials. Native durable transaction state decides recovery; do not delete its journal or force a second conflicting operation.
+
+SSH secrets stay in request/worker memory and are cleared from the form after submission. Persisted jobs contain fixed stage labels and sanitized receipts. Closing/reopening the dialog follows the same job using a session-local archive ID; credentials are never saved in browser storage. Pending SSH work continues after the dialog closes. Controller restart marks an interrupted job as failed and requires explicit recovery.
+
+Controller copies use private directories/files (0700/0600). Access expires after one hour; the controller checks guarded cleanup every five minutes and before new allocations. Only unchanged receipted material is removed. Unknown or operator-modified files are preserved for inspection. Web uploads are limited to 60 MiB (compatible with the proxy body budget); native transfers to 240 MiB. The private store reserves up to 1 GiB, so several simultaneous archives can fill it. Download or remove unneeded copies, or allow expiration; do not weaken permissions to work around capacity checks.
+
+The remote upload is removed only after a verified successful restore and an exact metadata/inode/size/SHA256 check. Failed/uncertain restores preserve private staging and the durable journal. A cleanup failure does not undo an already verified restore; its receipt reports retained private staging. Original verified node backups are retained by the native backup policy.
+
+## Evidence and remaining gates
+
+- Focused tests cover main-admin/missing-node authorization, SQLite-backed identity binding, upload limits, SHA256/download headers, invalid flags, worker identity recheck, secret-free persisted errors, symlinks, modes, interrupted transfers, guarded cleanup and source/argument scope.
+- Actual loopback Paramiko tests use a pinned host key and the fixed binary helper. A separate owned Ubuntu node exercised actual native backup → private SSH download → upload → compatible restore → cleanup. VPN PID, configuration/environment/TLS hashes and monotonic accounting were preserved. An already connected TCP client retained its PID and transferred 4,320,000 download / 2,860,000 upload bytes through the TUN after restore. The old demo profile's Docker endpoint was refreshed after the lab network changed; its inline crypto bytes were preserved. These are actual engine/transport checks, separate from mocked API orchestration tests.
+- English/Persian browser tests passed nine widths: 360, 375, 390, 430, 768, 1024, 1366, 1440 and 1920. They exercise request bodies, file upload/download, password/key clearing, offline confirmation, RTL/LTR, bounded dialog and Escape. Eleven other locale catalogs retain a complete English fallback for the new strings; their translations remain part of final UI work.
+- Final local source regression: **628 tests, 624 passed / four PostgreSQL-dependent skips**, including the raw ASGI validation-privacy and full-store recovery cases. ESLint quiet/build passed; largest JS 983,390 bytes (budget 990,000). Frontend runtime audit reported zero vulnerabilities; root/node lock checks passed; focused Bandit reported no medium/high findings. Exact-commit CI is still required. Full final-source OS installs, remaining Web/CLI/features/UI/privacy/docs, immutable public assets and owner-authorized Production remain open.
+- This is same-node recovery. It does not advertise cold restoration onto a replacement host. No Production node, firewall, SSH policy or live panel was changed by these development checks.
+
+[فارسی](NODE-ARCHIVES-CANDIDATE.fa.md)

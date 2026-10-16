@@ -21,6 +21,7 @@ from backend.routers.anyconnect import (
 from backend.version import __version__
 from backend.panel_redirect import PanelPathTransitionMiddleware
 from backend.operations.history import record_usage_history
+from backend.node.archive_store import cleanup as cleanup_node_archives
 from backend.validation_privacy import validation_response
 from backend.audit import AuditMiddleware
 from backend.security_middleware import (
@@ -91,6 +92,8 @@ def start_scheduler():
     # inside Uvicorn's single asyncio event loop.
 
     scheduler.add_job(record_usage_history, CronTrigger(minute="*/30"), id="usage_history", replace_existing=True)
+    scheduler.add_job(cleanup_node_archives, 'interval', minutes=5, id='private_node_archives',
+                      replace_existing=True, max_instances=1, coalesce=True)
 
     scheduler.start()
 

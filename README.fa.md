@@ -4,11 +4,15 @@
 
 **کنترل‌پلین چندنودی Production-Oriented برای OpenVPN با یکپارچه‌سازی اختیاری AnyConnect**
 
-[![Version](https://img.shields.io/badge/version-1.0.43-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.44-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#نیازمندیها)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 [English](./README.md) · **فارسی**
+
+## نامزد v1.0.44 نسبت به v1.0.43
+
+**PVN-1028 — بکاپ خصوصی و بازیابی همان نود از پنل وب.** مدیر اصلی با SSH تأییدشده، انتقال بررسی‌شده، فایل خصوصی متصل به هویت نود و تأیید صریح بازیابی آفلاین کار می‌کند. کنترل‌های فارسی/انگلیسی در ۹ عرض تست شدند؛ بکاپ، انتقال و بازیابی سازگار واقعی PID سرویس VPN، اسرار و شمارنده‌ها را حفظ کرد. [راهنما و شواهد](docs/NODE-ARCHIVES-CANDIDATE.fa.md). نسخهٔ عمومی 1.0.37 و Production برابر 1.0.40 باقی است؛ gateهای انتشار و استقرار نهایی جداگانه باز هستند.
 
 ## نامزد v1.0.43 نسبت به v1.0.42
 

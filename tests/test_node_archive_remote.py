@@ -91,3 +91,17 @@ class NodeArchiveRemoteTests(unittest.TestCase):
         with patch.object(self.m,'INBOX',inbox),patch.object(self.m.hashlib,'file_digest',None),self.assertRaises(ValueError):
             self.m.receive_upload({'id':'a'*24,'size':1,'sha256':'a'*64},io.BytesIO(b'x'))
         self.assertFalse((inbox/('a'*24)).exists())
+
+    def test_verified_upload_cleanup_preserves_any_changed_material(self):
+        inbox=Path(self.folder.name)/'inbox';identity='a'*24;data=b'private-upload-fixture'
+        message={'id':identity,'size':len(data),'sha256':hashlib.sha256(data).hexdigest()}
+        with patch.object(self.m,'INBOX',inbox):
+            self.m.receive_upload(message,io.BytesIO(data));archive=inbox/identity/'archive.tar.gz'
+            archive.chmod(0o640)
+            with self.assertRaises(ValueError):self.m.remove_upload(message)
+            self.assertTrue(archive.exists());archive.chmod(0o600)
+            archive.write_bytes(b'operator changed bytes')
+            with self.assertRaises(ValueError):self.m.remove_upload(message)
+            self.assertTrue(archive.exists());archive.write_bytes(data)
+            self.assertEqual(self.m.remove_upload(message),{'state':'removed',**message})
+            self.assertFalse((inbox/identity).exists())

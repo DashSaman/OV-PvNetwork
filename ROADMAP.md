@@ -2,6 +2,10 @@
 
 > Production is live and under load. `AGENTS.md` is the execution source of truth. This public roadmap is a sanitized summary only.
 
+## Current candidate
+
+- `v1.0.44` / `PVN-1028` — private node backup/download/upload/restore in Web management, node identity binding and explicit offline recovery choices. Candidate only; full mission, public artifact and authorized Production gates remain open. [Evidence](docs/NODE-ARCHIVES-CANDIDATE.md).
+
 ## Released
 
 ### v1.0.0

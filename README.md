@@ -4,13 +4,17 @@
 
 **Production-oriented multi-node OpenVPN control plane with optional AnyConnect integration**
 
-[![Version](https://img.shields.io/badge/version-1.0.43-brightgreen?style=flat-square)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.0.44-brightgreen?style=flat-square)](./VERSION)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)](#requirements)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **English** · [فارسی](./README.fa.md)
 
 </div>
+
+## v1.0.44 candidate vs v1.0.43
+
+**PVN-1028 — private node backups and same-node restore from the Web panel.** Main administrators use pinned SSH, verified byte transfers, expiring node-bound archives and explicit offline recovery confirmation. English/Persian controls passed the nine-width browser matrix; actual native SSH backup/transfer/compatible restore preserved the VPN PID, secrets and counters. [Workflow and evidence](docs/NODE-ARCHIVES-CANDIDATE.md). Public stable remains 1.0.37; Production remains 1.0.40. This candidate has separate final release and deployment gates.
 
 ## v1.0.43 candidate vs v1.0.42
 
