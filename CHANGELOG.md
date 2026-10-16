@@ -1,3 +1,10 @@
+## v1.0.48 candidate — PVN-1032: SQLite domain ingestion
+
+- Fix the real collector ingest failure on supported SQLite installations.
+- Preserve existing schemas/IDs, atomic hit aggregation and PostgreSQL behavior.
+- Add real database, concurrent writer, maximum payload and rollback regressions.
+- Candidate publication and authorized Production gates remain open.
+
 ## v1.0.47 candidate — PVN-1031: Responsive editor and header
 
 - One stable quick-edit form outside table scrolling; drafts survive breakpoint changes.

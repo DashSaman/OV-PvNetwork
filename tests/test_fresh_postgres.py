@@ -84,6 +84,12 @@ class FreshPostgresTests(unittest.TestCase):
         with Session() as db:
             self.assertEqual(db.execute(text('SELECT COUNT(*) FROM web_push_test_budget')).scalar_one(),1)
 
+    def test_domain_activity_ingestion_preserves_postgres_merge(self):
+        from tests.test_domain_activity_ingest import seed, assert_merge
+        result=self.initialize();self.assertEqual(result.returncode,0,result.stderr)
+        seed(self.engine)
+        assert_merge(self, self.engine)
+
     def test_additive_legacy_head_upgrade_preserves_customer_data_and_attestations(self):
         import importlib.util
         result=self.initialize();self.assertEqual(result.returncode,0,result.stderr)
