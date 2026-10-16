@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from datetime import date
 from typing import Literal, Optional
 
@@ -50,6 +50,17 @@ class NodeCreate(BaseModel):
     key: str = Field(min_length=10, max_length=40)
     status: bool = Field(default=True)
     set_new_setting: bool = Field(default=False)
+
+
+class NodeUpdate(NodeCreate):
+    # Omission preserves the private stored key. A replacement is explicit;
+    # adopted credentials may be longer than the fresh manual-create field.
+    key: Optional[str] = Field(default=None, min_length=10, max_length=4096)
+
+    @field_validator('key', mode='before')
+    @classmethod
+    def preserve_blank_key(cls, value):
+        return None if isinstance(value, str) and not value.strip() else value
 
 
 class AdminCreate(BaseModel):

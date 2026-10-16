@@ -740,5 +740,6 @@
     "background": "This operation continues if you close the dialog. Reopen it to follow progress. Re-enter credentials for a retry.",
     "stagingRetained": "Restore succeeded; private upload cleanup is pending on the node. Inspect its private staging before retrying.",
     "discard": "Remove controller copy"
-  }
+  },
+  "editNodeKeepKey": "Leave blank to keep the stored private API key."
 }

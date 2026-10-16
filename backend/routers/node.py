@@ -7,7 +7,7 @@ from backend.auth.auth import get_current_user
 from backend.db.engine import get_db
 from backend.db import crud
 from backend.schema.output import ResponseModel
-from backend.schema._input import NodeCreate
+from backend.schema._input import NodeCreate, NodeUpdate
 from backend.node.health import (
     build_nodes_health,
     decorate_node_list,
@@ -137,7 +137,7 @@ async def add_node(
 @router.put("/{node_id}", response_model=ResponseModel)
 async def update_node(
     node_id: int,
-    request: NodeCreate,
+    request: NodeUpdate,
     db: Session = Depends(get_db),
     user: dict = Depends(get_current_user),
 ):
