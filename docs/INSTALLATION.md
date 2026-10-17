@@ -6,7 +6,7 @@
 
 Fresh installation is for an eligible empty panel target. An existing `/opt/pvnetwork-panel`, panel unit/site, nonempty database or occupied required port is a reason to use the existing installation's verified update/adoption path. Do not reinstall over a working panel.
 
-Supported host checks cover Ubuntu 22.04/24.04 and Debian 12, x86_64/aarch64, at least 1 GiB RAM and 3 GiB free disk. Actual v1.0.55 native installation evidence covers the three distributions; ARM and real public ACME remain separate uncompleted gates. v1.0.55 is a QA candidate; use the command only once its immutable release assets exist and after reviewing its release notes.
+Supported host checks cover Ubuntu 22.04/24.04 and Debian 12, x86_64/aarch64, at least 1 GiB RAM and 3 GiB free disk. Actual v1.0.55 native Setup Mode installation evidence covers all three distributions on x86_64 and real ARM64; see [validation](VALIDATION-v1.0.55.md). Real public ACME and external VPS networking remain separate uncompleted gates. v1.0.55 is a QA candidate; use the command only once its immutable release assets exist and after reviewing its release notes.
 
 ## 2. Install in private Setup Mode
 
