@@ -22,6 +22,8 @@ The extra local source56 “72 pages /1044 named actions” report was invalid a
 
 ## Manual review and remaining gates
 
+The expanded228-scan local run reported one remaining definite violation: light-theme Delete text at2.60:1 on the action menu. Its semantic red now uses a darker light-theme tone; explicit normal/hover4.5:1 checks accompany the fix. The failed run remains evidence, not a passing final result. The final source and CI must include this correction before publication.
+
 Additional measured counterexamples: the light focus outline was2.25:1 and the active mobile More link2.09:1. Explicit3:1 focus/4.5:1 active-label regressions failed before theme-specific corrections and pass in the focused build. Opening the portaled action menu also reproduced an uncontained-landmark finding; a named region now contains it without changing its fixed positioning. Both open menus are included in the final axe gate, adding twelve scans to the earlier216 matrix. Final expanded totals follow the exact CI result. Focus results with unresolved gradients/opacity remain in a separate `manualFocus` list, never silently passed.
 
 Source/manual interpretation of the earlier341 incomplete groups: all128 name comparisons target symbolic × close buttons with functional Close/بستن names. This is intentional symbolic naming under [W3C Label in Name](https://www.w3.org/WAI/WCAG22/Understanding/label-in-name.html#symbolic-text-characters). The8 table groups refer to the fixture's empty operations audit table. The original incomplete records remain preserved; this interpretation is not rewritten as automated success. Contrast incomplete groups still require broader visual review despite the focused helper/focus corrections.

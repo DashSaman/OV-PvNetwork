@@ -142,6 +142,12 @@ try {
       if (focus.manual) manualFocus.push({ label: prefix + ' action-menu', ...focus });
       else { counts.focusMeasured++; verify(focus.ratio >= 3, 'Action menu focus contrast below 3:1: ' + JSON.stringify(focus)); }
       await audit(page, prefix + ' action-menu');
+      for (const state of ['normal', 'hover']) {
+        if (state === 'hover') await page.locator('.actions-dropdown-item.danger-action').hover();
+        const danger = await textContrast(page, '.actions-dropdown-item.danger-action');
+        if (danger.manual) manualFocus.push({ label: prefix + ' danger-menu-' + state, ...danger });
+        else verify(danger.ratio >= 4.5, 'Danger action contrast below 4.5:1: ' + JSON.stringify(danger));
+      }
       await page.keyboard.press('Escape');
       verify(await trigger.evaluate(el => el === document.activeElement), 'Menu focus did not return');
     } catch (error) { failures.push({ label: prefix + ' action-menu', error: error.message }); }
