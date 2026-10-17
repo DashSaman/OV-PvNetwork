@@ -29,6 +29,8 @@ ssh -L 18443:127.0.0.1:18443 USER@SERVER
 
 ## 3. Fresh target with public HTTPS
 
+QA v1.0.55 does not persist an automatic Nginx certificate-renewal deploy hook. The v1.0.56 candidate fixes this for new lineages; review its [scope and existing-installation limits](RELEASE-NOTES-v1.0.56.md) before public HTTPS use. Public ACME remains an uncompleted gate.
+
 1. Prepare a real domain with correct DNS and authorized ACME email. Required public ports 80/443 must be free and ACME validation reachable through your existing network policy.
 2. On the eligible fresh target, use:
 

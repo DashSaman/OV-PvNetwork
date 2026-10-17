@@ -104,6 +104,17 @@ def inside(expected):
     for command in ['version', 'status', 'doctor']:
         result = run(['/usr/local/sbin/pvnetwork', command, '--json'], capture_output=True, text=True)
         assert isinstance(json.loads(result.stdout), dict)
+    # These fixtures own only a random loopback port, private synthetic PKI and
+    # one private Nginx master. They never operate the installed panel's service.
+    assert all(shutil.which(tool) for tool in ['sh', 'nginx', 'openssl'])
+    tmp_mount = [line.split()[3] for line in Path('/proc/mounts').read_text().splitlines()
+                 if line.split()[1] == '/tmp']
+    print(json.dumps({'fixture_tmp_noexec': any('noexec' in options.split(',') for options in tmp_mount),
+                      'fixture_private_parent': '/root'}), flush=True)
+    # Docker's private /tmp mount can prohibit executing the fixture wrappers.
+    # Use the disposable guest's root-private directory; preserve mount policy.
+    run([app / '.venv/bin/python', '-m', 'unittest', 'tests.test_installer_tls_renewal', '-v'],
+        cwd=app, env={**os.environ, 'TMPDIR': '/root'})
     print(json.dumps({'native_fresh': 'PASS', 'repeat_env_DB_PIDs_preserved': 'PASS',
                       'systemd_proxy_UI_assets_SQLite_permissions': 'PASS', 'installed_CLI': 'PASS',
                       'version': version, 'source_sha256': expected, 'public_bootstrap': bootstrap.exists(),
