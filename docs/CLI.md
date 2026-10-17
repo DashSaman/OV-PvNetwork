@@ -50,7 +50,7 @@ TLS renewal selects the one ACME certificate used by the managed panel site. It 
 
 Exit codes: 0 success; 64 invalid usage; 69 unhealthy/unavailable; 70 operation failure; 75 busy/pending recovery; 77 root/confirmation required; 130 interrupted. A queued node/settings response indicates acceptance; inspect its terminal status before treating an operation as successful.
 
-Current release evidence and remaining gates are recorded in [validation](VALIDATION-v1.0.54.md). v1.0.55 is QA until exact artifact, CI/public bootstrap and authorized Production verification are recorded. The native snapshot log policy is described in [release notes](RELEASE-NOTES-v1.0.55.md). [Illustrated web manual](UI-GUIDE.md) · [فارسی](CLI.fa.md).
+Current release evidence and remaining gates are recorded in [validation](VALIDATION-v1.0.55.md). v1.0.55 remains QA; exact artifact, CI/public bootstrap and the owner-authorized limited Production deployment are now verified. The native snapshot log policy is described in [release notes](RELEASE-NOTES-v1.0.55.md). [Illustrated web manual](UI-GUIDE.md) · [فارسی](CLI.fa.md).
 
 ## First operational session
 

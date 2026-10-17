@@ -44,7 +44,10 @@ function responseFor(url) {
   if (path === '/admin/' || path === '/admin') return ok([{id:7,username:'demo-reseller',is_active:true,quota_total:500,quota_used:100,unlimited_quota_total:5,unlimited_quota_used:1}]);
   if (path.startsWith('/admins')) return ok([]);
   if (path.startsWith('/backups')) return ok({ backups: [{id:'20300101-120000',created_at:'2030-01-01T12:00:00Z',size_bytes:1048576,verified:true}] });
-  if (path === '/fleet/' || path === '/fleet') return ok([]);
+  if (path === '/fleet/' || path === '/fleet') return ok([
+    {id:1,name:'Demo Europe',version:'1.0.54',health_score:96,health:'healthy',drain:false,maintenance:false},
+    {id:2,name:'Demo USA',version:'1.0.54',health_score:88,health:'healthy',drain:true,maintenance:false},
+  ]);
   if (path.startsWith('/fleet/jobs/')) return ok({ id: 'demo', state: 'succeeded', stage: 'done' });
   if (path === '/operations/dashboard') return ok({ users: 1, nodes: 2, online: 0, traffic_bytes: 0 });
   if (path === '/operations/audit') return ok([]);
