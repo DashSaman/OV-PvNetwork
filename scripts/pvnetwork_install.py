@@ -389,7 +389,8 @@ def install(args):
             checkpoint('tls')
             acme=Path('/var/lib/pvnetwork-panel/acme');acme.mkdir(exist_ok=True,mode=0o755)
             command(['apt-get','install','-y','certbot'],env={**env,'DEBIAN_FRONTEND':'noninteractive'})
-            command(['certbot','certonly','--webroot','-w',acme,'--non-interactive','--agree-tos','--email',args.email,'-d',args.domain])
+            command(['certbot','certonly','--webroot','-w',acme,'--non-interactive','--agree-tos','--email',args.email,'-d',args.domain,
+                     '--deploy-hook','nginx -t && systemctl reload nginx.service'])
             write_private(SITE,proxy_config(args.port,args.path,args.setup_port,args.domain,tls=True),0o644)
             command(['nginx','-t']);command(['systemctl','reload','nginx.service'])
             verify_http('https://'+args.domain+'/healthz',version=version)

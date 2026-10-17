@@ -6,6 +6,8 @@ PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multi
 
 ## Release status and changes
 
+**v1.0.56 is an unpublished QA candidate for PVN-1040.** Since v1.0.55, fresh HTTPS installation records a Certbot deploy hook that checks Nginx syntax and gracefully reloads it after successful certificate renewal. It does not restart the panel or VPN. [English notes](docs/RELEASE-NOTES-v1.0.56.md) · [یادداشت فارسی](docs/RELEASE-NOTES-v1.0.56.fa.md). The published installation command below remains pinned to verified v1.0.55 while the new candidate completes its gates.
+
 **v1.0.55 is verified QA, deployed through the owner-authorized limited panel update.** Its exact CI, public bootstrap on three distributions, native backup/canary and Production post-checks passed. The last supported stable release remains v1.0.37 pending broader mission gates. Read [validation evidence and limits](docs/VALIDATION-v1.0.55.md) and the target release notes before installing or updating.
 
 Since v1.0.54: the native backup excludes only the panel's actively written diagnostic `data/app.log`; credential keys, SSH trust and other state retain their consistency checks. The log stays on the server. This resolves an update that stopped before activation. [English release notes](docs/RELEASE-NOTES-v1.0.55.md) · [تغییرات فارسی](docs/RELEASE-NOTES-v1.0.55.fa.md).
