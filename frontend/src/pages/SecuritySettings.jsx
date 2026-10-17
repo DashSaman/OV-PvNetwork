@@ -1,3 +1,4 @@
+import ModalOverlay from '../components/ModalOverlay';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -43,7 +44,7 @@ function SettingsConfirmation({ children, onCancel }) {
     document.addEventListener('keydown', keyboard);
     return () => { document.removeEventListener('keydown', keyboard); previous?.focus(); };
   }, [onCancel]);
-  return createPortal(<div className="modal-overlay"><div ref={dialog} tabIndex={-1} className="modal" role="dialog" aria-modal="true" aria-labelledby="panel-confirm-title">{children}</div></div>, document.body);
+  return createPortal(<ModalOverlay onClose={onCancel} className="modal-overlay"><div ref={dialog} tabIndex={-1} className="modal" role="dialog" aria-modal="true" aria-labelledby="panel-confirm-title">{children}</div></ModalOverlay>, document.body);
 }
 
 function PanelRuntimeCard() {
@@ -230,7 +231,7 @@ export default function SecuritySettings() {
   };
 
   if (loading) return <div className="view"><div className="ov-page-loader">{t('feature.loading')}</div></div>;
-  if (!data) return <div className="view"><div className="error-message">{error}</div><button className="btn" onClick={load}>{t('feature.retry')}</button></div>;
+  if (!data) return <div className="view"><div className="error-message" role="alert">{error}</div><button className="btn" onClick={load}>{t('feature.retry')}</button></div>;
 
   const save = () => run('save', async () => {
     await apiClient.put('/security/', {
@@ -280,7 +281,7 @@ export default function SecuritySettings() {
 
     <section className="monitor-form">
       <label><input type="checkbox" checked={data.rate_limit_enabled} onChange={event => setData({...data, rate_limit_enabled: event.target.checked})}/>{t('ui.3ddc17b9f318')}</label>
-      <input type="number" min="10" max="10000" value={data.rate_limit_per_minute} onChange={event => setData({...data, rate_limit_per_minute: Number(event.target.value)})}/>
+      <input aria-label={t('a11y.rateLimit')} type="number" min="10" max="10000" value={data.rate_limit_per_minute} onChange={event => setData({...data, rate_limit_per_minute: Number(event.target.value)})}/>
       <label><input type="checkbox" checked={data.ip_allowlist_enabled} onChange={event => setData({...data, ip_allowlist_enabled: event.target.checked})}/>{t('ui.5922e4963c74')}</label>
       <textarea placeholder={t('ui.525163179b91')} value={cidr} onChange={event => setCidr(event.target.value)}/>
       <button type="button" className="btn" disabled={Boolean(busy)} onClick={save}>{busy === 'save' ? t('feature.saving') : t('ui.bc1ac6f5f5fd')}</button>

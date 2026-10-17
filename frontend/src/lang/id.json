@@ -757,5 +757,10 @@
     "newPort": "New internal panel port",
     "portHelp": "Choose a free port from 1024 to 65535, excluding reserved canary port 19002. Public HTTPS port and firewall stay unchanged.",
     "summaryPort": "Internal port: {{old}} → {{next}}"
+  },
+  "a11y": {
+    "skipToContent": "Lewati ke konten utama",
+    "selectNode": "Pilih node {{name}}",
+    "rateLimit": "Permintaan per menit"
   }
 }

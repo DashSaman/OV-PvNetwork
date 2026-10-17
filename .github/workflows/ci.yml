@@ -181,6 +181,16 @@ jobs:
           PV_PYTHON=python3 node tests/subscription-responsive-smoke.mjs
           PV_PYTHON=python3 node tests/subscription-qr-security.mjs
           PV_CONTRAST_PROBE=1 node tests/control-contrast.mjs
+          PV_A11Y_REPORT=/tmp/pvnetwork-admin-accessibility.json node tests/accessibility-smoke.mjs
+          PV_PYTHON=python3 PV_A11Y_REPORT=/tmp/pvnetwork-subscription-accessibility.json node tests/subscription-accessibility.mjs
+
+      - name: Preserve accessibility results including manual-review items
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-results
+          path: /tmp/pvnetwork-*-accessibility.json
+          if-no-files-found: ignore
 
       - name: JSON syntax
         run: |

@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -87,7 +88,7 @@ const EditNodeModal = ({
     }
   };
   if (!node) return null;
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
       <div className="modal" style={{
       maxHeight: '80vh',
       overflowY: 'auto'
@@ -159,9 +160,9 @@ const EditNodeModal = ({
               {t('updateNodeButton', 'Update Node')}
             </LoadingButton>
           </div>
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="error-message" role="alert">{error}</p>}
         </form>
       </div>
-    </div>;
+    </ModalOverlay>;
 };
 export default EditNodeModal;

@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useMemo, useState } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -54,7 +55,7 @@ const RenewUserModal = ({ user, onClose, onRenewed }) => {
       setIsLoading(false);
     }
   };
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
     <div className="modal">
       <div className="modal-header">
         <h3>{t('renewUserTitle', 'تمدید کاربر')} - {user.name}</h3>
@@ -62,27 +63,27 @@ const RenewUserModal = ({ user, onClose, onRenewed }) => {
       </div>
       <form onSubmit={submit}>
         <div className="input-group">
-          <label>{t('renewDuration', 'مدت تمدید')}</label>
-          <select value={options.includes(Number(durationDays)) ? durationDays : 'custom'} onChange={e => {
+          <label htmlFor="renew-duration">{t('renewDuration', 'مدت تمدید')}</label>
+          <select aria-label={t('renewDuration')} value={options.includes(Number(durationDays)) ? durationDays : 'custom'} onChange={e => {
             if (e.target.value !== 'custom') setDurationDays(e.target.value);
           }}>
             {options.map(value => <option key={value} value={value}>{value} {t('renewUnitDays', 'روز')}</option>)}
             <option value="custom">{t('renewCustom', 'دلخواه')}</option>
           </select>
-          <input type="number" min="1" max="3650" step="1" value={durationDays} onChange={e => setDurationDays(e.target.value)} />
+          <input id="renew-duration" type="number" min="1" max="3650" step="1" value={durationDays} onChange={e => setDurationDays(e.target.value)} />
         </div>
 
         {unlimited ? <div className="input-group">
-          <label>{t('renewTraffic', 'حجم')}</label>
-          <input type="text" value={t('renewUnlimitedNoChange', 'نامحدود — بدون تغییر')} disabled />
+          <label htmlFor="renew-traffic">{t('renewTraffic', 'حجم')}</label>
+          <input id="renew-traffic" type="text" value={t('renewUnlimitedNoChange', 'نامحدود — بدون تغییر')} disabled />
         </div> : <div className="input-group">
-          <label>{t('renewTrafficAction', 'رفتار حجم')}</label>
-          <select value={trafficAction} onChange={e => setTrafficAction(e.target.value)}>
+          <label htmlFor="renew-traffic-action">{t('renewTrafficAction', 'رفتار حجم')}</label>
+          <select id="renew-traffic-action" value={trafficAction} onChange={e => setTrafficAction(e.target.value)}>
             {!exhausted && <option value="preserve">{t('renewPreserveUsage', 'حفظ مصرف و حجم فعلی')}</option>}
             <option value="reset">{t('renewResetUsage', 'ریست مصرف و شروع دوره جدید')}</option>
             <option value="add">{t('renewAddTraffic', 'افزودن حجم')}</option>
           </select>
-          {trafficAction === 'add' && <input type="number" min="0.01" step="0.01" value={addTrafficGb} onChange={e => setAddTrafficGb(e.target.value)} placeholder="GB" />}
+          {trafficAction === 'add' && <input aria-label={t('renewAddTraffic')} type="number" min="0.01" step="0.01" value={addTrafficGb} onChange={e => setAddTrafficGb(e.target.value)} placeholder="GB" />}
         </div>}
         <div className="modal-footer">
           <button type="button" onClick={onClose} className="btn btn-secondary">
@@ -92,10 +93,10 @@ const RenewUserModal = ({ user, onClose, onRenewed }) => {
             {t('renewButton', 'تمدید')}
           </LoadingButton>
         </div>
-        {error && <p className="error-message">{error}</p>}
+        {error && <p className="error-message" role="alert">{error}</p>}
       </form>
     </div>
-  </div>;
+  </ModalOverlay>;
 };
 
 export default RenewUserModal;

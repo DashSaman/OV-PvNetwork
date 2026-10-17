@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useRef, useState } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -253,19 +254,19 @@ const AddNodeModal = ({
           if (!error) onNodeCreated();else setTerminal(false);
         }}>{error ? t("ui.234f624b2f7c") : t("ui.b74bdee9c34f")}</button>}</div>
   </div></div>;
-  return <div className="modal-overlay"><div className="modal" style={{
+  return <ModalOverlay onClose={onClose} className="modal-overlay"><div className="modal" style={{
       maxHeight: '85vh',
       overflowY: 'auto'
     }}><div className="modal-header"><h3>{t("ui.1ade58681172")}</h3><button onClick={onClose} className="close-modal-btn">&times;</button></div><form onSubmit={handleSubmit}>
-    <div className="input-group"><label>{t("ui.4831706c082f")}</label><select value={automatic ? t("ui.0d612c12d2ac") : t("ui.b363713a938a")} onChange={e => setAutomatic(e.target.value === 'auto')}><option value="auto">{t("ui.fabb8b43a5e0")}</option><option value="manual">{t("ui.99356529b772")}</option></select></div>
+    <div className="input-group"><label htmlFor="node-install-method">{t("ui.4831706c082f")}</label><select id="node-install-method" value={automatic ? t("ui.0d612c12d2ac") : t("ui.b363713a938a")} onChange={e => setAutomatic(e.target.value === 'auto')}><option value="auto">{t("ui.fabb8b43a5e0")}</option><option value="manual">{t("ui.99356529b772")}</option></select></div>
     {field('name', t('nodeName'))}{field('address', t('th_address'))}{automatic && <>{field('ssh_port', t('addNodeSshPort', 'SSH Port'), 'number')}{field('ssh_username', t('addNodeSshUsername', 'SSH Username'))}<div className="input-group"><label htmlFor="sshAuthMethod">{t('addNodeAuthMethod', 'SSH authentication')}</label><select id="sshAuthMethod" value={sshAuthMethod} onChange={event => setSshAuthMethod(event.target.value)}><option value="password">{t('password', 'Password')}</option><option value="key">{t('addNodePrivateKey', 'Private key')}</option></select></div>{sshAuthMethod === 'password' ? field('ssh_password', t('addNodeSshPassword', 'SSH Password'), 'password') : <><div className="input-group"><label htmlFor="ssh_private_key">{t('addNodePrivateKey', 'Private key')}</label><textarea id="ssh_private_key" name="ssh_private_key" value={formData.ssh_private_key} onChange={handleChange} required rows={5} autoComplete="off" spellCheck={false} /></div>{field('ssh_key_passphrase', t('addNodeKeyPassphrase', 'Key passphrase (optional)'), 'password', false)}</>}{field('controller_url', t('addNodeControllerUrl', 'Controller HTTPS origin'), 'url')}<small>{t('addNodeControllerTlsHelp', 'Remote nodes require a reachable HTTPS controller. Configure TLS before adding a remote node.')}</small><div className="input-group"><label htmlFor="mode">{t('addNodeMode', 'Installation mode')}</label><select id="mode" name="mode" value={formData.mode} onChange={handleChange}><option value="fresh">{t('addNodeFresh', 'Fresh server')}</option><option value="adopt">{t('addNodeAdopt', 'Adopt existing node')}</option></select></div>{formData.mode === 'adopt' && <>{field('existing_node_id', t('addNodeExistingId', 'Existing node ID'), 'number')}<small>{t('addNodeAdoptHelp', 'Keep its current name, address, VPN port and protocol. Select a free HTTPS API port. OpenVPN remains running.')}</small></>}{field('ssh_fingerprint', t('addNodeSshFingerprint', 'SSH Host Fingerprint (SHA256; first connection)'), 'text', false)}<div className="input-group"><label htmlFor="panel_ip">{t('addNodePanelIp', 'Panel source IP (optional)')}</label><input id="panel_ip" name="panel_ip" type="text" value={formData.panel_ip} onChange={handleChange} required={false} placeholder={t('addNodePanelIpPlaceholder', 'Auto-detected from the SSH connection')} /><small>{t('addNodePanelIpHelp', 'Leave empty to auto-detect. Fill only when the panel reaches the node from a different address than the SSH connection (for example behind a NAT or proxy).')}</small></div></>}{field('port', t('nodePort'), 'number')}
-    <div className="input-group"><label>{t('th_protocol')}</label><select name="protocol" value={formData.protocol} onChange={handleChange}><option value="udp">{t("ui.e9a6f622e340")}</option><option value="tcp">{t("ui.f544fb304c83")}</option></select></div>
+    <div className="input-group"><label htmlFor="node-protocol">{t('th_protocol')}</label><select id="node-protocol" name="protocol" value={formData.protocol} onChange={handleChange}><option value="udp">{t("ui.e9a6f622e340")}</option><option value="tcp">{t("ui.f544fb304c83")}</option></select></div>
     {field('ovpn_port', t('ovpnPort'), 'number')}{field('tunnel_address', t('tunnelAddress'), 'text', false)}{!automatic && field('key', t('key'))}
     <div className="modal-footer"><button type="button" onClick={onClose} className="btn btn-secondary">{t('cancelButton')}</button><LoadingButton isLoading={isLoading} type="submit" className="btn">{automatic ? t("ui.cb888a7010c5") : t("ui.1ade58681172")}</LoadingButton></div>
     {automatic && <p style={{
           fontSize: 12,
           color: 'var(--text-secondary)'
-        }}>{t("ui.0f9fdb7c1c56")}</p>}{error && <p className="error-message">{String(error)}</p>}
-  </form></div></div>;
+        }}>{t("ui.0f9fdb7c1c56")}</p>}{error && <p className="error-message" role="alert">{String(error)}</p>}
+  </form></div></ModalOverlay>;
 };
 export default AddNodeModal;

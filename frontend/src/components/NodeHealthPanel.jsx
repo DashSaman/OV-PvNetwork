@@ -295,7 +295,7 @@ const NodeHealthPanel = ({
       </div>
 
 
-      <div
+      <div tabIndex={0} role="region" aria-label={t('nodeManagement')}
         style={{
           overflowX: 'auto',
         }}

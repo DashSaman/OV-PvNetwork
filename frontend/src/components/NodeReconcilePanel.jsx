@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import apiClient from '../services/api';
@@ -61,7 +62,7 @@ export default function NodeReconcilePanel({ node, onClose }) {
     if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { event.preventDefault(); last?.focus(); }
     else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog.current)) { event.preventDefault(); first?.focus(); }
   };
-  return <div className="modal-overlay"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="node-reconcile-title" ref={dialog} tabIndex={-1} onKeyDown={keyboard}>
+  return <ModalOverlay onClose={onClose} className="modal-overlay"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="node-reconcile-title" ref={dialog} tabIndex={-1} onKeyDown={keyboard}>
     <div className="modal-header"><h3 id="node-reconcile-title">{t('nodeReconcile.title')} — {node.name}</h3><button type="button" onClick={onClose} aria-label={t('close')}>×</button></div>
     <div className="modal-body">
       <p>{t('nodeReconcile.scope')}</p>
@@ -69,5 +70,5 @@ export default function NodeReconcilePanel({ node, onClose }) {
       {error && <p className="error-message" role="alert">{error}</p>}
     </div>
     <div className="modal-footer"><button type="button" className="btn" onClick={onClose}>{t('close')}</button><button type="button" className="btn" disabled={active} onClick={submit}>{t('nodeReconcile.start')}</button></div>
-  </section></div>;
+  </section></ModalOverlay>;
 }

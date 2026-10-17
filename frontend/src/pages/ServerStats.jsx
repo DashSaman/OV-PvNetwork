@@ -584,7 +584,7 @@ const ServerStats = () => {
   const liveReady = totals.sampledNodes > 0;
   return <div id="dashboard-view" className="view ovdash" data-theme={themeMode}>
       {dashboardError && <div className="monitor-form">
-        <p className="error-message">{dashboardError}</p>
+        <p className="error-message" role="alert">{dashboardError}</p>
         <button className="btn" onClick={() => window.location.reload()}>
           {t('retry', 'Retry')}
         </button>

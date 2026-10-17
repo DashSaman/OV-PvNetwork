@@ -160,7 +160,7 @@ export default function OperationsCenter() {
   if (error && !dashboard) {
     return <div className="view">
       <div className="monitor-form">
-        <p className="error-message">{error}</p>
+        <p className="error-message" role="alert">{error}</p>
         <button className="btn" onClick={load}>
           {t('retry', 'Retry')}
         </button>
@@ -176,7 +176,7 @@ export default function OperationsCenter() {
       </div>
 
       {error && <div className="monitor-form">
-        <p className="error-message">{error}</p>
+        <p className="error-message" role="alert">{error}</p>
         <button className="btn" disabled={loading || busy} onClick={load}>
           {t('retry', 'Retry')}
         </button>
@@ -222,7 +222,7 @@ export default function OperationsCenter() {
         <UsageChart rows={history} />
       </div>
 
-      <div className="table-container">
+      <div className="table-container" tabIndex={0} role="region" aria-label={t('ui.6c82e6dd8680')}>
         <table>
           <thead>
             <tr>

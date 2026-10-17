@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useState } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -285,7 +286,7 @@ const AddUserModal = ({
   if (routerResults) {
     const okResults = routerResults.results.filter(item => item.ok);
     const failedResults = routerResults.results.filter(item => !item.ok);
-    return <div className="modal-overlay">
+    return <ModalOverlay onClose={onClose} className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
           <h3>{t('createUserRouterGenerated', 'کاربر ساخته شد — اعتبارنامه Router')}</h3>
@@ -324,10 +325,10 @@ const AddUserModal = ({
           </button>
         </div>
       </div>
-    </div>;
+    </ModalOverlay>;
   }
 
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
     <div className="modal">
       <div className="modal-header">
         <h3>{t('modal_createUserTitle', 'ایجاد کاربر جدید')}</h3>
@@ -467,10 +468,10 @@ const AddUserModal = ({
           <button type="button" onClick={onClose} className="btn btn-secondary">{t('cancelButton', 'انصراف')}</button>
           <LoadingButton isLoading={isLoading} type="submit" className="btn">{t('createUserButton', 'ایجاد کاربر')}</LoadingButton>
         </div>
-        {error && <p className="error-message">{error}</p>}
+        {error && <p className="error-message" role="alert">{error}</p>}
       </form>
     </div>
-  </div>;
+  </ModalOverlay>;
 };
 
 export default AddUserModal;

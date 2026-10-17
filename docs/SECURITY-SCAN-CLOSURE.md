@@ -30,6 +30,8 @@ Fresh closure checks: canonical sealed-contract validation PASS; actual local Ch
 
 ## Coverage and remaining tests
 
+Accessibility evidence correction: the extra local source56 “72 pages /1044 named actions” count did not verify distinct routes because that build omitted the panel basename and redirected to Dashboard. That count is withdrawn. [PVN-1041 validation](VALIDATION-v1.0.57.md) replaces it with explicit route/authentication assertions and new actual-page axe/keyboard checks. The separate sealed security record, source56 CI/native/QR evidence and their stated limits are unchanged.
+
 Coverage is still **partial**. The original source review was sequential, without an independent baseline; it did not probe live provider/internal-network behavior or claim line-by-line review of every asset. Four legacy deferred rows remain in the sealed coverage metadata even though their original candidate IDs also appear in the validated findings above. Their status text was not erased or rewritten after sealing. Completion indexed all five findings without warnings; it did not prove those metadata rows disappeared.
 
 Already feasible without an empty VPS: immutable public bootstrap/fresh/repeat on Ubuntu22.04/24.04 and Debian12, both x86_64 and real ARM64; real isolated Nginx certificate activation with the same master PID and failed-syntax refusal; scoped API/security regressions; private archive/recovery fixtures; actual disposable dual-auth OpenVPN handshake; core browser/QR/contrast/layout and public-material checks. Read their exact scope and skips in [v1.0.56 validation](VALIDATION-v1.0.56.md). The isolated handshake does not certify an independent public node lifecycle.

@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import apiClient from '../services/api';
@@ -73,14 +74,14 @@ const RouterOpenVpnNodeModal = ({ node, onClose, onChanged }) => {
   };
 
   if (!node) return null;
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
     <div className="modal router-openvpn-node-modal" dir={t('direction', 'rtl')}>
       <div className="modal-header">
         <h3>{t('routerOpenVpn.nodeTitle', 'Router / MikroTik OpenVPN')} — {node.name}</h3>
         <button onClick={onClose} className="close-modal-btn">&times;</button>
       </div>
 
-      {status?.upgrade_required && <p className="error-message">
+      {status?.upgrade_required && <p className="error-message" role="alert">
         {t('routerOpenVpn.upgradeRequired', 'This node must be upgraded before Router compatibility can be enabled.')}
       </p>}
       <p style={{ opacity: 0.85 }}>
@@ -88,19 +89,19 @@ const RouterOpenVpnNodeModal = ({ node, onClose, onChanged }) => {
       </p>
 
       <div className="input-group">
-        <label>{t('routerOpenVpn.port', 'Secondary port')}</label>
-        <input type="number" min="1" max="65535" value={port}
+        <label htmlFor="a11y-routeropenvpnnodemodal-1">{t('routerOpenVpn.port', 'Secondary port')}</label>
+        <input id="a11y-routeropenvpnnodemodal-1" type="number" min="1" max="65535" value={port}
           onChange={event => setPort(event.target.value)} disabled={busy || status?.upgrade_required} />
       </div>
       <div className="input-group">
-        <label>{t('routerOpenVpn.protocol', 'Protocol')}</label>
-        <select value={protocol} onChange={event => setProtocol(event.target.value)} disabled={busy || status?.upgrade_required}>
+        <label htmlFor="a11y-routeropenvpnnodemodal-2">{t('routerOpenVpn.protocol', 'Protocol')}</label>
+        <select id="a11y-routeropenvpnnodemodal-2" value={protocol} onChange={event => setProtocol(event.target.value)} disabled={busy || status?.upgrade_required}>
           <option value="tcp">TCP</option><option value="udp">UDP</option>
         </select>
       </div>
       <div className="input-group">
-        <label>{t('routerOpenVpn.subnet', 'Tunnel subnet')}</label>
-        <input type="text" dir="ltr" value={subnet}
+        <label htmlFor="a11y-routeropenvpnnodemodal-3">{t('routerOpenVpn.subnet', 'Tunnel subnet')}</label>
+        <input id="a11y-routeropenvpnnodemodal-3" type="text" dir="ltr" value={subnet}
           onChange={event => setSubnet(event.target.value)} disabled={busy || status?.upgrade_required} />
       </div>
 
@@ -114,14 +115,14 @@ const RouterOpenVpnNodeModal = ({ node, onClose, onChanged }) => {
       </div>
 
       {notice && <p className="success-message">{notice}</p>}
-      {error && <p className="error-message">{error}</p>}
+      {error && <p className="error-message" role="alert">{error}</p>}
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" onClick={onClose}>
           {t('close', 'Close')}
         </button>
       </div>
     </div>
-  </div>;
+  </ModalOverlay>;
 };
 
 export default RouterOpenVpnNodeModal;

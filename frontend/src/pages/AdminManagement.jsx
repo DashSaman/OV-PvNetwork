@@ -1,3 +1,4 @@
+import ModalOverlay from '../components/ModalOverlay';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { FiUsers, FiSearch } from 'react-icons/fi';
 import apiClient from '../services/api';
@@ -121,7 +122,7 @@ const AdminManagement = () => {
                 </button>
             </div>
             {error && <div className="monitor-form">
-                <p className="error-message">{error}</p>
+                <p className="error-message" role="alert">{error}</p>
                 <button className="btn" disabled={isLoading} onClick={fetchAdmins}>
                     {t('retry', 'Retry')}
                 </button>
@@ -146,7 +147,7 @@ const AdminManagement = () => {
                 onClose={() => setIsEditModalOpen(false)} onAdminUpdated={handleAdminUpdated} />}
 
             {deleteAdminTarget && (
-                <div className="modal-overlay">
+                <ModalOverlay onClose={() => { if (!isDeleting) setDeleteAdminTarget(null); }} className="modal-overlay">
                     <div className="modal" style={{ maxWidth: '560px' }}>
                         <div className="modal-header">
                             <h3>{t('adminDelete.title', 'حذف نماینده')} {deleteAdminTarget.username}</h3>
@@ -181,7 +182,7 @@ const AdminManagement = () => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </ModalOverlay>
             )}
         </div>
     );

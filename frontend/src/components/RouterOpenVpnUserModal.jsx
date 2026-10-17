@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import apiClient from '../services/api';
@@ -91,7 +92,7 @@ const RouterOpenVpnUserModal = ({ user, nodes = [], healthyNodeIds = [], onClose
   };
 
   if (!user) return null;
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
     <div className="modal router-openvpn-user-modal">
       <div className="modal-header">
         <h3>{t('routerOpenVpn.userTitle', 'Router / MikroTik')} — {user.name}</h3>
@@ -102,31 +103,31 @@ const RouterOpenVpnUserModal = ({ user, nodes = [], healthyNodeIds = [], onClose
         {t('routerOpenVpn.normalUnaffected', 'Normal OpenVPN remains certificate-only and does not need these credentials.')}
       </p>
 
-      {assigned.length === 0 ? <p className="error-message">
+      {assigned.length === 0 ? <p className="error-message" role="alert">
         {t('routerOpenVpn.noHealthyAssignedNode', 'No assigned node has a healthy Router compatibility listener.')}
       </p> : <>
         <div className="input-group">
-          <label>{t('routerOpenVpn.node', 'Node')}</label>
-          <select value={nodeId} onChange={event => setNodeId(event.target.value)} disabled={busy}>
+          <label htmlFor="a11y-routeropenvpnusermodal-1">{t('routerOpenVpn.node', 'Node')}</label>
+          <select id="a11y-routeropenvpnusermodal-1" value={nodeId} onChange={event => setNodeId(event.target.value)} disabled={busy}>
             {assigned.map(node => <option key={node.id} value={node.id}>{node.name}</option>)}
           </select>
         </div>
 
         <div className="input-group">
-          <label>{t('routerOpenVpn.status', 'Credential status')}</label>
-          <input readOnly value={status?.configured
+          <label htmlFor="a11y-routeropenvpnusermodal-2">{t('routerOpenVpn.status', 'Credential status')}</label>
+          <input id="a11y-routeropenvpnusermodal-2" readOnly value={status?.configured
             ? (status?.enabled ? t('enabled', 'Enabled') : t('disabled', 'Disabled'))
             : t('routerOpenVpn.notCreated', 'Not created')} />
         </div>
 
         {status?.username && <div className="input-group">
-          <label>{t('routerOpenVpn.username', 'Router username')}</label>
-          <input readOnly dir="ltr" value={status.username} />
+          <label htmlFor="a11y-routeropenvpnusermodal-3">{t('routerOpenVpn.username', 'Router username')}</label>
+          <input id="a11y-routeropenvpnusermodal-3" readOnly dir="ltr" value={status.username} />
         </div>}
 
         {status?.configured && status?.password && <div className="input-group">
-          <label>{t('routerOpenVpn.currentPassword', 'رمز فعلی Router (قابل مشاهده در پنل ادمین)')}</label>
-          <input readOnly dir="ltr" value={status.password} />
+          <label htmlFor="a11y-routeropenvpnusermodal-4">{t('routerOpenVpn.currentPassword', 'رمز فعلی Router (قابل مشاهده در پنل ادمین)')}</label>
+          <input id="a11y-routeropenvpnusermodal-4" readOnly dir="ltr" value={status.password} />
         </div>}
         {status?.configured && !status?.password && <small style={{ display: 'block', marginTop: 2 }}>
           {t('routerOpenVpn.storedPasswordHint', 'این اعتبارنامه قبل از قابلیت نمایش رمز ساخته شده؛ برای دیدن رمز ذخیره‌شده یک‌بار Rotate بزن.')}
@@ -145,12 +146,12 @@ const RouterOpenVpnUserModal = ({ user, nodes = [], healthyNodeIds = [], onClose
         {secret && <div className="router-openvpn-one-time-secret">
           <p><strong>{t('routerOpenVpn.oneTimeWarning', 'Save this password now; it also remains viewable in the admin panel (user → Router/MikroTik).')}</strong></p>
           <div className="input-group">
-            <label>{t('routerOpenVpn.username', 'Router username')}</label>
-            <input readOnly dir="ltr" value={secret.username} />
+            <label htmlFor="a11y-routeropenvpnusermodal-5">{t('routerOpenVpn.username', 'Router username')}</label>
+            <input id="a11y-routeropenvpnusermodal-5" readOnly dir="ltr" value={secret.username} />
           </div>
           <div className="input-group">
-            <label>{t('routerOpenVpn.password', 'One-time password')}</label>
-            <input readOnly dir="ltr" value={secret.password} />
+            <label htmlFor="a11y-routeropenvpnusermodal-6">{t('routerOpenVpn.password', 'One-time password')}</label>
+            <input id="a11y-routeropenvpnusermodal-6" readOnly dir="ltr" value={secret.password} />
           </div>
           <div className="input-group">
             <label>{t('routerOpenVpn.routerOsCommand', 'RouterOS import command')}</label>
@@ -162,14 +163,14 @@ const RouterOpenVpnUserModal = ({ user, nodes = [], healthyNodeIds = [], onClose
         </div>}
       </>}
 
-      {error && <p className="error-message">{error}</p>}
+      {error && <p className="error-message" role="alert">{error}</p>}
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" onClick={onClose}>
           {t('close', 'Close')}
         </button>
       </div>
     </div>
-  </div>;
+  </ModalOverlay>;
 };
 
 export default RouterOpenVpnUserModal;

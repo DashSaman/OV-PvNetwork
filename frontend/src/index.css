@@ -68,7 +68,7 @@ body {
   margin-bottom: 30px;
 }
 
-.login-box h2 {
+.login-box :is(h1, h2) {
   margin-bottom: 25px;
 }
 
@@ -1018,7 +1018,7 @@ html[data-ov-theme="light"] {
   --card-base-bg: #ffffff;
 
   --text-primary: #0f172a;
-  --text-secondary: #64748b;
+  --text-secondary: #475569;
 
   --border-color: #d4deea;
   --border-color-hover: #aebdce;

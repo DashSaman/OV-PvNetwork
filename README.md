@@ -6,6 +6,8 @@ PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multi
 
 ## Release status and changes
 
+**v1.0.57 is an accessibility QA candidate.** Since56: native modal focus/Escape/return, keyboard row/mobile menus, associated labels, skip link/headings, visible focus, reduced motion, light-theme contrast and subscription QR focus. [Illustrated keyboard guide](docs/ACCESSIBILITY.md) · [شواهد و راهنمای فارسی](docs/ACCESSIBILITY.fa.md) · [Validation and remaining gates](docs/VALIDATION-v1.0.57.md). Exact publication is pending; the verified install command below remains pinned to56. No live service change.
+
 **v1.0.56 is verified public QA.** Since v1.0.55, new installer-managed HTTPS certificates record a safe successful-renewal Nginx reload hook. Exact CI, anonymous artifact verification and public fresh/repeat installation on all three distributions on x86_64 and real ARM64 passed. [Validation and remaining Stable gates](docs/VALIDATION-v1.0.56.md) · [English notes](docs/RELEASE-NOTES-v1.0.56.md) · [یادداشت فارسی](docs/RELEASE-NOTES-v1.0.56.fa.md). No new Production deployment or live certificate change occurred.
 
 **v1.0.55 is verified QA, deployed through the owner-authorized limited panel update.** Its exact CI, public bootstrap on three distributions, native backup/canary and Production post-checks passed. The last supported stable release remains v1.0.37 pending broader mission gates. Read [validation evidence and limits](docs/VALIDATION-v1.0.55.md) and the target release notes before installing or updating.

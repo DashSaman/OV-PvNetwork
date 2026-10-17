@@ -181,14 +181,14 @@ const NodeManagement = () => {
       </div>
 
       {nodesError && <div className="monitor-form">
-        <p className="error-message">{nodesError}</p>
+        <p className="error-message" role="alert">{nodesError}</p>
         <button className="btn" disabled={isLoading} onClick={fetchNodes}>
           {t('retry', 'Retry')}
         </button>
       </div>}
 
       {nodeStatusError && <div className="monitor-form">
-        <p className="error-message">{nodeStatusError}</p>
+        <p className="error-message" role="alert">{nodeStatusError}</p>
       </div>}
 
       <div className="stats-grid" style={{
@@ -200,7 +200,7 @@ const NodeManagement = () => {
       </div>
 
       {healthError && <div className="monitor-form">
-        <p className="error-message">{healthError}</p>
+        <p className="error-message" role="alert">{healthError}</p>
         <button className="btn" disabled={isHealthLoading} onClick={fetchNodeHealth}>
           {t('retry', 'Retry')}
         </button>
