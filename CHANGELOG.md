@@ -1,3 +1,10 @@
+## v1.0.55 candidate — PVN-1039: Live diagnostic log backup policy
+
+- Exclude only panel `data/app.log` from native restorable runtime/source snapshots. Active diagnostic writes no longer invalidate an otherwise consistent database/key snapshot. The original log remains on the host; this backup is not a log archive.
+- Keep all key/trust files and unknown `.log` files in the existing consistency checks. A key or unknown state-file change still refuses verification.
+- Actual Linux regression: reproduced pre-fix failure; three corrected fixtures pass, including real SQLite restore and negative integrity checks. Exact CI/artifact/public bootstrap and authorized Production verification remain gates.
+- فارسی: نوشتن هم‌زمان لاگ تشخیصی دیگر بکاپ معتبر را متوقف نمی‌کند؛ کنترل ثبات کلیدها و فایل‌های دیگر حفظ شده است. لاگ روی میزبان باقی می‌ماند.
+
 ## v1.0.54 candidate — PVN-1038: Default profile node identity
 
 - Match initial profile-download selection to the string node ID used by options and the existing scoped download handler.
