@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import apiClient from '../services/api';
@@ -120,7 +121,7 @@ const NodeArchiveModal = ({ node, onClose, onChanged }) => {
     if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { event.preventDefault(); last?.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
   };
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
     <div ref={dialog} className="modal node-archive-modal" role="dialog" aria-modal="true" aria-labelledby="node-archive-title" tabIndex={-1} onKeyDown={trap}>
       <div className="modal-header"><h3 id="node-archive-title">{t('nodeArchive.title')} — {node.name}</h3><button type="button" className="close-modal-btn" onClick={close} aria-label={t('nodeArchive.close')}>×</button></div>
       <p className="node-archive-warning">{t('nodeArchive.privateWarning')}</p>
@@ -147,6 +148,6 @@ const NodeArchiveModal = ({ node, onClose, onChanged }) => {
       </form>
       {active && <p>{t('nodeArchive.background')}</p>}
     </div>
-  </div>;
+  </ModalOverlay>;
 };
 export default NodeArchiveModal;

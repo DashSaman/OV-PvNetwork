@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -73,7 +74,7 @@ const SelectNodeForDownloadModal = ({
     }
   };
   if (!user) return null;
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
           <h3>{t('selectNodeForDownload', 'Select Source for')} {user.name}</h3>
@@ -101,9 +102,9 @@ const SelectNodeForDownloadModal = ({
               {t('downloadButton', 'Download')}
             </LoadingButton>
           </div>
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="error-message" role="alert">{error}</p>}
         </form>
       </div>
-    </div>;
+    </ModalOverlay>;
 };
 export default SelectNodeForDownloadModal;

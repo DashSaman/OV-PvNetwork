@@ -27,7 +27,7 @@ const AdminTable = ({
                             <FiUser size={24} />
                         </div>
                         <div className="admin-info">
-                            <h4 className="admin-username">{admin.username}</h4>
+                            <h3 className="admin-username">{admin.username}</h3>
                             <div className="admin-stats">
                                 <FiUsers size={14} />
                                 <span>{admin.users_count || 0} {t('users')}</span>

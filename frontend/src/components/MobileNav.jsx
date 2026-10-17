@@ -18,6 +18,7 @@ const MobileNav = () => {
   const { userRole } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef(null);
+  const triggerRef = useRef(null);
 
   useEffect(() => {
     if (!moreOpen) return undefined;
@@ -26,11 +27,16 @@ const MobileNav = () => {
       if (!moreRef.current?.contains(event.target)) setMoreOpen(false);
     };
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') setMoreOpen(false);
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMoreOpen(false);
+        triggerRef.current?.focus();
+      }
     };
 
     document.addEventListener('mousedown', onPointerDown, true);
     document.addEventListener('keydown', onKeyDown, true);
+    moreRef.current?.querySelector('[role="menuitem"]')?.focus();
     return () => {
       document.removeEventListener('mousedown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown, true);
@@ -59,11 +65,12 @@ const MobileNav = () => {
       {userRole === 'main_admin' ? (
         <div className="mobile-more" ref={moreRef}>
           <button
+            ref={triggerRef}
             type="button"
             className="mobile-nav-link mobile-more-trigger"
             aria-haspopup="menu"
             aria-expanded={moreOpen}
-            aria-controls="mobile-more-menu"
+            aria-controls={moreOpen ? 'mobile-more-menu' : undefined}
             onClick={() => setMoreOpen(value => !value)}
           >
             <FiMoreHorizontal size={22} aria-hidden="true" />
@@ -71,7 +78,17 @@ const MobileNav = () => {
           </button>
 
           {moreOpen && (
-            <div id="mobile-more-menu" className="mobile-more-menu" role="menu">
+            <div id="mobile-more-menu" className="mobile-more-menu" role="menu" onKeyDown={event => {
+              const items = [...moreRef.current.querySelectorAll('[role="menuitem"]')];
+              const index = items.indexOf(document.activeElement);
+              let next;
+              if (event.key === 'ArrowDown') next = (index + 1) % items.length;
+              if (event.key === 'ArrowUp') next = (index - 1 + items.length) % items.length;
+              if (event.key === 'Home') next = 0;
+              if (event.key === 'End') next = items.length - 1;
+              if (next !== undefined) { event.preventDefault(); items[next]?.focus(); }
+              if (event.key === 'Tab') { setMoreOpen(false); triggerRef.current?.focus(); }
+            }}>
               <NavLink to="/admins" role="menuitem" onClick={closeMore}>
                 <FiUsers aria-hidden="true" /> {t('admins')}
               </NavLink>

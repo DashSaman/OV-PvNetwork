@@ -4,6 +4,8 @@
 
 ## Current release validation
 
+- `v1.0.57` / `PVN-1041` — verified public QA: dialog/menu keyboard focus, labels/headings/skip/alerts, reduced motion and light/focus/menu contrast.228 axe scans and all6 public x86/ARM native guests PASS; manual accessibility/ACME/external-VPS and Production gates remain. [Evidence](docs/VALIDATION-v1.0.57.md).
+
 - `v1.0.56` / `PVN-1040` — verified public QA: persist a syntax-checked Nginx graceful-reload hook for automatic renewal of newly issued installer-managed ACME certificates. Existing lineages are not rewritten. [Scope, tests and remaining gates](docs/VALIDATION-v1.0.56.md).
 - `v1.0.55` / `PVN-1039` — verified QA and owner-authorized limited panel deployment complete. Native public installation now passes on all three supported distributions on x86_64 and real ARM64. Read the [evidence and explicit limits](docs/VALIDATION-v1.0.55.md); this does not certify public ACME or an independent external VPS.
 - Public supported stable remains `v1.0.37`. The source45 security workbench is completed/sealed with partial coverage; [closure and remediation mapping](docs/SECURITY-SCAN-CLOSURE.md). Remaining infrastructure/release gates prevent an overall FINAL/Stable claim. Development and disposable testing preserve the active panel/VPN services.

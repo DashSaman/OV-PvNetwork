@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useMemo, useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
 
@@ -92,7 +93,7 @@ const DomainHistoryModal = ({ user, onClose }) => {
     return new Date(timestamp * 1000).toLocaleString();
   };
 
-  return <div className="modal-overlay domain-history-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay domain-history-overlay">
     <div
       className="modal domain-history-modal"
       role="dialog"
@@ -167,7 +168,7 @@ const DomainHistoryModal = ({ user, onClose }) => {
         </div> : !error && (!data?.items || data.items.length === 0) ?
           <div className="domain-history-empty">
             No observed domains match this filter.
-          </div> : !error && <div className="domain-history-table-wrap">
+          </div> : !error && <div className="domain-history-table-wrap" tabIndex={0} role="region" aria-label="Domain history">
             <table className="domain-history-table">
               <thead>
                 <tr>
@@ -212,7 +213,7 @@ const DomainHistoryModal = ({ user, onClose }) => {
         <button className="btn" onClick={onClose}>Close</button>
       </div>
     </div>
-  </div>;
+  </ModalOverlay>;
 };
 
 

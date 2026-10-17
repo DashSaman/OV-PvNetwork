@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -90,7 +91,7 @@ const EditUserModal = ({ user, onClose, onUserUpdated, userRole }) => {
 
   if (!user) return null;
 
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
     <div className="modal">
       <div className="modal-header">
         <h3>{t('modal_editUserTitle', 'ویرایش کاربر')} - {user.name}</h3>
@@ -114,7 +115,7 @@ const EditUserModal = ({ user, onClose, onUserUpdated, userRole }) => {
         </div> : <div className="input-group">
           <label htmlFor="edit-user-expiry">{t('modal_expiryDate', 'تاریخ انقضا')}</label>
           {isUnlimited ? <>
-            <input type="text" value={t('renewUnlimitedFixed30', 'اکانت نامحدود: دوره ثابت ۳۰ روزه')} disabled />
+            <input id="edit-user-expiry" type="text" value={t('renewUnlimitedFixed30', 'اکانت نامحدود: دوره ثابت ۳۰ روزه')} disabled />
             <small>{t('renewUnlimitedNoEdit', 'تاریخ دوره نامحدود با ویرایش عادی تمدید نمی‌شود.')}</small>
           </> : <input type="date" id="edit-user-expiry" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} required />}
         </div>}
@@ -129,10 +130,10 @@ const EditUserModal = ({ user, onClose, onUserUpdated, userRole }) => {
           <button type="button" onClick={onClose} className="btn btn-secondary">{t('cancelButton', 'انصراف')}</button>
           <LoadingButton isLoading={isLoading} type="submit" className="btn">{t('updateUserButton', 'بروزرسانی کاربر')}</LoadingButton>
         </div>
-        {error && <p className="error-message">{error}</p>}
+        {error && <p className="error-message" role="alert">{error}</p>}
       </form>
     </div>
-  </div>;
+  </ModalOverlay>;
 };
 
 export default EditUserModal;

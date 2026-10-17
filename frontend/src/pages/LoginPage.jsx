@@ -25,7 +25,7 @@ const LoginPage = () => {
       setError(t('loginError'));
     }
   };
-  return <div id="login-container">
+  return <main id="login-container">
       <div className="login-box">
         <div className="pn-admin-brand">
   <img
@@ -38,7 +38,7 @@ const LoginPage = () => {
     <span className="pn-admin-brand-sub">PVNETWORK PANEL</span>
   </div>
 </div>
-        <h2>{t('loginTitle')}</h2>
+        <h1 className="login-title">{t('loginTitle')}</h1>
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label htmlFor="username">{t('username')}</label>
@@ -53,9 +53,9 @@ const LoginPage = () => {
             <input type="text" inputMode="numeric" id="otp" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} autoComplete="one-time-code" />
           </div>
           <button type="submit" className="btn">{t('loginButton')}</button>
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="error-message" role="alert">{error}</p>}
         </form>
       </div>
-    </div>;
+    </main>;
 };
 export default LoginPage;

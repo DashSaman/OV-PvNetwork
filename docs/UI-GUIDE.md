@@ -4,6 +4,8 @@
 
 This guide follows the current v1.0.54 interface, also used by v1.0.55. Every image is a synthetic Demo capture: English/light and Persian/dark, desktop and phone. Buttons described below can change live state when used on your installation; the screenshots themselves performed no deployments, notifications or customer mutations. Main-admin sections may be hidden from reseller accounts.
 
+This baseline tour is retained from v1.0.54; the [v57 keyboard/light-dialog guide](ACCESSIBILITY.md) supplies current focus images and accessibility changes.
+
 <a id="1-dashboard-and-navigation"></a>
 ## 1. Dashboard and navigation
 

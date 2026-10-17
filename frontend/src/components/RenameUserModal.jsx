@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import apiClient from '../services/api';
@@ -103,7 +104,7 @@ const RenameUserModal = ({
   };
 
   return (
-    <div className="rename-modal-backdrop" role="presentation">
+    <ModalOverlay onClose={onClose} className="rename-modal-backdrop" role="presentation">
       <section className="rename-modal" role="dialog" aria-modal="true" aria-labelledby="rename-user-title">
         <header className="rename-modal-header">
           <div>
@@ -151,7 +152,7 @@ const RenameUserModal = ({
           </footer>
         </form>
       </section>
-    </div>
+    </ModalOverlay>
   );
 };
 

@@ -135,7 +135,7 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #13233a;
+  background: var(--background-secondary, #13233a);
 }
 
 .domain-history-table th,
@@ -151,6 +151,11 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   color: #8eeaff;
 }
+
+html[data-ov-theme="light"] .domain-history-summary span { color: var(--text-secondary); }
+html[data-ov-theme="light"] .domain-history-domain { color: #075985; }
+html[data-ov-theme="light"] .domain-history-note { color: #854d0e; }
+html[data-ov-theme="light"] .domain-history-error { color: #b91c1c; }
 
 .domain-history-footer {
   justify-content: space-between !important;

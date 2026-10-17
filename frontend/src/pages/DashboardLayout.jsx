@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import panelLogo from '../../sub_clients/private-network.webp';
 import Sidebar from '../components/Sidebar';
 import MobileNav from '../components/MobileNav';
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { FiLogOut, FiRefreshCw, FiSend, FiGlobe } from 'react-icons/fi';
 const languages = [['ar', '🇸🇦'], ['en', '🇬🇧'], ['fa', '🇮🇷'], ['zh_TW', '🇹🇼'], ['zh_CN', '🇨🇳'], ['ja', '🇯🇵'], ['ru', '🇷🇺'], ['vi', '🇻🇳'], ['es', '🇪🇸'], ['id', '🇮🇩'], ['uk', '🇺🇦'], ['tr', '🇹🇷'], ['pt_BR', '🇧🇷']];
 const DashboardLayout = () => {
+  const { pathname } = useLocation();
   const {
     logout
   } = useAuth();
@@ -15,6 +16,7 @@ const DashboardLayout = () => {
     i18n
   } = useTranslation();
   return <div id="main-container">
+      <a className="skip-to-content" href="#main-content">{t('a11y.skipToContent')}</a>
       <Sidebar />
 
       <div className="content-wrapper">
@@ -60,7 +62,8 @@ const DashboardLayout = () => {
           </div>
         </header>
 
-        <main>
+        <main id="main-content" tabIndex={-1}>
+          <h1 className="visually-hidden">{t({ '/': 'dashboard', '/users': 'userManagement', '/nodes': 'nodeManagement', '/admins': 'adminManagement', '/operations': 'ui.b1cb39bcd857', '/security': 'ui.dbb6d4f17351', '/fleet': 'feature.fleetTitle', '/monitoring': 'feature.monitoringTitle', '/bandwidth': 'bandwidth.title' }[pathname] || 'dashboard')}</h1>
           <Outlet />
         </main>
       </div>

@@ -15,7 +15,7 @@ const NodeSparkline = ({ history = [], accent = '#22d3ee' }) => {
   return (
     <div style={{ width: '100%', height: 56 }} aria-hidden="true">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+        <AreaChart accessibilityLayer={false} data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={'sparkFill-' + accent.replace('#', '')} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={accent} stopOpacity={0.5} />

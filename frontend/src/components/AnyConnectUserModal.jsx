@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useEffect, useState } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -135,7 +136,7 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
 
   if (!user) return null;
 
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
     <div className="modal" dir="rtl">
       <div className="modal-header">
         <h3>AnyConnect — {user.name}</h3>
@@ -144,8 +145,8 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
 
       {isLoading ? <p>{t('anyConnect.loadingStatus', 'در حال دریافت وضعیت...')}</p> : <>
         <div className="input-group">
-          <label>{t('anyConnect.accountStatus', 'وضعیت حساب AnyConnect')}</label>
-          <input
+          <label htmlFor="anyconnect-status">{t('anyConnect.accountStatus', 'وضعیت حساب AnyConnect')}</label>
+          <input id="anyconnect-status"
             type="text"
             disabled
             value={status?.configured
@@ -155,8 +156,8 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
         </div>
 
         <div className="input-group">
-          <label>{t('anyConnect.serverAddress', 'آدرس سرور')}</label>
-          <input
+          <label htmlFor="anyconnect-server">{t('anyConnect.serverAddress', 'آدرس سرور')}</label>
+          <input id="anyconnect-server"
             type="text"
             readOnly
             dir="ltr"
@@ -165,8 +166,8 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
         </div>
 
         <div className="input-group">
-          <label>{t('anyConnect.finlandGatewayStatus', 'وضعیت درگاه فنلاند')}</label>
-          <input
+          <label htmlFor="anyconnect-gateway">{t('anyConnect.finlandGatewayStatus', 'وضعیت درگاه فنلاند')}</label>
+          <input id="anyconnect-gateway"
             type="text"
             disabled
             value={status?.gateway_ready
@@ -222,8 +223,8 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
         </div>
 
         {shownPassword && <div className="input-group" style={{ marginTop: 18 }}>
-          <label>{t('anyConnect.currentPassword', 'رمز فعلی AnyConnect')}</label>
-          <input type="text" readOnly value={shownPassword} dir="ltr" />
+          <label htmlFor="anyconnect-password">{t('anyConnect.currentPassword', 'رمز فعلی AnyConnect')}</label>
+          <input id="anyconnect-password" type="text" readOnly value={shownPassword} dir="ltr" />
           <div className="modal-footer" style={{ flexWrap: 'wrap' }}>
             <button
               type="button"
@@ -243,7 +244,7 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
         </div>}
       </>}
 
-      {error && <p className="error-message">{error}</p>}
+      {error && <p className="error-message" role="alert">{error}</p>}
 
       <div className="modal-footer">
         <button type="button" className="btn btn-secondary" onClick={onClose}>
@@ -251,7 +252,7 @@ const AnyConnectUserModal = ({ user, onClose, onChanged }) => {
         </button>
       </div>
     </div>
-  </div>;
+  </ModalOverlay>;
 };
 
 export default AnyConnectUserModal;

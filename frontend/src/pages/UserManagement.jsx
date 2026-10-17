@@ -671,7 +671,7 @@ const UserManagement = () => {
       </div>
 
       {error && <div className="monitor-form">
-        <p className="error-message">{error}</p>
+        <p className="error-message" role="alert">{error}</p>
         <button className="btn" disabled={isLoading} onClick={() => {
           fetchUsers();
           fetchNodes();

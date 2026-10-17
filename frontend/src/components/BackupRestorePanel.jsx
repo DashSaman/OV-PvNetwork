@@ -385,6 +385,7 @@ export default function BackupRestorePanel() {
           <input
             className="ov-backup-input"
             type="file"
+            aria-label={t('backup.restoreTitle', 'Restore from file')}
             accept=".tar.gz,.tgz,application/gzip"
             disabled={restoring}
             onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}

@@ -105,11 +105,23 @@ const ActionsDropdown = ({ actions = [] }) => {
 
       {open &&
         createPortal(
+          <section aria-label="Available actions">
           <div
             ref={menuRef}
             className="actions-dropdown-menu"
             role="menu"
             aria-label="Available actions"
+            onKeyDown={event => {
+              const items = [...menuRef.current.querySelectorAll('[role="menuitem"]:not(:disabled)')];
+              const index = items.indexOf(document.activeElement);
+              let next;
+              if (event.key === 'ArrowDown') next = (index + 1) % items.length;
+              if (event.key === 'ArrowUp') next = (index - 1 + items.length) % items.length;
+              if (event.key === 'Home') next = 0;
+              if (event.key === 'End') next = items.length - 1;
+              if (next !== undefined) { event.preventDefault(); items[next]?.focus(); }
+              if (event.key === 'Tab') { setOpen(false); triggerRef.current?.focus(); }
+            }}
             style={{
               position: 'fixed',
               top: pos.top,
@@ -132,13 +144,17 @@ const ActionsDropdown = ({ actions = [] }) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setOpen(false);
+                  // A menu item is removed on selection; retain a connected
+                  // invoker for a dialog's native focus-return behavior.
+                  triggerRef.current?.focus();
                   action.onClick();
                 }}
               >
                 {action.label}
               </button>
             ))}
-          </div>,
+          </div>
+          </section>,
           document.body
         )}
     </>

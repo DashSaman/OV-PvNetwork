@@ -19,7 +19,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Keep the patched HTTP client within the existing per-chunk budget.
-        manualChunks: { 'http-client': ['axios'] },
+        manualChunks: { 'http-client': ['axios'], 'react-runtime': ['react', 'react-dom', 'react-dom/client'] },
       },
     },
   },

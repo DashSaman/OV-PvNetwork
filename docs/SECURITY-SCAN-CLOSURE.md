@@ -30,6 +30,8 @@ Fresh closure checks: canonical sealed-contract validation PASS; actual local Ch
 
 ## Coverage and remaining tests
 
+Accessibility evidence correction: the extra local source56 “72 pages /1044 named actions” count did not verify distinct routes because that build omitted the panel basename and redirected to Dashboard. That count is withdrawn. [PVN-1041 validation](VALIDATION-v1.0.57.md) replaces it with explicit route/authentication assertions and new actual-page axe/keyboard checks. The separate sealed security record, source56 CI/native/QR evidence and their stated limits are unchanged.
+
 Coverage is still **partial**. The original source review was sequential, without an independent baseline; it did not probe live provider/internal-network behavior or claim line-by-line review of every asset. Four legacy deferred rows remain in the sealed coverage metadata even though their original candidate IDs also appear in the validated findings above. Their status text was not erased or rewritten after sealing. Completion indexed all five findings without warnings; it did not prove those metadata rows disappeared.
 
 Already feasible without an empty VPS: immutable public bootstrap/fresh/repeat on Ubuntu22.04/24.04 and Debian12, both x86_64 and real ARM64; real isolated Nginx certificate activation with the same master PID and failed-syntax refusal; scoped API/security regressions; private archive/recovery fixtures; actual disposable dual-auth OpenVPN handshake; core browser/QR/contrast/layout and public-material checks. Read their exact scope and skips in [v1.0.56 validation](VALIDATION-v1.0.56.md). The isolated handshake does not certify an independent public node lifecycle.
@@ -41,3 +43,5 @@ This closure changes documentation only. It performs no Production deploy, resta
 Fresh read-only live health at `2026-10-17T15:02:30Z`: local/public HTTP200; panel, VPN, node and PostgreSQL remain active with unchanged protected PIDs/restart counts, database counts/revision and environment/VPN configuration hashes. No recent traceback or5xx lines were observed. Private identifiers and configuration remain outside this document.
 
 فارسی: تست‌های قابل اجرا در محیط‌های دورریختنی، از جمله نصب تازه و تکراری شش مهمان، TLS ساختگی واقعی Nginx، رگرسیون امنیت و handshake آزمایشی VPN، شواهد دارند. صدور عمومی ACME، چرخه کامل نود روی VPS مستقل و ارزیابی جامع دسترس‌پذیری هنوز تأیید نشده‌اند. سرورهای شلوغ جای VPS آزمایشی نیستند؛ این ادامه فقط مستندات و اعتبارسنجی است و سرویس زنده را تغییر نمی‌دهد.
+
+Accessibility continuation: [QA57 validation](VALIDATION-v1.0.57.md) adds actual-route228 axe scans, strict focus and six exact public native guests. The sealed source45 security artifacts and partial coverage are unchanged. Current QA57 remains a prerelease; live55 and supported Stable37 are preserved.

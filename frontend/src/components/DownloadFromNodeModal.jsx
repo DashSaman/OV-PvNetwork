@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useState } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +43,7 @@ const DownloadFromNodeModal = ({ node, onClose }) => {
   if (!node) return null;
 
   return (
-    <div className="modal-overlay">
+    <ModalOverlay onClose={onClose} className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
           <h3>{t('downloadConfigFromNode', 'Download Config from')} "{node.name}"</h3>
@@ -66,10 +67,10 @@ const DownloadFromNodeModal = ({ node, onClose }) => {
               {t('downloadButton', 'Download')}
             </LoadingButton>
           </div>
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="error-message" role="alert">{error}</p>}
         </form>
       </div>
-    </div>
+    </ModalOverlay>
   );
 };
 

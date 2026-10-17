@@ -225,7 +225,7 @@ export default function FleetManagement() {
             <tbody>
               {sortedNodes.map(node => <tr key={node.id}>
                   <td>
-                    <input type="checkbox" checked={selected.includes(node.id)} onChange={event => {
+                    <input type="checkbox" aria-label={translate('a11y.selectNode', { name: node.name })} checked={selected.includes(node.id)} onChange={event => {
                 setSelected(current => event.target.checked ? [...new Set([...current, node.id])] : current.filter(id => id !== node.id));
               }} />
                   </td>

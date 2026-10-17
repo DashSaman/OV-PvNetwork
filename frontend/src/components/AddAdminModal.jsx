@@ -1,3 +1,4 @@
+import ModalOverlay from './ModalOverlay';
 import { useState } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -137,7 +138,7 @@ const AddAdminModal = ({
       setIsLoading(false);
     }
   };
-  return <div className="modal-overlay">
+  return <ModalOverlay onClose={onClose} className="modal-overlay">
             <div className="modal">
                 <div className="modal-header">
                     <h3>{t('addNewAdmin')}</h3>
@@ -177,9 +178,9 @@ const AddAdminModal = ({
                             {t('createAdminButton')}
                         </LoadingButton>
                     </div>
-                    {error && <p className="error-message">{error}</p>}
+                    {error && <p className="error-message" role="alert">{error}</p>}
                 </form>
             </div>
-        </div>;
+        </ModalOverlay>;
 };
 export default AddAdminModal;

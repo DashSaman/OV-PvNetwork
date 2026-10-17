@@ -1677,7 +1677,7 @@ html[data-theme="light"] .pn-notify-test{
 
 </head>
 <body>
-<div class="page">
+<div class="page" role="main">
   <section class="hero">
     <div class="top">
       <div class="brand">
@@ -1833,7 +1833,7 @@ html[data-theme="light"] .pn-notify-test{
       </a>
       <div class="client linux-box">
         <div><div class="client-icon">🐧</div><div class="client-name">Linux</div><div class="client-meta" data-i18n="linuxText">در Ubuntu / Debian از مخزن سیستم نصب کنید.</div>
-        <code class="command"><span class="linux-install-command" id="linuxInstallCommand">sudo apt update && sudo apt install -y openvpn</span><button type="button" class="linux-copy-btn" id="linuxCopyBtn" aria-label="کپی دستور نصب OpenVPN"><span class="linux-copy-icon">⧉</span><span id="linuxCopyText">کپی</span></button></code></div>
+        <code class="command"><span class="linux-install-command" id="linuxInstallCommand" tabindex="0">sudo apt update && sudo apt install -y openvpn</span><button type="button" class="linux-copy-btn" id="linuxCopyBtn" aria-label="کپی دستور نصب OpenVPN"><span class="linux-copy-icon">⧉</span><span id="linuxCopyText">کپی</span></button></code></div>
       </div>
     </div>
   </section>
@@ -1874,15 +1874,15 @@ html[data-theme="light"] .pn-notify-test{
     </div>
   </section>
 
-  <div class="qr-overlay" id="qrOverlay" hidden>
-    <div class="qr-box" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+  <dialog class="qr-overlay" id="qrOverlay" aria-labelledby="qrTitle" hidden>
+    <div class="qr-box">
       <div class="qr-title" id="qrTitle"></div>
       <div class="qr-holder" id="qrHolder"></div>
       <div class="qr-caption" id="qrCaption" dir="ltr"></div>
       <div class="qr-hint" data-i18n="qrHint">با دوربین گوشی اسکن کن؛ کانفیگ مستقیم روی دستگاهت باز می‌شود.</div>
       <button type="button" class="qr-close" id="qrClose" data-i18n="qrClose">بستن</button>
     </div>
-  </div>
+  </dialog>
 
   <style>
   .section-note-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -1893,7 +1893,10 @@ html[data-theme="light"] .pn-notify-test{
   .device-card{border:1px solid rgba(148,163,184,.18);border-radius:14px;padding:14px;background:rgba(15,23,42,.35)}
   .device-name{font-weight:800;margin-bottom:8px;color:var(--gold,#f5c451)}
   .device-steps{font-size:12.5px;line-height:1.9;opacity:.92}
-  .qr-overlay{position:fixed;inset:0;z-index:1000;background:rgba(2,6,16,.82);display:grid;place-items:center;padding:18px}
+  .qr-overlay{position:fixed;inset:0;z-index:1000;background:rgba(2,6,16,.82);display:grid;place-items:center;padding:18px;width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;box-sizing:border-box;color:inherit}
+  .qr-overlay::backdrop{background:transparent}
+  :focus-visible{outline:3px solid var(--gold,#f5c451);outline-offset:3px}
+  @media(prefers-reduced-motion:reduce){:root body *,:root body *::before,:root body *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
   .qr-overlay[hidden]{display:none}
   .qr-box{background:var(--card,#101a2e);border:1px solid rgba(148,163,184,.25);border-radius:18px;padding:22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)}
   .qr-title{font-weight:800;margin-bottom:12px}
@@ -1956,21 +1959,24 @@ window.PNQR=(function(){
    holder.innerHTML=qr.createSvgTag({cellSize:4,margin:2,scalable:true});
    title.textContent=name?String(d.qrConfig||"{name}").replace("{name}",name):(d.qrPage||"");
    caption.textContent=url;
-   overlay.hidden=false;
+   overlay.hidden=false;overlay.showModal();
   }catch(e){
    title.textContent=d.qrPage||"";holder.innerHTML="";caption.textContent=(d.qrError||"QR error");
-   overlay.hidden=false;
+   overlay.hidden=false;if(!overlay.open)overlay.showModal();
   }
  }
- overlay.addEventListener("click",function(e){if(e.target===overlay)overlay.hidden=true});
- document.getElementById("qrClose").onclick=function(){overlay.hidden=true};
- document.addEventListener("keydown",function(e){if(e.key==="Escape")overlay.hidden=true});
+ function close(){overlay.close();overlay.hidden=true;}
+ overlay.addEventListener("click",function(e){if(e.target===overlay)close()});
+ document.getElementById("qrClose").onclick=close;
+ overlay.addEventListener("cancel",function(e){e.preventDefault();close()});
+ overlay.addEventListener("keydown",function(e){if(e.key==="Tab"){e.preventDefault();document.getElementById("qrClose").focus();}});
  return {show:show};
 })();
 document.querySelectorAll('.node-qr').forEach(function(button){
  function activate(event){
   if(event.type==='keydown'&&event.key!=='Enter'&&event.key!==' ')return;
   event.preventDefault();event.stopPropagation();
+  button.focus();
   PNQR.show(button.dataset.qrLink,button.dataset.qrName);
  }
  button.addEventListener('click',activate);

@@ -60,6 +60,16 @@ body {
   -webkit-backdrop-filter: blur(14px);
 }
 
+/* Pair light-theme dialog helper text with a matching opaque surface. */
+html[data-ov-theme='light'] .modal {
+  background: var(--background-primary) !important;
+  color: var(--text-primary);
+}
+html[data-ov-theme='light'] .modal label,
+html[data-ov-theme='light'] .modal small {
+  color: var(--text-primary) !important;
+}
+
 /* Hover lift for interactive cards */
 .card,
 .node,
@@ -100,8 +110,13 @@ select:focus-visible,
 textarea:focus-visible,
 a:focus-visible,
 [role='button']:focus-visible {
-  outline: none;
+  outline: 3px solid var(--accent-color);
+  outline-offset: 3px;
   box-shadow: var(--focus-ring);
+}
+html[data-ov-theme='light'] :focus-visible { outline-color: #9a3412 !important; }
+html[data-ov-theme='light'] :is(.rename-modal, .login-box) :focus-visible {
+  outline-color: var(--accent-color) !important;
 }
 
 /* --- Inputs: pair foreground and opaque surface from the same theme. --- */
@@ -214,5 +229,14 @@ nav.sidebar {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+/* Keep later theme transitions from overriding the user's motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  :root body *, :root body *::before, :root body *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
