@@ -114,6 +114,10 @@ a:focus-visible,
   outline-offset: 3px;
   box-shadow: var(--focus-ring);
 }
+html[data-ov-theme='light'] :focus-visible { outline-color: #9a3412 !important; }
+html[data-ov-theme='light'] :is(.rename-modal, .login-box) :focus-visible {
+  outline-color: var(--accent-color) !important;
+}
 
 /* --- Inputs: pair foreground and opaque surface from the same theme. --- */
 input,

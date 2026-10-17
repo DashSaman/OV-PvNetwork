@@ -1,5 +1,6 @@
 // Render the actual Jinja subscription, without customer data or network calls.
 import { zoomBrowser } from './browser-zoom.mjs';
+import { focusContrast } from './focus-contrast.mjs';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -11,7 +12,7 @@ const root = path.resolve(import.meta.dirname, '../..');
 const folder = await mkdtemp(path.join(tmpdir(), 'pvnetwork-sub-a11y-'));
 const fixture = path.join(folder, 'demo.html');
 const axe = await readFile(process.env.PV_AXE_SOURCE || createRequire(import.meta.url).resolve('axe-core/axe.min.js'), 'utf8');
-const failures = [], incomplete = []; let cases = 0, browser, server;
+const failures = [], incomplete = [], manualFocus = []; let cases = 0, browser, server;
 const check = (value, reason) => { if (!value) throw new Error(reason); };
 try {
   execFileSync(process.env.PV_PYTHON || 'python3', [path.join(root, 'tests/render_subscription_fixture.py'), fixture]);
@@ -45,6 +46,9 @@ try {
           check(await page.getByRole('dialog').evaluate(el => el.contains(document.activeElement)), 'QR Tab escaped');
           await page.keyboard.press('Shift+Tab');
           check(await page.getByRole('dialog').evaluate(el => el.contains(document.activeElement)), 'QR Shift+Tab escaped');
+          const focus = await focusContrast(page);
+          if (focus.manual) manualFocus.push({ label, ...focus });
+          else check(focus.ratio >= 3, 'QR focus contrast below 3:1: ' + JSON.stringify(focus));
           await page.keyboard.press('Escape');
           check(await page.locator('.node-qr').first().evaluate(el => el === document.activeElement), 'QR focus did not return');
         }
@@ -58,6 +62,6 @@ try {
   if (server) await new Promise(resolve => server.close(resolve));
   await rm(folder, { recursive: true, force: true });
 }
-if (process.env.PV_A11Y_REPORT) await writeFile(process.env.PV_A11Y_REPORT, JSON.stringify({ counts: { cases }, failures, incomplete }, null, 2));
+if (process.env.PV_A11Y_REPORT) await writeFile(process.env.PV_A11Y_REPORT, JSON.stringify({ counts: { cases }, failures, incomplete, manualFocus }, null, 2));
 console.log('SUBSCRIPTION_ACCESSIBILITY=' + JSON.stringify({ cases, failures: failures.length, incomplete: incomplete.length, firstFailures: failures.slice(0, 10) }));
 process.exitCode = failures.length ? 1 : 0;

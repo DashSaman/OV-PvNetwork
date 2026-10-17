@@ -105,6 +105,7 @@ const ActionsDropdown = ({ actions = [] }) => {
 
       {open &&
         createPortal(
+          <section aria-label="Available actions">
           <div
             ref={menuRef}
             className="actions-dropdown-menu"
@@ -152,7 +153,8 @@ const ActionsDropdown = ({ actions = [] }) => {
                 {action.label}
               </button>
             ))}
-          </div>,
+          </div>
+          </section>,
           document.body
         )}
     </>

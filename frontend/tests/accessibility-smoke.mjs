@@ -3,13 +3,14 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { zoomBrowser } from './browser-zoom.mjs';
+import { focusContrast, textContrast } from './focus-contrast.mjs';
 import { baseUrl, routes, responseFor, demoToken } from './accessibility-fixtures.mjs';
 
 const require = createRequire(import.meta.url);
 const origin = new URL(baseUrl).origin;
 if (!/^http:\/\/127\.0\.0\.1:\d+\/panel$/.test(baseUrl)) throw new Error('Owned loopback preview required');
 const axe = await readFile(process.env.PV_AXE_SOURCE || require.resolve('axe-core/axe.min.js'), 'utf8');
-const failures = [], incomplete = [], counts = { pages: 0, dialogs: 0, axe: 0, negativeControls: 0 };
+const failures = [], incomplete = [], manualFocus = [], counts = { pages: 0, dialogs: 0, axe: 0, negativeControls: 0, focusMeasured: 0 };
 const browser = await zoomBrowser();
 const quick = Boolean(process.env.PV_A11Y_QUICK);
 const widths = (process.env.PV_A11Y_WIDTHS || (quick ? '1440' : '390,1440')).split(',').map(Number);
@@ -89,6 +90,7 @@ try {
       verify(await page.locator('#main-content').evaluate(el => el === document.activeElement), 'Skip link did not focus main content');
       const more = page.locator('.mobile-more-trigger');
       if (await more.isVisible()) {
+        await navigate(page, '/security', zoom);
         await more.focus(); await more.press('Enter');
         const items = page.locator('#mobile-more-menu [role="menuitem"]');
         verify(await items.first().evaluate(el => el === document.activeElement), 'Mobile menu initial focus missing');
@@ -96,6 +98,13 @@ try {
         verify(await items.last().evaluate(el => el === document.activeElement), 'Mobile menu End failed');
         await page.keyboard.press('Home'); await page.keyboard.press('ArrowDown');
         verify(await items.nth(1).evaluate(el => el === document.activeElement), 'Mobile menu ArrowDown failed');
+        const focus = await focusContrast(page);
+        if (focus.manual) manualFocus.push({ label: prefix + ' mobile-menu', ...focus });
+        else { counts.focusMeasured++; verify(focus.ratio >= 3, 'Mobile menu focus contrast below 3:1: ' + JSON.stringify(focus)); }
+        await audit(page, prefix + ' mobile-menu-active');
+        const activeText = await textContrast(page, '.mobile-more-menu .active');
+        if (activeText.manual) manualFocus.push({ label: prefix + ' mobile-menu-active-text', ...activeText });
+        else verify(activeText.ratio >= 4.5, 'Mobile active label contrast below 4.5:1: ' + JSON.stringify(activeText));
         await page.keyboard.press('Escape');
         verify(await more.evaluate(el => el === document.activeElement), 'Mobile menu did not restore focus');
       }
@@ -129,6 +138,10 @@ try {
       verify(await items.first().evaluate(el => el === document.activeElement), 'Home did not select first menu item');
       await items.first().press('ArrowDown');
       verify(await items.nth(1).evaluate(el => el === document.activeElement), 'ArrowDown did not move through menu');
+      const focus = await focusContrast(page);
+      if (focus.manual) manualFocus.push({ label: prefix + ' action-menu', ...focus });
+      else { counts.focusMeasured++; verify(focus.ratio >= 3, 'Action menu focus contrast below 3:1: ' + JSON.stringify(focus)); }
+      await audit(page, prefix + ' action-menu');
       await page.keyboard.press('Escape');
       verify(await trigger.evaluate(el => el === document.activeElement), 'Menu focus did not return');
     } catch (error) { failures.push({ label: prefix + ' action-menu', error: error.message }); }
@@ -169,6 +182,9 @@ try {
         verify(await dialog.evaluate(el => el.contains(document.activeElement)), 'Shift+Tab escaped dialog');
         const focus = await page.evaluate(() => { const s = getComputedStyle(document.activeElement); return { style: s.outlineStyle, width: parseFloat(s.outlineWidth) }; });
         verify(focus.style !== 'none' && focus.width >= 2, 'Focus indicator missing');
+        const contrast = await focusContrast(page);
+        if (contrast.manual) manualFocus.push({ label, ...contrast });
+        else { counts.focusMeasured++; verify(contrast.ratio >= 3, 'Focus contrast below 3:1: ' + JSON.stringify(contrast)); }
         if (process.env.PV_A11Y_SCREENSHOTS && zoom === 1 && theme === 'light' && name === 'edit-user') {
           await mkdir(process.env.PV_A11Y_SCREENSHOTS, { recursive: true });
           await page.screenshot({ path: path.join(process.env.PV_A11Y_SCREENSHOTS, `${language}-${width}-focus.png`) });
@@ -197,7 +213,7 @@ try {
     await login.close();
   }
 } finally { await browser.close(); }
-const report = { counts, failures, incomplete };
+const report = { counts, failures, incomplete, manualFocus };
 if (process.env.PV_A11Y_REPORT) await writeFile(process.env.PV_A11Y_REPORT, JSON.stringify(report, null, 2));
 console.log('ACCESSIBILITY=' + JSON.stringify({ counts, failures: failures.length, incomplete: incomplete.length, firstFailures: failures.slice(0, 8) }));
 process.exitCode = failures.length ? 1 : 0;
