@@ -30,6 +30,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.
 
 Bootstrap نسخه و checksum آرشیو رسمی را کنترل می‌کند، ابزار و build را جدا آماده می‌کند و پیش از فعال‌سازی سلامت را می‌سنجد. Setup Mode پیش‌فرض فقط روی loopback است؛ [راهنمای نصب](docs/INSTALLATION.fa.md) دسترسی SSH و TLS عمومی را توضیح می‌دهد.
 
+برای نصب موجود، از `sudo pvnetwork update v1.0.55 --dry-run --json` و [راهنمای ارتقا/rollback بررسی‌شده](docs/UPDATES.fa.md) شروع کنید. نسخه هدف فقط پس از تأیید asset رسمی و gateهای لازم قابل استفاده است؛ Fresh Install عملیات متفاوتی است.
+
 ## آموزش بخش‌به‌بخش
 
 | بخش | کاربرد | آموزش |
