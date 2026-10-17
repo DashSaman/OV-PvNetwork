@@ -6,7 +6,7 @@
 
 Fresh installation is for an eligible empty panel target. An existing `/opt/pvnetwork-panel`, panel unit/site, nonempty database or occupied required port is a reason to use the existing installation's verified update/adoption path. Do not reinstall over a working panel.
 
-Supported host checks cover Ubuntu 22.04/24.04 and Debian 12, x86_64/aarch64, at least 1 GiB RAM and 3 GiB free disk. Actual v1.0.55 native Setup Mode installation evidence covers all three distributions on x86_64 and real ARM64; see [validation](VALIDATION-v1.0.55.md). Real public ACME and external VPS networking remain separate uncompleted gates. v1.0.55 is a QA candidate; use the command only once its immutable release assets exist and after reviewing its release notes.
+Supported host checks cover Ubuntu 22.04/24.04 and Debian 12, x86_64/aarch64, at least 1 GiB RAM and 3 GiB free disk. Actual v1.0.56 native Setup Mode installation evidence covers all three distributions on x86_64 and real ARM64; see [validation](VALIDATION-v1.0.56.md). Real public ACME and external VPS networking remain separate uncompleted gates. v1.0.56 is a QA candidate; use the command only once its immutable release assets exist and after reviewing its release notes.
 
 ## 2. Install in private Setup Mode
 
@@ -14,7 +14,7 @@ Supported host checks cover Ubuntu 22.04/24.04 and Debian 12, x86_64/aarch64, at
 2. Run the version-pinned bootstrap on the fresh target:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.55/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.56/install.sh)
 ```
 
 3. Wait for the final verified result. The bootstrap validates the official archive/SHA256 and metadata; the native installer stages tools, dependencies, database, build, service and managed proxy before activation.
@@ -29,13 +29,13 @@ ssh -L 18443:127.0.0.1:18443 USER@SERVER
 
 ## 3. Fresh target with public HTTPS
 
-QA v1.0.55 does not persist an automatic Nginx certificate-renewal deploy hook. The v1.0.56 candidate fixes this for new lineages; review its [scope and existing-installation limits](RELEASE-NOTES-v1.0.56.md) before public HTTPS use. Public ACME remains an uncompleted gate.
+New installer-managed HTTPS lineages in QA v1.0.56 record a syntax-checked Nginx reload hook for successful renewal. Existing lineages are not rewritten. Review [scope and upgrade limits](RELEASE-NOTES-v1.0.56.md); public ACME is still NOT TESTED.
 
 1. Prepare a real domain with correct DNS and authorized ACME email. Required public ports 80/443 must be free and ACME validation reachable through your existing network policy.
 2. On the eligible fresh target, use:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.55/install.sh) --domain panel.example.com --email operator@example.com
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.56/install.sh) --domain panel.example.com --email operator@example.com
 ```
 
 3. Replace the example domain/email first. Until a certificate exists, the owned HTTP site serves ACME challenges and returns 503 for other paths.

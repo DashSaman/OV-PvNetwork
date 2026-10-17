@@ -1,4 +1,4 @@
-# PVNetwork operational console — v1.0.55 QA
+# PVNetwork operational console — v1.0.56 QA
 
 Run `sudo pvnetwork` for the 25-item console. Select English or Persian with `--lang en` / `--lang fa`; menu 24 saves the preference privately. `pvnetwork --help` and each subcommand's `--help` describe automation arguments. Noninteractive execution requires a command.
 
@@ -33,7 +33,7 @@ sudo pvnetwork nodes job --job-type deploy --job-id <returned-job-id> --json
 sudo pvnetwork logs --lines 100 --json
 sudo pvnetwork database check --json
 sudo pvnetwork support --output /root/pvnetwork-support.tar.gz --json
-sudo pvnetwork update v1.0.55 --yes --json
+sudo pvnetwork update v1.0.56 --yes --json
 sudo pvnetwork restore 20261016-120000 --yes --json
 sudo pvnetwork recover --yes --json
 ```
@@ -50,7 +50,7 @@ TLS renewal selects the one ACME certificate used by the managed panel site. It 
 
 Exit codes: 0 success; 64 invalid usage; 69 unhealthy/unavailable; 70 operation failure; 75 busy/pending recovery; 77 root/confirmation required; 130 interrupted. A queued node/settings response indicates acceptance; inspect its terminal status before treating an operation as successful.
 
-Current release evidence and remaining gates are recorded in [validation](VALIDATION-v1.0.55.md). v1.0.55 remains QA; exact artifact, CI/public bootstrap and the owner-authorized limited Production deployment are now verified. The native snapshot log policy is described in [release notes](RELEASE-NOTES-v1.0.55.md). [Illustrated web manual](UI-GUIDE.md) · [فارسی](CLI.fa.md).
+Current QA release evidence and remaining gates are recorded in [v1.0.56 validation](VALIDATION-v1.0.56.md). The owner-authorized live deployment remains v1.0.55. The native snapshot log policy introduced in v1.0.55 is described in [its notes](RELEASE-NOTES-v1.0.55.md). [Illustrated web manual](UI-GUIDE.md) · [فارسی](CLI.fa.md).
 
 ## First operational session
 

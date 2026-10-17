@@ -1,8 +1,8 @@
-name: Immutable QA55 native ARM validation
+name: Immutable QA56 native ARM validation
 
 on:
   push:
-    branches: [qa/arm-validation-55]
+    branches: [qa/arm-validation-56]
     paths: [.github/workflows/stable-arm-validation.yml]
   workflow_dispatch:
 
@@ -27,12 +27,12 @@ jobs:
       - uses: actions/checkout@v5
         with:
           # Test the published artifact, never the mutable workflow branch.
-          ref: 40bbc0899ff54633f24bb42e25fbd4ae1b6918a2
+          ref: 490af88fdc86b9306300620b5d2c8ba281186410
           persist-credentials: false
       - name: Verify immutable source, public checksum and native architecture
         env:
-          EXPECTED_SOURCE: 40bbc0899ff54633f24bb42e25fbd4ae1b6918a2
-          EXPECTED_ARCHIVE: 33034623f2b4f2d97a6f965e58b7eba7a6d1d02e44bc8bf1af8b0f9e4be1d83d
+          EXPECTED_SOURCE: 490af88fdc86b9306300620b5d2c8ba281186410
+          EXPECTED_ARCHIVE: de35e0f198c05a608097137f08977f1474e09f457a5618e26c0f6f0c49c49e65
           DISTRIBUTION: ${{ matrix.distribution }}
           ARM_BASE: ${{ matrix.base }}
         run: |
@@ -47,9 +47,9 @@ jobs:
 
           assert platform.machine() == 'aarch64', 'A real ARM64 runner is required'
           assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip() == os.environ['EXPECTED_SOURCE']
-          assert Path('VERSION').read_text().strip() == '1.0.55'
-          name = 'pvnetwork-panel-v1.0.55.tar.gz'
-          url = 'https://github.com/DashSaman/OV-PvNetwork/releases/download/v1.0.55/' + name
+          assert Path('VERSION').read_text().strip() == '1.0.56'
+          name = 'pvnetwork-panel-v1.0.56.tar.gz'
+          url = 'https://github.com/DashSaman/OV-PvNetwork/releases/download/v1.0.56/' + name
           with urllib.request.urlopen(url + '.sha256', timeout=30) as response:
               checksum = response.read(4097).decode('ascii').split()
           assert checksum == [os.environ['EXPECTED_ARCHIVE'], name]
@@ -73,7 +73,7 @@ jobs:
           import importlib.util
           # Select the exact source's existing public QA path in the child only.
           # Do not attempt to overwrite GitHub's reserved workflow variables.
-          os.environ['GITHUB_REF_NAME'] = 'qa/public-v1.0.55'
+          os.environ['GITHUB_REF_NAME'] = 'qa/public-v1.0.56'
           spec = importlib.util.spec_from_file_location('native', 'tests/native_installer_systemd.py')
           native = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(native)

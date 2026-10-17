@@ -1,12 +1,12 @@
-# v1.0.56 QA candidate — PVN-1040
+# v1.0.56 verified QA — PVN-1040
 
-Status: unpublished candidate; exact CI, immutable artifact/public bootstrap and applicable release gates remain pending. Public stable remains v1.0.37 and the authorized live panel remains v1.0.55.
+Status: verified public QA. Exact CI, immutable artifact, anonymous download and public x86/ARM bootstrap gates PASS. No new Production deployment. Supported Stable remains v1.0.37; [final evidence and limits](VALIDATION-v1.0.56.md). The frozen source archive retains its initial pre-publication checkpoint.
 
 ## Change since v1.0.55
 
 Fresh HTTPS installation previously enabled `certbot.timer` after webroot issuance without recording certificate activation on renewal. Updated certificate files could therefore leave Nginx serving its previous in-memory certificate. The actual issuance command now persists a fixed `--deploy-hook`: `nginx -t && systemctl reload nginx.service`. Certbot invokes this after successful issuance/renewal; a failed syntax check prevents reload. No restart, forced renewal or global hook directory change is introduced. Initial TLS/public health verification remains required.
 
-The issue was reproduced against the actual issuance command before the fix. Its contract passes locally afterward; two executable shell paths and a real isolated Nginx certificate-swap test require Linux CI. The native harness requires the fixture tools, so those checks cannot silently skip. Public ACME issuance/renewal is still NOT TESTED without an authorized owned domain and eligible empty host. [Certbot's renewal documentation](https://eff-certbot.readthedocs.io/en/stable/using.html#renewing-certificates) describes persisted deploy hooks and their successful-renewal semantics.
+The issue was reproduced against the actual issuance command before the fix. Its contract, two executable shell paths and real isolated Nginx certificate-swap test now pass in all six public x86/ARM distribution guests. The new certificate is served after safe reload with the same master PID; invalid syntax blocks reload. Public ACME issuance/renewal is still NOT TESTED without an authorized owned domain and eligible empty host. [Certbot's renewal documentation](https://eff-certbot.readthedocs.io/en/stable/using.html#renewing-certificates) describes persisted deploy hooks and their successful-renewal semantics.
 
 ## Upgrade and preservation
 
@@ -16,4 +16,4 @@ This hook is recorded for newly issued installer-managed lineages. Updating appl
 
 ## Remaining Stable gates
 
-Public ACME/external-VPS tests, the partial original security workbench and the exact new-release gates remain explicit. Native ARM64 public installation of immutable v1.0.55 passed all three supported distributions; that result is not automatically evidence for changed v1.0.56 bytes. See [v1.0.55 evidence](VALIDATION-v1.0.55.md).
+Public ACME/external-VPS tests and the partial original security workbench remain open. Exact v1.0.56 CI, immutable artifact, anonymous checksum and public x86/ARM bootstrap gates pass independently of the earlier v1.0.55 result. See [v1.0.56 evidence](VALIDATION-v1.0.56.md). Production deployment evidence remains [v1.0.55](VALIDATION-v1.0.55.md).

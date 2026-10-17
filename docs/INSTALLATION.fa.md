@@ -6,7 +6,7 @@
 
 نصب تازه برای مقصد خالی و واجد شرایط پنل است. وجود `/opt/pvnetwork-panel`، unit/site پنل، دیتابیس غیرخالی یا اشغال پورت لازم یعنی باید مسیر ارتقا/پذیرش بررسی‌شده نصب موجود را دنبال کنید. روی پنل فعال دوباره نصب تازه اجرا نکنید.
 
-کنترل میزبان Ubuntu 22.04/24.04 و Debian 12، معماری x86_64/aarch64، حداقل RAM یک GiB و دیسک آزاد سه GiB را پوشش می‌دهد. شواهد واقعی نصب Setup Mode نسخه v1.0.55 برای هر سه توزیع روی x86_64 و ARM64 واقعی موجود است؛ [اعتبارسنجی](VALIDATION-v1.0.55.md) را ببینید. ACME عمومی واقعی و شبکه VPS مستقل همچنان gate تکمیل‌نشده جدا دارند. v1.0.55 نامزد QA است؛ فرمان آن را فقط پس از موجود شدن assetهای تغییرناپذیر و خواندن یادداشت نسخه اجرا کنید.
+کنترل میزبان Ubuntu 22.04/24.04 و Debian 12، معماری x86_64/aarch64، حداقل RAM یک GiB و دیسک آزاد سه GiB را پوشش می‌دهد. شواهد واقعی نصب Setup Mode نسخه v1.0.56 برای هر سه توزیع روی x86_64 و ARM64 واقعی موجود است؛ [اعتبارسنجی](VALIDATION-v1.0.56.md) را ببینید. ACME عمومی واقعی و شبکه VPS مستقل همچنان gate تکمیل‌نشده جدا دارند. v1.0.56 نامزد QA است؛ فرمان آن را فقط پس از موجود شدن assetهای تغییرناپذیر و خواندن یادداشت نسخه اجرا کنید.
 
 ## ۲. نصب در Setup Mode خصوصی
 
@@ -14,7 +14,7 @@
 2. روی مقصد تازه bootstrap پین‌شده را اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.55/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.56/install.sh)
 ```
 
 3. تا نتیجه نهایی تأییدشده صبر کنید. نسخه، SHA256 و metadata آرشیو رسمی بررسی و ابزار، dependency، دیتابیس، build، سرویس و proxy پیش از فعال‌سازی آماده می‌شوند.
@@ -29,13 +29,13 @@ ssh -L 18443:127.0.0.1:18443 USER@SERVER
 
 ## ۳. مقصد تازه با HTTPS عمومی
 
-نسخه QA فعلی 1.0.55 برای تمدید خودکار گواهی، deploy hook فعال‌سازی Nginx ثبت نمی‌کند. نامزد 1.0.56 این مورد را برای lineage جدید اصلاح می‌کند؛ پیش از استفاده HTTPS عمومی، [محدوده و محدودیت نصب موجود](RELEASE-NOTES-v1.0.56.fa.md) را بخوانید. ACME عمومی هنوز gate تکمیل‌نشده است.
+در QA نسخه 1.0.56، lineage جدیدِ نصب‌کننده hook بررسی تنظیمات و reload امن Nginx پس از تمدید موفق دارد؛ lineage قدیمی بازنویسی نمی‌شود. [محدوده و محدودیت ارتقا](RELEASE-NOTES-v1.0.56.fa.md) را بخوانید؛ ACME عمومی همچنان NOT TESTED است.
 
 1. دامنه واقعی با DNS درست و ایمیل مجاز ACME آماده کنید. پورت‌های عمومی 80/443 باید آزاد و اعتبارسنجی ACME با سیاست شبکه فعلی قابل‌دسترسی باشد.
 2. روی مقصد تازه واجد شرایط اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.55/install.sh) --domain panel.example.com --email operator@example.com
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.56/install.sh) --domain panel.example.com --email operator@example.com
 ```
 
 3. ابتدا دامنه و ایمیل نمونه را عوض کنید. تا صدور گواهی، سایت HTTP متعلق به پنل فقط challenge را سرو می‌کند و مسیرهای دیگر 503 می‌دهند.

@@ -4,7 +4,7 @@
 
 ## Current release validation
 
-- `v1.0.56` / `PVN-1040` — unpublished QA candidate: persist a syntax-checked Nginx graceful-reload hook for automatic renewal of newly issued installer-managed ACME certificates. Existing lineages are not rewritten. [Scope, tests and remaining gates](docs/RELEASE-NOTES-v1.0.56.md).
+- `v1.0.56` / `PVN-1040` — verified public QA: persist a syntax-checked Nginx graceful-reload hook for automatic renewal of newly issued installer-managed ACME certificates. Existing lineages are not rewritten. [Scope, tests and remaining gates](docs/VALIDATION-v1.0.56.md).
 - `v1.0.55` / `PVN-1039` — verified QA and owner-authorized limited panel deployment complete. Native public installation now passes on all three supported distributions on x86_64 and real ARM64. Read the [evidence and explicit limits](docs/VALIDATION-v1.0.55.md); this does not certify public ACME or an independent external VPS.
 - Public supported stable remains `v1.0.37`. The incomplete native security workbench and remaining infrastructure/release gates prevent an overall FINAL/Stable claim. Development and disposable testing preserve the active panel/VPN services.
 
