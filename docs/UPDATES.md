@@ -1,82 +1,45 @@
-# Updates and rollback
+# Verified update, rollback and recovery
 
-## Production safety first
+[فارسی](UPDATES.fa.md) · [Installation](INSTALLATION.md) · [CLI](CLI.md)
 
-PVNetwork Production is assumed live and under load. Do not update by replacing the live tree blindly.
+## 1. Prepare a reviewed update
 
-Before changing Production:
+1. Read the target release's status, changes and migration/rollback limits. A QA prerelease is not the supported stable release. Select an immutable published tag; a branch is not a native update source.
+2. Run read-only `sudo pvnetwork status --json`, `doctor --json`, `database check --json` and `jobs --json`. Resolve an unfinished owned transaction before starting another mutation.
+3. Run `sudo pvnetwork backup --json`. Retain the returned verified path, private application/runtime archive and database-native snapshot. Native verification includes an actual restore rehearsal and checksums. A failed backup directory is not a rollback point.
+4. Check free disk, the retained previous release, compatible schema and node transports. Schedule the required short panel maintenance; preserve unrelated VPNs, routes, firewall and services.
 
-```bash
-pvnetwork doctor
-pvnetwork backup
-```
+## 2. Update an eligible installation
 
-If you use PostgreSQL, keep a database-native backup as well; an application backup does not replace the database backup policy.
-
-Record the current version/service health and have a rollback target before restarting anything.
-
-## Update to latest stable release
+After its official assets exist and gates have passed, an explicitly selected QA update is:
 
 ```bash
-pvnetwork update
+sudo pvnetwork update v1.0.55 --dry-run --json
+sudo pvnetwork update v1.0.55 --yes --json
 ```
 
-Where the lifecycle manager is installed, it resolves the latest published GitHub Release, creates a pre-update backup, downloads the tagged source, preserves runtime `.env`/state, applies required migrations/builds, restarts only `pvnetwork-panel.service`, then verifies the local API. Failed health verification must trigger rollback rather than repeated blind mutation.
+On an eligible older rooted installation, `--adopt-rooted` is an explicit, separate opt-in; inspect `pvnetwork update --help` and rehearse the verified path before using it. Do not replace the active directory manually.
 
-## Target a specific patch explicitly
+The engine verifies the immutable checksum/version, creates a native backup, builds a staged release, restores an isolated database clone, checks the allowed migration and authenticates canary health. It then enters panel maintenance, pauses owned writers, takes the final quiesced backup, performs the permitted migration, switches the pointer and verifies health. It restarts only the required panel service and gracefully reloads the managed proxy; unrelated VPN services remain outside this scope.
 
-```bash
-PVNETWORK_REF=v1.0.2 pvnetwork update
-```
+## 3. Verify after activation
 
-A branch name can be used in a disposable/staging environment, but Production should normally consume a reviewed tagged release.
+1. Confirm version, active service, local/public HTTPS health and actual current UI assets.
+2. Check user/admin/node identities and assignments, configuration/key preservation and database readability.
+3. Test the changed workflow: for example the default/selected profile download. Use a synthetic test identity for mutating probes.
+4. Inspect post-deploy errors and job state. Confirm unrelated service health/PIDs and VPN traffic remain intact.
+5. Record exact commit, checksum, verified backup path, restart/maintenance observations and rollback readiness privately; publish only sanitized evidence.
 
-## Sequential patch update notes
+## 4. Distinguish code rollback from data restore
 
-Patch releases are sequential. Review the target release notes before every update; a patch may include UI, backend or additive database migrations, but must preserve the live-Production safety contract and document upgrade/rollback requirements.
+`sudo pvnetwork rollback --yes --json` selects the retained previous completed native update. It requires schema and node-transport compatibility, switches application code and retains compatible **current live data**. It does not accept an arbitrary backup-directory argument.
 
-After upgrading, verify:
+`sudo pvnetwork restore BACKUP_ID --yes --json` is an explicit native data restore using a verified backup ID. It has different data-loss/maintenance consequences; inspect the selected backup and supported restore scope first. Web-upload restore uses its matching archive format and job flow. Do not replay an old database dump after users have made new changes merely to undo application code.
 
-- login and Dashboard;
-- Users, Renew and Reset Usage;
-- Nodes and node-health view;
-- Main Admin mobile **More** navigation;
-- Operations, Security, Fleet, Monitoring and Bandwidth pages;
-- Persian RTL and/or English LTR as used by your deployment;
-- local and public panel health.
+For interrupted update/settings/data operations, inspect `sudo pvnetwork jobs --json`, then use `sudo pvnetwork recover --yes --json` for the matching owned journal. An unfinished operation uses recovery rather than pretending a completed-update rollback exists. Read its terminal result and verify health before another update.
 
-## Rollback
+## 5. Snapshot boundaries
 
-Rollback to the most recent application backup:
+Native v1.0.55 omits only the panel's append-only diagnostic `data/app.log` from runtime/source snapshots; it leaves the original log untouched. Unknown `.log` files, key bytes and SSH trust remain checked. Credential/push keys, `.env`, database and supported runtime files are private backup contents and must not be uploaded to public GitHub issues.
 
-```bash
-pvnetwork rollback
-```
-
-Or choose a backup directory:
-
-```bash
-pvnetwork rollback /var/backups/pvnetwork-panel/YYYYMMDD-HHMMSS
-```
-
-Rollback must restore the captured application/runtime state, rebuild required assets/dependencies, restart only the panel service and verify health.
-
-## Never do this as a normal update shortcut
-
-- Do not flush iptables/nftables wholesale.
-- Do not replace the host default route.
-- Do not remove unrelated tunnels, x-ui/Xray, databases or other host services.
-- Do not delete/recreate working nodes merely to make an update easier.
-- Do not rotate healthy user/node certificates or credentials without a task-specific reason.
-
-## Status and version
-
-```bash
-pvnetwork status
-pvnetwork version
-pvnetwork doctor
-```
-
-## Release rule
-
-Every Production-visible change updates `VERSION`, `CHANGELOG.md`, release notes and a new tagged GitHub Release. Released tags/assets remain immutable. See [QA-RELEASE-GATE.md](./QA-RELEASE-GATE.md) for blocking release checks.
+[Illustrated backup guide](UI-GUIDE.md#11-panel-backup-and-restore) · [Release evidence](VALIDATION-v1.0.54.md)

@@ -2,13 +2,15 @@ import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { pathToFileURL } from 'node:url';
 
 const repoRoot = path.resolve(import.meta.dirname, '../..');
-const output = '/tmp/pvnetwork-subscription-fixture.html';
+const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'pvnetwork-subscription-docs-'));
+const output = path.join(temporary, 'subscription.html');
 const python = process.env.PV_PYTHON || 'python3';
 execFileSync(python, [path.join(repoRoot, 'tests/render_subscription_fixture.py'), output], { stdio: 'inherit' });
-const outRoot = path.join(repoRoot, 'docs/images/v1.0.2');
+const outRoot = path.join(repoRoot, 'docs/images/v1.0.54');
 fs.mkdirSync(outRoot, { recursive: true });
 
 const browser = await chromium.launch({ headless: true });
@@ -20,6 +22,7 @@ for (const item of [
 ]) {
   const context = await browser.newContext({ viewport: { width: item.width, height: item.height }, reducedMotion: 'reduce' });
   const page = await context.newPage();
+  await page.route(/^https?:\/\//, route => route.abort());
   await page.goto(pathToFileURL(output).href, { waitUntil: 'domcontentloaded' });
   await page.locator('.logo').evaluate((img, src) => { img.src = src; }, pathToFileURL(path.join(repoRoot, 'frontend/sub_clients/private-network.webp')).href);
   await page.addStyleTag({ content: '.pn5-reveal,.pn-reveal{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}' });
@@ -33,4 +36,5 @@ for (const item of [
   await context.close();
 }
 await browser.close();
+fs.rmSync(temporary, { recursive: true });
 console.log('SUBSCRIPTION_DOC_SCREENSHOTS=PASS');
