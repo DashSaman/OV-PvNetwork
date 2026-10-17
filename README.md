@@ -6,7 +6,7 @@ PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multi
 
 ## Release status and changes
 
-**v1.0.55 is a QA candidate.** v1.0.54 is an immutable published prerelease; the last supported stable release remains v1.0.37. Read [validation evidence and limits](docs/VALIDATION-v1.0.54.md) and the target release notes before installing or updating.
+**v1.0.55 is verified QA, deployed through the owner-authorized limited panel update.** Its exact CI, public bootstrap on three distributions, native backup/canary and Production post-checks passed. The last supported stable release remains v1.0.37 pending broader mission gates. Read [validation evidence and limits](docs/VALIDATION-v1.0.55.md) and the target release notes before installing or updating.
 
 Since v1.0.54: the native backup excludes only the panel's actively written diagnostic `data/app.log`; credential keys, SSH trust and other state retain their consistency checks. The log stays on the server. This resolves an update that stopped before activation. [English release notes](docs/RELEASE-NOTES-v1.0.55.md) · [تغییرات فارسی](docs/RELEASE-NOTES-v1.0.55.fa.md).
 
@@ -22,7 +22,7 @@ Screenshots show the current web interface using synthetic Demo data. They conta
 4. Test an actual VPN connection and usage accounting on your test node before serving customers. A green panel or a downloaded profile alone does not prove tunnel connectivity.
 5. Make a verified private backup and read [updates and recovery](docs/UPDATES.md) before changes to an existing installation.
 
-The version-pinned QA command below is for **fresh-server evaluation after the v1.0.55 release assets exist**. Do not use Fresh Install to replace an existing panel.
+The version-pinned QA command below is for **fresh-server evaluation using the published immutable v1.0.55 assets**. Do not use Fresh Install to replace an existing panel.
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.55/install.sh)
@@ -69,7 +69,7 @@ sudo pvnetwork backup --json
 sudo pvnetwork jobs --json
 ```
 
-Ubuntu 22.04/24.04 and Debian 12 have exact v1.0.54 native fresh/repeat/public-bootstrap evidence. Public ACME issuance, ARM and a separate empty external VPS are explicitly not fully validated in this mission. Final v1.0.55 CI, artifact and authorized deployment remain gates until recorded. The original security workbench is partial/unsealed; five validated findings were corrected in v1.0.46/v1.0.50. This README does not assert a completed independent security certification.
+Ubuntu 22.04/24.04 and Debian 12 have exact v1.0.55 native fresh/repeat/public-bootstrap evidence. Public ACME issuance, ARM and a separate empty external VPS are explicitly not fully validated in this mission. Exact v1.0.55 CI, public artifact/bootstrap and the authorized limited Production deployment are verified in the linked evidence; measured panel maintenance was about 4 min 28 s, with co-hosted VPN/service identities preserved. The original security workbench is partial/unsealed; five validated findings were corrected in v1.0.46/v1.0.50. This README does not assert a completed independent security certification.
 
 ## Documentation and security
 

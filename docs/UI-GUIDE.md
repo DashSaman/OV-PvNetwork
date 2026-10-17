@@ -167,6 +167,7 @@ The page is scrollable; the first screenshot shows its upper settings area. [Ful
 ![Fleet](images/v1.0.54/en/desktop/fleet.png)
 
 1. Inspect node mode, version, health score, state and active job before submitting maintenance.
+   On a phone, scroll the node table horizontally to reach its State and Actions columns.
 2. Enter SSH authentication privately and verify the host fingerprint independently for a new trust relationship.
 3. Use a canary upgrade on one eligible node before wider execution. Inspect each job's stages and terminal result; acceptance is not completion.
 4. Drain/maintenance and agent code upgrade have different scopes. Code upgrade should preserve the running VPN, keys and current accounting; verify those properties after the job.
