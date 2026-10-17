@@ -1,0 +1,85 @@
+name: Immutable QA55 native ARM validation
+
+on:
+  push:
+    branches: [qa/arm-validation-55]
+    paths: [.github/workflows/stable-arm-validation.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-native-arm:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distribution: ubuntu2204
+            base: ubuntu@sha256:88881eb36da489f9ff8746ece8048ca16cc94f80e8cd3ae7e8335d8822631591
+          - distribution: ubuntu2404
+            base: ubuntu@sha256:18b33ff3829707f31ada654a963b9ee35f2e6f0241b964bd17a22a9b330cb63d
+          - distribution: debian12
+            base: debian@sha256:1d15be465c9ea7b37b464055c5de38319523de9d3f070fcc76c0d0230ebe9669
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Test the published artifact, never the mutable workflow branch.
+          ref: 40bbc0899ff54633f24bb42e25fbd4ae1b6918a2
+          persist-credentials: false
+      - name: Verify immutable source, public checksum and native architecture
+        env:
+          EXPECTED_SOURCE: 40bbc0899ff54633f24bb42e25fbd4ae1b6918a2
+          EXPECTED_ARCHIVE: 33034623f2b4f2d97a6f965e58b7eba7a6d1d02e44bc8bf1af8b0f9e4be1d83d
+          DISTRIBUTION: ${{ matrix.distribution }}
+          ARM_BASE: ${{ matrix.base }}
+        run: |
+          python3 - <<'PY'
+          import importlib.util
+          import json
+          import os
+          import platform
+          import subprocess
+          import urllib.request
+          from pathlib import Path
+
+          assert platform.machine() == 'aarch64', 'A real ARM64 runner is required'
+          assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip() == os.environ['EXPECTED_SOURCE']
+          assert Path('VERSION').read_text().strip() == '1.0.55'
+          name = 'pvnetwork-panel-v1.0.55.tar.gz'
+          url = 'https://github.com/DashSaman/OV-PvNetwork/releases/download/v1.0.55/' + name
+          with urllib.request.urlopen(url + '.sha256', timeout=30) as response:
+              checksum = response.read(4097).decode('ascii').split()
+          assert checksum == [os.environ['EXPECTED_ARCHIVE'], name]
+          spec = importlib.util.spec_from_file_location('native', 'tests/native_installer_systemd.py')
+          native = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(native)
+          image = os.environ['ARM_BASE']
+          subprocess.run(['docker', 'pull', '--platform', 'linux/arm64', image], check=True)
+          architecture = subprocess.check_output(['docker', 'image', 'inspect', '--format', '{{.Architecture}}', image], text=True).strip()
+          assert architecture == 'arm64', 'The systemd guest must also be native ARM64'
+          print(json.dumps({'runner_architecture': platform.machine(), 'guest_architecture': architecture,
+                            'source': os.environ['EXPECTED_SOURCE'], 'archive_sha256': checksum[0]}))
+          PY
+      - name: Official bootstrap, fresh install and preserving repeat in isolated ARM guest
+        env:
+          DISTRIBUTION: ${{ matrix.distribution }}
+          ARM_BASE: ${{ matrix.base }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import importlib.util
+          # Select the exact source's existing public QA path in the child only.
+          # Do not attempt to overwrite GitHub's reserved workflow variables.
+          os.environ['GITHUB_REF_NAME'] = 'qa/public-v1.0.55'
+          spec = importlib.util.spec_from_file_location('native', 'tests/native_installer_systemd.py')
+          native = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(native)
+          # Only the disposable guest base changes. Published application and
+          # installer bytes are never edited; the fixed source still supplies
+          # the complete acceptance harness and bootstrap/archive checks.
+          native.BASES[os.environ['DISTRIBUTION']] = os.environ['ARM_BASE']
+          native.host(os.environ['DISTRIBUTION'])
+          PY
