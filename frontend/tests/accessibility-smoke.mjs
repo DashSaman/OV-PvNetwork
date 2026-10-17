@@ -54,7 +54,7 @@ async function audit(page, label) {
   }));
   counts.axe++;
   for (const issue of result.violations) failures.push({ label, rule: issue.id, nodes: issue.nodes.map(n => ({ target: n.target, reason: n.failureSummary })) });
-  for (const issue of result.incomplete) incomplete.push({ label, rule: issue.id, targets: issue.nodes.map(n => n.target) });
+  for (const issue of result.incomplete) incomplete.push({ label, rule: issue.id, impact: issue.impact, targets: issue.nodes.map(n => n.target), notes: issue.nodes.map(n => n.failureSummary) });
 }
 async function navigate(page, route, zoom) {
   await page.goto(baseUrl + route, { waitUntil: 'networkidle' });
@@ -66,6 +66,7 @@ try {
     const page = await browser.context.newPage(); page.setDefaultTimeout(7000);
     await page.setViewportSize({ width, height: 1000 });
     await page.addInitScript(({ language, theme, token }) => {
+      document.addEventListener('focusin', event => { if (!event.target.closest('dialog')) window.pvA11yInvoker = event.target; });
       localStorage.setItem('pvnetwork_language', language); localStorage.setItem('ov-dashboard-theme', theme);
       localStorage.setItem('authToken', token); localStorage.setItem('userRole', 'main_admin');
     }, { language, theme, token: demoToken() });
@@ -92,6 +93,7 @@ try {
       if (await more.isVisible()) {
         await navigate(page, '/security', zoom);
         await more.focus(); await more.press('Enter');
+        verify(await more.getAttribute('aria-controls') === 'mobile-more-menu' && await page.locator('#mobile-more-menu').count() === 1 && await page.locator('#mobile-more-menu').isVisible(), 'Mobile menu reference is not unique and visible');
         const items = page.locator('#mobile-more-menu [role="menuitem"]');
         verify(await items.first().evaluate(el => el === document.activeElement), 'Mobile menu initial focus missing');
         await page.keyboard.press('End');
@@ -160,6 +162,8 @@ try {
         verify(await dialog.count() === 1, 'Expected one named dialog');
         verify((await dialog.ariaSnapshot()).split('\n')[0].includes('"'), 'Missing accessible dialog name');
         verify(await dialog.evaluate(el => el.contains(document.activeElement)), 'Initial focus outside dialog');
+        await page.evaluate(() => { window.pvA11yExpectedInvoker = window.pvA11yInvoker; });
+        verify(await page.evaluate(() => Boolean(window.pvA11yExpectedInvoker?.isConnected) && !window.pvA11yExpectedInvoker.closest('dialog')), 'Missing connected pre-modal invoker');
         await audit(page, label);
         // axe leaves gradient-backed helper text incomplete. Check both gradient
         // endpoints as well as opaque surfaces instead of treating it as a pass.
@@ -196,7 +200,8 @@ try {
           await page.screenshot({ path: path.join(process.env.PV_A11Y_SCREENSHOTS, `${language}-${width}-focus.png`) });
         }
         await page.keyboard.press('Escape'); await dialog.waitFor({ state: 'hidden' });
-        verify(await page.evaluate(() => document.activeElement !== document.body && document.activeElement.isConnected), 'Focus did not return to invoker');
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        verify(await page.evaluate(() => document.activeElement === window.pvA11yExpectedInvoker), 'Exact pre-modal invoker was not restored');
         counts.dialogs++;
       } catch (error) { failures.push({ label, error: error.message }); }
     }

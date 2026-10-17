@@ -2,7 +2,7 @@
 
 [فارسی](ACCESSIBILITY.fa.md) · [Validation and limits](VALIDATION-v1.0.57.md)
 
-The v1.0.57 candidate improves existing admin, login and subscription flows. It preserves their API and authorization behavior. These scoped automated tests do not certify complete WCAG conformance or replace testing with a screen reader and real assistive hardware.
+The v1.0.57 QA release improves existing admin, login and subscription flows. It preserves their API and authorization behavior. These scoped automated tests do not certify complete WCAG conformance or replace testing with a screen reader and real assistive hardware.
 
 1. Press **Tab** after opening an admin page. The first link, **Skip to main content**, bypasses navigation; press **Enter** to focus the current page's main content. Each page exposes its translated primary heading.
 2. Open a row's actions menu with **Enter**. Use **Up/Down**, **Home/End**, then **Enter** to select an action. **Escape** closes the menu and returns focus to its button. The mobile **More** menu supports the same navigation. **Tab** leaves either menu.

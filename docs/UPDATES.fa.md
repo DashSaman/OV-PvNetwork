@@ -14,8 +14,8 @@
 پس از موجود شدن asset رسمی و عبور از gateها، نمونه انتخاب صریح نسخه QA:
 
 ```bash
-sudo pvnetwork update v1.0.56 --dry-run --json
-sudo pvnetwork update v1.0.56 --yes --json
+sudo pvnetwork update v1.0.57 --dry-run --json
+sudo pvnetwork update v1.0.57 --yes --json
 ```
 
 برای نصب قدیمی rooted، گزینه `--adopt-rooted` انتخاب صریح جداست؛ ابتدا `pvnetwork update --help` را بخوانید و مسیر بررسی‌شده را تمرین کنید. پوشه فعال را دستی جایگزین نکنید.

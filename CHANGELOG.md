@@ -1,8 +1,8 @@
-## v1.0.57 candidate — PVN-1041: Keyboard accessibility
+## v1.0.57 verified QA — PVN-1041: Keyboard accessibility
 
 - Native dialog focus/containment/Escape/return across existing admin flows and subscription QR; keyboard row/mobile menus; labels, primary headings/skip link, alerts and scroll-region focus.
 - Restore visible focus and effective reduced-motion preferences; improve light-theme secondary text and mobile navigation contrast. Add real-route axe and keyboard regression gates with synthetic data and explicit manual-review results.
-- Exact-source CI/publication and broader Stable gates remain pending. No Production/service mutation. [Validation](docs/VALIDATION-v1.0.57.md), [English guide](docs/ACCESSIBILITY.md), [راهنمای فارسی](docs/ACCESSIBILITY.fa.md).
+- Exact-source CI, anonymous assets,228 axe scans and six public x86/ARM native fresh/repeat guests PASS. Broader manual/ACME/external-VPS/Production gates remain explicit; no live service mutation. [Validation](docs/VALIDATION-v1.0.57.md), [English guide](docs/ACCESSIBILITY.md), [راهنمای فارسی](docs/ACCESSIBILITY.fa.md).
 - فارسی: دسترسی کیبورد، فوکوس پنجره‌ها، برچسب‌ها، کاهش حرکت و کنتراست اصلاح شدند؛ تست‌ها و محدودیت‌ها جدا ثبت می‌شوند.
 
 ## v1.0.56 verified QA — PVN-1040: Safe automatic certificate activation

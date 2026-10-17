@@ -43,3 +43,5 @@ This closure changes documentation only. It performs no Production deploy, resta
 Fresh read-only live health at `2026-10-17T15:02:30Z`: local/public HTTP200; panel, VPN, node and PostgreSQL remain active with unchanged protected PIDs/restart counts, database counts/revision and environment/VPN configuration hashes. No recent traceback or5xx lines were observed. Private identifiers and configuration remain outside this document.
 
 فارسی: تست‌های قابل اجرا در محیط‌های دورریختنی، از جمله نصب تازه و تکراری شش مهمان، TLS ساختگی واقعی Nginx، رگرسیون امنیت و handshake آزمایشی VPN، شواهد دارند. صدور عمومی ACME، چرخه کامل نود روی VPS مستقل و ارزیابی جامع دسترس‌پذیری هنوز تأیید نشده‌اند. سرورهای شلوغ جای VPS آزمایشی نیستند؛ این ادامه فقط مستندات و اعتبارسنجی است و سرویس زنده را تغییر نمی‌دهد.
+
+Accessibility continuation: [QA57 validation](VALIDATION-v1.0.57.md) adds actual-route228 axe scans, strict focus and six exact public native guests. The sealed source45 security artifacts and partial coverage are unchanged. Current QA57 remains a prerelease; live55 and supported Stable37 are preserved.
