@@ -6,7 +6,7 @@ PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multi
 
 ## Release status and changes
 
-**v1.0.56 is an unpublished QA candidate for PVN-1040.** Since v1.0.55, fresh HTTPS installation records a Certbot deploy hook that checks Nginx syntax and gracefully reloads it after successful certificate renewal. It does not restart the panel or VPN. [English notes](docs/RELEASE-NOTES-v1.0.56.md) · [یادداشت فارسی](docs/RELEASE-NOTES-v1.0.56.fa.md). The published installation command below remains pinned to verified v1.0.55 while the new candidate completes its gates.
+**v1.0.56 is verified public QA.** Since v1.0.55, new installer-managed HTTPS certificates record a safe successful-renewal Nginx reload hook. Exact CI, anonymous artifact verification and public fresh/repeat installation on all three distributions on x86_64 and real ARM64 passed. [Validation and remaining Stable gates](docs/VALIDATION-v1.0.56.md) · [English notes](docs/RELEASE-NOTES-v1.0.56.md) · [یادداشت فارسی](docs/RELEASE-NOTES-v1.0.56.fa.md). No new Production deployment or live certificate change occurred.
 
 **v1.0.55 is verified QA, deployed through the owner-authorized limited panel update.** Its exact CI, public bootstrap on three distributions, native backup/canary and Production post-checks passed. The last supported stable release remains v1.0.37 pending broader mission gates. Read [validation evidence and limits](docs/VALIDATION-v1.0.55.md) and the target release notes before installing or updating.
 
@@ -14,7 +14,7 @@ Since v1.0.54: the native backup excludes only the panel's actively written diag
 
 ![PVNetwork dashboard — synthetic English Demo](docs/images/v1.0.54/en/desktop/dashboard.png)
 
-Screenshots show the current web interface using synthetic Demo data. They contain no customer or Production configuration and are not proof of live service health. v1.0.55 changes backup behavior only; its interface matches these v1.0.54 captures.
+Screenshots show the current web interface using synthetic Demo data. They contain no customer or Production configuration and are not proof of live service health. v1.0.55–56 change backup/certificate lifecycle behavior; their interface matches these v1.0.54 captures.
 
 ## Start here
 
@@ -24,15 +24,15 @@ Screenshots show the current web interface using synthetic Demo data. They conta
 4. Test an actual VPN connection and usage accounting on your test node before serving customers. A green panel or a downloaded profile alone does not prove tunnel connectivity.
 5. Make a verified private backup and read [updates and recovery](docs/UPDATES.md) before changes to an existing installation.
 
-The version-pinned QA command below is for **fresh-server evaluation using the published immutable v1.0.55 assets**. Do not use Fresh Install to replace an existing panel.
+The version-pinned QA command below is for **fresh-server evaluation using the published immutable v1.0.56 assets**. Do not use Fresh Install to replace an existing panel.
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.55/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.56/install.sh)
 ```
 
 The bootstrap verifies the official archive checksum and version, stages private tools/builds and verifies health before activation. Default Setup Mode is loopback-only; [the installation guide](docs/INSTALLATION.md) explains SSH forwarding and public TLS.
 
-For an existing installation, start with `sudo pvnetwork update v1.0.55 --dry-run --json` and follow the [verified update/rollback guide](docs/UPDATES.md). Use the target only after its official assets and required gates are verified; Fresh Install is a different operation.
+For an existing installation, start with `sudo pvnetwork update v1.0.56 --dry-run --json` and follow the [verified update/rollback guide](docs/UPDATES.md). Use the target only after its official assets and required gates are verified; Fresh Install is a different operation.
 
 ## Learn each section
 

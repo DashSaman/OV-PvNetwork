@@ -1,7 +1,7 @@
-## v1.0.56 candidate — PVN-1040: Safe automatic certificate activation
+## v1.0.56 verified QA — PVN-1040: Safe automatic certificate activation
 
 - Fresh HTTPS installation persists a successful-renewal Certbot hook: validate Nginx configuration, then gracefully reload only Nginx. No forced renewal, panel/VPN restart or rewrite of existing certificate lineages.
-- Missing-hook contract reproduced before the fix. Local contract passes; executable shell paths and exact release CI remain pending. Public ACME/external-VPS tests remain NOT TESTED. [Scope and upgrade limits](docs/RELEASE-NOTES-v1.0.56.md).
+- Missing-hook contract reproduced before the fix. Exact CI733 tests/80 explicit skips, all4 TLS fixtures on6 public x86/ARM native guests, and anonymous artifact SHA verification PASS. Public ACME/external-VPS tests remain NOT TESTED. [Scope and upgrade limits](docs/RELEASE-NOTES-v1.0.56.md).
 - فارسی: نصب تازه پس از تمدید موفق گواهی، تنظیمات Nginx را بررسی و فقط همان سرویس را reload می‌کند؛ پیکربندی گواهی‌های قدیمی و سرویس‌های زنده تغییر نکرده‌اند.
 
 ## v1.0.55 verified QA — PVN-1039: Live diagnostic log backup policy
