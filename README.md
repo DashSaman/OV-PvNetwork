@@ -71,7 +71,7 @@ sudo pvnetwork backup --json
 sudo pvnetwork jobs --json
 ```
 
-Ubuntu 22.04/24.04 and Debian 12 have exact v1.0.55 native fresh/repeat/public-bootstrap evidence. Public ACME issuance, ARM and a separate empty external VPS are explicitly not fully validated in this mission. Exact v1.0.55 CI, public artifact/bootstrap and the authorized limited Production deployment are verified in the linked evidence; measured panel maintenance was about 4 min 28 s, with co-hosted VPN/service identities preserved. The original security workbench is partial/unsealed; five validated findings were corrected in v1.0.46/v1.0.50. This README does not assert a completed independent security certification.
+Ubuntu 22.04/24.04 and Debian 12 have exact v1.0.56 native fresh/repeat/public-bootstrap evidence on x86_64 and real ARM64. Public ACME issuance/renewal and a separate empty external VPS remain untested. The authorized limited Production deployment remains v1.0.55; its measured panel maintenance was about 4 min 28 s, with co-hosted VPN/service identities preserved. The original source45 security scan is now completed and sealed with explicitly partial coverage; its five findings were corrected in v1.0.46/v1.0.50 and remain protected in v1.0.56. Read the [security closure and remaining limits](docs/SECURITY-SCAN-CLOSURE.md). This is not an independent security certification.
 
 ## Documentation and security
 

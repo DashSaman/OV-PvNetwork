@@ -16,4 +16,4 @@ This hook is recorded for newly issued installer-managed lineages. Updating appl
 
 ## Remaining Stable gates
 
-Public ACME/external-VPS tests and the partial original security workbench remain open. Exact v1.0.56 CI, immutable artifact, anonymous checksum and public x86/ARM bootstrap gates pass independently of the earlier v1.0.55 result. See [v1.0.56 evidence](VALIDATION-v1.0.56.md). Production deployment evidence remains [v1.0.55](VALIDATION-v1.0.55.md).
+Public ACME/external-VPS tests remain open. The original source45 security workbench is now completed/sealed with partial coverage; its five findings were fixed in46/50. See the [security closure](SECURITY-SCAN-CLOSURE.md). Exact v1.0.56 CI, immutable artifact, anonymous checksum and public x86/ARM bootstrap gates pass independently of the earlier v1.0.55 result. See [v1.0.56 evidence](VALIDATION-v1.0.56.md). Production deployment evidence remains [v1.0.55](VALIDATION-v1.0.55.md).

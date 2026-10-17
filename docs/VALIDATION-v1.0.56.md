@@ -27,7 +27,7 @@ Both READMEs, installation, update and CLI guides point to the verified QA56 ass
 |---|---|
 | Real public ACME issuance/renewal | NOT TESTED. Requires an authorized test domain with controlled DNS and an eligible empty host with reachable80/443. The synthetic TLS test is not a public-CA test. |
 | Independent external VPS node/network lifecycle | NOT TESTED to completion. Requires a separate disposable owned node and authorized external client path. Busy live hosts are not fresh targets. |
-| Original source45 security workbench | PARTIAL/unsealed due candidate reconciliation; five validated findings fixed in46/50. No independent completed certificate claimed. |
+| Original source45 security workbench | COMPLETED and sealed on 2026-10-17; canonical contract independently validates. Coverage remains PARTIAL, with five findings fixed in46/50. [Closure, test mapping and limits](SECURITY-SCAN-CLOSURE.md). No independent security certificate claimed. |
 | Full accessibility certification | Broad screen-reader/icon/typography/WCAG/pixel-baseline audits remain explicitly deferred; scoped core browser/contrast/keyboard evidence is retained. |
 
-فارسی: نسخه۱.۰.۵۶ به‌صورت QA عمومی با آرشیو ثابت بررسی شد. نصب عمومی هر سه توزیع روی x86_64 و ARM64 واقعی، تست گواهی ساختگی Nginx و CI دقیق موفق‌اند. پنل زنده۱.۰.۵۵ و سرویس‌های فعال حفظ شدند. صدور عمومی ACME، شبکه VPS مستقل و پرونده partial اسکن قبلی تکمیل نشده‌اند؛ این گزارش اعلام Stable یا پایان صددرصد مأموریت نیست.
+فارسی: نسخه۱.۰.۵۶ به‌صورت QA عمومی با آرشیو ثابت بررسی شد. نصب عمومی هر سه توزیع روی x86_64 و ARM64 واقعی، تست گواهی ساختگی Nginx و CI دقیق موفق‌اند. پنل زنده۱.۰.۵۵ و سرویس‌های فعال حفظ شدند. اسکن قبلی رسماً تکمیل و مهر نهایی شده، با پوشش partial و پنج یافته اصلاح‌شده. صدور عمومی ACME و شبکه VPS مستقل هنوز تکمیل نشده‌اند؛ این گزارش اعلام Stable یا پایان صددرصد مأموریت نیست.
