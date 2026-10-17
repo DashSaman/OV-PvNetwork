@@ -242,6 +242,10 @@ def runtime_files(environment):
             if any(x in {'fleet-jobs','deploy-jobs','__pycache__'} for x in relative.parts):continue
             if p.is_symlink():raise ValueError('runtime data symlink requires explicit backup policy')
             if not p.is_file():continue
+            # The panel logger appends here while database snapshots run. It is
+            # diagnostic output, not restorable identity/key state. Keep the
+            # exclusion exact: unknown .log files still require stable bytes.
+            if relative.as_posix()=='app.log':continue
             if database and (p==database or str(p) in {str(database)+'-wal',str(database)+'-shm',str(database)+'-journal'}):continue
             files['data/'+relative.as_posix()]=p
     key=Path(environment.get('PVNETWORK_ANYCONNECT_CREDENTIAL_KEY_FILE') or STATE/'anyconnect-credential-fernet.key')
@@ -268,6 +272,7 @@ def snapshot_runtime_files(destination, environment):
 def snapshot_source(destination):
     def filter_member(member):
         if any(p in {'.venv','node_modules','.git','__pycache__','backups'} for p in Path(member.name).parts):return None
+        if Path(member.name).parts==('data','app.log'):return None
         return member
     with tarfile.open(destination,'w:gz',dereference=True) as tar:tar.add(APP.resolve(),arcname='.',filter=filter_member)
 

@@ -1,4 +1,4 @@
-# PVNetwork operational console — 1.0.45 candidate
+# PVNetwork operational console — v1.0.55 QA
 
 Run `sudo pvnetwork` for the 25-item console. Select English or Persian with `--lang en` / `--lang fa`; menu 24 saves the preference privately. `pvnetwork --help` and each subcommand's `--help` describe automation arguments. Noninteractive execution requires a command.
 
@@ -33,7 +33,7 @@ sudo pvnetwork nodes job --job-type deploy --job-id <returned-job-id> --json
 sudo pvnetwork logs --lines 100 --json
 sudo pvnetwork database check --json
 sudo pvnetwork support --output /root/pvnetwork-support.tar.gz --json
-sudo pvnetwork update v1.0.45 --yes --json
+sudo pvnetwork update v1.0.55 --yes --json
 sudo pvnetwork restore 20261016-120000 --yes --json
 sudo pvnetwork recover --yes --json
 ```
@@ -50,4 +50,13 @@ TLS renewal selects the one ACME certificate used by the managed panel site. It 
 
 Exit codes: 0 success; 64 invalid usage; 69 unhealthy/unavailable; 70 operation failure; 75 busy/pending recovery; 77 root/confirmation required; 130 interrupted. A queued node/settings response indicates acceptance; inspect its terminal status before treating an operation as successful.
 
-This is an unreleased candidate. Current evidence: 680 Linux tests (676 passed, four PostgreSQL skips), real EN/FA PTY navigation and 18-case EN/FA browser matrices for node reconciliation, archives, credential edits and panel-port changes. Installed systemd tests verified Doctor preserves env/database/PID, private support permissions, saved language and a real current-password API/port round-trip. Settings workers use a separate transient unit and the checked installed Node runtime. Exact final artifact/CI, full mission/public-asset checks and owner-authorized Production deployment remain release gates.
+Current release evidence and remaining gates are recorded in [validation](VALIDATION-v1.0.54.md). v1.0.55 is QA until exact artifact, CI/public bootstrap and authorized Production verification are recorded. The native snapshot log policy is described in [release notes](RELEASE-NOTES-v1.0.55.md). [Illustrated web manual](UI-GUIDE.md) · [فارسی](CLI.fa.md).
+
+## First operational session
+
+1. Run `sudo pvnetwork --lang en`, choose **1 Status**, then **7 Doctor**. Read each failed check before any repair.
+2. Inspect **22 Version**, **19 Database**, **21 Jobs** and **5 Logs** as needed. These diagnostic paths do not authorize a blanket restart.
+3. For a change, read that command's `--help`, select one target and run its `--dry-run`. Review the selected scope before explicit confirmation.
+4. Use **10 Backup** and retain its verified path before update/restore/settings work. Directory existence alone does not prove verification.
+5. For queued work, save the job ID and inspect it until a terminal verified result. On interruption inspect **21 Jobs** and the supported recovery command before launching another change.
+6. After mutation, run Status/Doctor again and test the changed workflow. Keep support exports private. Choose **24 Language** to save preference and **25 Exit** to leave.
