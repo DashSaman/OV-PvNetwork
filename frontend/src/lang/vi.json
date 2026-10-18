@@ -762,5 +762,6 @@
     "skipToContent": "Chuyển đến nội dung chính",
     "selectNode": "Chọn nút {{name}}",
     "rateLimit": "Yêu cầu mỗi phút"
-  }
+  },
+  "addNodeDeploymentTitle": "Node deployment"
 }

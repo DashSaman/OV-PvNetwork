@@ -6,6 +6,7 @@ import './ux-hardening.css'
 import './page-hardening.css'
 // PVN-1015: Vengeance-style professional skin; token-level, remove to roll back.
 import './vengeance-skin.css'
+import './manual-accessibility.css'
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import './i18n';

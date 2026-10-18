@@ -762,5 +762,6 @@
     "skipToContent": "Перейти до основного вмісту",
     "selectNode": "Вибрати вузол {{name}}",
     "rateLimit": "Запитів за хвилину"
-  }
+  },
+  "addNodeDeploymentTitle": "Node deployment"
 }

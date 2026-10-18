@@ -14,8 +14,8 @@
 After its official assets exist and gates have passed, an explicitly selected QA update is:
 
 ```bash
-sudo pvnetwork update v1.0.57 --dry-run --json
-sudo pvnetwork update v1.0.57 --yes --json
+sudo pvnetwork update v1.0.58 --dry-run --json
+sudo pvnetwork update v1.0.58 --yes --json
 ```
 
 On an eligible older rooted installation, `--adopt-rooted` is an explicit, separate opt-in; inspect `pvnetwork update --help` and rehearse the verified path before using it. Do not replace the active directory manually.

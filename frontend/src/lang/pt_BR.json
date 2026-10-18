@@ -762,5 +762,6 @@
     "skipToContent": "Ir para o conteúdo principal",
     "selectNode": "Selecionar nó {{name}}",
     "rateLimit": "Solicitações por minuto"
-  }
+  },
+  "addNodeDeploymentTitle": "Node deployment"
 }

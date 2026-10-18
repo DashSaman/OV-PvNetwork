@@ -69,7 +69,7 @@ const LiveAreaChart = ({ history = [] }) => {
           <Area
             type="monotone"
             dataKey="down"
-            stroke="#22d3ee"
+            stroke="var(--chart-down-stroke, #22d3ee)"
             strokeWidth={2}
             fill="url(#pvDownFill)"
             isAnimationActive={false}
@@ -78,7 +78,8 @@ const LiveAreaChart = ({ history = [] }) => {
           <Area
             type="monotone"
             dataKey="up"
-            stroke="#ff8a2a"
+            stroke="var(--chart-up-stroke, #ff8a2a)"
+            strokeDasharray="6 4"
             strokeWidth={2}
             fill="url(#pvUpFill)"
             isAnimationActive={false}

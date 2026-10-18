@@ -24,7 +24,7 @@ const badgeStyle = (health) => {
     return {
       ...base,
       background: 'rgba(76, 175, 80, 0.15)',
-      color: '#66bb6a',
+      color: 'var(--health-ok-text, #66bb6a)',
     };
   }
 
@@ -32,7 +32,7 @@ const badgeStyle = (health) => {
     return {
       ...base,
       background: 'rgba(255, 193, 7, 0.15)',
-      color: '#ffca28',
+      color: 'var(--health-warn-text, #ffca28)',
     };
   }
 
@@ -40,14 +40,14 @@ const badgeStyle = (health) => {
     return {
       ...base,
       background: 'rgba(158, 158, 158, 0.15)',
-      color: '#bdbdbd',
+      color: 'var(--health-disabled-text, #bdbdbd)',
     };
   }
 
   return {
     ...base,
     background: 'rgba(244, 67, 54, 0.15)',
-    color: '#ef5350',
+    color: 'var(--health-error-text, #ef5350)',
   };
 };
 
@@ -187,7 +187,7 @@ const NodeHealthPanel = ({
 
 
   return (
-    <div
+    <div className="node-health-panel"
       style={{
         marginBottom: '30px',
         background: 'var(--background-secondary)',
@@ -373,10 +373,9 @@ const NodeHealthPanel = ({
                       {node.name}
                     </div>
 
-                    <div
+                    <div className="node-health-address"
                       style={{
                         fontSize: '11px',
-                        opacity: 0.6,
                         marginTop: '4px',
                       }}
                     >
@@ -487,6 +486,7 @@ const NodeHealthPanel = ({
                     >
                       <input
                         type="number"
+                        aria-label={`${t('weight', 'Weight')} · ${node.name}`}
                         min="0"
                         max="1000"
                         step="1"

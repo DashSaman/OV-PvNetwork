@@ -762,5 +762,6 @@
     "skipToContent": "Lewati ke konten utama",
     "selectNode": "Pilih node {{name}}",
     "rateLimit": "Permintaan per menit"
-  }
+  },
+  "addNodeDeploymentTitle": "Node deployment"
 }

@@ -165,6 +165,12 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4173/panel/ >/dev/null
+          PV_MANUAL_ROUTES=/ PV_MANUAL_WIDTHS=390 PV_MANUAL_DIALOGS=0 PV_MANUAL_REPORT=/tmp/pvnetwork-file-controls-accessibility.json node tests/manual-accessibility-smoke.mjs
+          PV_MANUAL_REPORT=/tmp/pvnetwork-rendered-accessibility.json node tests/manual-accessibility-smoke.mjs
+          PV_ASSISTIVE_REPORT=/tmp/pvnetwork-assistive-accessibility.json node tests/assistive-display-smoke.mjs
+          PV_DEPLOY_REPORT=/tmp/pvnetwork-deployment-accessibility.json node tests/deployment-terminal-smoke.mjs
+          PV_DEPLOY_FORCED_COLORS=active PV_DEPLOY_REPORT=/tmp/pvnetwork-deployment-forced-accessibility.json node tests/deployment-terminal-smoke.mjs
+          PV_DEPLOY_NATIVE_ZOOM=1 PV_DEPLOY_WIDTHS=1280 PV_DEPLOY_REPORT=/tmp/pvnetwork-deployment-zoom-accessibility.json node tests/deployment-terminal-smoke.mjs
           node tests/online-user-truth-smoke.mjs
           node tests/responsive-smoke.mjs
           node tests/inline-quick-edit-smoke.mjs
