@@ -183,6 +183,11 @@ jobs:
           PV_CONTRAST_PROBE=1 node tests/control-contrast.mjs
           PV_A11Y_REPORT=/tmp/pvnetwork-admin-accessibility.json node tests/accessibility-smoke.mjs
           PV_PYTHON=python3 PV_A11Y_REPORT=/tmp/pvnetwork-subscription-accessibility.json node tests/subscription-accessibility.mjs
+          PV_MANUAL_REPORT=/tmp/pvnetwork-rendered-accessibility.json node tests/manual-accessibility-smoke.mjs
+          PV_ASSISTIVE_REPORT=/tmp/pvnetwork-assistive-accessibility.json node tests/assistive-display-smoke.mjs
+          PV_DEPLOY_REPORT=/tmp/pvnetwork-deployment-accessibility.json node tests/deployment-terminal-smoke.mjs
+          PV_DEPLOY_FORCED_COLORS=active PV_DEPLOY_REPORT=/tmp/pvnetwork-deployment-forced-accessibility.json node tests/deployment-terminal-smoke.mjs
+          PV_DEPLOY_NATIVE_ZOOM=1 PV_DEPLOY_WIDTHS=1280 PV_DEPLOY_REPORT=/tmp/pvnetwork-deployment-zoom-accessibility.json node tests/deployment-terminal-smoke.mjs
 
       - name: Preserve accessibility results including manual-review items
         if: always()

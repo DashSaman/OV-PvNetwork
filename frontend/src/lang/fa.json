@@ -208,7 +208,7 @@
   "ui.1ee3848386fd": "#27f58a",
   "ui.1f58be29707f": "۵ دقیقه اخیر",
   "ui.220fb63dddff": "Error deleting user.",
-  "ui.234f624b2f7c": "Back to form",
+  "ui.234f624b2f7c": "بازگشت به فرم",
   "ui.24d58e184cd4": "مسدود",
   "ui.2b068ac2d28d": "پذیرش کاربر جدید",
   "ui.2bb6b986c5d6": "active",
@@ -762,5 +762,6 @@
     "skipToContent": "رفتن به محتوای اصلی",
     "selectNode": "انتخاب نود {{name}}",
     "rateLimit": "تعداد درخواست در دقیقه"
-  }
+  },
+  "addNodeDeploymentTitle": "نصب نود"
 }

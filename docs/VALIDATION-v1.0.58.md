@@ -1,0 +1,19 @@
+# Candidate v1.0.58 validation — PVN-1042
+
+Status: **in progress, not published or activated**. Supported Stable remains v1.0.37; the live panel application remains v1.0.55. The separate authorized node recovery is recorded under [PVN-1043](incidents/2026-10-18-node-address-change.md); it is not a UI deployment.
+
+The candidate fixes confirmed rendered-contrast failures, including light navigation/dashboard/node-health/backup surfaces, low chart/helper text, form boundaries and scrolling behind the mobile header. The deployment console now uses the existing native modal mechanism, with log/progress/error semantics, focus containment/return and SSH-secret clearing after successful or rejected submission. No trust check is disabled; an observed SSH fingerprint is never automatically accepted.
+
+Local evidence so far:
+
+- The existing full route/dialog gate passes80 pages,136 dialog openings,228 axe scans,144 measured focus outlines and its failing negative control, with zero definite violations. All357 original incomplete groups remain recorded; they are not counted as automated passes.
+- A synthetic real-browser regression reproduced the missing named deployment dialog before the fix. After the fix, 12 normal-color cases and 12 forced-color emulation cases pass across EN/FA, both themes and 390/768/1440px; 4 actual Chromium 400% zoom/text-spacing cases pass. Each exercises running, failed job, HTTP rejection, retry and success states, exact invoker return and credential clearing. Actual browser AX trees verify native dialog/log exposure. This is not a screen-reader session.
+- Rendered tests include ten positive/negative controls for alpha/pseudo layers, border/fill distinction, clipping and gradient fills. A 68-state desktop checkpoint passed. The expanded 272-state scroll/populated-table run reproduced60 mobile-header/edge failures; after correction, the repeat retained only one light bandwidth helper failure. Its final selector correction passes a focused6-state repeat. Final exact-source full CI remains required; the earlier full run is not relabeled as green.
+- Eight gradient text cases use conservative independent luminance ranges from actual rasterized fill/backdrop samples, without credit for text shadows. The original manual classifications remain recorded. Node Archive focus samples compare outlines with actual adjacent rendered backgrounds.
+- The actual browser AX/forced-color suite passes8 cases, and36 route cases pass native400% zoom/text spacing. Subscription accessibility passes8 cases with16 incomplete groups retained. Build, quiet lint,20 portable tests, both offline frozen-lock checks,10 documentation files/132 local links/two synthetic PNGs and changed-file privacy checks pass. Windows cannot import the POSIX-only `fcntl` contracts; those checks belong to Linux CI, not a reported local pass.
+
+The CI workflow now includes rendered scroll/populated-table checks, forced-color/browser AX checks and all three deployment-console matrices, and retains their JSON artifacts alongside the original axe reports. No final CI, immutable archive, public native bootstrap or Production UI activation is claimed yet.
+
+Original QA57 `incomplete` entries remain in its [immutable validation record](VALIDATION-v1.0.57.md). These additional scoped tests do not establish complete WCAG conformance. Actual screen-reader/speech/OS hardware review, public ACME issuance/renewal and an independent external node/client lifecycle remain open. No empty VPS is available, and busy live nodes are not disposable fixtures. The [sealed source45 security scan](SECURITY-SCAN-CLOSURE.md) remains partial; this is not a new independent security scan.
+
+[English illustrated guide](MANUAL-ACCESSIBILITY-v1.0.58.md) · [راهنمای تصویری فارسی](MANUAL-ACCESSIBILITY-v1.0.58.fa.md)

@@ -762,5 +762,6 @@
     "skipToContent": "Перейти к основному содержимому",
     "selectNode": "Выбрать узел {{name}}",
     "rateLimit": "Запросов в минуту"
-  }
+  },
+  "addNodeDeploymentTitle": "Node deployment"
 }

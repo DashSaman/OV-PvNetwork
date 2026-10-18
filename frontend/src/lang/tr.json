@@ -762,5 +762,6 @@
     "skipToContent": "Ana içeriğe geç",
     "selectNode": "{{name}} düğümünü seç",
     "rateLimit": "Dakika başına istek"
-  }
+  },
+  "addNodeDeploymentTitle": "Node deployment"
 }

@@ -762,5 +762,6 @@
     "skipToContent": "メインコンテンツに移動",
     "selectNode": "ノード {{name}} を選択",
     "rateLimit": "1分あたりのリクエスト数"
-  }
+  },
+  "addNodeDeploymentTitle": "Node deployment"
 }

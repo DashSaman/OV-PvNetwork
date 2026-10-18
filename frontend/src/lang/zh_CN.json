@@ -762,5 +762,6 @@
     "skipToContent": "跳至主要内容",
     "selectNode": "选择节点 {{name}}",
     "rateLimit": "每分钟请求数"
-  }
+  },
+  "addNodeDeploymentTitle": "Node deployment"
 }

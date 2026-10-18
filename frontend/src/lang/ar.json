@@ -762,5 +762,6 @@
     "skipToContent": "انتقل إلى المحتوى الرئيسي",
     "selectNode": "اختر العقدة {{name}}",
     "rateLimit": "الطلبات في الدقيقة"
-  }
+  },
+  "addNodeDeploymentTitle": "نشر العقدة"
 }

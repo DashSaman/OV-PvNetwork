@@ -1,3 +1,10 @@
+## v1.0.58 candidate — PVN-1042: Rendered accessibility and deployment results
+
+- Continue manual contrast work across themes, actual scroll positions, populated tables and gradients; name node-weight controls and distinguish chart series.
+- Keep deployment running/error/success states inside the existing native modal, expose log/progress/error semantics, restore keyboard focus and clear SSH secrets on rejected submissions. Preserve strict SSH host verification.
+- [Actual evidence and remaining gates](docs/VALIDATION-v1.0.58.md), [English illustrated guide](docs/MANUAL-ACCESSIBILITY-v1.0.58.md), [راهنمای تصویری فارسی](docs/MANUAL-ACCESSIBILITY-v1.0.58.fa.md). No publication, Stable promotion or Production UI activation claimed.
+- فارسی: کنتراست، ورودی وزن نود و پنجرهٔ نتیجهٔ نصب اصلاح شدند؛ شواهد نهایی و شرط‌های انتشار جدا ثبت می‌شوند.
+
 ## v1.0.57 verified QA — PVN-1041: Keyboard accessibility
 
 - Native dialog focus/containment/Escape/return across existing admin flows and subscription QR; keyboard row/mobile menus; labels, primary headings/skip link, alerts and scroll-region focus.

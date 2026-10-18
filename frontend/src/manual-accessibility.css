@@ -1,0 +1,85 @@
+/* PVN-1042: pair colors with their rendered surfaces, including gradient cases. */
+:root { --control-border: #8293ab; }
+html[data-ov-theme='light'] {
+  --control-border: #64748b;
+  --chart-down-stroke: #0e7490;
+  --chart-up-stroke: #9a3412;
+  --health-ok-text: #166534;
+  --health-warn-text: #854d0e;
+  --health-disabled-text: #475569;
+  --health-error-text: #991b1b;
+}
+:root input:not([type='checkbox']):not([type='radio']),
+:root select, :root textarea {
+  border-color: var(--control-border) !important;
+}
+html[data-ov-theme='light'] .pn-admin-brand-title { color: #0f172a !important; }
+html[data-ov-theme='light'] .pn-admin-brand-sub,
+html[data-ov-theme='light'] .nav-link.active { color: #9a3412 !important; }
+html[data-ov-theme] .node-health-panel { color: var(--text-primary); }
+html[data-ov-theme] .node-health-panel th { opacity: 1 !important; }
+html[data-ov-theme] .ov-metric-content small { color: var(--ov-muted); }
+html[data-ov-theme] .ov-footnote { color: var(--ov-muted); }
+.node-health-address { color: var(--text-secondary); }
+html[data-ov-theme='light'] .node-health-panel tbody tr:nth-child(even) {
+  background: var(--background-primary);
+}
+html[data-ov-theme='light'] .ov-backup-panel { background: var(--backup-bg) !important; }
+html[data-ov-theme='light'] .ov-backup-notice { color: #78350f; }
+html[data-ov-theme='light'] .ov-backup-ok,
+html[data-ov-theme='light'] .ov-backup-message { color: #065f46; }
+html[data-ov-theme='light'] .ov-backup-error { color: #991b1b; }
+html[data-ov-theme='light'] .ov-live-badge,
+html[data-ov-theme='light'] .ov-status-pill.online { color: #166534; }
+html[data-ov-theme='light'] .ov-status-pill.offline { color: #9f1239; }
+html[data-ov-theme='light'] .ov-hero-rate.download strong,
+html[data-ov-theme='light'] .ov-node-speed-grid .download { color: #0e7490; }
+html[data-ov-theme='light'] .ov-hero-rate.upload strong,
+html[data-ov-theme='light'] .ov-node-speed-grid .upload { color: #7e22ce; }
+html[data-ov-theme='light'] .ov-chart-wrap .recharts-text { fill: var(--text-secondary); }
+html[data-ov-theme='dark'] .ov-chart-wrap .recharts-text { fill: #cbd5e1; }
+html[data-ov-theme='light'] input::placeholder,
+html[data-ov-theme='light'] textarea::placeholder { color: #334155; opacity: 1; }
+html[data-ov-theme='light'] .bandwidth-safety-grid > div { color: #334155; }
+/* These cards and table controls intentionally keep dark surfaces in both themes. */
+html[data-ov-theme='light'] .admin-card .admin-stats { color: #cbd5e1; }
+html[data-ov-theme='light'] .pv-users-table th { color: #cbd5e1 !important; }
+html[data-ov-theme='light'] .pv-users-table .btn-secondary {
+  color: #f8fafc !important;
+  background: #17243b !important;
+}
+html[data-ov-theme='light'] .domain-history-search {
+  background: var(--background-primary);
+  border-color: var(--control-border);
+}
+html[data-ov-theme='light'] .domain-history-summary strong { color: #075985; }
+html[data-ov-theme='light'] .domain-history-table td:not(.domain-history-domain) {
+  color: var(--text-primary);
+}
+html[data-ov-theme='light'] .bandwidth-header { background: #1e293b; }
+html[data-ov-theme='light'] .bandwidth-header p { color: #e2e8f0; }
+html[data-ov-theme='light'] .bandwidth-rate-input b { color: var(--text-primary); }
+.monitor-form > .monitor-grid { margin-block: 12px; }
+@media (max-width: 992px) {
+  html[data-ov-theme] header.main-header {
+    background: var(--background-secondary) !important;
+  }
+}
+.node-deployment-console { color: #e5ffed; overflow-wrap: anywhere; }
+.node-deployment-console > div:first-child,
+.node-deployment-console > div:last-child { flex-wrap: wrap; gap: 12px; }
+.node-deployment-console [role='log'] { min-height: 120px; }
+.node-deployment-console > div:first-child,
+.node-deployment-console > div:last-child { flex-shrink: 0; }
+.node-deployment-console [role='progressbar'] { flex-shrink: 0; }
+
+@media (forced-colors: active) {
+  /* Keep UA palette adjustment enabled; gradients/shadows cannot supply boundaries. */
+  :root button, :root .btn, :root [role='button'],
+  html[data-ov-theme] .btn:not(.btn-secondary):not(.danger):not(:disabled) {
+    border: 1px solid ButtonText !important;
+  }
+  :root input, :root select, :root textarea { border-color: ButtonText !important; }
+  :root :focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }
+  :root .nav-link.active, :root .mobile-nav-link.active { outline: 1px solid Highlight; }
+}

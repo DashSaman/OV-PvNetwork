@@ -190,7 +190,7 @@ const UserTable = ({ ratesByUuid = {},
 
                 <td className="pv-speed-cell">
                   {(() => {
-                    if (!user.is_online) return <span style={{ opacity: .35 }}>—</span>;
+                    if (!user.is_online) return <span>—</span>;
                     const r = ratesByUuid[user.uuid] || {};
                     const fmt = b => {
                       const v = Number(b || 0);

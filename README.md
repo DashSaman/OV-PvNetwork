@@ -6,6 +6,8 @@ PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multi
 
 ## Release status and changes
 
+**v1.0.58 is a candidate in progress.** Since QA57: rendered theme/scroll contrast, named node-weight fields and an accessible deployment console with cleared SSH secrets and verified-host guidance. [Illustrated guide](docs/MANUAL-ACCESSIBILITY-v1.0.58.md) · [فارسی](docs/MANUAL-ACCESSIBILITY-v1.0.58.fa.md) · [Actual results and open gates](docs/VALIDATION-v1.0.58.md). Published installation/update commands below still target verified QA57.
+
 **v1.0.57 is verified public QA.** Since v1.0.56: native dialog focus/Escape/exact return, keyboard row/mobile menus, labels/headings/skip link, alerts, reduced motion and corrected light/focus/menu contrast. Exact CI, 228 axe scans and official fresh/repeat bootstrap on all 6 x86/ARM distribution guests passed. [Illustrated keyboard guide](docs/ACCESSIBILITY.md) · [راهنمای فارسی](docs/ACCESSIBILITY.fa.md) · [Evidence and remaining Stable gates](docs/VALIDATION-v1.0.57.md) · [QA release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.57). Live remains v1.0.55; no new Production deployment.
 
 **v1.0.56 is verified public QA.** Since v1.0.55, new installer-managed HTTPS certificates record a safe successful-renewal Nginx reload hook. Exact CI, anonymous artifact verification and public fresh/repeat installation on all three distributions on x86_64 and real ARM64 passed. [Validation and remaining Stable gates](docs/VALIDATION-v1.0.56.md) · [English notes](docs/RELEASE-NOTES-v1.0.56.md) · [یادداشت فارسی](docs/RELEASE-NOTES-v1.0.56.fa.md). No new Production deployment or live certificate change occurred.
