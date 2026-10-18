@@ -1,6 +1,6 @@
 # Public QA v1.0.58 validation — PVN-1042
 
-Status: **verified public QA; remaining manual/infrastructure/activation gates stay open**. Supported Stable remains v1.0.37; the live panel application remains v1.0.55. The separate authorized node recovery is recorded under [PVN-1043](incidents/2026-10-18-node-address-change.md); it is not a UI deployment.
+Status: **verified public QA and owner-authorized panel deployment; remaining manual/infrastructure gates stay open**. Supported Stable remains v1.0.37; the authorized live panel now runs v1.0.58. [Production evidence](PRODUCTION-v1.0.58.md). The separate authorized node recovery is recorded under [PVN-1043](incidents/2026-10-18-node-address-change.md); it is not a UI deployment.
 
 ## Immutable identity and public installation
 
@@ -32,8 +32,14 @@ The release fixes confirmed rendered-contrast failures in light navigation/dashb
 
 The earlier e703c91 checkpoint passed six native guests and unit/audit/build gates, then exposed a helper assumption that every heading background must be a gradient. Its test-only correction preserves contrast/alpha thresholds. The ec2c3fa checkpoint passed that correction and 228 axe scans, then exposed two Linux empty native-file raster samples. Separating native pseudo-control colors from an empty ordinary text value, explicit theme colors and the early file gate address those samples. Earlier failed reports remain evidence, not relabeled passes; neither private superseded archive was published. No axe rule or contrast threshold was disabled.
 
+## Authorized Production activation
+
+On 2026-10-18, the exact frozen public archive was staged and verified on the authorized panel. Native PostgreSQL backup/restore rehearsal, cloned candidate, compatible retained 55 rollback readiness, local/public health/assets/API, private cached-profile continuity and protected identities/services passed. The observed panel maintenance span was 129.07 seconds. No node reinstallation, VPN/tunnel restart, credential rotation or stale database restore occurred. [Detailed scope](PRODUCTION-v1.0.58.md).
+
+Actual live-browser form checks pass 4 EN/FA/theme/mobile/tablet/desktop cases. Each submits a reserved documentation address and invalid SSH port 0; the real backend returns 422 for that field before a job handler runs. Native dialog/log/alert semantics, associated host-trust help, exact keyboard return and SSH-secret clearing pass. This is a scoped UI/validation result, not a complete node installation. Visual review found inherited `[object Object]` text for structured validation arrays; PVN-1044 stays open for the next immutable patch. No existing node is used as a fresh-install fixture.
+
 ## Remaining gates
 
-Original QA57 incomplete entries remain in its [immutable validation record](VALIDATION-v1.0.57.md). These scoped browser/visual checks do not establish complete WCAG conformance. Actual screen-reader/speech/OS hardware review, public ACME issuance/renewal, an independent external fresh-node/client lifecycle and any separately authorized new Production UI activation remain open. No empty VPS is available; busy live nodes are not disposable fixtures. The [sealed source45 security scan](SECURITY-SCAN-CLOSURE.md) remains partial; this is not a new independent security scan. No full Stable promotion or external VPN-client result is inferred from panel health or native container installation.
+Original QA57 incomplete entries remain in its [immutable validation record](VALIDATION-v1.0.57.md). These scoped browser/visual checks do not establish complete WCAG conformance. Actual screen-reader/speech/OS hardware review, public ACME issuance/renewal, an independent external fresh-node/client lifecycle and the inherited structured-validation message follow-up remain open. The owner-authorized panel activation is verified separately. No empty VPS is available; busy live nodes are not disposable fixtures. The [sealed source45 security scan](SECURITY-SCAN-CLOSURE.md) remains partial; this is not a new independent security scan. No full Stable promotion or external VPN-client result is inferred from panel health or native container installation.
 
 [English illustrated guide](MANUAL-ACCESSIBILITY-v1.0.58.md) · [راهنمای تصویری فارسی](MANUAL-ACCESSIBILITY-v1.0.58.fa.md)
