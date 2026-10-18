@@ -90,10 +90,33 @@ function demoToken() {
 
 
 
+function measureControlColors(elements) {
+ const rgba=value=>{const n=value.match(/[\d.]+/g)?.map(Number);if(!n||n.length<3)throw new Error('Unsupported computed color '+value);return [...n.slice(0,3),n[3]??1];};
+ const blend=(fg,bg)=>fg.slice(0,3).map((v,i)=>v*fg[3]+bg[i]*(1-fg[3]));
+ const luminance=rgb=>rgb.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+ const contrast=(a,b)=>{const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+ return [...elements,...document.querySelectorAll('main .view-header h2')].filter(el=>el.getClientRects().length&&!el.disabled).map(el=>{
+  const style=getComputedStyle(el),background=rgba(style.backgroundColor),foreground=rgba(style.color);
+  // Keep the same conservative alpha bounds for solid and gradient surfaces.
+  const heading=el.matches('.view-header h2'),parent=heading?getComputedStyle(el.closest('.view-header')):null;
+  const paints=heading?(parent.backgroundImage==='none'?[rgba(parent.backgroundColor)]:[...parent.backgroundImage.matchAll(/rgba?\([^)]*\)/g)].map(match=>rgba(match[0]))):[background];
+  if(!paints.length)throw new Error('Heading gradient colors unavailable');
+  const ratios=paints.flatMap(paint=>[[0,0,0],[255,255,255]].map(base=>{const bg=blend(paint,base);return contrast(blend(foreground,bg),bg);}));
+  const placeholder=el.placeholder?rgba(getComputedStyle(el,'::placeholder').color):null;
+  const placeholderRatios=placeholder?[[0,0,0],[255,255,255]].map(base=>{const bg=blend(background,base);return contrast(blend(placeholder,bg),bg);}):[];
+  return {tag:el.tagName,type:el.type,id:el.id,foreground:style.color,background:heading?(parent.backgroundImage==='none'?parent.backgroundColor:parent.backgroundImage):style.backgroundColor,threshold:heading?3:4.5,minimum:Math.min(...ratios),maximum:Math.max(...ratios),placeholderMinimum:placeholderRatios.length?Math.min(...placeholderRatios):null};
+ });
+}
+
 const browser=await zoomBrowser();let cases=0,controls=0;const failures=[];
 const sampleWidths=process.env.PV_CONTRAST_PROBE? [1440]:widths;
 const sampleZooms=process.env.PV_CONTRAST_PROBE? [1]:[1,1.25,1.5];
 try {
+const calibration=await browser.context.newPage();
+await calibration.setContent('<div class="view-header" style="background:#111"><h2 style="color:white">Good solid</h2></div><div class="view-header" style="background:white"><h2 style="color:white">Bad solid</h2></div><div class="view-header" style="background:linear-gradient(90deg,#000,#111)"><h2 style="color:white">Good gradient</h2></div><div class="view-header" style="background:linear-gradient(90deg,#fff,#eee)"><h2 style="color:white">Bad gradient</h2></div>');
+const fixture=await calibration.locator('.view-header h2').evaluateAll(measureControlColors);
+if(fixture.length!==4||fixture[0].minimum<3||fixture[1].minimum>=3||fixture[2].minimum<3||fixture[3].minimum>=3)throw Error('Solid/gradient heading measurement negative controls failed');
+await calibration.close();
 for(const language of ['en','fa']) for(const theme of ['light','dark'])
  for(const width of sampleWidths) for(const zoom of sampleZooms){
  const page=await browser.context.newPage();await page.setViewportSize({width,height:1000});
@@ -103,23 +126,7 @@ for(const language of ['en','fa']) for(const theme of ['light','dark'])
  },{language,theme,token:demoToken()});
  await page.route('**/api/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(responseFor(route.request().url()))}));
  const check=async label=>{
-  const result=await page.locator('main :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),select,textarea),.modal :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea)').evaluateAll(elements=>{
-   const rgba=value=>{const n=value.match(/[\d.]+/g)?.map(Number);if(!n||n.length<3)throw new Error('Unsupported computed color '+value);return [...n.slice(0,3),n[3]??1];};
-   const blend=(fg,bg)=>fg.slice(0,3).map((v,i)=>v*fg[3]+bg[i]*(1-fg[3]));
-   const luminance=rgb=>rgb.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
-   const contrast=(a,b)=>{const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
-   return [...elements,...document.querySelectorAll('main .view-header h2')].filter(el=>el.getClientRects().length&&!el.disabled).map(el=>{
-    const style=getComputedStyle(el),background=rgba(style.backgroundColor),foreground=rgba(style.color);
-    // Bound translucency against both extremes: no guessed ancestor/gradient color.
-    const heading=el.matches('.view-header h2');
-    const paints=heading?[...getComputedStyle(el.closest('.view-header')).backgroundImage.matchAll(/rgba?\([^)]*\)/g)].map(match=>rgba(match[0])):[background];
-    if(!paints.length)throw new Error('Heading gradient colors unavailable');
-    const ratios=paints.flatMap(paint=>[[0,0,0],[255,255,255]].map(base=>{const bg=blend(paint,base);return contrast(blend(foreground,bg),bg);}));
-    const placeholder=el.placeholder?rgba(getComputedStyle(el,'::placeholder').color):null;
-    const placeholderRatios=placeholder?[[0,0,0],[255,255,255]].map(base=>{const bg=blend(background,base);return contrast(blend(placeholder,bg),bg);}):[];
-    return {tag:el.tagName,type:el.type,id:el.id,foreground:style.color,background:heading?getComputedStyle(el.closest('.view-header')).backgroundImage:style.backgroundColor,threshold:heading?3:4.5,minimum:Math.min(...ratios),maximum:Math.max(...ratios),placeholderMinimum:placeholderRatios.length?Math.min(...placeholderRatios):null};
-   });
-  });
+  const result=await page.locator('main :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),select,textarea),.modal :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea)').evaluateAll(measureControlColors);
   controls+=result.length;
   for(const item of result)if(item.minimum<item.threshold||item.placeholderMinimum!==null&&item.placeholderMinimum<4.5)failures.push({label,...item});
  };
@@ -141,5 +148,5 @@ for(const language of ['en','fa']) for(const theme of ['light','dark'])
  finally{await page.close();}
 }
 }finally{await browser.close();}
-console.log('CONTROL_CONTRAST='+JSON.stringify({cases,controls,failures:failures.length,firstFailures:failures.slice(0,5)}));
+console.log('CONTROL_CONTRAST='+JSON.stringify({measurementFixtures:4,cases,controls,failures:failures.length,firstFailures:failures.slice(0,5)}));
 process.exitCode=failures.length?1:0;
