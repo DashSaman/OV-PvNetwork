@@ -16,3 +16,5 @@ This candidate continues QA57's manual-review work. It is not yet a published re
 ![Persian mobile deployment error — synthetic local example](images/v1.0.58/deployment-fa-dark-390.png)
 
 All images use synthetic loopback fixtures. They contain no customer information or real server access details. They demonstrate UI states, not an actual installation on a new VPS.
+
+File upload fields use explicit theme colors for both the filename area and **Choose file** button. Their opaque color pairs are checked separately from normal text; the browser's native file-selector painting and OS file picker remain manual-review items.

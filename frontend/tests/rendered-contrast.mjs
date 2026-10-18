@@ -9,7 +9,7 @@ export async function renderedText(page) {
    const s=getComputedStyle(el);if(s.visibility!=='visible'||s.display==='none'||!rects.length)return;
    let opacity=1;for(let p=el;p;p=p.parentElement)opacity*=Number(getComputedStyle(p).opacity);
    const ink=kind==='placeholder'?getComputedStyle(el,'::placeholder').color:el instanceof SVGElement?s.fill:s.webkitTextFillColor||s.color;
-   const manual=ink.includes('url(')||ink==='none'||s.backgroundClip==='text'||s.webkitBackgroundClip==='text';
+   const manual=kind==='file'||ink.includes('url(')||ink==='none'||s.backgroundClip==='text'||s.webkitBackgroundClip==='text';
    const color=parse(ink),alpha=(color[3]??1)*opacity;
    if(!alpha&&!manual)return;
    const points=[];
@@ -20,14 +20,15 @@ export async function renderedText(page) {
    }
    if(!points.length)return;
    if(!seen.has(el)){el.dataset.pvPixelText=String(seen.size);seen.add(el);}
-   results.push({id:el.dataset.pvPixelText,selector:el.id?'#'+el.id:el.tagName.toLowerCase()+'.'+[...el.classList].join('.'),text:text.trim().slice(0,90),color,alpha,minimum:parseFloat(s.fontSize)>=24||(parseFloat(s.fontSize)>=18.666&&Number(s.fontWeight)>=700)?3:4.5,manual,points});
+   results.push({id:el.dataset.pvPixelText,selector:el.id?'#'+el.id:el.tagName.toLowerCase()+'.'+[...el.classList].join('.'),kind,text:text.trim().slice(0,90),color,alpha,minimum:parseFloat(s.fontSize)>=24||(parseFloat(s.fontSize)>=18.666&&Number(s.fontWeight)>=700)?3:4.5,manual,points});
   };
   let node;while((node=walk.nextNode()))if(node.textContent.trim()){
    const range=document.createRange();range.selectNodeContents(node);add(node.parentElement,[...range.getClientRects()],node.textContent);
   }
   for(const el of document.querySelectorAll('input:not([type=checkbox]):not([type=radio]),textarea,select')){
    const rect=el.getBoundingClientRect(),s=getComputedStyle(el),pad=parseFloat(s.paddingLeft)||4;
-   add(el,[{x:rect.x+pad,y:rect.y+4,width:Math.max(0,rect.width-pad-25),height:rect.height-8}],el.value||el.placeholder||'',el.value?'value':'placeholder');
+   const text=el.type==='file'?'Native file selector':el.value||el.placeholder||'';
+   if(text)add(el,[{x:rect.x+pad,y:rect.y+4,width:Math.max(0,rect.width-pad-25),height:rect.height-8}],text,el.type==='file'?'file':el.value?'value':'placeholder');
   }
   return results;
  });
@@ -37,13 +38,31 @@ export async function renderedText(page) {
   const img=new Image();img.src='data:image/png;base64,'+png;await img.decode();const canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
   const lum=rgb=>rgb.slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
   return elements.map(({points,...el})=>{
-   if(el.manual)return {...el,reason:'Text-clipped gradient/image; explicit visual review'};
+   if(el.manual)return {...el,reason:el.kind==='file'?'UA file-selector text is not an ordinary DOM value; authored opaque color pairs checked separately, native painting remains manual':'Text-clipped gradient/image; explicit visual review'};
    let ratio=Infinity,worst;for(const {x,y} of points){const bg=[...ctx.getImageData(x,y,1,1).data].slice(0,3),ink=el.color.slice(0,3).map((c,i)=>c*el.alpha+bg[i]*(1-el.alpha)),a=lum(bg),b=lum(ink),r=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);if(r<ratio){ratio=r;worst={x,y,background:bg};}}
    return {...el,ratio,...worst};
   });
  },{png,elements});
  await page.evaluate(()=>document.querySelectorAll('[data-pv-pixel-text]').forEach(el=>delete el.dataset.pvPixelText));
  return measured;
+}
+
+// Native file-button/name strings live in UA shadow UI. Do not mistake an empty
+// value or the native button's ink for a rasterized textbox background. Explicit
+// opaque author colors permit separate checks without claiming OS certification.
+export async function fileControlColors(page) {
+ return page.locator('input[type=file]').evaluateAll(els=>{
+  const rgba=value=>(value.match(/[\d.]+/g)||[]).map(Number);
+  const lum=rgb=>rgb.slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+  return els.filter(el=>el.getClientRects().length&&!el.disabled).map(el=>{
+   const input=getComputedStyle(el),button=getComputedStyle(el,'::file-selector-button');
+   let opacity=1;for(let p=el;p;p=p.parentElement)opacity*=Number(getComputedStyle(p).opacity);
+   const pairs=[['filename',input],['button',button]].map(([part,s])=>{
+    const fg=rgba(s.color),bg=rgba(s.backgroundColor),opaque=fg.length>=3&&bg.length>=3&&(fg[3]??1)===1&&(bg[3]??1)===1&&opacity===1;
+    const a=lum(fg),b=lum(bg);return {part,color:s.color,background:s.backgroundColor,opaque,ratio:opaque?(Math.max(a,b)+.05)/(Math.min(a,b)+.05):null};
+   });return {id:el.id||el.className,pairs};
+  });
+ });
 }
 
 // Conservative bounds for an opaque text-clipped gradient: rasterize its full

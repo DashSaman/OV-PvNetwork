@@ -13,6 +13,15 @@ html[data-ov-theme='light'] {
 :root select, :root textarea {
   border-color: var(--control-border) !important;
 }
+:root input[type='file'] {
+  color: var(--text-primary) !important;
+  background: var(--background-primary) !important;
+}
+:root input[type='file']::file-selector-button {
+  color: inherit;
+  background: var(--background-secondary);
+  border: 1px solid var(--control-border);
+}
 html[data-ov-theme='light'] .pn-admin-brand-title { color: #0f172a !important; }
 html[data-ov-theme='light'] .pn-admin-brand-sub,
 html[data-ov-theme='light'] .nav-link.active { color: #9a3412 !important; }

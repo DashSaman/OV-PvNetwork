@@ -4,7 +4,7 @@ import {chromium} from 'playwright';
 import {mkdir,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {baseUrl,responseFor,demoToken,routes} from './accessibility-fixtures.mjs';
-import {renderedText,controlEdges,renderedFocus,renderedGradientText} from './rendered-contrast.mjs';
+import {renderedText,controlEdges,renderedFocus,renderedGradientText,fileControlColors} from './rendered-contrast.mjs';
 if(!/^http:\/\/127\.0\.0\.1:\d+\/panel$/.test(baseUrl))throw Error('Owned loopback preview required');
 const browser=await chromium.launch({headless:true,channel:'chromium'}),results=[],failures=[],manual=[];
 const widths=(process.env.PV_MANUAL_WIDTHS||'390,1440').split(',').map(Number);
@@ -32,6 +32,11 @@ const gradientCalibration=await browser.newPage({viewport:{width:800,height:600}
 await gradientCalibration.setContent('<style>body{background:#050505}.gradient{font:48px Arial;width:400px;background-clip:text!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent}</style><div id="gradient-good" class="gradient" style="background:linear-gradient(90deg,#fff,#93c5fd)">Good gradient</div><div id="gradient-bad" class="gradient" style="background:linear-gradient(90deg,#050505,#333)">Bad gradient</div>');
 if((await renderedGradientText(gradientCalibration,'#gradient-good')).ratio<3||(await renderedGradientText(gradientCalibration,'#gradient-bad')).ratio>=3)throw Error('Gradient raster bounds negative controls failed');
 await gradientCalibration.close();
+const fileCalibration=await browser.newPage();
+await fileCalibration.setContent('<style>input{background:white;color:black}input::file-selector-button{background:white;color:black}#bad-file{color:#999}#bad-file::file-selector-button{color:#999}</style><input type="file" id="good-file"><input type="file" id="bad-file">');
+const fileProof=await fileControlColors(fileCalibration);
+if(fileProof.length!==2||fileProof[0].pairs.some(x=>!x.opaque||x.ratio<20)||fileProof[1].pairs.some(x=>!x.opaque||x.ratio>=4.5))throw Error('File-control authored-color negative controls failed');
+await fileCalibration.close();
 try{for(const language of languages)for(const theme of ['dark','light'])for(const width of widths){
  const page=await browser.newPage({viewport:{width,height:1000},reducedMotion:'reduce'});
  await page.addInitScript(({language,theme,token})=>{localStorage.setItem('pvnetwork_language',language);localStorage.setItem('ov-dashboard-theme',theme);localStorage.setItem('authToken',token);localStorage.setItem('userRole','main_admin');},{language,theme,token:demoToken()});
@@ -39,7 +44,8 @@ try{for(const language of languages)for(const theme of ['dark','light'])for(cons
  const navigate=async route=>{await page.goto(baseUrl+route,{waitUntil:'networkidle'});if(page.url().replace(/\/$/,'')!==(baseUrl+route).replace(/\/$/,''))throw Error('Wrong actual route');};
  async function inspect(label){
   const text=await renderedText(page),edges=await controlEdges(page,'input:not([type=checkbox]):not([type=radio]),select,textarea');
-  const record={label:`${language}/${theme}/${width}/${label}`,text,edges};results.push(record);
+  const files=await fileControlColors(page),record={label:`${language}/${theme}/${width}/${label}`,text,edges,files};results.push(record);
+  for(const file of files)for(const pair of file.pairs)if(!pair.opaque||pair.ratio<4.5)failures.push({label:record.label,type:'file-control-author-colors',file:file.id,...pair});
   if(text.some(x=>x.manual&&x.selector==='div.ov-hero-value')){record.gradientText=await renderedGradientText(page,'.ov-hero-value');if(record.gradientText.ratio<3)failures.push({label:record.label,type:'gradient-text',...record.gradientText});}
   for(const x of text)if(x.manual)manual.push({label:record.label,...x});else if(x.ratio<x.minimum-.01)failures.push({label:record.label,type:'text',...x});
   for(const x of edges)if(x.border&&x.ratio!==null&&x.ratio<3)failures.push({label:record.label,type:'control-boundary',...x});
@@ -54,6 +60,6 @@ try{for(const language of languages)for(const theme of ['dark','light'])for(cons
  for(const [name,route,action] of process.env.PV_MANUAL_DIALOGS==='0'?[]:cases){await navigate(route);if(action){await page.locator('.actions-dropdown-trigger').first().click();await page.getByRole('menuitem',{name:action}).click();}else await page.locator('.view-header .btn').first().click();await page.locator('dialog').waitFor();await inspect(name);if(name==='node-archive'){await page.keyboard.press('Tab');const focus=await renderedFocus(page);results.at(-1).gradientFocus=focus;if(!focus.visible||focus.ratio<3)failures.push({label:`${language}/${theme}/${width}/gradient-focus`,...focus});}await page.keyboard.press('Escape');}
  await page.close();
 }}finally{await browser.close();}
-const summary={measurementFixtures:10,states:results.length,textObservations:results.reduce((n,r)=>n+r.text.length,0),boundaries:results.reduce((n,r)=>n+r.edges.filter(x=>x.border&&x.ratio!==null).length,0),gradientFocus:results.filter(r=>r.gradientFocus).length,gradientTextBounds:results.filter(r=>r.gradientText).length,failures:failures.length,manual:manual.length,firstFailures:failures.slice(0,8)};
+const summary={measurementFixtures:12,states:results.length,textObservations:results.reduce((n,r)=>n+r.text.length,0),boundaries:results.reduce((n,r)=>n+r.edges.filter(x=>x.border&&x.ratio!==null).length,0),fileColorPairs:results.reduce((n,r)=>n+r.files.length*2,0),gradientFocus:results.filter(r=>r.gradientFocus).length,gradientTextBounds:results.filter(r=>r.gradientText).length,failures:failures.length,manual:manual.length,firstFailures:failures.slice(0,8)};
 if(process.env.PV_MANUAL_REPORT){const file=process.env.PV_MANUAL_REPORT;await mkdir(path.dirname(file),{recursive:true});await writeFile(file,JSON.stringify({summary,failures,manual,results},null,2));}
 console.log('RENDERED_ACCESSIBILITY='+JSON.stringify(summary));if(failures.length)process.exitCode=1;
