@@ -6,7 +6,7 @@ PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multi
 
 ## Release status and changes
 
-**v1.0.58 is a candidate in progress.** Since QA57: rendered theme/scroll contrast, named node-weight fields and an accessible deployment console with cleared SSH secrets and verified-host guidance. [Illustrated guide](docs/MANUAL-ACCESSIBILITY-v1.0.58.md) · [فارسی](docs/MANUAL-ACCESSIBILITY-v1.0.58.fa.md) · [Actual results and open gates](docs/VALIDATION-v1.0.58.md). Published installation/update commands below still target verified QA57.
+**v1.0.58 is verified public QA.** Since QA57: rendered theme/scroll contrast, named node-weight fields and an accessible deployment console with cleared SSH secrets and verified-host guidance. Exact-source CI, 272 rendered states and official public fresh/repeat installation on all 6 x86/ARM distribution guests pass. [Illustrated guide](docs/MANUAL-ACCESSIBILITY-v1.0.58.md) · [فارسی](docs/MANUAL-ACCESSIBILITY-v1.0.58.fa.md) · [Evidence and remaining gates](docs/VALIDATION-v1.0.58.md) · [QA release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.58). Stable remains v1.0.37 and the live panel remains v1.0.55; no new Production UI activation.
 
 **v1.0.57 is verified public QA.** Since v1.0.56: native dialog focus/Escape/exact return, keyboard row/mobile menus, labels/headings/skip link, alerts, reduced motion and corrected light/focus/menu contrast. Exact CI, 228 axe scans and official fresh/repeat bootstrap on all 6 x86/ARM distribution guests passed. [Illustrated keyboard guide](docs/ACCESSIBILITY.md) · [راهنمای فارسی](docs/ACCESSIBILITY.fa.md) · [Evidence and remaining Stable gates](docs/VALIDATION-v1.0.57.md) · [QA release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.57). Live remains v1.0.55; no new Production deployment.
 
@@ -28,15 +28,15 @@ The baseline tour uses 80 synthetic v1.0.54 captures, also applicable to v1.0.55
 4. Test an actual VPN connection and usage accounting on your test node before serving customers. A green panel or a downloaded profile alone does not prove tunnel connectivity.
 5. Make a verified private backup and read [updates and recovery](docs/UPDATES.md) before changes to an existing installation.
 
-The version-pinned QA command below is for **fresh-server evaluation using the published immutable v1.0.57 assets**. Do not use Fresh Install to replace an existing panel.
+The version-pinned QA command below is for **fresh-server evaluation using the published immutable v1.0.58 assets**. Do not use Fresh Install to replace an existing panel.
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.57/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.58/install.sh)
 ```
 
 The bootstrap verifies the official archive checksum and version, stages private tools/builds and verifies health before activation. Default Setup Mode is loopback-only; [the installation guide](docs/INSTALLATION.md) explains SSH forwarding and public TLS.
 
-For an existing installation, start with `sudo pvnetwork update v1.0.57 --dry-run --json` and follow the [verified update/rollback guide](docs/UPDATES.md). Use the target only after its official assets and required gates are verified; Fresh Install is a different operation.
+For an existing installation, start with `sudo pvnetwork update v1.0.58 --dry-run --json` and follow the [verified update/rollback guide](docs/UPDATES.md). Use the target only after its official assets and required gates are verified; Fresh Install is a different operation.
 
 ## Learn each section
 
@@ -75,7 +75,7 @@ sudo pvnetwork backup --json
 sudo pvnetwork jobs --json
 ```
 
-Ubuntu 22.04/24.04 and Debian 12 have exact v1.0.57 native fresh/repeat/public-bootstrap evidence on x86_64 and real ARM64. Public ACME issuance/renewal and a separate empty external VPS remain untested. The authorized limited Production deployment remains v1.0.55; its measured panel maintenance was about 4 min 28 s, with co-hosted VPN/service identities preserved. The original source45 security scan is now completed and sealed with explicitly partial coverage; its five findings were corrected in v1.0.46/v1.0.50 and remain protected in v1.0.57. Read the [security closure and remaining limits](docs/SECURITY-SCAN-CLOSURE.md). This is not an independent security certification.
+Ubuntu 22.04/24.04 and Debian 12 have exact v1.0.58 native fresh/repeat/public-bootstrap evidence on x86_64 and real ARM64. Public ACME issuance/renewal and a separate empty external VPS remain untested. The authorized limited Production deployment remains v1.0.55; its measured panel maintenance was about 4 min 28 s, with co-hosted VPN/service identities preserved. The original source45 security scan is now completed and sealed with explicitly partial coverage; its five findings were corrected in v1.0.46/v1.0.50 and remain protected in v1.0.58. Read the [security closure and remaining limits](docs/SECURITY-SCAN-CLOSURE.md). This is not an independent security certification.
 
 ## Documentation and security
 

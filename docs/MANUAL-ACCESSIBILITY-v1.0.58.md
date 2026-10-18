@@ -1,8 +1,8 @@
-# Rendered contrast and node deployment — candidate v1.0.58
+# Rendered contrast and node deployment — public QA v1.0.58
 
 [فارسی](MANUAL-ACCESSIBILITY-v1.0.58.fa.md) · [Evidence and limits](VALIDATION-v1.0.58.md) · [Existing keyboard guide](ACCESSIBILITY.md)
 
-This candidate continues QA57's manual-review work. It is not yet a published release or a Production UI activation.
+This public QA release continues QA57's manual-review work. Exact-source CI and official public native installation pass; it has not activated a new Production UI. Read the linked evidence for the remaining Stable gates.
 
 1. Switch between light and dark themes. Navigation, node health, chart labels and form borders now have colors paired with their actual surfaces. The fixed mobile header has an opaque theme background so scrolling content cannot obscure its branding. Download/upload chart lines also differ by dash pattern.
 2. Scroll through the Dashboard's backup section and populated node-health tables. Backup headings, notices and rows remain readable in the light theme. Each node's weight input has a translated accessible name containing that node's name. Focus the table's scroll region to move horizontally with the keyboard.
@@ -17,4 +17,4 @@ This candidate continues QA57's manual-review work. It is not yet a published re
 
 All images use synthetic loopback fixtures. They contain no customer information or real server access details. They demonstrate UI states, not an actual installation on a new VPS.
 
-File upload fields use explicit theme colors for both the filename area and **Choose file** button. Their opaque color pairs are checked separately from normal text; the browser's native file-selector painting and OS file picker remain manual-review items.
+File upload fields use explicit theme colors for both the filename area and **Choose file** button. Their opaque color pairs are checked separately from normal text. Eight actual Windows Chromium captures across EN/FA, both themes and mobile/desktop were visually reviewed for readable filename/button text and boundaries. Other OS/browser painting, the OS file picker and assistive hardware remain manual-review items.

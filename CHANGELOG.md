@@ -1,9 +1,9 @@
-## v1.0.58 candidate — PVN-1042: Rendered accessibility and deployment results
+## v1.0.58 verified public QA — PVN-1042: Rendered accessibility and deployment results
 
 - Continue manual contrast work across themes, actual scroll positions, populated tables and gradients; name node-weight controls and distinguish chart series.
 - Keep deployment running/error/success states inside the existing native modal, expose log/progress/error semantics, restore keyboard focus and clear SSH secrets on rejected submissions. Preserve strict SSH host verification.
-- [Actual evidence and remaining gates](docs/VALIDATION-v1.0.58.md), [English illustrated guide](docs/MANUAL-ACCESSIBILITY-v1.0.58.md), [راهنمای تصویری فارسی](docs/MANUAL-ACCESSIBILITY-v1.0.58.fa.md). No publication, Stable promotion or Production UI activation claimed.
-- فارسی: کنتراست، ورودی وزن نود و پنجرهٔ نتیجهٔ نصب اصلاح شدند؛ شواهد نهایی و شرط‌های انتشار جدا ثبت می‌شوند.
+- [Actual evidence and remaining gates](docs/VALIDATION-v1.0.58.md), [English illustrated guide](docs/MANUAL-ACCESSIBILITY-v1.0.58.md), [راهنمای تصویری فارسی](docs/MANUAL-ACCESSIBILITY-v1.0.58.fa.md). Exact-source CI, anonymous assets and six official public x86/ARM fresh/repeat guests PASS. Remaining manual/infrastructure/activation gates stay open; no Stable promotion or Production UI activation.
+- فارسی: کنتراست، ورودی وزن نود و پنجرهٔ نتیجهٔ نصب اصلاح شدند؛ CI دقیق، دانلود عمومی و نصب هر شش مهمان پاس شدند. شرط‌های دستی، زیرساخت و فعال‌سازی جدا ثبت هستند.
 
 ## v1.0.57 verified QA — PVN-1041: Keyboard accessibility
 
