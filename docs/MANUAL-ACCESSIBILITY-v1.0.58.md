@@ -2,7 +2,7 @@
 
 [فارسی](MANUAL-ACCESSIBILITY-v1.0.58.fa.md) · [Evidence and limits](VALIDATION-v1.0.58.md) · [Existing keyboard guide](ACCESSIBILITY.md)
 
-This public QA release continues QA57's manual-review work. Exact-source CI and official public native installation pass; it has not activated a new Production UI. Read the linked evidence for the remaining Stable gates.
+This public QA release continues QA57's manual-review work. Exact-source CI and official public native installation pass; the owner-authorized panel activation and scoped live form checks are now verified. Read the [Production record](PRODUCTION-v1.0.58.md) for the inherited structured-error message limitation and the linked evidence for remaining Stable gates.
 
 1. Switch between light and dark themes. Navigation, node health, chart labels and form borders now have colors paired with their actual surfaces. The fixed mobile header has an opaque theme background so scrolling content cannot obscure its branding. Download/upload chart lines also differ by dash pattern.
 2. Scroll through the Dashboard's backup section and populated node-health tables. Backup headings, notices and rows remain readable in the light theme. Each node's weight input has a translated accessible name containing that node's name. Focus the table's scroll region to move horizontally with the keyboard.
