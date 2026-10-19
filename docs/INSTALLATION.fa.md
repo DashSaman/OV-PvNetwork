@@ -6,7 +6,7 @@
 
 نصب تازه برای مقصد خالی و واجد شرایط پنل است. وجود `/opt/pvnetwork-panel`، unit/site پنل، دیتابیس غیرخالی یا اشغال پورت لازم یعنی باید مسیر ارتقا/پذیرش بررسی‌شده نصب موجود را دنبال کنید. روی پنل فعال دوباره نصب تازه اجرا نکنید.
 
-کنترل میزبان Ubuntu 22.04/24.04 و Debian 12، معماری x86_64/aarch64، حداقل RAM یک GiB و دیسک آزاد سه GiB را پوشش می‌دهد. نصب Setup Mode نسخهٔ QA58 و bootstrap عمومی هر سه توزیع روی x86_64 و ARM64 واقعی بررسی شده‌اند؛ [شواهد و محدودیت‌ها](VALIDATION-v1.0.58.md) را بخوانید. assetهای ثابت عمومی موجودند؛ ACME واقعی عمومی و شبکهٔ VPS مستقل همچنان آزموده نشده‌اند.
+کنترل میزبان Ubuntu 22.04/24.04 و Debian 12، معماری x86_64/aarch64، حداقل RAM یک GiB و دیسک آزاد سه GiB را پوشش می‌دهد. نصب Setup Mode نسخهٔ QA59 و bootstrap عمومی هر سه توزیع روی x86_64 و ARM64 واقعی بررسی شده‌اند؛ [شواهد و محدودیت‌ها](VALIDATION-v1.0.59.md) را بخوانید. assetهای ثابت عمومی موجودند؛ ACME واقعی عمومی و شبکهٔ VPS مستقل همچنان آزموده نشده‌اند.
 
 ## ۲. نصب در Setup Mode خصوصی
 
@@ -14,7 +14,7 @@
 2. روی مقصد تازه bootstrap پین‌شده را اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.58/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.59/install.sh)
 ```
 
 3. تا نتیجه نهایی تأییدشده صبر کنید. نسخه، SHA256 و metadata آرشیو رسمی بررسی و ابزار، dependency، دیتابیس، build، سرویس و proxy پیش از فعال‌سازی آماده می‌شوند.
@@ -35,7 +35,7 @@ ssh -L 18443:127.0.0.1:18443 USER@SERVER
 2. روی مقصد تازه واجد شرایط اجرا کنید:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.58/install.sh) --domain panel.example.com --email operator@example.com
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.59/install.sh) --domain panel.example.com --email operator@example.com
 ```
 
 3. ابتدا دامنه و ایمیل نمونه را عوض کنید. تا صدور گواهی، سایت HTTP متعلق به پنل فقط challenge را سرو می‌کند و مسیرهای دیگر 503 می‌دهند.
