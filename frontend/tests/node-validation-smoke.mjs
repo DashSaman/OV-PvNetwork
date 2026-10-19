@@ -11,6 +11,13 @@ const browser=zoom?zoom.context:await chromium.launch({headless:true,channel:'ch
 const quick=Boolean(process.env.PV_NODE_VALIDATION_QUICK);
 const widths=(process.env.PV_NODE_VALIDATION_WIDTHS||'390,768,1440').split(',').map(Number);
 const zooms=(process.env.PV_NODE_VALIDATION_ZOOMS||'1').split(',').map(Number);
+let measurementFixtures=0;
+const settledDialog = dialog => dialog.evaluate(async el=>{
+ await document.fonts.ready;
+ // A screenshot finishes finite animations. Capture coordinates at that same
+ // settled paint, rather than sampling the background at an old modal position.
+ await Promise.all(el.getAnimations({subtree:true}).filter(a=>Number.isFinite(a.effect.getComputedTiming().endTime)).map(a=>a.finished.catch(()=>{})));
+});
 const languages=quick?['en']:['en','fa'],themes=quick?['light']:['dark','light'];
 try{for(const language of languages)for(const theme of themes)for(const width of widths)for(const factor of zooms){
  const forced=process.env.PV_NODE_VALIDATION_FORCED==='1';
@@ -40,7 +47,14 @@ try{for(const language of languages)for(const theme of themes)for(const width of
    assert.match(message,/Input should be greater than or equal to 1/);assert.match(message,/Use a valid controller HTTPS origin/);
    const label=language==='fa'?'پورت SSH':'SSH Port';assert(message.includes(label),'Include the translated field label: '+message);
    assert(await consoleDialog.evaluate(el=>el.scrollWidth<=el.clientWidth+1),'Long field messages must wrap');
-   if(!forced&&!zoom){const text=await renderedText(page);assert.deepEqual(text.filter(x=>!x.manual&&x.ratio<x.minimum-.01),[],'Rendered error contrast');}
+   if(!forced&&!zoom){
+    if(!quick&&language==='en'&&theme==='light'&&width===390){
+     await consoleDialog.evaluate(el=>el.animate([{transform:'translateX(120px)'},{transform:'translateX(0)'}],{duration:1500}));
+     const moving=await renderedText(page);assert(moving.some(x=>!x.manual&&x.ratio<x.minimum-.01),'Negative control must expose stale animation coordinates');measurementFixtures++;
+    }
+    await settledDialog(consoleDialog);
+    const text=await renderedText(page);assert.deepEqual(text.filter(x=>!x.manual&&x.ratio<x.minimum-.01),[],`Rendered error contrast (${language}/${theme}/${width})`);measurementFixtures++;
+   }
    if(forced){assert(await page.evaluate(()=>matchMedia('(forced-colors:active)').matches));await page.keyboard.press('Tab');const back=consoleDialog.getByRole('button');await back.focus();const focus=await renderedFocus(page);assert(focus.visible&&focus.ratio>=3,JSON.stringify(focus));}
   }else assert.match(message,kind==='string'?/Trusted host verification required/:kind==='object'?/Readable node deployment rejection/:/Safe request fallback/);
   assert(await consoleDialog.evaluate(el=>el.open&&el.contains(document.activeElement)),'Keep native focus containment');
@@ -54,5 +68,5 @@ try{for(const language of languages)for(const theme of themes)for(const width of
  await page.keyboard.press('Escape');assert(await opener.evaluate(el=>el===document.activeElement));assert.equal(posts,5);
  results.push({language,theme,width,zoom:factor,forcedColors:forced,responseShapes:4,manualRegistration:true,fieldMessages:true,secretInputAndContextExcluded:true,focusAndSecretClearing:true});await page.close();
 }}finally{if(zoom)await zoom.close();else await browser.close();}
-if(process.env.PV_NODE_VALIDATION_REPORT){await mkdir(path.dirname(process.env.PV_NODE_VALIDATION_REPORT),{recursive:true});await writeFile(process.env.PV_NODE_VALIDATION_REPORT,JSON.stringify({cases:results.length,results,failures:0},null,2));}
-console.log('NODE_VALIDATION='+JSON.stringify({cases:results.length,responseShapes:4,failures:0}));
+if(process.env.PV_NODE_VALIDATION_REPORT){await mkdir(path.dirname(process.env.PV_NODE_VALIDATION_REPORT),{recursive:true});await writeFile(process.env.PV_NODE_VALIDATION_REPORT,JSON.stringify({cases:results.length,results,measurementFixtures,failures:0},null,2));}
+console.log('NODE_VALIDATION='+JSON.stringify({cases:results.length,responseShapes:4,measurementFixtures,failures:0}));
