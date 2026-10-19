@@ -1,3 +1,10 @@
+## v1.0.59 candidate — PVN-1044: Readable node validation
+
+- Display structured node-install validation as field messages in the alert and deployment log, including automatic SSH and manual registration failures.
+- Read only public string message fields; never serialize raw input/context. Preserve string errors, native dialog focus, retry flow, secret clearing and explicit SSH trust.
+- Six focused formatter/privacy cases and real-browser EN/FA/theme/width/zoom regression gates. [Evidence](docs/VALIDATION-v1.0.59.md), [English illustrated guide](docs/NODE-VALIDATION-v1.0.59.md), [فارسی](docs/NODE-VALIDATION-v1.0.59.fa.md). Publication and authorized Production verification remain pending.
+- فارسی: نمایش `[object Object]` در خطای نصب نود با پیام خوانای هر فیلد اصلاح شد؛ ورودی خام خطا نمایش داده نمی‌شود و تأیید کلید SSH حفظ شده است.
+
 ## v1.0.58 verified public QA — PVN-1042: Rendered accessibility and deployment results
 
 - Continue manual contrast work across themes, actual scroll positions, populated tables and gradients; name node-weight controls and distinguish chart series.
