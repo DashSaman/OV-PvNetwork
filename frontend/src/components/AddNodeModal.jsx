@@ -3,6 +3,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import apiClient from '../services/api';
 import { useTranslation } from 'react-i18next';
 import LoadingButton from './LoadingButton';
+import { nodeRequestError } from '../utils/nodeRequestError.mjs';
 const AddNodeModal = ({
   onClose,
   onNodeCreated
@@ -182,11 +183,26 @@ const AddNodeModal = ({
         onNodeCreated();
       }
     } catch (err) {
-      const msg = err.response?.data?.detail || err.response?.data?.msg || err.message || 'Operation failed';
-      setError(String(msg));
+      const msg = nodeRequestError(err, {
+        name: t('nodeName'), address: t('th_address'),
+        ssh_port: t('addNodeSshPort', 'SSH Port'),
+        ssh_username: t('addNodeSshUsername', 'SSH Username'),
+        ssh_password: t('addNodeSshPassword', 'SSH Password'),
+        ssh_private_key: t('addNodePrivateKey', 'Private key'),
+        ssh_key_passphrase: t('addNodeKeyPassphrase', 'Key passphrase (optional)'),
+        ssh_fingerprint: t('addNodeSshFingerprint', 'SSH Host Fingerprint (SHA256; first connection)'),
+        controller_url: t('addNodeControllerUrl', 'Controller HTTPS origin'),
+        mode: t('addNodeMode', 'Installation mode'),
+        existing_node_id: t('addNodeExistingId', 'Existing node ID'),
+        panel_ip: t('addNodePanelIp', 'Panel source IP (optional)'),
+        port: t('nodePort'), node_port: t('nodePort'),
+        protocol: t('th_protocol'), ovpn_port: t('ovpnPort'),
+        tunnel_address: t('tunnelAddress'), key: t('key')
+      });
+      setError(msg);
       if (automatic) {
         log('INSTALLATION FAILED', 'bad');
-        log(String(msg), 'bad');
+        log(msg, 'bad');
         setDone(true);
       }
       setIsLoading(false);

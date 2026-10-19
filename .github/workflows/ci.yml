@@ -138,6 +138,7 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
+          node --test tests/node-request-error.test.mjs
           npm run lint -- --quiet
           npm run build
 
@@ -165,6 +166,9 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4173/panel/ >/dev/null
+          PV_NODE_VALIDATION_REPORT=/tmp/pvnetwork-node-validation-accessibility.json node tests/node-validation-smoke.mjs
+          PV_NODE_VALIDATION_FORCED=1 PV_NODE_VALIDATION_REPORT=/tmp/pvnetwork-node-validation-forced-accessibility.json node tests/node-validation-smoke.mjs
+          PV_NODE_VALIDATION_ZOOMS=4 PV_NODE_VALIDATION_WIDTHS=1280 PV_NODE_VALIDATION_REPORT=/tmp/pvnetwork-node-validation-zoom-accessibility.json node tests/node-validation-smoke.mjs
           PV_MANUAL_ROUTES=/ PV_MANUAL_WIDTHS=390 PV_MANUAL_DIALOGS=0 PV_MANUAL_REPORT=/tmp/pvnetwork-file-controls-accessibility.json node tests/manual-accessibility-smoke.mjs
           PV_MANUAL_REPORT=/tmp/pvnetwork-rendered-accessibility.json node tests/manual-accessibility-smoke.mjs
           PV_ASSISTIVE_REPORT=/tmp/pvnetwork-assistive-accessibility.json node tests/assistive-display-smoke.mjs
