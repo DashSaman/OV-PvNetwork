@@ -1,0 +1,13 @@
+# Post-deployment dependency-audit gate — PVN-1046
+
+Status: OPEN; no remediation is claimed in immutable QA59. The separate documentation/evidence PR remains draft and unmerged while its required dependency audit fails. Do not bypass the audit, rewrite the59 asset/tag or silently patch the live environment.
+
+The exact QA59 source/tag checks passed before publication and authorized activation. At 2026-10-19 18:23 UTC, the subsequent documentation-only push's dependency audit reported three advisory entries for locked `aiohttp 3.14.3`: `CVE-2026-111064`, `GHSA-2g87-pp6c-29x5` and `CVE-2026-111063`; all report fixed version `3.14.4`. These are scanner entries, not a claim of three independently validated application exploits. [Failed audit job](https://github.com/DashSaman/OV-PvNetwork/actions/runs/39301920551/job/118229030772).
+
+The [upstream advisory](https://github.com/aio-libs/aiohttp/security/advisories/GHSA-2g87-pp6c-29x5) confirms affected versions through3.14.3 and patched3.14.4 for resource-exhaustion issues. The [GitHub advisory record](https://github.com/advisories/GHSA-2g87-pp6c-29x5) records database publication/review on October19. The [upstream3.14.4 release](https://github.com/aio-libs/aiohttp/releases/tag/v3.14.4) is available. Severity labels differ between upstream and the database; no application-specific severity/exploitability is asserted here.
+
+Original lock inspection confirms `pywebpush` brings `aiohttp 3.14.3` into both QA58 and QA59; the native node lock has no aiohttp package. Code rollback to58 would retain the same dependency. Current health and backup/rollback readiness pass; no additional live mutation was made for this audit result. Package presence is confirmed; actual attack-path applicability remains unassessed.
+
+Required next work: allocate the next sequential security patch, update the transitive lock with a compatible explicit lower bound if needed, run the full backend/node audits and relevant Web Push/regression/build checks, then publish a new immutable artifact. Production application requires the normal recoverable-backup, exact-artifact, health and rollback gates. Do not promote59 to Stable or recommend a new QA59 installation while this gate is open. Existing supported-latest metadata is historical and is not a clean current dependency audit.
+
+فارسی: ممیزی تازه پس از استقرار، برای وابستگی قفل‌شدهٔ aiohttp نسخهٔ3.14.3 هشدار داد؛ نسخهٔ اصلاح‌شدهٔ3.14.4 موجود است. این وابستگی از pywebpush آمده و در58 هم وجود دارد؛ بازگشت به58 آن را رفع نمی‌کند. تست‌های قبلی59 و سلامت فعلی معتبرند، اما این هشدار تازه رفع نشده و PR مستندات تا رفع gate ادغام نمی‌شود. فایل و tag نسخهٔ59 تغییر نمی‌کنند؛ اصلاح باید در patch تغییرناپذیر بعدی با تست و gateهای استقرار انجام شود.

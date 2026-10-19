@@ -1,5 +1,7 @@
 ## v1.0.59 verified public QA and authorized Production — PVN-1044
 
+- Subsequent documentation CI dependency audit is blocked by [PVN-1046](docs/incidents/2026-10-19-dependency-audit-aiohttp.md); no dependency remediation or current clean audit is claimed in immutable59.
+
 - Show readable structured node errors and translated field labels in automatic deployment and manual registration; exclude raw validation input/context. Preserve string/fallback messages, SSH trust, secret clearing and native dialog focus/retry.
 - Exact-source/tag CI, anonymous artifacts, all six public x86/ARM fresh/repeat guests, recoverable native backup/canary/rollback readiness and four actual deployed EN/FA validation cases PASS. Complete customer identities and protected services are preserved; sampled panel maintenance 136.78 seconds.
 - [Validation](docs/VALIDATION-v1.0.59.md), [Production evidence](docs/PRODUCTION-v1.0.59.md), [English illustrated guide](docs/NODE-VALIDATION-v1.0.59.md), [فارسی](docs/NODE-VALIDATION-v1.0.59.fa.md). Broader Stable limits remain open.

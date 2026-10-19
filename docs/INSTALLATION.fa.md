@@ -1,5 +1,7 @@
 # نصب PVNetwork
 
+**gate فعلی:** فرمان‌های QA59 زیر مستندِ فایل تغییرناپذیر مستقرشده‌اند؛ تا رفع [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md)، نصب یا ارتقای تازه به59 را انجام ندهید.
+
 [English](INSTALLATION.md) · [README](../README.fa.md) · [آموزش تصویری](UI-GUIDE.fa.md)
 
 ## ۱. مسیر درست را انتخاب کنید

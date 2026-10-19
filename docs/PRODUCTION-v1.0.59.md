@@ -1,5 +1,7 @@
 # Authorized panel deployment v1.0.59 — PVN-1044
 
+**Post-deployment audit gate:** a subsequent documentation-only CI detected aiohttp3.14.3 advisory entries. [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md) remains open. Runtime deployment/health/backup evidence below is retained; the documentation PR stays draft/unmerged and no Stable promotion is claimed.
+
 Since QA58, structured node-install validation is readable in both automatic SSH and manual registration. On 2026-10-19, the owner-authorized panel activated the exact public QA59 archive after fresh recoverable backup and rollback readiness. Supported Stable remains v1.0.37.
 
 | Gate | Actual result |

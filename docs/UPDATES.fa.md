@@ -1,5 +1,7 @@
 # ارتقا، rollback و بازیابی بررسی‌شده
 
+**gate فعلی:** فرمان‌های QA59 زیر مستندِ فایل تغییرناپذیر مستقرشده‌اند؛ تا رفع [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md)، نصب یا ارتقای تازه به59 را انجام ندهید.
+
 [English](UPDATES.md) · [نصب](INSTALLATION.fa.md) · [کنسول](CLI.fa.md)
 
 ## ۱. آماده‌سازی

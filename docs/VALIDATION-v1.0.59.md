@@ -1,5 +1,7 @@
 # v1.0.59 validation — PVN-1044
 
+**Later audit result:** release-time checks below passed; the subsequent documentation push now fails its dependency audit on aiohttp3.14.3. [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md) remains open. Evidence PR is draft/unmerged; no current whole-pipeline success or Stable promotion is claimed.
+
 ## Final public and Production result
 
 Frozen source: `c7b06307633b4b95ca52b3d6ddfc60884c6693c6`. Immutable archive: 90024153 bytes; SHA256 `91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0`.

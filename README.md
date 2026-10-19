@@ -1,5 +1,7 @@
 # PVNetwork
 
+**Current dependency-audit gate:** after the successful QA59 activation, the documentation CI detected aiohttp3.14.3 advisories (fixed upstream3.14.4). [PVN-1046](docs/incidents/2026-10-19-dependency-audit-aiohttp.md) remains open; the evidence PR stays draft/unmerged. Do not promote59 to Stable or start a new QA59 installation while this gate is open. Release-time CI results below are historical results for the frozen artifact.
+
 [فارسی](README.fa.md) · [Illustrated guide](docs/UI-GUIDE.md) · [Installation](docs/INSTALLATION.md) · [CLI](docs/CLI.md)
 
 PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multilingual web panel and a 25-item English/Persian operational console. The panel controls account policy; nodes provide VPN connectivity and report usage and session state.

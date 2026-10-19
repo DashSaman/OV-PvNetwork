@@ -1,5 +1,7 @@
 # Install PVNetwork
 
+**Current gate:** the QA59 commands below describe the immutable deployed artifact. Defer new installation/update to59 while [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md) remains open.
+
 [فارسی](INSTALLATION.fa.md) · [README](../README.md) · [Illustrated manual](UI-GUIDE.md)
 
 ## 1. Choose the correct path

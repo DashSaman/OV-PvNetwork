@@ -1,5 +1,7 @@
 # Verified update, rollback and recovery
 
+**Current gate:** the QA59 commands below describe the immutable deployed artifact. Defer new installation/update to59 while [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md) remains open.
+
 [فارسی](UPDATES.fa.md) · [Installation](INSTALLATION.md) · [CLI](CLI.md)
 
 ## 1. Prepare a reviewed update
