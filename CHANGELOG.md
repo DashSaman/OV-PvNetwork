@@ -1,3 +1,9 @@
+## v1.0.60 candidate — PVN-1046
+
+- Require aiohttp>=3.14.4,<4 and replace locked3.14.3 with3.14.4. Keep pywebpush and its guarded synchronous requests transport unchanged; no database or node-configuration change.
+- Original audit reports three advisory entries in3.14.3. Fresh corrected audit, legitimate Web Push encryption/transport controls, full CI/public artifact and backed-up deployment results are recorded in [validation](docs/VALIDATION-v1.0.60.md).
+- فارسی: حداقل aiohttp به نسخهٔ اصلاح‌شدهٔ3.14.4 ارتقا می‌یابد؛ مسیر امن Web Push حفظ می‌شود. تست، CI و استقرار مجاز باید پیش از اعلام تکمیل ثبت شوند.
+
 ## v1.0.59 verified public QA and authorized Production — PVN-1044
 
 - Subsequent documentation CI dependency audit is blocked by [PVN-1046](docs/incidents/2026-10-19-dependency-audit-aiohttp.md); no dependency remediation or current clean audit is claimed in immutable59.
