@@ -1,6 +1,6 @@
 # v1.0.59 validation — PVN-1044
 
-**Later audit result:** release-time checks below passed; the subsequent documentation push now fails its dependency audit on aiohttp3.14.3. [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md) remains open. Evidence PR is draft/unmerged; no current whole-pipeline success or Stable promotion is claimed.
+**Later audit result:** release-time checks below passed; a subsequent documentation push failed its dependency audit on aiohttp3.14.3. [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md) is corrected in verified public QA60, but remains open for live59 until authorized activation after concurrent work ends. The old evidence branch is incorporated by PR82; its failure and the immutable59 artifact remain unchanged. No Stable promotion is claimed.
 
 ## Final public and Production result
 
