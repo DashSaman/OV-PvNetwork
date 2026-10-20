@@ -298,8 +298,9 @@ async def get_subscription(
             )
 
     return templates.TemplateResponse(
-        "subscription.html",
-        {
+        request=request,
+        name="subscription.html",
+        context={
             "request": request,
             **user_data,
             "ovpn_download_links": ovpn_download_links,
