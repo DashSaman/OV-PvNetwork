@@ -1,5 +1,7 @@
 # Verified update, rollback and recovery
 
+**Current gate:** the QA59 commands below describe the immutable deployed artifact. Defer new installation/update to59 while [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md) remains open.
+
 [فارسی](UPDATES.fa.md) · [Installation](INSTALLATION.md) · [CLI](CLI.md)
 
 ## 1. Prepare a reviewed update
@@ -14,8 +16,8 @@
 After its official assets exist and gates have passed, an explicitly selected QA update is:
 
 ```bash
-sudo pvnetwork update v1.0.58 --dry-run --json
-sudo pvnetwork update v1.0.58 --yes --json
+sudo pvnetwork update v1.0.59 --dry-run --json
+sudo pvnetwork update v1.0.59 --yes --json
 ```
 
 On an eligible older rooted installation, `--adopt-rooted` is an explicit, separate opt-in; inspect `pvnetwork update --help` and rehearse the verified path before using it. Do not replace the active directory manually.

@@ -1,0 +1,103 @@
+{
+  "source": "c7b06307633b4b95ca52b3d6ddfc60884c6693c6",
+  "archive_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0",
+  "public_native_guests": [
+    {
+      "architecture": "x86_64",
+      "run": 39288181519,
+      "job": 118181602797,
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.59",
+      "source_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested"
+    },
+    {
+      "architecture": "x86_64",
+      "run": 39288181519,
+      "job": 118181603343,
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.59",
+      "source_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested"
+    },
+    {
+      "architecture": "x86_64",
+      "run": 39288181519,
+      "job": 118181603508,
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.59",
+      "source_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested"
+    },
+    {
+      "architecture": "ARM64",
+      "run": 39288186704,
+      "job": 118181627292,
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.59",
+      "source_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "actual_architecture": {
+        "runner_architecture": "aarch64",
+        "guest_architecture": "arm64",
+        "source": "c7b06307633b4b95ca52b3d6ddfc60884c6693c6",
+        "archive_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0"
+      }
+    },
+    {
+      "architecture": "ARM64",
+      "run": 39288186704,
+      "job": 118181627768,
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.59",
+      "source_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "actual_architecture": {
+        "runner_architecture": "aarch64",
+        "guest_architecture": "arm64",
+        "source": "c7b06307633b4b95ca52b3d6ddfc60884c6693c6",
+        "archive_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0"
+      }
+    },
+    {
+      "architecture": "ARM64",
+      "run": 39288186704,
+      "job": 118181628018,
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.59",
+      "source_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "actual_architecture": {
+        "runner_architecture": "aarch64",
+        "guest_architecture": "arm64",
+        "source": "c7b06307633b4b95ca52b3d6ddfc60884c6693c6",
+        "archive_sha256": "91d79ab5fd35b34d659785f7af534f4ec027d40bcc5a7914db96e1216875f4e0"
+      }
+    }
+  ],
+  "public_bootstrap_status": "all6 PASS; actual ARM runner/guest identities verified"
+}

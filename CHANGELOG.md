@@ -1,9 +1,17 @@
-## v1.0.59 candidate — PVN-1044: Readable node validation
+## v1.0.60 candidate — PVN-1046
 
-- Display structured node-install validation as field messages in the alert and deployment log, including automatic SSH and manual registration failures.
-- Read only public string message fields; never serialize raw input/context. Preserve string errors, native dialog focus, retry flow, secret clearing and explicit SSH trust.
-- Six focused formatter/privacy cases and real-browser EN/FA/theme/width/zoom regression gates. [Evidence](docs/VALIDATION-v1.0.59.md), [English illustrated guide](docs/NODE-VALIDATION-v1.0.59.md), [فارسی](docs/NODE-VALIDATION-v1.0.59.fa.md). Publication and authorized Production verification remain pending.
-- فارسی: نمایش `[object Object]` در خطای نصب نود با پیام خوانای هر فیلد اصلاح شد؛ ورودی خام خطا نمایش داده نمی‌شود و تأیید کلید SSH حفظ شده است.
+- Require aiohttp>=3.14.4,<4 and replace locked3.14.3 with3.14.4. Keep pywebpush and its guarded synchronous requests transport unchanged; no database or node-configuration change.
+- Original audit reports three advisory entries in3.14.3. Fresh corrected audit, legitimate Web Push encryption/transport controls, full CI/public artifact and backed-up deployment results are recorded in [validation](docs/VALIDATION-v1.0.60.md).
+- فارسی: حداقل aiohttp به نسخهٔ اصلاح‌شدهٔ3.14.4 ارتقا می‌یابد؛ مسیر امن Web Push حفظ می‌شود. تست، CI و استقرار مجاز باید پیش از اعلام تکمیل ثبت شوند.
+
+## v1.0.59 verified public QA and authorized Production — PVN-1044
+
+- Subsequent documentation CI dependency audit is blocked by [PVN-1046](docs/incidents/2026-10-19-dependency-audit-aiohttp.md); no dependency remediation or current clean audit is claimed in immutable59.
+
+- Show readable structured node errors and translated field labels in automatic deployment and manual registration; exclude raw validation input/context. Preserve string/fallback messages, SSH trust, secret clearing and native dialog focus/retry.
+- Exact-source/tag CI, anonymous artifacts, all six public x86/ARM fresh/repeat guests, recoverable native backup/canary/rollback readiness and four actual deployed EN/FA validation cases PASS. Complete customer identities and protected services are preserved; sampled panel maintenance 136.78 seconds.
+- [Validation](docs/VALIDATION-v1.0.59.md), [Production evidence](docs/PRODUCTION-v1.0.59.md), [English illustrated guide](docs/NODE-VALIDATION-v1.0.59.md), [فارسی](docs/NODE-VALIDATION-v1.0.59.fa.md). Broader Stable limits remain open.
+- فارسی: نمایش `[object Object]` نصب نود با پیام خوانای هر فیلد اصلاح و روی پنل مجاز مستقر شد؛ CI، فایل عمومی، شش مهمان، بکاپ قابل‌بازیابی، rollback و بررسی واقعی رابط پاس شدند. اطلاعات کاربران و سرویس‌های محافظت‌شده حفظ شدند؛ Stable 37 تغییر نکرد.
 
 ## v1.0.58 verified public QA — PVN-1042: Rendered accessibility and deployment results
 

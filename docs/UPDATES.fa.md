@@ -1,5 +1,7 @@
 # ارتقا، rollback و بازیابی بررسی‌شده
 
+**gate فعلی:** فرمان‌های QA59 زیر مستندِ فایل تغییرناپذیر مستقرشده‌اند؛ تا رفع [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md)، نصب یا ارتقای تازه به59 را انجام ندهید.
+
 [English](UPDATES.md) · [نصب](INSTALLATION.fa.md) · [کنسول](CLI.fa.md)
 
 ## ۱. آماده‌سازی
@@ -14,8 +16,8 @@
 پس از موجود شدن asset رسمی و عبور از gateها، نمونه انتخاب صریح نسخه QA:
 
 ```bash
-sudo pvnetwork update v1.0.58 --dry-run --json
-sudo pvnetwork update v1.0.58 --yes --json
+sudo pvnetwork update v1.0.59 --dry-run --json
+sudo pvnetwork update v1.0.59 --yes --json
 ```
 
 برای نصب قدیمی rooted، گزینه `--adopt-rooted` انتخاب صریح جداست؛ ابتدا `pvnetwork update --help` را بخوانید و مسیر بررسی‌شده را تمرین کنید. پوشه فعال را دستی جایگزین نکنید.

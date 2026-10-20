@@ -1,12 +1,14 @@
 # Install PVNetwork
 
+**Current gate:** the QA59 commands below describe the immutable deployed artifact. Defer new installation/update to59 while [PVN-1046](incidents/2026-10-19-dependency-audit-aiohttp.md) remains open.
+
 [فارسی](INSTALLATION.fa.md) · [README](../README.md) · [Illustrated manual](UI-GUIDE.md)
 
 ## 1. Choose the correct path
 
 Fresh installation is for an eligible empty panel target. An existing `/opt/pvnetwork-panel`, panel unit/site, nonempty database or occupied required port is a reason to use the existing installation's verified update/adoption path. Do not reinstall over a working panel.
 
-Supported host checks cover Ubuntu 22.04/24.04 and Debian 12, x86_64/aarch64, at least 1 GiB RAM and 3 GiB free disk. QA58 Setup Mode installation and public bootstrap pass on all three distributions on x86_64 and real ARM64; [evidence and limits](VALIDATION-v1.0.58.md). Immutable public assets exist. Real public ACME and independent external VPS networking remain untested.
+Supported host checks cover Ubuntu 22.04/24.04 and Debian 12, x86_64/aarch64, at least 1 GiB RAM and 3 GiB free disk. QA59 Setup Mode installation and public bootstrap pass on all three distributions on x86_64 and real ARM64; [evidence and limits](VALIDATION-v1.0.59.md). Immutable public assets exist. Real public ACME and independent external VPS networking remain untested.
 
 ## 2. Install in private Setup Mode
 
@@ -14,7 +16,7 @@ Supported host checks cover Ubuntu 22.04/24.04 and Debian 12, x86_64/aarch64, at
 2. Run the version-pinned bootstrap on the fresh target:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.58/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.59/install.sh)
 ```
 
 3. Wait for the final verified result. The bootstrap validates the official archive/SHA256 and metadata; the native installer stages tools, dependencies, database, build, service and managed proxy before activation.
@@ -35,7 +37,7 @@ New installer-managed HTTPS lineages in QA v1.0.56 record a syntax-checked Nginx
 2. On the eligible fresh target, use:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.58/install.sh) --domain panel.example.com --email operator@example.com
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.59/install.sh) --domain panel.example.com --email operator@example.com
 ```
 
 3. Replace the example domain/email first. Until a certificate exists, the owned HTTP site serves ACME challenges and returns 503 for other paths.
