@@ -1,3 +1,9 @@
+## v1.0.61 candidate — PVN-1045
+
+- Pass request/name/context explicitly to the subscription TemplateResponse API; preserve template context, assignment/download authorization, offline behavior and HTML escaping.
+- Actual ASGI-route red/green regression: six tests exercise healthy, missing, no-node, unavailable, disabled/draining/maintenance and denied-download states with synthetic SQLite/external-node boundaries. [Evidence](docs/VALIDATION-v1.0.61.md).
+- فارسی: سازگاری قالب اشتراک در مسیر واقعی اصلاح می‌شود؛ امنیت60 حفظ شده و استقرار پس از CI، فایل عمومی و بکاپ قابل‌بازیابی انجام خواهد شد.
+
 ## v1.0.60 candidate — PVN-1046
 
 - Require aiohttp>=3.14.4,<4 and replace locked3.14.3 with3.14.4. Keep pywebpush and its guarded synchronous requests transport unchanged; no database or node-configuration change.
