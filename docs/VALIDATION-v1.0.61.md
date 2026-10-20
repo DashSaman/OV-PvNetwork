@@ -1,6 +1,6 @@
 # v1.0.61 validation — PVN-1045
 
-## Exact-source checkpoint, 2026-10-20
+## Final public QA checkpoint, 2026-10-20
 
 Frozen source `58722e71dd0ccec9d900d6da2157ac32bca92bf6`; archive SHA256 `b2572d9888fd166b8aabb5b2c4521ee39ed8a57251365c6a8413c5d542ce7710`, 90041576 bytes. All eight exact-source checks PASS: [push](https://github.com/DashSaman/OV-PvNetwork/actions/runs/39412204464) and [PR](https://github.com/DashSaman/OV-PvNetwork/actions/runs/39412324734). [PR83](https://github.com/DashSaman/OV-PvNetwork/pull/83) is merged; its merge tree equals the frozen tested tree.
 
@@ -10,13 +10,13 @@ Both validation logs confirm all six actual subscription-route regressions pass,
 
 [QA61 release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.61) is published with immutable source/tag/assets. The complete90041576-byte anonymous download and checksum PASS. All six exact-source public fresh/repeat guests PASS: [x86](https://github.com/DashSaman/OV-PvNetwork/actions/runs/39416053666) and [real ARM64](https://github.com/DashSaman/OV-PvNetwork/actions/runs/39416055962), Ubuntu22.04/24.04 and Debian12. Each actual guest receipt confirms version1.0.61/hash, public bootstrap, systemd/proxy/UI assets/SQLite/private permissions/CLI and preservation of environment/database/PIDs on repeat. All three ARM logs verify runner aarch64/guest arm64 and the exact frozen source.
 
-The additional [tag CI](https://github.com/DashSaman/OV-PvNetwork/actions/runs/39415285325) has three native jobs PASS and its validation job still running at this checkpoint. The final predeployment gate stays closed until that validation completes successfully; no pass is inferred from the source or public jobs.
+All four additional [tag CI checks](https://github.com/DashSaman/OV-PvNetwork/actions/runs/39415285325) now PASS. The complete tag validation log confirms739 unit/governance tests with80 explicit skips,82 root,38 security,37 router, both dependency audits, all six actual subscription-route regressions and the full browser/accessibility gates. This confirms all12 source/tag checks; no pass is inferred from another workflow. Final local package verification also confirms the expected SHA256/size,1093 safe archive members,11 critical files identical to the frozen Git source and27 executable scripts with LF endings. Published tag/assets remain unchanged.
 
 Production remains59. The owner confirmed concurrent server work is still ongoing; no final61 backup, activation or restart has started. After that work ends, security60 must activate and pass first, followed by a separate fresh61 native backup/actual restore, retained60 rollback, canary, narrow activation and local/public real-route validation. Both tasks remain open until actual live evidence exists.
 
 فارسی: هر هشت بررسی کد دقیق و شش تست واقعی مسیر اشتراک پاس شدند و PR83 با همان درخت تست‌شده ادغام شد. این نتیجه به معنی استقرار نیست؛ پنل هنوز59 است و تا اعلام پایان کار هم‌زمان، بکاپ نهایی و استقرار شروع نمی‌شود.
 
-دانلود کامل ناشناس و هر شش نصب عمومی61 نیز پاس شدند؛ بررسی تکمیلی CI روی tag هنوز در جریان است و شرط نهایی استقرار تا موفق‌شدن آن باز می‌ماند.
+دانلود کامل ناشناس، هر شش نصب عمومی61 و هر چهار بررسی تکمیلی CI روی tag نیز پاس شدند. این تأیید QA است؛ شرط‌های بکاپ/بازیابی واقعی، rollback، استقرار و بررسی پنل زنده پس از پایان کار هم‌زمان همچنان باقی‌اند.
 
 ## Original scope and route reproduction
 
