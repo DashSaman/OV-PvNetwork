@@ -51,4 +51,3 @@ else
     printf '%s\n' 'lsof unavailable'
 fi
 printf '\n%s\n' 'Audit finished. No files or services were modified.'
-
