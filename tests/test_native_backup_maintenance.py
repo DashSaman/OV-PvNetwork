@@ -65,6 +65,23 @@ class NativeBackupMaintenanceTests(unittest.TestCase):
         self.m.make_backup(self.sqlite_environment(0))
         self.assertTrue(expired.exists())
 
+    def test_corrupt_expired_checkpoint_survives_beyond_latest_three(self):
+        old=self.snapshot('20200101-010101',40*86400)
+        (old/'database.dump').write_bytes(b'corrupt preserve for inspection')
+        os.utime(old,(self.now-40*86400,self.now-40*86400))
+        for day in range(2,5):self.snapshot(f'2020010{day}-010101',86400)
+        self.m.prune_native_backups(10,now=self.now)
+        self.assertTrue(old.exists(),'damaged backup must survive for deliberate review')
+
+    def test_post_backup_maintenance_failure_preserves_verified_snapshot(self):
+        env=self.sqlite_environment(10)
+        with mock.patch.object(self.m,'prune_native_backups',side_effect=[[],OSError('fixture cleanup failure')]):
+            backup=self.m.make_backup(env)
+        self.assertTrue((backup/'RESTORE_TEST_OK').is_file())
+        self.assertFalse((backup/'FAILED.json').exists())
+        record=json.loads((self.state/'native-backup-maintenance.json').read_text())
+        self.assertEqual(record['warnings'],['retention:OSError'])
+
     def test_pruning_removes_only_expired_known_failed_snapshot(self):
         self.assertTrue(hasattr(self.m,'prune_native_backups'),'native retention implementation missing')
         self.snapshot('20200103-010101',86400)

@@ -6,6 +6,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi", "uvicorn", "psutil", "pydantic-settings",
     "python-dotenv>=1.2.2,<2", "colorama", "requests>=2.33,<3",
+    "certifi>=2026.10.19",
 ]
 
 [tool.uv]

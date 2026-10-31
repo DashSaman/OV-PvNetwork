@@ -9,6 +9,7 @@ dependencies = [
     "uvicorn",
     "jinja2",
     "requests>=2.33,<3",
+    "certifi>=2026.10.19",
     "pydantic_settings",
     "alembic==1.15.1",
     "SQLAlchemy==2.0",

@@ -6,7 +6,7 @@ Scope: apply the existing administrator backup-retention setting in the real nat
 
 The original native daily entrypoint calls make_backup directly. The earlier retention implementation runs only through web backup handlers; its comment that the timer visits the listing route is incorrect. A real synthetic SQLite backup reproduces the defect without any web request: an expired checkpoint survives. Five focused tests fail on the original Linux module; the zero-retention control passes.
 
-The corrected candidate passes six initial Linux tests. An additional test then reproduces indefinite retention of known failed snapshot payloads; after correction, all nine focused Linux fixtures pass. Coverage includes:
+The corrected candidate passed six initial Linux tests, then nine after known failed-payload coverage. Two additional controls reproduced deletion of a damaged old checkpoint and misclassification of a verified backup after a cleanup failure. Both are corrected; all eleven focused Linux fixtures pass. Coverage includes:
 
 - Real native snapshot and actual SQLite restore, followed by expiration without a web request.
 - Retention zero disables deletion.
@@ -29,6 +29,10 @@ At this checkpoint the live application remains60. The earlier61 attempt rolled 
 
 ## Remaining gates
 
-Full exact-source CI, disposable PostgreSQL non-FORCE controls, immutable release/artifact gates and the limited helper installation remain pending. Do not infer these passes from the focused fixtures or cleanup result. Supported Stable remains37. Broader external-client, public ACME, assistive hardware and earlier partial security-scan limits are unchanged.
+The first exact-source CI attempt passed all six fresh/repeat native installer jobs but failed both dependency-audit jobs on PYSEC-2026-4320 (alias GHSA-6q48-6c7w-9gw2), affecting the inherited certifi2026.7.22 lock. Both panel/node manifests now require certifi>=2026.10.19 and resolve only that dependency to2026.10.23. The upstream advisory recommends19 or later to retain unaffected emSign roots. Audits are not disabled or waived; fresh exact-source results remain required. This source dependency prerequisite does not imply the running panel environment has been upgraded.
+
+A real empty PostgreSQL fixture also passed: recovery refused deletion while its test session was connected; the same session remained usable; deletion succeeded after closing that session. The fixture used no customer rows and was removed. This control ran under the native operation lock.
+
+Full fresh exact-source CI, immutable release/artifact gates and the limited helper installation remain pending. Do not infer these passes from the focused fixtures or cleanup result. Supported Stable remains37. Broader external-client, public ACME, assistive hardware and earlier partial security-scan limits are unchanged.
 
 [English notes](RELEASE-NOTES-v1.0.62.md) · [یادداشت فارسی](RELEASE-NOTES-v1.0.62.fa.md) · [Incident](incidents/2026-10-31-native-backup-disk-growth.md)

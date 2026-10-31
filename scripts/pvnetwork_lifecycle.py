@@ -485,6 +485,12 @@ def prune_native_backups(days, *, now=None):
         if path.name in protected or (path/'.PINNED_BY_TRANSACTION').exists():continue
         if path.stat().st_mtime>=now-days*86400:continue
         if path.is_symlink() or path.resolve().parent!=BACKUPS.resolve():raise ValueError('backup cleanup escaped owned root')
+        if path in candidates:
+            try:
+                metadata=verify_backup_files(path)
+                allowed=set(metadata['checksums'])|{'metadata.json','SHA256SUMS','RESTORE_TEST_OK','.PINNED_BY_TRANSACTION'}
+                if any(p.name not in allowed or p.is_symlink() or not p.is_file() for p in path.iterdir()):continue
+            except (OSError,ValueError,KeyError,TypeError):continue
         shutil.rmtree(path);removed.append(path.name)
     return removed
 
@@ -514,10 +520,12 @@ def make_backup(environment=None):
     if url.get_backend_name() not in {'sqlite','postgresql'}:raise ValueError('unsupported native database backend')
     # This path is shared by the timer, native CLI and lifecycle operations.
     # Recover interrupted rehearsal allocations before applying the space gate.
-    recovered=recover_backup_rehearsals()
     days=backup_retention_days(env)
-    removed=prune_native_backups(days)
-    maintenance={'recovered_rehearsals':recovered,'removed_backups':removed,'retention_days':days}
+    maintenance={'recovered_rehearsals':[],'removed_backups':[],'retention_days':days,'warnings':[]}
+    try:maintenance['recovered_rehearsals']=recover_backup_rehearsals()
+    except Exception as exc:maintenance['warnings'].append('recovery:'+type(exc).__name__)
+    try:maintenance['removed_backups']=prune_native_backups(days)
+    except Exception as exc:maintenance['warnings'].append('retention:'+type(exc).__name__)
     durable_json(STATE/'native-backup-maintenance.json',maintenance)
     required=3*1024**3
     if shutil.disk_usage(BACKUPS.parent if BACKUPS.parent.exists() else '/var').free<required:raise ValueError('insufficient backup disk space')
@@ -564,12 +572,13 @@ def make_backup(environment=None):
         fsync_directory(directory)
         verify_backup_files(directory)
         durable_json(STATE/'last-native-backup.json',{'backup':str(directory)})
-        # The newly verified snapshot joins the minimum retained checkpoints.
-        maintenance['removed_backups']+=prune_native_backups(days)
-        durable_json(STATE/'native-backup-maintenance.json',maintenance)
-        return directory
     except BaseException:
         durable_json(directory/'FAILED.json',{'state':'FAILED','verified':False});raise
+    # Cleanup is maintenance, not part of the already verified snapshot's result.
+    try:maintenance['removed_backups']+=prune_native_backups(days)
+    except Exception as exc:maintenance['warnings'].append('retention:'+type(exc).__name__)
+    durable_json(STATE/'native-backup-maintenance.json',maintenance)
+    return directory
 
 
 def operation_lock():
