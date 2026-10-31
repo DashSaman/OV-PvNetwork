@@ -136,8 +136,11 @@ class InstallerTlsRenewalTests(unittest.TestCase):
                 second = ssl.PEM_cert_to_DER_cert((folder / 'cert2').read_text())
                 wait_for(first)
                 pid = (folder / 'nginx.pid').read_text()
-                shutil.copyfile(folder / 'cert2', cert)
-                shutil.copyfile(folder / 'key2', key)
+                # Model ACME activation by replacing the files, not overwriting
+                # the same inode within one timestamp tick. New Nginx versions
+                # inherit cached SSL objects when inode and mtime are unchanged.
+                os.replace(folder / 'cert2', cert)
+                os.replace(folder / 'key2', key)
                 self.assertEqual(served_certificate(), first, 'File replacement alone must reproduce stale TLS')
                 env = {**os.environ, 'PATH': str(wrappers)}
                 conf.write_text(configuration + 'pvnetwork_invalid_fixture_directive;\n')

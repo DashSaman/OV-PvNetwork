@@ -1,12 +1,16 @@
 # PVNetwork
 
-**Current deployment gate:** the [PVN-1046 dependency correction](docs/VALIDATION-v1.0.60.md) is verified in public QA60; [PVN-1045 subscription compatibility](docs/VALIDATION-v1.0.61.md) is verified in public QA61. The owner confirmed concurrent server work is ongoing, so live59 is unchanged and fresh backup/restore, rollback and activation are held. Do not start a new QA59 installation. Supported Stable remains37; neither task is complete from repository checks alone.
+**Current operations — PVN-1047:** [QA62 native backup maintenance](docs/VALIDATION-v1.0.62.md) corrects unattended retention and stale rehearsal recovery. Backed-up scoped cleanup is verified; exact-source CI and limited helper installation are pending. The application remains60 after the protective61 rollback; no full62 rollout or Stable promotion is claimed. Existing59 artifacts retain their old dependency. Supported Stable remains37.
 
 [فارسی](README.fa.md) · [Illustrated guide](docs/UI-GUIDE.md) · [Installation](docs/INSTALLATION.md) · [CLI](docs/CLI.md)
 
 PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multilingual web panel and a 25-item English/Persian operational console. The panel controls account policy; nodes provide VPN connectivity and report usage and session state.
 
 ## Release status and changes
+
+**v1.0.62 candidate — PVN-1047.** Since QA61: native scheduled backups enforce retention and recover interrupted rehearsal allocations without terminating active connections. Pinned/current recovery checkpoints, customer state and active services stay protected. [English notes](docs/RELEASE-NOTES-v1.0.62.md) · [فارسی](docs/RELEASE-NOTES-v1.0.62.fa.md) · [Evidence and pending gates](docs/VALIDATION-v1.0.62.md). The existing illustrated interface is unchanged.
+
+The earlier release checkpoints below retain their historical scope; the current operations status above supersedes their live-version/concurrency statements.
 
 **v1.0.61 verified public QA — PVN-1045.** Since QA60: the subscription route uses explicit request/name/context for the pinned Starlette template API; six real synthetic route regressions and all12 source/tag CI checks pass, preserving200 rendering, escaped labels and404/assignment/offline behavior. Security60 dependency correction is retained. [Evidence](docs/VALIDATION-v1.0.61.md) · [English](docs/RELEASE-NOTES-v1.0.61.md) · [فارسی](docs/RELEASE-NOTES-v1.0.61.fa.md). The anonymous full archive and all six public native guests also pass. All four tag checks pass; separate backed-up activations remain pending the end of concurrent work, with live59 unchanged.
 

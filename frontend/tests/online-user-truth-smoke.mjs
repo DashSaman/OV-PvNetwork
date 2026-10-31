@@ -75,6 +75,9 @@ for (const language of languages) {
       await page.goto(`${baseUrl}/users`, { waitUntil: 'domcontentloaded', timeout: 10000 });
       const userCard = page.locator('.user-stat-card').filter({ has: page.locator('.user-stat-label').filter({ hasText: /Online Users|کاربران آنلاین/i }) }).first();
       await userCard.waitFor({ state: 'visible', timeout: 5000 });
+      // The card appears with an initial zero before the users request renders.
+      // Keep the expected-value assertion, but allow its real async update.
+      await userCard.locator('.user-stat-value').filter({ hasText: /^3$/ }).waitFor({ state: 'visible', timeout: 5000 });
       const usersValue = (await userCard.locator('.user-stat-value').textContent())?.trim();
       if (usersValue !== '3') failures.push(`${language} ${width}: users=${usersValue}`);
       if (dashboardValue !== usersValue) failures.push(`${language} ${width}: mismatch dashboard=${dashboardValue} users=${usersValue}`);

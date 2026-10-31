@@ -1,3 +1,9 @@
+## v1.0.62 candidate — PVN-1047
+
+- Apply administrator retention in the real native timer/CLI backup path, preserving pins/recovery references and at least three intact verified checkpoints; zero keeps pruning disabled.
+- Recover stale journal-owned backup rehearsal databases without FORCE, and expire known failed payloads only after recovery. Preserve unknown contents, symlinks, customer state and active services.
+- فارسی: نگهداری در مسیر واقعی بکاپ خودکار اجرا می‌شود؛ دیتابیس آزمایشی قطع‌شده با ژورنال معتبر و بدون قطع اجباری اتصال جمع می‌شود. [Tests and operational scope](docs/VALIDATION-v1.0.62.md).
+
 ## v1.0.61 candidate — PVN-1045
 
 - Pass request/name/context explicitly to the subscription TemplateResponse API; preserve template context, assignment/download authorization, offline behavior and HTML escaping.
