@@ -410,10 +410,115 @@ def postgres_clone(url, dump, *, prefix='pvnetwork_restore_test_', journal=None,
         raise
 
 
+def _native_backup_directories():
+    if BACKUPS.is_symlink():raise ValueError('backup root symlink refused')
+    if not BACKUPS.exists():return []
+    return sorted((p for p in BACKUPS.iterdir() if re.fullmatch(r'\d{8}-\d{6}',p.name)
+                   and not p.is_symlink() and p.is_dir()),reverse=True)
+
+
+def backup_retention_days(environment):
+    from sqlalchemy import create_engine,inspect,text
+    engine=create_engine(environment['DATABASE_URL'])
+    try:
+        with engine.connect() as db:
+            # Older supported snapshots can predate the retention setting.
+            if not inspect(db).has_table('security_settings'):return 10
+            value=db.execute(text('SELECT backup_retention_days FROM security_settings WHERE id=1')).scalar()
+    finally:engine.dispose()
+    days=10 if value is None else int(value)
+    if not 0<=days<=3650:raise ValueError('invalid backup retention setting')
+    return days
+
+
+def prune_native_backups(days, *, now=None):
+    """Caller holds the native operation lock; preserve pins and recovery references."""
+    if days<=0:return []
+    now=time.time() if now is None else now
+    protected=set()
+    def references(value):
+        if isinstance(value,dict):
+            for child in value.values():references(child)
+        elif isinstance(value,list):
+            for child in value:references(child)
+        elif isinstance(value,str) and value.startswith(str(BACKUPS)+os.sep):
+            path=Path(value)
+            if path.parent==BACKUPS:protected.add(path.name)
+    for name in ['last-native-backup.json','lifecycle-transaction.json','data-transaction.json']:
+        path=STATE/name
+        if path.is_symlink():raise ValueError('backup recovery journal symlink refused')
+        if path.is_file():references(json.loads(path.read_text()))
+    candidates=[];failed=[]
+    for path in _native_backup_directories():
+        failure=path/'FAILED.json'
+        if failure.is_file() and not failure.is_symlink():
+            allowed={'env','database.dump','database-rehearsal.json','source.tar.gz','runtime.tar.gz',
+                     'metadata.json','SHA256SUMS','RESTORE_TEST_OK','FAILED.json','.PINNED_BY_TRANSACTION'}
+            try:
+                record=json.loads(failure.read_text())
+                entries=list(path.iterdir())
+                if record.get('state')!='FAILED' or record.get('verified') is not False:continue
+                if any(p.name not in allowed or p.is_symlink() or not p.is_file() for p in entries):continue
+                rehearsal=path/'database-rehearsal.json'
+                if rehearsal.is_file() and json.loads(rehearsal.read_text()).get('temporary_database'):continue
+            except (OSError,ValueError,TypeError):continue
+            failed.append(path);continue
+        if not (path/'RESTORE_TEST_OK').is_file() or (path/'RESTORE_TEST_OK').is_symlink() or (path/'FAILED.json').exists():continue
+        metadata=path/'metadata.json'
+        if not metadata.is_file() or metadata.is_symlink():continue
+        try:
+            value=json.loads(metadata.read_text())
+            if value.get('format')!='pvnetwork-native-backup-v2':continue
+            if not {'database.dump','env','source.tar.gz'}<=set(value.get('checksums',{})):continue
+        except (OSError,ValueError,TypeError):continue
+        candidates.append(path)
+    # Keep at least three intact checkpoints even for an unusually short policy.
+    intact=0
+    for path in candidates:
+        try:verify_backup_files(path)
+        except (OSError,ValueError,KeyError,TypeError):continue
+        protected.add(path.name);intact+=1
+        if intact==3:break
+    if not intact:return []
+    removed=[]
+    for path in candidates+failed:
+        if path.name in protected or (path/'.PINNED_BY_TRANSACTION').exists():continue
+        if path.stat().st_mtime>=now-days*86400:continue
+        if path.is_symlink() or path.resolve().parent!=BACKUPS.resolve():raise ValueError('backup cleanup escaped owned root')
+        shutil.rmtree(path);removed.append(path.name)
+    return removed
+
+
+def recover_backup_rehearsals(*, now=None, min_age=3600):
+    """Recover only stale journal-owned backup clones, without killing connections."""
+    now=time.time() if now is None else now;recovered=[]
+    for directory in _native_backup_directories():
+        journal=directory/'database-rehearsal.json'
+        if journal.is_symlink():raise ValueError('backup rehearsal journal symlink refused')
+        if not journal.is_file():continue
+        record=json.loads(journal.read_text());name=record.get('temporary_database')
+        if not name:continue
+        if not re.fullmatch(r'pvnetwork_restore_test_[a-f0-9]{20}',name):raise ValueError('unsafe backup rehearsal identity')
+        if now-journal.stat().st_mtime<min_age:continue
+        cleanup_recorded_database(record,force=False)
+        record['state']='complete';durable_json(journal,record)
+        if not (directory/'RESTORE_TEST_OK').exists():
+            durable_json(directory/'FAILED.json',{'state':'FAILED','verified':False,'recovered_rehearsal':True})
+        recovered.append(directory.name)
+    return recovered
+
+
 def make_backup(environment=None):
     from sqlalchemy.engine import make_url
     env=environment or configured_environment();url=make_url(env['DATABASE_URL'])
     if url.get_backend_name() not in {'sqlite','postgresql'}:raise ValueError('unsupported native database backend')
+    # This path is shared by the timer, native CLI and lifecycle operations.
+    # Recover interrupted rehearsal allocations before applying the space gate.
+    recovered=recover_backup_rehearsals()
+    days=backup_retention_days(env)
+    removed=prune_native_backups(days)
+    maintenance={'recovered_rehearsals':recovered,'removed_backups':removed,'retention_days':days}
+    durable_json(STATE/'native-backup-maintenance.json',maintenance)
     required=3*1024**3
     if shutil.disk_usage(BACKUPS.parent if BACKUPS.parent.exists() else '/var').free<required:raise ValueError('insufficient backup disk space')
     BACKUPS.mkdir(parents=True,exist_ok=True,mode=0o700)
@@ -459,6 +564,9 @@ def make_backup(environment=None):
         fsync_directory(directory)
         verify_backup_files(directory)
         durable_json(STATE/'last-native-backup.json',{'backup':str(directory)})
+        # The newly verified snapshot joins the minimum retained checkpoints.
+        maintenance['removed_backups']+=prune_native_backups(days)
+        durable_json(STATE/'native-backup-maintenance.json',maintenance)
         return directory
     except BaseException:
         durable_json(directory/'FAILED.json',{'state':'FAILED','verified':False});raise
@@ -557,7 +665,7 @@ def restore_recorded_environment(record):
     write_private((APP/'.env').resolve(),path.read_text())
 
 
-def cleanup_recorded_database(record):
+def cleanup_recorded_database(record, *, force=True):
     name=record.get('temporary_database')
     if not name:return
     if not re.fullmatch(r'pvnetwork_(canary|restored|restore_test)_[a-f0-9]{20}',name):raise ValueError('unsafe temporary database recovery identity')
@@ -566,8 +674,10 @@ def cleanup_recorded_database(record):
     if url.database==name:raise ValueError('refusing to remove the active database')
     args,env=postgres_arguments(url,database='postgres')
     if url.host in {None,'localhost','127.0.0.1','::1','/var/run/postgresql'} and shutil.which('runuser'):
-        command=['runuser','-u','postgres','--','dropdb','-p',str(url.port or 5432),'--if-exists','--force',name]
-    else:command=['psql',*args,'-v','ON_ERROR_STOP=1','-c','DROP DATABASE IF EXISTS "'+name+'" WITH (FORCE)']
+        command=['runuser','-u','postgres','--','dropdb','-p',str(url.port or 5432),'--if-exists']
+        if force:command.append('--force')
+        command.append(name)
+    else:command=['psql',*args,'-v','ON_ERROR_STOP=1','-c','DROP DATABASE IF EXISTS "'+name+'"'+(' WITH (FORCE)' if force else '')]
     run(command,env=env);record.pop('temporary_database',None)
 
 
