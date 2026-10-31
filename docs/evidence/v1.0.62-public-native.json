@@ -1,0 +1,91 @@
+{
+  "source": "cd305783f4b0836bb0f1416a004ca55ddbe5b607",
+  "sha256": "f3605e6b9069be9dad698f3ce9cb950de1f1b6a65842ee08d2ac738e3a277223",
+  "six_public_fresh_repeat": "PASS",
+  "rows": [
+    {
+      "job_id": 124598291315,
+      "architecture": "ARM64",
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.62",
+      "source_sha256": "f3605e6b9069be9dad698f3ce9cb950de1f1b6a65842ee08d2ac738e3a277223",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "distribution": "ubuntu2204",
+      "run_id": 41221990315
+    },
+    {
+      "job_id": 124598291430,
+      "architecture": "ARM64",
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.62",
+      "source_sha256": "f3605e6b9069be9dad698f3ce9cb950de1f1b6a65842ee08d2ac738e3a277223",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "distribution": "ubuntu2404",
+      "run_id": 41221990315
+    },
+    {
+      "job_id": 124598291540,
+      "architecture": "ARM64",
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.62",
+      "source_sha256": "f3605e6b9069be9dad698f3ce9cb950de1f1b6a65842ee08d2ac738e3a277223",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "distribution": "debian12",
+      "run_id": 41221990315
+    },
+    {
+      "job_id": 124598279903,
+      "architecture": "x86_64",
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.62",
+      "source_sha256": "f3605e6b9069be9dad698f3ce9cb950de1f1b6a65842ee08d2ac738e3a277223",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "distribution": "ubuntu2204",
+      "run_id": 41221987880
+    },
+    {
+      "job_id": 124598280045,
+      "architecture": "x86_64",
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.62",
+      "source_sha256": "f3605e6b9069be9dad698f3ce9cb950de1f1b6a65842ee08d2ac738e3a277223",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "distribution": "debian12",
+      "run_id": 41221987880
+    },
+    {
+      "job_id": 124598280110,
+      "architecture": "x86_64",
+      "native_fresh": "PASS",
+      "repeat_env_DB_PIDs_preserved": "PASS",
+      "systemd_proxy_UI_assets_SQLite_permissions": "PASS",
+      "installed_CLI": "PASS",
+      "version": "1.0.62",
+      "source_sha256": "f3605e6b9069be9dad698f3ce9cb950de1f1b6a65842ee08d2ac738e3a277223",
+      "public_bootstrap": true,
+      "limits": "Container Setup Mode; public ACME and external VPS networking not tested",
+      "distribution": "ubuntu2404",
+      "run_id": 41221987880
+    }
+  ]
+}

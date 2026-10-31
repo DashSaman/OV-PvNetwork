@@ -1,4 +1,4 @@
-# v1.0.62 candidate — bounded native backup maintenance
+# v1.0.62 — verified native backup maintenance
 
 Since QA61, the native scheduled/CLI backup path applies the configured retention policy before its free-space gate and after successful verification. It retains pinned/current-recovery checkpoints and at least three intact verified snapshots. Zero retention still disables pruning.
 
@@ -6,6 +6,6 @@ Before another backup, stale journal-owned backup rehearsal databases recover wi
 
 This changes the operational lifecycle helper; schema, customer quotas/identities, VPN configuration and UI stay unchanged. Historical operator cache cleanup is a separately verified operation, not a global filesystem or Docker prune. Retire only proven unused reconstructible staging dependency trees after a completed rollout; retain source/evidence and anything referenced by a process or unit.
 
-Damaged expired checkpoints survive for inspection; a cleanup failure is reported separately from a successfully verified snapshot. To clear the inherited dependency-audit blocker, panel/node source locks use certifi2026.10.23 with a2026.10.19 minimum. Existing release artifacts and the running application environment are unchanged by a helper-only deployment.
+Damaged expired checkpoints survive for inspection; a cleanup failure is reported separately from a successfully verified snapshot. To clear inherited audit blockers, panel/node source locks use certifi2026.10.23 with a2026.10.19 minimum, and the frontend transitive follow-redirects lock uses1.16.2. Existing release artifacts and the running application environment are unchanged by a helper-only deployment.
 
-[Actual tests, cleanup and pending gates](VALIDATION-v1.0.62.md) · [Existing illustrated interface](UI-GUIDE.md). At the initial checkpoint the application stays60; the full62 application is not deployed or promoted to Stable.
+[Verified tests and limits](VALIDATION-v1.0.62.md) · [Scoped activation, backup and rollback](PRODUCTION-v1.0.62.md) · [Illustrated interface](UI-GUIDE.md). Exact CI, six public guests and both installed-entrypoint backups pass; application stays60 and Stable is unchanged.
