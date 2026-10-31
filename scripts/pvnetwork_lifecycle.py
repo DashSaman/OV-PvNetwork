@@ -464,6 +464,88 @@ def make_backup(environment=None):
         durable_json(directory/'FAILED.json',{'state':'FAILED','verified':False});raise
 
 
+
+def configured_backup_retention_days(environment=None):
+    """Read the existing admin setting; never delete on a missing/invalid value."""
+    from sqlalchemy import create_engine, text
+    env = environment or configured_environment()
+    engine = create_engine(env['DATABASE_URL'], pool_pre_ping=True)
+    try:
+        with engine.connect() as connection:
+            days = connection.execute(
+                text('SELECT backup_retention_days FROM security_settings WHERE id = 1')
+            ).scalar_one_or_none()
+    finally:
+        engine.dispose()
+    if type(days) is not int or not 0 <= days <= 3650:
+        raise ValueError('backup retention setting missing or invalid; cleanup skipped')
+    return days
+
+
+def prune_expired_backups(retention_days=None, now=None):
+    """Conservative retention for verified native backups only.
+
+    Keep the three newest backup directories plus pinned/current backups.
+    Never follow symlinks, delete failed backups or remove unknown directories.
+    This only runs under the existing lifecycle operation lock.
+    """
+    days = configured_backup_retention_days() if retention_days is None else retention_days
+    if type(days) is not int or not 0 <= days <= 3650:
+        raise ValueError('invalid backup retention days')
+    if days == 0 or not BACKUPS.exists():
+        return 0
+    if BACKUPS.is_symlink() or not BACKUPS.is_dir():
+        raise ValueError('backup root is not a regular directory')
+    timestamp = (now or datetime.datetime.now(datetime.timezone.utc)).timestamp()
+    cutoff = timestamp - days * 86400
+    directories = sorted(
+        (path for path in BACKUPS.iterdir()
+         if re.fullmatch(r'\d{8}-\d{6}', path.name)
+         and not path.is_symlink() and path.is_dir()),
+        key=lambda path: path.name, reverse=True,
+    )
+    # Never prune the three newest generations, even if validation fails.
+    keep = {path.name for path in directories[:3]}
+    try:
+        current = Path(json.loads((STATE/'last-native-backup.json').read_text())['backup'])
+        if current.parent == BACKUPS:
+            keep.add(current.name)
+    except (OSError, KeyError, ValueError, TypeError):
+        pass
+    removed = 0
+    for path in directories[3:]:
+        if path.name in keep or (path/'.PINNED_BY_TRANSACTION').exists():
+            continue
+        try:
+            if path.stat().st_mtime >= cutoff:
+                continue
+            if not (path/'RESTORE_TEST_OK').is_file():
+                continue
+            verify_backup_files(path)
+        except (OSError, ValueError, json.JSONDecodeError):
+            # Damaged/unknown backups need deliberate human review.
+            continue
+        shutil.rmtree(path)
+        removed += 1
+    return removed
+
+
+def make_retained_backup():
+    """Retention on both sides of normal backups, including disk-low retries."""
+    removed = 0
+    warning = False
+    try:
+        removed += prune_expired_backups()
+    except Exception:
+        warning = True
+    backup = make_backup()
+    try:
+        removed += prune_expired_backups()
+    except Exception:
+        warning = True
+    return {'backup': str(backup), 'verified': True,
+            'expired_backups_removed': removed, 'retention_warning': warning}
+
 def operation_lock():
     import fcntl
     STATE.mkdir(parents=True,exist_ok=True,mode=0o700)
@@ -1098,7 +1180,7 @@ def main():
             with operation_lock():
                 if args.command!='recover':
                     assert_transactions_idle()
-                if args.command=='backup':result={'backup':str(make_backup()),'verified':True}
+                if args.command=='backup':result=make_retained_backup()
                 elif args.command=='restore':
                     if not args.selection:raise ValueError('select a verified backup id')
                     result=restore_database(BACKUPS/args.selection)
