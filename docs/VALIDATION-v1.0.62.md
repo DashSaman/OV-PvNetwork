@@ -39,4 +39,6 @@ The second CI attempt cleared dependency audits and passed six native guest jobs
 
 The next CI attempt passed752 unit/governance tests (80 explicit platform/fixture skips),82 root fixtures,38 security regressions,37 router controls, the real isolated VPN handshake, build/lint and six native jobs. It then correctly stopped at the runtime npm audit: inherited follow-redirects1.16.0 is affected by three credential-stripping advisories, including [GHSA-mrwp-f3q8-3g9p](https://github.com/advisories/GHSA-mrwp-f3q8-3g9p). Only that transitive lock entry changed to1.16.2; local runtime audit now reports zero vulnerabilities. Final exact-source/browser CI still applies; no audit threshold or assertion was relaxed.
 
+Source08f5ba3 passed the complete push CI. The simultaneous PR validation reached browser tests and read the Users online card's initial0 before its asynchronous request rendered (the same source passed this case in push CI). The fixture now waits at most five seconds for the expected3 before reading and comparing counters; an incorrect final value still fails. No application UI or API behavior changed. A fresh exact-source run is required.
+
 [English notes](RELEASE-NOTES-v1.0.62.md) · [یادداشت فارسی](RELEASE-NOTES-v1.0.62.fa.md) · [Incident](incidents/2026-10-31-native-backup-disk-growth.md)
