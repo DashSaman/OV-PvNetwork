@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Read-only storage audit for the Finland PVNetwork panel host.
+# Never prints environment contents, credentials, database rows, or log contents.
+set -uo pipefail
+export LC_ALL=C
+
+printf '%s\n' '=== PVNetwork disk audit (read-only) ==='
+date -u '+Time UTC: %Y-%m-%dT%H:%M:%SZ'
+hostname
+printf '\n%s\n' '== Mounted disk space =='
+df -hT -x tmpfs -x devtmpfs
+printf '\n%s\n' '== Inodes =='
+df -i -x tmpfs -x devtmpfs
+
+printf '\n%s\n' '== Known storage roots =='
+for path in \
+    /var/log \
+    /var/backups/pvnetwork-panel \
+    /var/lib/pvnetwork-panel \
+    /var/lib/postgresql \
+    /var/lib/docker \
+    /var/lib/containerd \
+    /opt/pvnetwork-panel \
+    /opt/pvnetwork-panel-releases \
+    /opt/ov-panel \
+    /opt/ov-node \
+    /tmp \
+    /var/tmp; do
+    if [[ -d "$path" ]]; then
+        du -sxh -- "$path" 2>/dev/null || printf 'Unavailable: %s\n' "$path"
+    fi
+done
+
+printf '\n%s\n' '== Large files in scoped paths (size and filename only) =='
+for path in /var/log /var/backups/pvnetwork-panel /var/lib/pvnetwork-panel /opt/pvnetwork-panel/data /opt/ov-panel/data; do
+    if [[ -d "$path" ]]; then
+        find "$path" -xdev -type f -size +100M -printf '%s %p\n' 2>/dev/null
+    fi
+done | sort -nr | head -40
+
+printf '\n%s\n' '== Journal occupancy =='
+journalctl --disk-usage 2>&1 || true
+printf '\n%s\n' '== Panel and backup timer status =='
+systemctl is-active pvnetwork-panel.service pvnetwork-panel-backup.timer ov-panel.service ov-node.service 2>/dev/null || true
+systemctl list-timers --all --no-pager 'pvnetwork*' 2>/dev/null || true
+
+printf '\n%s\n' '== Deleted but still open files (if lsof is installed) =='
+if command -v lsof >/dev/null 2>&1; then
+    lsof -nP +L1 2>/dev/null | head -25 || true
+else
+    printf '%s\n' 'lsof unavailable'
+fi
+printf '\n%s\n' 'Audit finished. No files or services were modified.'

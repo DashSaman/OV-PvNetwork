@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 
 from core.config import settings
@@ -9,9 +10,8 @@ LOG_FILE = os.path.join(os.path.dirname(BASE_DIR), "data", "app.log")
 os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
 
 logging.basicConfig(
-    filename=LOG_FILE,
-    encoding="utf-8",
-    filemode="a",
+    handlers=[RotatingFileHandler(LOG_FILE, maxBytes=10 * 1024 * 1024,
+                                  backupCount=5, encoding="utf-8", delay=True)],
     format="{asctime} - {levelname} - {message}",
     style="{",
     datefmt="%Y-%m-%d %H:%M",

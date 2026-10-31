@@ -71,7 +71,7 @@ def native_operation(args):
     if args.command=='restore-upload':return engine.restore_upload(args.selection,args.archive)
     with engine.operation_lock():
         if args.command!='recover':idle(engine)
-        if args.command=='backup':return {'backup':str(engine.make_backup()),'verified':True}
+        if args.command=='backup':return engine.make_retained_backup()
         if args.command=='restore':
             if not args.selection or not re.fullmatch(r'[0-9]{8}-[0-9]{6}',args.selection):raise ValueError('select a native verified backup ID')
             return engine.restore_database(engine.BACKUPS/args.selection)
