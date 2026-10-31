@@ -1,8 +1,10 @@
-## v1.0.62 candidate — PVN-1047
+## v1.0.62 verified scoped helper and public QA — PVN-1047
 
 - Apply administrator retention in the real native timer/CLI backup path, preserving pins/recovery references and at least three intact verified checkpoints; zero keeps pruning disabled.
 - Recover stale journal-owned backup rehearsal databases without FORCE, and expire known failed payloads only after recovery. Preserve unknown contents, symlinks, customer state and active services.
 - فارسی: نگهداری در مسیر واقعی بکاپ خودکار اجرا می‌شود؛ دیتابیس آزمایشی قطع‌شده با ژورنال معتبر و بدون قطع اجباری اتصال جمع می‌شود. [Tests and operational scope](docs/VALIDATION-v1.0.62.md).
+
+- Preserve the selected restore source and damaged checkpoints; report maintenance warnings separately from a verified backup. Source certifi/follow-redirects locks clear inherited audit blockers. [Scoped activation and rollback evidence](docs/PRODUCTION-v1.0.62.md): two actual installed-entrypoint backups, customer/configuration/PID preservation and zero service restarts; application stays60.
 
 ## v1.0.61 candidate — PVN-1045
 

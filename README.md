@@ -1,6 +1,6 @@
 # PVNetwork
 
-**Current operations — PVN-1047:** [QA62 native backup maintenance](docs/VALIDATION-v1.0.62.md) corrects unattended retention and stale rehearsal recovery. Backed-up scoped cleanup is verified; exact-source CI and limited helper installation are pending. The application remains60 after the protective61 rollback; no full62 rollout or Stable promotion is claimed. Existing59 artifacts retain their old dependency. Supported Stable remains37.
+**Current operations — PVN-1047:** [QA62 and the scoped helper deployment are verified](docs/PRODUCTION-v1.0.62.md). Native scheduled retention and stale rehearsal recovery are corrected; two real installed-entrypoint backups, customer/configuration/service preservation, exact-source CI and six public x86/ARM fresh/repeat guests pass. Scoped cleanup reclaimed about7GB on the panel host and lossless log compression about0.69GB on a node. The application remains60 after the earlier protective61 rollback; no full62 rollout or Stable promotion. Supported Stable remains37.
 
 [فارسی](README.fa.md) · [Illustrated guide](docs/UI-GUIDE.md) · [Installation](docs/INSTALLATION.md) · [CLI](docs/CLI.md)
 
@@ -8,7 +8,7 @@ PVNetwork manages OpenVPN users, subscriptions, resellers and nodes from a multi
 
 ## Release status and changes
 
-**v1.0.62 candidate — PVN-1047.** Since QA61: native scheduled backups enforce retention and recover interrupted rehearsal allocations without terminating active connections. Pinned/current recovery checkpoints, customer state and active services stay protected. [English notes](docs/RELEASE-NOTES-v1.0.62.md) · [فارسی](docs/RELEASE-NOTES-v1.0.62.fa.md) · [Evidence and pending gates](docs/VALIDATION-v1.0.62.md). The existing illustrated interface is unchanged.
+**v1.0.62 verified public QA and scoped operational helper — PVN-1047.** Since QA61: automatic native backup retention, non-FORCE stale rehearsal recovery, protected restore sources and safe failed-payload expiry. Source certifi/follow-redirects locks also clear inherited audit blockers; the running application dependency environment is unchanged by helper-only activation. [English notes](docs/RELEASE-NOTES-v1.0.62.md) · [فارسی](docs/RELEASE-NOTES-v1.0.62.fa.md) · [Validation and limits](docs/VALIDATION-v1.0.62.md) · [QA release](https://github.com/DashSaman/OV-PvNetwork/releases/tag/v1.0.62). The illustrated interface is unchanged.
 
 The earlier release checkpoints below retain their historical scope; the current operations status above supersedes their live-version/concurrency statements.
 
@@ -40,15 +40,15 @@ The baseline tour uses 80 synthetic v1.0.54 captures, also applicable to v1.0.55
 4. Test an actual VPN connection and usage accounting on your test node before serving customers. A green panel or a downloaded profile alone does not prove tunnel connectivity.
 5. Make a verified private backup and read [updates and recovery](docs/UPDATES.md) before changes to an existing installation.
 
-The version-pinned QA command below is for **fresh-server evaluation using the published immutable v1.0.59 assets**. Do not use Fresh Install to replace an existing panel.
+The version-pinned QA command below is for **fresh-server evaluation using the published immutable v1.0.62 assets**. Do not use Fresh Install to replace an existing panel.
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.59/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/DashSaman/OV-PvNetwork/v1.0.62/install.sh)
 ```
 
 The bootstrap verifies the official archive checksum and version, stages private tools/builds and verifies health before activation. Default Setup Mode is loopback-only; [the installation guide](docs/INSTALLATION.md) explains SSH forwarding and public TLS.
 
-For an existing installation, start with `sudo pvnetwork update v1.0.59 --dry-run --json` and follow the [verified update/rollback guide](docs/UPDATES.md). Use the target only after its official assets and required gates are verified; Fresh Install is a different operation.
+For an existing installation, start with `sudo pvnetwork update v1.0.62 --dry-run --json` and follow the [verified update/rollback guide](docs/UPDATES.md). Use the target only after its official assets and required gates are verified; Fresh Install is a different operation.
 
 ## Learn each section
 
