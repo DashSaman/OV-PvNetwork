@@ -82,6 +82,38 @@ class NativeBackupMaintenanceTests(unittest.TestCase):
         record=json.loads((self.state/'native-backup-maintenance.json').read_text())
         self.assertEqual(record['warnings'],['retention:OSError'])
 
+    def test_restore_of_expired_checkpoint_survives_its_safety_backup(self):
+        env=self.sqlite_environment(0);env['PORT']='8001'
+        with sqlite3.connect(self.app/'panel.db') as db:
+            db.execute('CREATE TABLE alembic_version(version_num TEXT)')
+            db.execute("INSERT INTO alembic_version VALUES ('fixture_head')")
+        source=self.m.make_backup(env);selected=self.backups/'20200101-010101';source.rename(selected)
+        os.utime(selected,(self.now-40*86400,self.now-40*86400))
+        for day in range(2,5):self.snapshot(f'2020010{day}-010101',86400)
+        with sqlite3.connect(self.app/'panel.db') as db:
+            db.execute('UPDATE users SET quota=999')
+            db.execute('UPDATE security_settings SET backup_retention_days=10')
+        site=self.root/'site.conf';site.write_text('proxy_pass http://127.0.0.1:8001;')
+        with mock.patch.object(self.m,'configured_environment',return_value=env), \
+             mock.patch.object(self.m,'_schema_head',return_value='fixture_head'), \
+             mock.patch.object(self.m,'owned_site',return_value=site), \
+             mock.patch.object(self.m,'_proxy_content'),mock.patch.object(self.m,'_pause_writers'), \
+             mock.patch.object(self.m,'_resume_writers'),mock.patch.object(self.m,'run'), \
+             mock.patch.object(self.m,'health'),mock.patch.object(self.m,'recover_data_transaction'):
+            result=self.m.restore_database(selected)
+        self.assertEqual(result['state'],'RESTORED');self.assertTrue(selected.exists())
+        with sqlite3.connect(self.app/'panel.db') as db:
+            self.assertEqual(db.execute('SELECT quota FROM users').fetchone()[0],12345)
+
+    def test_expired_failed_sqlite_rehearsal_payload_is_removed(self):
+        self.snapshot('20200103-010101',86400)
+        failed=self.backups/'20200101-010101';failed.mkdir()
+        (failed/'FAILED.json').write_text(json.dumps({'state':'FAILED','verified':False}))
+        for name in ['database.dump','restore-rehearsal.db','env']:(failed/name).write_bytes(b'fixture')
+        os.utime(failed,(self.now-40*86400,self.now-40*86400))
+        self.m.prune_native_backups(10,now=self.now)
+        self.assertFalse(failed.exists(),'failed SQLite rehearsal must not grow indefinitely')
+
     def test_pruning_removes_only_expired_known_failed_snapshot(self):
         self.assertTrue(hasattr(self.m,'prune_native_backups'),'native retention implementation missing')
         self.snapshot('20200103-010101',86400)

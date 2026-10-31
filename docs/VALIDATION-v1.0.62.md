@@ -6,7 +6,7 @@ Scope: apply the existing administrator backup-retention setting in the real nat
 
 The original native daily entrypoint calls make_backup directly. The earlier retention implementation runs only through web backup handlers; its comment that the timer visits the listing route is incorrect. A real synthetic SQLite backup reproduces the defect without any web request: an expired checkpoint survives. Five focused tests fail on the original Linux module; the zero-retention control passes.
 
-The corrected candidate passed six initial Linux tests, then nine after known failed-payload coverage. Two additional controls reproduced deletion of a damaged old checkpoint and misclassification of a verified backup after a cleanup failure. Both are corrected; all eleven focused Linux fixtures pass. Coverage includes:
+The corrected candidate passed six initial Linux tests, then nine after known failed-payload coverage. Two additional controls reproduced deletion of a damaged old checkpoint and misclassification of a verified backup after a cleanup failure. Independent focused review then identified restore-source expiration during its safety backup and a missed failed SQLite rehearsal file. Both were reproduced and corrected: the restore journal protects its selected source, and known failed SQLite rehearsal payloads expire. All thirteen focused Linux fixtures pass, including an actual synthetic restore of an expired checkpoint. Coverage includes:
 
 - Real native snapshot and actual SQLite restore, followed by expiration without a web request.
 - Retention zero disables deletion.
@@ -34,5 +34,7 @@ The first exact-source CI attempt passed all six fresh/repeat native installer j
 A real empty PostgreSQL fixture also passed: recovery refused deletion while its test session was connected; the same session remained usable; deletion succeeded after closing that session. The fixture used no customer rows and was removed. This control ran under the native operation lock.
 
 Full fresh exact-source CI, immutable release/artifact gates and the limited helper installation remain pending. Do not infer these passes from the focused fixtures or cleanup result. Supported Stable remains37. Broader external-client, public ACME, assistive hardware and earlier partial security-scan limits are unchanged.
+
+The second CI attempt cleared dependency audits and passed six native guest jobs, but both main jobs failed the private Nginx certificate-activation fixture (750 tests, one failure). It overwrote certificate/key bytes on the same inode within one timestamp tick; [Nginx can inherit SSL objects when file index and modification time are unchanged](https://nginx.org/en/docs/ngx_core_module.html#ssl_object_cache_inheritable). The fixture now atomically replaces its synthetic files to model ACME activation. The real issuance hook and Production Nginx are unchanged; fresh full CI must verify this fixture correction.
 
 [English notes](RELEASE-NOTES-v1.0.62.md) · [یادداشت فارسی](RELEASE-NOTES-v1.0.62.fa.md) · [Incident](incidents/2026-10-31-native-backup-disk-growth.md)

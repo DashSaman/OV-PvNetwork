@@ -452,7 +452,7 @@ def prune_native_backups(days, *, now=None):
     for path in _native_backup_directories():
         failure=path/'FAILED.json'
         if failure.is_file() and not failure.is_symlink():
-            allowed={'env','database.dump','database-rehearsal.json','source.tar.gz','runtime.tar.gz',
+            allowed={'env','database.dump','restore-rehearsal.db','database-rehearsal.json','source.tar.gz','runtime.tar.gz',
                      'metadata.json','SHA256SUMS','RESTORE_TEST_OK','FAILED.json','.PINNED_BY_TRANSACTION'}
             try:
                 record=json.loads(failure.read_text())
@@ -1061,7 +1061,7 @@ def restore_database(directory):
     if info.get('database_backend')!=url.get_backend_name():raise ValueError('database backend mismatch')
     previous=None
     data_journal=STATE/'data-transaction.json'
-    record={'kind':'restore','state':'preparing','previous':str(APP.resolve()),'version':(APP/'VERSION').read_text().strip(),'port':int(environment['PORT']),'paused_timers':[]}
+    record={'kind':'restore','state':'preparing','source_backup':str(directory),'previous':str(APP.resolve()),'version':(APP/'VERSION').read_text().strip(),'port':int(environment['PORT']),'paused_timers':[]}
     if url.get_backend_name()=='sqlite':
         probe=STATE/('restore-check-'+secrets.token_hex(6)+'.db')
         sqlite_restore(directory/'database.dump',probe,info['fingerprint'])
